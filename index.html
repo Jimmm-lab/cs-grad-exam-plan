@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>資工所備考計畫</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: answer-sheet notebook — a sticky header with the D-day counter, tabbed views, one column of day rows; subject colours mark the three exam papers. */
+:root {
+  --paper: #f5f6f9;
+  --card: #ffffff;
+  --ink: #1a2130;
+  --muted: #5a6376;
+  --line: #dde1e9;
+  --accent: #c42f3d;        /* answer-card red */
+  --accent-soft: #fbe8ea;
+  --dm: #4450b5;  --dm-soft: #e8eafa;
+  --ca: #0d7a74;  --ca-soft: #e0f3f1;
+  --os: #a86300;  --os-soft: #fbf0df;
+  --ok: #2f7d3b;  --ok-soft: #e4f3e6;
+  --warn: #9a5b00;
+  --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 8px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11141a; --card: #191d25; --ink: #e5e8ef; --muted: #98a0b0; --line: #2a303b;
+    --accent: #ff6d7a; --accent-soft: #3a1d23;
+    --dm: #9aa2ff; --dm-soft: #23264a; --ca: #4fc6be; --ca-soft: #143331; --os: #f0aa47; --os-soft: #3a2a12;
+    --ok: #6fcf7d; --ok-soft: #173320; --warn: #f0aa47;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11141a; --card: #191d25; --ink: #e5e8ef; --muted: #98a0b0; --line: #2a303b;
+  --accent: #ff6d7a; --accent-soft: #3a1d23;
+  --dm: #9aa2ff; --dm-soft: #23264a; --ca: #4fc6be; --ca-soft: #143331; --os: #f0aa47; --os-soft: #3a2a12;
+  --ok: #6fcf7d; --ok-soft: #173320; --warn: #f0aa47;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font: 15px/1.7 var(--font-body);
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--card); }
+a { color: var(--accent); }
+.wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+/* header */
+header.top { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
+.top-row { display: flex; align-items: center; gap: 16px; padding-block: 14px 10px; flex-wrap: wrap; }
+.dday { display: flex; align-items: baseline; gap: 6px; color: var(--accent); }
+.dday b { font: 700 34px/1 var(--font-mono); letter-spacing: -1px; }
+.dday span { font: 700 13px/1 var(--font-mono); }
+.title-block { min-width: 0; flex: 1; }
+.title-block h1 { font: 900 20px/1.3 var(--font-display); margin: 0; text-wrap: balance; }
+.title-block p { margin: 0; color: var(--muted); font-size: 13px; }
+.exam-pick select { font: inherit; font-size: 13px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs a { text-decoration: none; color: var(--muted); padding: 8px 12px; font-weight: 500; font-size: 14px; border-bottom: 2px solid transparent; white-space: nowrap; }
+nav.tabs a[aria-current="page"] { color: var(--ink); border-color: var(--accent); }
+nav.tabs a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+main { padding-block: 24px 64px; }
+h2 { font: 700 22px/1.35 var(--font-display); margin: 0 0 12px; text-wrap: balance; }
+h3 { font: 700 16px/1.4 var(--font-body); margin: 0; }
+.eyebrow { font: 700 11px/1 var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); margin: 0 0 20px; max-width: 65ch; }
+section.view { display: grid; gap: 28px; }
+
+/* subject chips */
+.subj { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.subj[data-s="dm"] { color: var(--dm); background: var(--dm-soft); }
+.subj[data-s="ca"] { color: var(--ca); background: var(--ca-soft); }
+.subj[data-s="osds"] { color: var(--os); background: var(--os-soft); }
+.weak-mark { font-size: 10px; border: 1px solid currentColor; border-radius: 3px; padding: 0 3px; line-height: 1.4; }
+
+/* summary strip */
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.fact { background: var(--card); padding: 14px 16px; min-width: 0; }
+.fact .v { font: 700 20px/1.3 var(--font-mono); font-variant-numeric: tabular-nums; }
+.fact .k { color: var(--muted); font-size: 12px; }
+.fact .v.behind { color: var(--accent); }
+.fact .v.good { color: var(--ok); }
+
+/* today */
+.today-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.today-head { padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.today-head .date { font: 700 13px/1 var(--font-mono); color: var(--muted); }
+.today-head h3 { font: 700 20px/1.4 var(--font-display); margin-top: 6px; }
+.blocks { display: grid; }
+.block { display: grid; grid-template-columns: 92px 1fr; gap: 16px; padding: 16px 20px; border-top: 1px solid var(--line); }
+.block:first-child { border-top: 0; }
+.block .when { font: 700 13px/1.6 var(--font-mono); color: var(--muted); display: grid; gap: 6px; align-content: start; }
+.block .what { min-width: 0; }
+.block .what h4 { margin: 0 0 4px; font-size: 16px; }
+.block dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 14px; }
+.block dt { color: var(--muted); }
+.block dd { margin: 0; min-width: 0; }
+.note { margin: 0; padding: 12px 20px; background: var(--accent-soft); font-size: 14px; border-top: 1px solid var(--line); }
+.done-btn { font: 700 14px/1 var(--font-body); padding: 10px 14px; border-radius: 6px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+.done-btn[aria-pressed="true"] { background: var(--ok); border-color: var(--ok); color: var(--card); }
+.rest-card { background: var(--card); border: 1px dashed var(--line); border-radius: var(--r); padding: 20px; }
+
+/* milestones */
+.ms-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-left: 2px solid var(--line); }
+.ms-list li { position: relative; padding: 4px 0 12px 18px; display: grid; grid-template-columns: 150px 1fr; gap: 10px; }
+.ms-list li::before { content: ""; position: absolute; left: -6px; top: 10px; width: 10px; height: 10px; border-radius: 50%; background: var(--card); border: 2px solid var(--muted); }
+.ms-list li.past { color: var(--muted); }
+.ms-list li.next::before { background: var(--accent); border-color: var(--accent); }
+.ms-list li .d { font: 700 13px/1.7 var(--font-mono); }
+.ms-list li span:last-child { min-width: 0; }
+
+/* phases bar */
+.phasebar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px; }
+.phasebar div { background: var(--line); position: relative; }
+.phasebar div.cur { background: var(--accent); }
+.phasebar div.past { background: var(--muted); opacity: .45; }
+.phase-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); margin-top: 8px; }
+.phase-legend b { color: var(--ink); }
+
+/* plan list */
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 12px 16px; }
+.toolbar .lbl { font-size: 13px; color: var(--muted); }
+.wd-pick { display: flex; gap: 4px; flex-wrap: wrap; }
+.wd-pick button { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 14px/1 var(--font-body); cursor: pointer; }
+.wd-pick button[aria-pressed="true"] { background: var(--ink); color: var(--card); border-color: var(--ink); }
+.btn { font: 500 13px/1 var(--font-body); padding: 8px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: var(--muted); }
+.tb-msg { font-size: 13px; color: var(--warn); }
+
+.week { display: grid; gap: 0; }
+.week-h { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; padding: 0 2px 6px; flex-wrap: wrap; }
+.week-h .eyebrow { color: var(--ink); }
+.week-h .pc { font-size: 12px; color: var(--muted); }
+.days { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.day { display: grid; grid-template-columns: 30px 82px 1fr; gap: 12px; padding: 12px 14px; border-top: 1px solid var(--line); align-items: start; }
+.day:first-child { border-top: 0; }
+.day.is-today { background: var(--accent-soft); }
+.day.rest { padding-block: 8px; color: var(--muted); }
+.day.rest .main { font-size: 13px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.day .dt { font: 700 13px/1.5 var(--font-mono); font-variant-numeric: tabular-nums; }
+.day .dt small { display: block; font: 500 12px/1.4 var(--font-body); color: var(--muted); }
+.day .main { min-width: 0; display: grid; gap: 6px; }
+.day .t { font-weight: 700; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.tag { font: 700 11px/1.6 var(--font-mono); padding: 0 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); font-weight: 500; }
+.tag.ms { border-color: var(--accent); color: var(--accent); }
+.tag.opt { border-style: dashed; }
+.day .items { display: grid; gap: 3px; font-size: 14px; }
+.day .items div { display: grid; grid-template-columns: 76px 1fr; gap: 8px; min-width: 0; }
+.day .items .subj { justify-self: start; }
+.day .items span:last-child { min-width: 0; }
+.chk { appearance: none; -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--muted); margin: 2px 0 0; cursor: pointer; display: grid; place-content: center; background: var(--card); }
+.chk:checked { background: var(--accent); border-color: var(--accent); }
+.chk:checked::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--card); }
+.day.done .main { opacity: .55; }
+.day.exam { background: var(--accent); color: var(--card); }
+.day.exam .dt small { color: var(--card); opacity: .8; }
+
+/* papers */
+.sheet-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); }
+table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
+.sheet th, .sheet td { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: center; }
+.sheet th:first-child, .sheet td:first-child { text-align: left; }
+.sheet thead th { font-weight: 700; font-size: 13px; position: sticky; top: 0; background: var(--card); }
+.sheet tr:last-child td { border-bottom: 0; }
+.sheet .yr { font: 700 14px/1 var(--font-mono); }
+.sheet .role { font-size: 11px; color: var(--accent); margin-left: 6px; font-weight: 700; }
+.bubble { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; font: 700 12px/1 var(--font-mono); }
+.bubble[data-st="1"] { border-color: var(--muted); background: linear-gradient(90deg, var(--muted) 50%, transparent 50%); }
+.bubble[data-st="2"] { border-color: var(--accent); background: var(--accent); }
+.bubble[data-st="3"] { border-color: var(--ok); background: var(--ok); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); align-items: center; }
+.legend .bubble { width: 18px; height: 18px; cursor: default; vertical-align: middle; margin-right: 4px; }
+
+/* strategy */
+.strat { display: grid; gap: 0; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); }
+.strat article { padding: 18px 20px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 36px 1fr; gap: 12px; }
+.strat article:first-child { border-top: 0; }
+.strat .n { font: 700 16px/1.5 var(--font-mono); color: var(--accent); }
+.strat p { margin: 4px 0 0; max-width: 68ch; }
+.strat .src { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.strat article > div { min-width: 0; }
+.res { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.res > div { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; min-width: 0; }
+.res ul, .src-list { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; }
+.src-list { font-size: 14px; }
+.subjects-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+@media (max-width: 560px) {
+  .block { grid-template-columns: 1fr; gap: 6px; }
+  .block .when { display: flex; gap: 8px; align-items: center; }
+  .day { grid-template-columns: 26px 1fr; }
+  .day .dt { grid-column: 2; }
+  .day .main { grid-column: 2; }
+  .day .chk { grid-row: 1; }
+  .day .items div { grid-template-columns: 1fr; gap: 0; }
+  .ms-list li { grid-template-columns: 1fr; gap: 0; }
+  .dday b { font-size: 28px; }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="dday" aria-label="距離筆試天數"><span>D−</span><b id="dday">--</b></div>
+      <div class="title-block">
+        <h1 id="exam-title">資工所備考計畫</h1>
+        <p id="exam-sub"></p>
+      </div>
+      <div class="exam-pick" id="exam-pick" hidden>
+        <label for="exam-select" class="eyebrow">考試</label>
+        <select id="exam-select"></select>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="頁面">
+      <a href="#today">今日</a>
+      <a href="#plan">每日行程</a>
+      <a href="#papers">考古題進度</a>
+      <a href="#strategy">上榜策略</a>
+      <a href="#resources">教材與來源</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="view" id="v-today"></section>
+  <section class="view" id="v-plan" hidden></section>
+  <section class="view" id="v-papers" hidden></section>
+  <section class="view" id="v-strategy" hidden></section>
+  <section class="view" id="v-resources" hidden></section>
+</main>
+
+<!-- 考試資料：每個考試一個檔案，新增考試就在這裡多加一行 -->
+<script src="data/nsysu-cse-116.js"></script>
+
+<script>
+(function () {
+  "use strict";
+  var EXAMS = window.EXAMS || [];
+  var WD = ["日", "一", "二", "三", "四", "五", "六"];
+  var VIEWS = ["today", "plan", "papers", "strategy", "resources"];
+
+  /* ---------- storage (per-browser convenience; safe if blocked) ---------- */
+  function load(key, fallback) {
+    try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+  }
+  function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+
+  /* ---------- dates (local, date-only) ---------- */
+  function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function diff(a, b) { return Math.round((b - a) / 86400000); }
+  function md(d) { return (d.getMonth() + 1) + "/" + d.getDate(); }
+  function todayDate() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  /* ---------- exam selection ---------- */
+  var params = new URLSearchParams(location.search);
+  var exam = EXAMS.filter(function (e) { return e.id === (params.get("exam") || load("cgep:exam", "")); })[0] || EXAMS[EXAMS.length - 1];
+  if (!exam) { document.querySelector("main").innerHTML = "<p>找不到考試資料（data/*.js）。</p>"; return; }
+  var K = "cgep:" + exam.id + ":";
+  var subjMap = {}; exam.subjects.forEach(function (s) { subjMap[s.key] = s; });
+  var srcList = exam.sources || [];
+
+  var state = {
+    rest: load(K + "rest", exam.defaultRest),
+    done: load(K + "done", {}),
+    papers: load(K + "papers", {})
+  };
+
+  /* ---------- schedule builder ---------- */
+  function build() {
+    var start = parse(exam.start), examD = parse(exam.examDate);
+    var pinned = {}; (exam.pinned || []).forEach(function (p) { pinned[p.date] = p; });
+    var slots = [];
+    for (var d = new Date(start); d < examD; d = addDays(d, 1)) {
+      var k = iso(d);
+      if (pinned[k]) slots.push({ date: new Date(d), task: pinned[k] });
+      else if (state.rest.indexOf(d.getDay()) >= 0) slots.push({ date: new Date(d), rest: true });
+      else slots.push({ date: new Date(d), open: true });
+    }
+    var open = slots.filter(function (s) { return s.open; });
+    var tasks = exam.days.slice();
+    var dropped = 0, extra = 0;
+    // fewer slots than tasks: drop optional tasks from the end
+    for (var i = tasks.length - 1; tasks.length > open.length && i >= 0; i--) {
+      if (tasks[i].optional) { tasks.splice(i, 1); dropped++; }
+    }
+    // more slots than tasks: add buffer days before the last 3 tasks
+    while (tasks.length < open.length) {
+      extra++;
+      tasks.splice(Math.max(0, tasks.length - 3), 0, {
+        id: "buf" + extra, phase: "sprint", title: "彈性日：補進度或錯題重做", tag: "彈性",
+        blocks: exam.subjects.map(function (s, j) { return { subject: s.key, time: ["上午", "下午", "晚上"][j] || "", title: s.short + "：補落後進度", read: "沒落後就重做錯題本 ★★ 題目", practice: "" }; })
+      });
+    }
+    var overflow = Math.max(0, tasks.length - open.length);
+    open.forEach(function (s, j) { s.task = tasks[j]; delete s.open; });
+    slots.push({ date: examD, exam: true });
+    return { slots: slots, dropped: dropped, extra: extra, overflow: overflow, tasks: tasks };
+  }
+
+  var plan = build();
+  var msByDate = {}; (exam.milestones || []).forEach(function (m) { (msByDate[m.date] = msByDate[m.date] || []).push(m); });
+  function phaseOf(id) { return exam.phases.filter(function (p) { return p.id === id; })[0] || { name: id }; }
+
+  /* ---------- header ---------- */
+  var T = todayDate(), examD = parse(exam.examDate);
+  document.getElementById("dday").textContent = Math.max(0, diff(T, examD));
+  document.getElementById("exam-title").textContent = exam.label;
+  document.getElementById("exam-sub").textContent = "筆試 " + exam.examDate.replace(/-/g, "/") + "（" + WD[examD.getDay()] + "）・" + exam.subjects.map(function (s) { return s.name; }).join("、");
+  document.title = exam.label.split("・")[0] + "備考計畫";
+  if (EXAMS.length > 1) {
+    var sel = document.getElementById("exam-select");
+    sel.innerHTML = EXAMS.map(function (e) { return '<option value="' + esc(e.id) + '"' + (e.id === exam.id ? " selected" : "") + ">" + esc(e.label) + "</option>"; }).join("");
+    sel.addEventListener("change", function () { save("cgep:exam", sel.value); location.search = "?exam=" + encodeURIComponent(sel.value); });
+    document.getElementById("exam-pick").hidden = false;
+  }
+
+  function subjChip(key, withWeak) {
+    var s = subjMap[key]; if (!s) return "";
+    return '<span class="subj" data-s="' + esc(key) + '">' + esc(s.short) + (withWeak && s.weak ? ' <span class="weak-mark">弱科</span>' : "") + "</span>";
+  }
+  function taskSlots() { return plan.slots.filter(function (s) { return s.task; }); }
+  function stats() {
+    var ts = taskSlots(), done = 0, due = 0, dueDone = 0;
+    ts.forEach(function (s) {
+      var isDone = !!state.done[s.task.id];
+      if (isDone) done++;
+      if (s.date < T) { due++; if (isDone) dueDone++; }
+    });
+    return { total: ts.length, done: done, behind: due - dueDone };
+  }
+
+  /* ---------- TODAY ---------- */
+  function renderBlocks(task) {
+    return '<div class="blocks">' + task.blocks.map(function (b) {
+      return '<div class="block"><div class="when"><span>' + esc(b.time) + "</span>" + subjChip(b.subject, true) + '</div><div class="what"><h4>' + esc(b.title) + "</h4><dl>" +
+        (b.read ? "<dt>讀</dt><dd>" + esc(b.read) + "</dd>" : "") + (b.practice ? "<dt>練</dt><dd>" + esc(b.practice) + "</dd>" : "") + "</dl></div></div>";
+    }).join("") + "</div>";
+  }
+  function renderToday() {
+    var el = document.getElementById("v-today");
+    var st = stats();
+    var slot = plan.slots.filter(function (s) { return iso(s.date) === iso(T); })[0];
+    var label = "今天";
+    if (!slot) {
+      if (T < parse(exam.start)) { slot = plan.slots[0]; label = "第一天"; }
+      else slot = plan.slots[plan.slots.length - 1];
+    }
+    var html = "";
+    var cur = slot.task ? slot.task.phase : null;
+    html += '<div class="facts">' +
+      '<div class="fact"><div class="v">' + st.done + " / " + st.total + '</div><div class="k">已完成讀書天</div></div>' +
+      '<div class="fact"><div class="v ' + (st.behind > 0 ? "behind" : "good") + '">' + (st.behind > 0 ? "落後 " + st.behind + " 天" : "進度正常") + '</div><div class="k">以今天之前的行程計算</div></div>' +
+      '<div class="fact"><div class="v">' + exam.subjects.length + ' 科等權</div><div class="k">' + esc(exam.weights.split("。")[0]) + "</div></div>" +
+      "</div>";
+
+    if (slot.exam) {
+      html += '<div class="rest-card"><div class="eyebrow">' + md(slot.date) + "（" + WD[slot.date.getDay()] + '）</div><h2 style="margin-top:8px">考試日，加油</h2><p class="lede">帶准考證、身分證、文具。每科寫完先檢查計算題的單位和進位。</p></div>';
+    } else if (slot.rest) {
+      var next = plan.slots.filter(function (s) { return s.date > slot.date && s.task; })[0];
+      html += '<div class="rest-card"><div class="eyebrow">' + label + "・" + md(slot.date) + "（" + WD[slot.date.getDay()] + '）</div><h2 style="margin-top:8px">休息日</h2><p class="lede" style="margin:0">好好休息。睡前可以花 15 分鐘翻錯題本，其他時間不要讀書。' +
+        (next ? "下一個讀書天是 " + md(next.date) + "（" + WD[next.date.getDay()] + "）：" + esc(next.task.title) + "。" : "") + "</p></div>";
+    } else {
+      var t = slot.task, isDone = !!state.done[t.id];
+      html += '<div class="today-card"><div class="today-head"><div><div class="date">' + label + "・" + iso(slot.date).replace(/-/g, "/") + "（" + WD[slot.date.getDay()] + "）・" + esc(phaseOf(t.phase).name) + "期</div><h3>" + esc(t.title) + '</h3></div><button class="done-btn" id="today-done" aria-pressed="' + isDone + '">' + (isDone ? "✓ 今天完成了" : "標記今天完成") + "</button></div>" +
+        renderBlocks(t) + (t.note ? '<p class="note">' + esc(t.note) + "</p>" : "") + '<p class="note" style="background:transparent">睡前 15 分鐘：翻錯題本，把今天的錯題補進去。</p></div>';
+    }
+
+    // milestones
+    var ms = exam.milestones || [];
+    var nextIdx = ms.findIndex(function (m) { return parse(m.date) >= T; });
+    html += "<div><h2>重要日期</h2><ol class=\"ms-list\">" + ms.map(function (m, i) {
+      var d = parse(m.date);
+      return '<li class="' + (d < T ? "past" : i === nextIdx ? "next" : "") + '"><span class="d">' + iso(d).replace(/-/g, "/") + "（" + WD[d.getDay()] + "）</span><span>" + esc(m.label) + "</span></li>";
+    }).join("") + "</ol></div>";
+
+    // phases
+    var counts = exam.phases.map(function (p) { return { p: p, n: plan.slots.filter(function (s) { return s.task && s.task.phase === p.id; }).length }; });
+    var curIdx = exam.phases.findIndex(function (p) { return p.id === cur; });
+    html += "<div><h2>階段</h2><div class=\"phasebar\">" + counts.map(function (c, i) {
+      return '<div style="flex:' + c.n + '" class="' + (i === curIdx ? "cur" : i < curIdx ? "past" : "") + '" title="' + esc(c.p.name) + '"></div>';
+    }).join("") + '</div><div class="phase-legend">' + counts.map(function (c) { return "<span><b>" + esc(c.p.name) + "</b> " + c.n + " 天・" + esc(c.p.desc) + "</span>"; }).join("") + "</div></div>";
+
+    el.innerHTML = html;
+    var btn = document.getElementById("today-done");
+    if (btn) btn.addEventListener("click", function () { toggleDone(slot.task.id); renderToday(); });
+  }
+
+  function toggleDone(id) {
+    if (state.done[id]) delete state.done[id]; else state.done[id] = 1;
+    save(K + "done", state.done);
+  }
+
+  /* ---------- PLAN ---------- */
+  function renderPlan() {
+    var el = document.getElementById("v-plan");
+    var html = '<div><h2>每日行程</h2><p class="lede">每週休 ' + state.rest.length + " 天。換休息日時行程會自動往後排，打勾的進度不會不見。上午、下午、晚上各約 3、3、2.5 小時。</p></div>";
+    html += '<div class="toolbar"><span class="lbl">休息日</span><div class="wd-pick" role="group" aria-label="選擇每週休息日">' +
+      WD.map(function (w, i) { return '<button type="button" data-wd="' + i + '" aria-pressed="' + (state.rest.indexOf(i) >= 0) + '" aria-label="星期' + w + '">' + w + "</button>"; }).join("") +
+      '</div><button type="button" class="btn" id="jump-today">跳到今天</button>' +
+      '<span class="tb-msg">' + (plan.overflow ? "休息日太多，有 " + plan.overflow + " 天行程排不進去。" : plan.dropped ? "已省略 " + plan.dropped + " 天選做行程。" : plan.extra ? "多出 " + plan.extra + " 天彈性日。" : "") + "</span></div>";
+
+    // group by week (Mon-start)
+    var weeks = [], cur = null;
+    plan.slots.forEach(function (s) {
+      var dow = (s.date.getDay() + 6) % 7, mon = iso(addDays(s.date, -dow));
+      if (!cur || cur.key !== mon) { cur = { key: mon, items: [] }; weeks.push(cur); }
+      cur.items.push(s);
+    });
+    weeks.forEach(function (w, wi) {
+      var phases = []; w.items.forEach(function (s) { if (s.task) { var n = phaseOf(s.task.phase).name; if (phases.indexOf(n) < 0) phases.push(n); } });
+      var first = w.items[0].date, last = w.items[w.items.length - 1].date;
+      html += '<div class="week"><div class="week-h"><span class="eyebrow">第 ' + (wi + 1) + " 週・" + md(first) + "–" + md(last) + '</span><span class="pc">' + esc(phases.join(" → ")) + '</span></div><div class="days">';
+      w.items.forEach(function (s) {
+        var k = iso(s.date), ms = msByDate[k] || [];
+        var msTags = ms.map(function (m) { return '<span class="tag ms">' + esc(m.label.split("：")[0].split("（")[0]) + "</span>"; }).join("");
+        var dt = '<div class="dt">' + md(s.date) + "<small>星期" + WD[s.date.getDay()] + "</small></div>";
+        var isToday = k === iso(T) ? " is-today" : "";
+        if (s.exam) {
+          html += '<div class="day exam" id="day-' + k + '"><span></span>' + dt + '<div class="main"><div class="t">筆試日</div><div>' + esc(exam.subjects.map(function (x) { return x.name; }).join("・")) + "</div></div></div>";
+        } else if (s.rest) {
+          html += '<div class="day rest' + isToday + '" id="day-' + k + '"><span></span>' + dt + '<div class="main">休息' + (msTags ? " " + msTags : "") + "</div></div>";
+        } else {
+          var t = s.task, d = !!state.done[t.id];
+          html += '<div class="day' + (d ? " done" : "") + isToday + '" id="day-' + k + '"><input type="checkbox" class="chk" id="c-' + esc(t.id) + '" data-id="' + esc(t.id) + '"' + (d ? " checked" : "") + ' aria-label="' + md(s.date) + ' 完成">' + dt +
+            '<div class="main"><div class="t">' + esc(t.title) + (t.tag ? ' <span class="tag">' + esc(t.tag) + "</span>" : "") + (t.optional ? ' <span class="tag opt">選做</span>' : "") + msTags + '</div><div class="items">' +
+            t.blocks.map(function (b) { return "<div>" + subjChip(b.subject) + "<span>" + esc(b.title) + (b.practice ? "・" + esc(b.practice) : "") + "</span></div>"; }).join("") +
+            "</div>" + (t.note ? '<div style="font-size:13px;color:var(--muted)">' + esc(t.note) + "</div>" : "") + "</div></div>";
+        }
+      });
+      html += "</div></div>";
+    });
+    el.innerHTML = html;
+
+    el.querySelectorAll(".wd-pick button").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = +b.dataset.wd, at = state.rest.indexOf(i);
+        if (at >= 0) state.rest.splice(at, 1); else state.rest.push(i);
+        save(K + "rest", state.rest);
+        plan = build(); renderPlan(); renderToday();
+      });
+    });
+    el.querySelectorAll(".chk").forEach(function (c) {
+      c.addEventListener("change", function () { toggleDone(c.dataset.id); c.closest(".day").classList.toggle("done", c.checked); renderToday(); });
+    });
+    document.getElementById("jump-today").addEventListener("click", function () {
+      var t = document.getElementById("day-" + iso(T)) || document.querySelector(".day");
+      if (t) t.scrollIntoView({ block: "center" });
+    });
+  }
+
+  /* ---------- PAPERS ---------- */
+  var ST = ["未做", "做完", "已訂正", "二刷完"];
+  function renderPapers() {
+    var el = document.getElementById("v-papers"), P = exam.papers || { years: [] }, roles = P.roles || {};
+    var cnt = [0, 0, 0, 0];
+    P.years.forEach(function (y) { exam.subjects.forEach(function (s) { cnt[state.papers[y + ":" + s.key] || 0]++; }); });
+    var total = P.years.length * exam.subjects.length;
+    var html = '<div><h2>考古題進度</h2><p class="lede">點圓圈切換狀態：未做 → 做完 → 已訂正 → 二刷完。' + esc(P.note || "") + "</p>" +
+      '<div class="legend">' + ST.map(function (n, i) { return '<span><button class="bubble" data-st="' + i + '" tabindex="-1" aria-hidden="true"></button>' + n + "</span>"; }).join("") +
+      '<span class="mono">已訂正以上 ' + (cnt[2] + cnt[3]) + " / " + total + "</span></div></div>";
+    html += '<div class="sheet-wrap"><table class="sheet"><thead><tr><th>年度</th>' + exam.subjects.map(function (s) { return "<th>" + subjChip(s.key, true) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      P.years.map(function (y) {
+        return '<tr><td><span class="yr">' + y + "</span>" + (roles[y] ? '<span class="role">' + esc(roles[y]) + "</span>" : "") + "</td>" +
+          exam.subjects.map(function (s) {
+            var k = y + ":" + s.key, v = state.papers[k] || 0;
+            return '<td><button class="bubble" data-k="' + esc(k) + '" data-st="' + v + '" aria-label="' + y + " 年 " + esc(s.name) + "：" + ST[v] + '"></button></td>';
+          }).join("") + "</tr>";
+      }).join("") + "</tbody></table></div>";
+    if (exam.links && exam.links.length) html += '<div><h3>官方連結</h3><ul class="src-list">' + exam.links.map(function (l) { return '<li><a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + "</a></li>"; }).join("") + "</ul></div>";
+    el.innerHTML = html;
+    el.querySelectorAll(".sheet .bubble").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var v = ((state.papers[b.dataset.k] || 0) + 1) % 4;
+        if (v) state.papers[b.dataset.k] = v; else delete state.papers[b.dataset.k];
+        save(K + "papers", state.papers); renderPapers();
+        var again = el.querySelector('.bubble[data-k="' + b.dataset.k + '"]'); if (again) again.focus();
+      });
+    });
+  }
+
+  /* ---------- STRATEGY ---------- */
+  function renderStrategy() {
+    var el = document.getElementById("v-strategy");
+    var html = '<div><h2>上榜策略</h2><p class="lede">' + esc(exam.weights) + "</p><div class=\"subjects-row\">" + exam.subjects.map(function (s) { return subjChip(s.key, true) + '<span style="font-size:13px">' + esc(s.name) + "</span>"; }).join("") + "</div></div>";
+    html += '<div class="strat">' + (exam.strategy || []).map(function (s, i) {
+      var src = (s.src || []).map(function (j) { var x = srcList[j]; return x ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.label) + "</a>" : ""; }).filter(Boolean).join("、");
+      return '<article><div class="n">' + String(i + 1).padStart(2, "0") + "</div><div><h3>" + esc(s.title) + "</h3><p>" + esc(s.body) + "</p>" + (src ? '<div class="src">來源：' + src + "</div>" : "") + "</div></article>";
+    }).join("") + "</div>";
+    el.innerHTML = html;
+  }
+
+  /* ---------- RESOURCES ---------- */
+  function renderResources() {
+    var el = document.getElementById("v-resources");
+    var html = '<div><h2>教材</h2><p class="lede">每科一本主教材加一本題庫就夠了，時間不夠時不要換書。</p><div class="res">' + (exam.resources || []).map(function (r) {
+      return "<div>" + subjChip(r.subject, true) + "<ul>" + r.items.map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + "</ul></div>";
+    }).join("") + "</div></div>";
+    html += '<div><h2>資料來源</h2><p class="lede">考科、日期與計分方式整理自以下資料。日期都是「預定」，請以正式簡章為準。</p><ul class="src-list">' +
+      srcList.map(function (s) { return '<li><a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.label) + "</a></li>"; }).join("") + "</ul></div>";
+    el.innerHTML = html;
+  }
+
+  /* ---------- routing ---------- */
+  function route() {
+    var v = (location.hash || "#today").slice(1);
+    if (VIEWS.indexOf(v) < 0) v = "today";
+    VIEWS.forEach(function (n) { document.getElementById("v-" + n).hidden = n !== v; });
+    document.querySelectorAll("nav.tabs a").forEach(function (a) { if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  }
+  renderToday(); renderPlan(); renderPapers(); renderStrategy(); renderResources();
+  window.addEventListener("hashchange", function () { route(); window.scrollTo(0, 0); });
+  route();
+})();
+</script>
+</body>
+</html>
