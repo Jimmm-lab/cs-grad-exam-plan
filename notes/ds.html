@@ -17,6 +17,8 @@
   --trap: #a86300; --trap-soft: #fbf1e1;
   --ok: #2f7d3b; --ok-soft: #e4f3e6;
   --code: #eef0f5;
+  --grid: #e9ecf2;
+  --pen-ink: #1a2130; --pen-red: #d0343f; --pen-blue: #2d5fd3; --pen-green: #2f7d3b;
   --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
   --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -27,6 +29,7 @@
     --accent: #ff6d7a; --accent-soft: #3a1d23; --ex: #9aa2ff; --ex-soft: #20233f;
     --key: #4fc6be; --key-soft: #13302e; --trap: #f0aa47; --trap-soft: #35270f;
     --ok: #6fcf7d; --ok-soft: #173320; --code: #222733; color-scheme: dark;
+    --grid: #252a35; --pen-ink: #e8ebf2; --pen-red: #ff7b86; --pen-blue: #84a9ff; --pen-green: #74d083;
   }
 }
 :root[data-theme="dark"] {
@@ -34,6 +37,7 @@
   --accent: #ff6d7a; --accent-soft: #3a1d23; --ex: #9aa2ff; --ex-soft: #20233f;
   --key: #4fc6be; --key-soft: #13302e; --trap: #f0aa47; --trap-soft: #35270f;
   --ok: #6fcf7d; --ok-soft: #173320; --code: #222733; color-scheme: dark;
+    --grid: #252a35; --pen-ink: #e8ebf2; --pen-red: #ff7b86; --pen-blue: #84a9ff; --pen-green: #74d083;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -95,6 +99,88 @@ details.quiz[open] > summary { margin-bottom: 8px; }
 .arithmatex { overflow-x: auto; max-width: 100%; }
 div.arithmatex { padding: 4px 0; }
 mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+/* 手寫作答板 */
+.ink { margin: 12px 0 0; }
+.ink + details.quiz { margin-top: 8px; }
+.ink-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ex); font: 500 14px/1 var(--font-body); cursor: pointer; }
+.ink-toggle svg { width: 16px; height: 16px; flex: none; }
+.ink-toggle.has { border-color: var(--ex); background: var(--ex-soft); }
+.ink-toggle[aria-expanded="true"] { border-color: var(--ex); }
+.ink-panel { margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow: hidden; }
+.ink-tools { display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 8px; background: var(--paper); border-bottom: 1px solid var(--line); }
+.ink-grp { display: flex; gap: 4px; align-items: center; }
+.ink-tools button { min-height: 36px; min-width: 36px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 13px/1 var(--font-body); cursor: pointer; }
+.ink-tools button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); font-weight: 700; }
+.ink-tools button:disabled { opacity: .4; cursor: default; }
+.ink-tools .ink-sw { padding: 0; display: inline-grid; place-items: center; }
+.ink-sw span { display: block; width: 18px; height: 18px; border-radius: 50%; }
+.ink-canvas { display: block; width: 100%; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; background-color: var(--card); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 28px 28px; }
+.ink-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; color: var(--muted); }
+.ink-pen { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.ink-pen input { width: 18px; height: 18px; margin: 0; accent-color: var(--ex); }
+
+/* 資料結構動畫 */
+.viz { margin: 20px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow: hidden; }
+.vz-head { padding: 10px 14px 0; font-weight: 700; line-height: 1.5; }
+.vz-tag { display: inline-block; margin-right: 8px; padding: 1px 8px; border-radius: 4px; background: var(--ex); color: var(--card); font: 700 12px/1.6 var(--font-body); vertical-align: 1px; }
+.vz-form { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; padding: 8px 14px 12px; border-bottom: 1px solid var(--line); font-size: 13px; line-height: 1.4; }
+.vz-form label { display: grid; gap: 3px; flex: 1 1 180px; min-width: 0; color: var(--muted); }
+.vz-form input, .vz-form select { width: 100%; min-width: 0; min-height: 36px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font: 500 14px/1.4 var(--font-mono); }
+.vz-form select { font-family: var(--font-body); }
+.vz-formbtn { display: flex; gap: 6px; }
+.vz-form button, .vz-ctrl button { min-height: 38px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 14px/1 var(--font-body); cursor: pointer; white-space: nowrap; }
+.vz-form button[type="submit"] { border-color: var(--ex); color: var(--ex); }
+.vz-stage { overflow-x: auto; padding: 12px 10px; }
+.vz-svg { display: block; width: 100%; height: auto; margin: 0 auto; }
+.vz-cap { padding: 10px 14px; border-top: 1px solid var(--line); background: var(--ex-soft); min-height: 4.4em; line-height: 1.7; }
+.vz-error .vz-cap { background: var(--accent-soft); }
+.vz-info { padding: 8px 14px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); overflow-x: auto; }
+.vz-ctrl { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; padding: 10px 14px 12px; border-top: 1px solid var(--line); }
+.vz-ctrl button:disabled { opacity: .4; cursor: default; }
+.vz-ctrl .vz-next { border-color: var(--ex); color: var(--ex); font-weight: 700; }
+.vz-count { font: 500 13px/1 var(--font-mono); color: var(--muted); margin-left: auto; }
+.vz-range { flex: 1 0 100%; margin: 4px 0 0; accent-color: var(--ex); }
+.vz-ok { color: var(--ok); font-weight: 700; }
+.vz-l { color: var(--key); font-weight: 700; }
+.vz-r { color: var(--trap); font-weight: 700; }
+.vz-tbl { border-collapse: collapse; margin: 4px 0; font: 500 13px/1.4 var(--font-mono); }
+.vz-tbl th, .vz-tbl td { border: 1px solid var(--line); padding: 2px 8px; text-align: center; }
+.vz-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.vz-chip { font: 500 12px/1.6 var(--font-mono); padding: 0 6px; border-radius: 4px; border: 1px solid var(--line); }
+.vz-chip.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.vz-chip.skip { text-decoration: line-through; opacity: .55; }
+.vz-svg text { font: 600 15px var(--font-mono); fill: var(--ink); }
+.vz-svg .vz-sub, .vz-svg .vz-note { font: 500 12px var(--font-mono); fill: var(--muted); }
+.vz-svg .vz-note { font-weight: 700; }
+.vz-svg g { transition: transform .5s ease, opacity .3s ease; }
+.vz-svg .vz-enter, .vz-svg .vz-leave { opacity: 0; }
+.vz-box rect, .vz-node circle { fill: var(--card); stroke: var(--muted); stroke-width: 1.5; transition: fill .25s, stroke .25s; }
+.vz-zone rect { fill: none; stroke: var(--line); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.vz-edge path { fill: none; stroke: var(--muted); stroke-width: 2; transition: d .5s ease, stroke .25s, stroke-width .25s, opacity .25s; }
+.vz-box.slot rect { fill: var(--paper); stroke: var(--line); }
+.vz-box.cur rect, .vz-node.cur circle { fill: var(--ex-soft); stroke: var(--ex); stroke-width: 3; }
+.vz-box.cmp rect, .vz-node.cmp circle { fill: var(--trap-soft); stroke: var(--trap); stroke-width: 2.5; }
+.vz-box.done rect, .vz-node.done circle { fill: var(--ok-soft); stroke: var(--ok); }
+.vz-box.bad rect, .vz-node.bad circle { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 3; }
+.vz-box.dim { opacity: .4; }
+.vz-node.path circle { stroke: var(--ex); stroke-dasharray: 4 3; stroke-width: 2.5; }
+.vz-box.lpart rect { fill: var(--key-soft); stroke: var(--key); stroke-width: 2.5; }
+.vz-box.rpart rect { fill: var(--trap-soft); stroke: var(--trap); stroke-width: 2.5; }
+.vz-box.dup rect { fill: var(--trap-soft); stroke: var(--trap); }
+.vz-box.memo rect { fill: var(--ok-soft); stroke: var(--ok); stroke-dasharray: 5 3; }
+.vz-node.bad .vz-note { fill: var(--accent); }
+.vz-edge.on path { stroke: var(--accent); stroke-width: 5; }
+.vz-edge.cand path { stroke: var(--trap); stroke-width: 3; stroke-dasharray: 7 5; }
+.vz-edge.bad path { stroke: var(--accent); stroke-width: 3; stroke-dasharray: 3 4; }
+.vz-edge.skip path { opacity: .25; stroke-dasharray: 2 5; }
+.vz-svg .vz-w text { font: 700 13px var(--font-mono); fill: var(--muted); paint-order: stroke; stroke: var(--card); stroke-width: 4px; }
+.vz-svg .vz-w.on text { fill: var(--accent); }
+.vz-svg .vz-w.skip text { opacity: .4; }
+.vz-svg .vz-hl { fill: var(--trap); font-weight: 800; }
+.vz-svg .vz-dimtxt { fill: var(--muted); opacity: .6; }
+@media (prefers-reduced-motion: reduce) {
+  .vz-svg g, .vz-edge path { transition: none; }
+}
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; gap: 16px; }
@@ -112,7 +198,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js"></script>
 </head>
-<body>
+<body data-slug="ds">
 <header class="top"><div class="wrap top-row">
   <a class="home" href="../index.html">← 備考計畫</a>
   <nav class="notes" aria-label="教材"><a href="method.html">學習方法</a><a href="discrete.html">離散數學</a><a href="arch.html">計算機結構</a><a href="os.html">作業系統</a><a href="ds.html" aria-current="page">資料結構</a></nav>
@@ -328,12 +414,26 @@ f(2): 回來，印 2</code></pre>
 <p><strong>T-1.</strong> <code>6 &amp; 3</code>、<code>6 | 3</code>、<code>6 ^ 3</code>、<code>6 &lt;&lt; 1</code> 各是多少？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>2、7、5、12。</p>
+<p>先寫成二進位，一位一位對齊：6 ＝ <code>0110</code>、3 ＝ <code>0011</code>。</p>
+<ul>
+<li><code>6 &amp; 3</code>：兩個都是 1 的位 → <code>0010</code> ＝ <strong>2</strong></li>
+<li><code>6 | 3</code>：至少一個是 1 的位 → <code>0111</code> ＝ <strong>7</strong></li>
+<li><code>6 ^ 3</code>：兩個不一樣的位 → <code>0101</code> ＝ <strong>5</strong></li>
+<li><code>6 &lt;&lt; 1</code>：全部往左移一位 → <code>1100</code> ＝ <strong>12</strong>（左移一位就是 ×2）</li>
+</ul>
 </details>
 <p><strong>T-2.</strong> 上面的 <code>f(3)</code> 印出什麼？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><code>3 2 1 1 2 3</code>。</p>
+<p>照觀念課的縮排畫法，每一層呼叫都有自己的 n：</p>
+<pre class="highlight"><code class="language-text">f(3): 印 3
+   f(2): 印 2
+      f(1): 印 1
+         f(0): 直接 return
+      f(1) 回來，印 1
+   f(2) 回來，印 2
+f(3) 回來，印 3</code></pre>
+<p>輸出 <code>3 2 1 1 2 3</code>：進去時由大到小印，回來時由小到大印。</p>
 </details>
 <p><strong>T-3.</strong> <code>int b[] = {1,3,5,7}; int *q = b + 3;</code>，<code>*(q-1)</code> 和 <code>q[-3]</code> 是多少？</p>
 <details class="quiz">
@@ -597,8 +697,51 @@ f(2): 回來，印 2</code></pre>
 <h3 id="u1-4">1.4 迴圈</h3>
 <div class="admonition example">
 <p class="admonition-title">114 Q1（15%）：(a) 快速冪 (b) 倍增累加</p>
-<p>(a) <code>a=2, b=13</code>：b 的二進位是 1101，每輪 <code>a = a*a</code>，b 的該位元是 1 時 <code>c *= a</code>。結果是 <span class="arithmatex">\(2^{13}=\)</span> <strong>8192</strong>（這是 exponentiation by squaring）。</p>
-<p>(b) <code>a[64]={0,…,15}</code>（其餘 0），三輪分別做 <code>a[j] += a[j+c]</code>，c ＝ 1、2、4，j 從 0 到 15。因為 j 由小到大、<code>a[j+c]</code> 還沒被這一輪改過，所以每一輪結束後 <code>a[j]</code> 等於「原本 <code>a[j..j+2c-1]</code> 的和」。三輪後 <code>a[j]</code> ＝ 原 <code>a[j..j+7]</code> 的和（超過 15 的都是 0）：</p>
+<p>(a) 程式是 <code>for (c = 1; b &gt; 0; b = b &gt;&gt; 1) { if (b % 2 == 1) c = c * a; a = a * a; }</code>，<code>a=2, b=13</code>。每一輪看 b 的最低位，再把 b 右移一位：</p>
+<table>
+<thead>
+<tr>
+<th>這輪的 b</th>
+<th>b 是奇數？</th>
+<th>c</th>
+<th>這輪結束時 a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>13（<code>1101</code>）</td>
+<td>是 → c ＝ 1 × 2</td>
+<td>2</td>
+<td>4</td>
+</tr>
+<tr>
+<td>6（<code>110</code>）</td>
+<td>否</td>
+<td>2</td>
+<td>16</td>
+</tr>
+<tr>
+<td>3（<code>11</code>）</td>
+<td>是 → c ＝ 2 × 16</td>
+<td>32</td>
+<td>256</td>
+</tr>
+<tr>
+<td>1（<code>1</code>）</td>
+<td>是 → c ＝ 32 × 256</td>
+<td>8192</td>
+<td>65536</td>
+</tr>
+</tbody>
+</table>
+<p>b 變成 0 停止，印出 <strong>8192</strong>。a 依序是 <span class="arithmatex">\(2^1, 2^2, 2^4, 2^8\)</span>；13 ＝ <code>1101</code> 的 1 在第 0、2、3 位，所以 c ＝ <span class="arithmatex">\(2^1\cdot2^4\cdot2^8=2^{13}\)</span>（這叫 exponentiation by squaring）。</p>
+<p>(b) <code>a[64]={0,…,15}</code>（其餘 0），三輪分別做 <code>a[j] += a[j+c]</code>，c ＝ 1、2、4，j 從 0 到 15。因為 j 由小到大，加的 <code>a[j+c]</code> 在這一輪還沒被改過：</p>
+<ul>
+<li>第 1 輪（c＝1）：<code>a[j]</code> ＝ 原 <code>a[j]+a[j+1]</code>，連續 2 個的和。</li>
+<li>第 2 輪（c＝2）：<code>a[j]+a[j+2]</code> ＝（原 j、j+1）＋（原 j+2、j+3），連續 4 個的和。</li>
+<li>第 3 輪（c＝4）：同理變成連續 8 個的和。</li>
+</ul>
+<p>所以三輪後 <code>a[j]</code> ＝ 原 <code>a[j..j+7]</code> 的和（index 超過 15 的都是 0）：</p>
 <ul>
 <li>a[0] ＝ 0＋1＋…＋7 ＝ <strong>28</strong></li>
 <li>a[5] ＝ 5＋…＋12 ＝ <strong>68</strong></li>
@@ -609,22 +752,61 @@ f(2): 回來，印 2</code></pre>
 <p><strong>1-1.</strong> <code>printf("%d", 5 &amp; 3 | 4 ^ 6);</code></p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><code>&amp;</code> 先：<code>5&amp;3</code>＝1；再 <code>^</code>：<code>4^6</code>＝2；最後 <code>|</code>：<code>1|2</code>＝<strong>3</strong>。</p>
+<p><strong>先加括號</strong>：優先順序 <code>&amp;</code> ＞ <code>^</code> ＞ <code>|</code>，所以是 <code>(5 &amp; 3) | (4 ^ 6)</code>。</p>
+<ul>
+<li><code>5 &amp; 3</code>：<code>101 &amp; 011</code> ＝ <code>001</code> ＝ 1</li>
+<li><code>4 ^ 6</code>：<code>100 ^ 110</code> ＝ <code>010</code> ＝ 2</li>
+<li><code>1 | 2</code>：<code>01 | 10</code> ＝ <code>11</code> ＝ <strong>3</strong></li>
+</ul>
 </details>
 <p><strong>1-2.</strong> <code>int x = 10; printf("%d", x &gt;&gt; 1 + 1);</code></p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><code>+</code> 優先於 <code>&gt;&gt;</code>：<code>10 &gt;&gt; 2</code> ＝ <strong>2</strong>。</p>
+<p><code>+</code> 的優先順序比 <code>&gt;&gt;</code> 高，所以是 <code>x &gt;&gt; (1 + 1)</code> ＝ <code>10 &gt;&gt; 2</code>，不是 <code>(10 &gt;&gt; 1) + 1</code>。</p>
+<p>10 ＝ <code>1010</code>，右移 2 位變成 <code>10</code> ＝ <strong>2</strong>（右移 2 位等於除以 <span class="arithmatex">\(2^2\)</span> 取整數：<span class="arithmatex">\(\lfloor10/4\rfloor=2\)</span>）。</p>
 </details>
 <p><strong>1-3.</strong> <code>int a[]={1,2,3,4,5}; int *p=a+1;</code> 印出 <code>*(p+2)</code> 和 <code>p[-1] + *p</code>？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>p 指向 a[1]。<code>*(p+2)</code>＝a[3]＝<strong>4</strong>；<code>p[-1]+*p</code>＝a[0]+a[1]＝<strong>3</strong>。</p>
+<p>p 指向 a[1]，所以 <code>p[k]</code> 就是 a[1+k]。</p>
+<ul>
+<li><code>*(p+2)</code> ＝ <code>p[2]</code> ＝ a[3] ＝ <strong>4</strong></li>
+<li><code>p[-1] + *p</code> ＝ a[0] ＋ a[1] ＝ 1 ＋ 2 ＝ <strong>3</strong></li>
+</ul>
 </details>
 <p><strong>1-4.</strong> <code>f(n)</code> 在 <code>n&lt;=1</code> 回傳 1，否則回傳 <code>f(n-1)+f(n-2)</code>。呼叫 <code>f(5)</code> 時 <code>f</code> 總共被呼叫幾次？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(C(n)=C(n-1)+C(n-2)+1\)</span>，<span class="arithmatex">\(C(0)=C(1)=1\)</span>：<span class="arithmatex">\(C(2)=3\)</span>、<span class="arithmatex">\(C(3)=5\)</span>、<span class="arithmatex">\(C(4)=9\)</span>、<span class="arithmatex">\(C(5)=\)</span> <strong>15</strong>。</p>
+<p>令 <span class="arithmatex">\(C(n)\)</span> ＝ 呼叫 <code>f(n)</code> 時，<code>f</code> 總共被呼叫幾次（包含這一次自己）。</p>
+<ul>
+<li><span class="arithmatex">\(n\le1\)</span>：只有自己這一次，<span class="arithmatex">\(C(0)=C(1)=1\)</span>。</li>
+<li><span class="arithmatex">\(n\ge2\)</span>：自己 1 次，加上裡面 <code>f(n-1)</code> 引起的全部呼叫，再加上 <code>f(n-2)</code> 引起的全部呼叫：<span class="arithmatex">\(C(n)=1+C(n-1)+C(n-2)\)</span>。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(n\)</span></th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(C(n)\)</span></td>
+<td>1</td>
+<td>1</td>
+<td>1＋1＋1＝3</td>
+<td>1＋3＋1＝5</td>
+<td>1＋5＋3＝9</td>
+<td>1＋9＋5＝<strong>15</strong></td>
+</tr>
+</tbody>
+</table>
+<p>單元 6 觀念課有這題的<a href="#u6-0">呼叫樹動畫</a>，可以看到 f(2) 被重算了 3 次。</p>
 </details>
 <h2 id="u2">單元 2：排序</h2>
 <div class="admonition key">
@@ -665,19 +847,34 @@ f(2): 回來，印 2</code></pre>
 </tbody>
 </table>
 <p>共 2 次 swap。3, 1, 2 的<strong>逆序對</strong>（前面比後面大的組合）是 (3,1)、(3,2)，也是 2 個。每次相鄰交換剛好消掉一個逆序對，所以 <strong>swap 次數 ＝ 逆序對數</strong>。</p>
-<p>已經排好的資料沒有逆序對，insertion sort 只要 <span class="arithmatex">\(O(n)\)</span>；完全反序有 <span class="arithmatex">\(\frac{n(n-1)}{2}\)</span> 個，要 <span class="arithmatex">\(O(n^2)\)</span>。</p>
+<p>已經排好的資料沒有逆序對，insertion sort 只要 <span class="arithmatex">\(O(n)\)</span>（每個數只比一次就停）；完全反序時任兩個數都是逆序對，共 <span class="arithmatex">\(\binom n2=\frac{n(n-1)}{2}\)</span> 個，要 <span class="arithmatex">\(O(n^2)\)</span>。</p>
+<p>下面的動畫可以改成任何數列，按「下一步」看每一次比較和交換，右下角的 swap 次數最後一定等於逆序對數：</p>
+<div class="viz" data-viz="insertion" data-nums="5,2,4,6,1,3"></div>
+
 <h4 id="quick-sort-merge-sort">quick sort 和 merge sort</h4>
 <ul>
 <li><strong>quick sort</strong>：選一個 pivot，比它小的放左邊、大的放右邊，再各自遞迴。pivot 剛好在中間時每次切一半，<span class="arithmatex">\(O(n\log n)\)</span>；資料已經排好又每次選第一個當 pivot，每次只切掉一個，變成 <span class="arithmatex">\(O(n^2)\)</span>。</li>
-<li><strong>merge sort</strong>：切成兩半各自排好，再<strong>合併</strong>兩個排好的序列。合併 [1, 4, 7] 和 [2, 3, 9]：每次比較兩邊最前面的，小的拿出來 → 1, 2, 3, 4, 7, 9。合併是 <span class="arithmatex">\(O(n)\)</span>，切了 <span class="arithmatex">\(\log n\)</span> 層，總共 <span class="arithmatex">\(O(n\log n)\)</span>，而且最差也一樣。</li>
+<li><strong>merge sort</strong>：切成兩半各自排好，再<strong>合併</strong>兩個排好的序列。合併 [1, 4, 7] 和 [2, 3, 9]：每次比較兩邊最前面的，小的拿出來 → 1, 2, 3, 4, 7, 9。</li>
 </ul>
+<p><strong>為什麼 merge sort 是 <span class="arithmatex">\(O(n\log n)\)</span></strong>：把 8 個數一直對半切：</p>
+<pre class="highlight"><code class="language-text">第 0 層：[5 2 4 7 1 3 2 6]           1 段，每段 8 個
+第 1 層：[5 2 4 7] [1 3 2 6]         2 段，每段 4 個
+第 2 層：[5 2] [4 7] [1 3] [2 6]     4 段，每段 2 個
+第 3 層：[5] [2] [4] [7] [1] [3] [2] [6]</code></pre>
+<p><span class="arithmatex">\(n\)</span> 個數每次減半，切 <span class="arithmatex">\(\log_2 n\)</span> 次才剩 1 個（<span class="arithmatex">\(8\to4\to2\to1\)</span> 是 3 次）。合併回去時，<strong>每一層</strong>的所有段加起來剛好是 <span class="arithmatex">\(n\)</span> 個數，每個數搬一次，所以一層 <span class="arithmatex">\(O(n)\)</span>、共 <span class="arithmatex">\(\log_2n\)</span> 層 → <span class="arithmatex">\(O(n\log n)\)</span>。不管資料長什麼樣都要切這麼多層，所以最差也一樣。</p>
+<p>quick sort 平均也是這個道理：pivot 大概在中間時，每層把資料切成兩半、每層 partition 總共掃 <span class="arithmatex">\(n\)</span> 個。</p>
 <h4 id="heap">heap：用陣列存的完全二元樹</h4>
 <p>完全二元樹可以一層一層放進陣列，不需要指標。0-based 時：</p>
 <ul>
 <li>節點 <span class="arithmatex">\(i\)</span> 的左子節點 <span class="arithmatex">\(2i+1\)</span>、右子節點 <span class="arithmatex">\(2i+2\)</span></li>
 <li>父節點 <span class="arithmatex">\(\lfloor(i-1)/2\rfloor\)</span></li>
 </ul>
+<p><strong>為什麼是 <span class="arithmatex">\(2i+1\)</span>、<span class="arithmatex">\(2i+2\)</span></strong>：一層一層、由左到右編號，每個節點在下一層佔兩個位置。根 0 的子節點是 1、2；1 的是 3、4；2 的是 5、6……節點 <span class="arithmatex">\(i\)</span> 前面有 <span class="arithmatex">\(i\)</span> 個節點（0 到 <span class="arithmatex">\(i-1\)</span>），它們的子節點已經用掉 index 1 到 <span class="arithmatex">\(2i\)</span>，所以 <span class="arithmatex">\(i\)</span> 的子節點從 <span class="arithmatex">\(2i+1\)</span> 開始。父節點的公式就是把這個反過來解。</p>
+<p>（有些課本用 1-based：子節點 <span class="arithmatex">\(2i\)</span>、<span class="arithmatex">\(2i+1\)</span>，父節點 <span class="arithmatex">\(\lfloor i/2\rfloor\)</span>。考試要看題目用哪一種。）</p>
 <p>max heap 的規則：<strong>每個節點都比它的子節點大</strong>，所以最大的一定在根（陣列第 0 格）。heap sort 就是一直把根拿出來。</p>
+<p>動畫上面是樹、下面是同一個陣列，交換時兩邊會一起動。「做到哪裡」改成「繼續做 heap sort」可以看完整排序：</p>
+<div class="viz" data-viz="heap" data-nums="5,3,8,1,9,6"></div>
+
 <h4 id="_6">穩定性為什麼重要</h4>
 <p><strong>穩定（stable）</strong>：值相同的元素，排序後保持原本的先後順序。</p>
 <p>例如先依姓名排好，再依成績排序。如果用穩定的排序，同分的人還會維持姓名順序；不穩定的排序可能把同分的人打亂。radix sort 從個位數排到最高位，每一輪都<strong>必須穩定</strong>，前一輪排好的順序才不會被破壞。</p>
@@ -691,17 +888,17 @@ f(2): 回來，印 2</code></pre>
 <p><strong>T-1.</strong> 2, 4, 1, 3 用 insertion sort 要 swap 幾次？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>逆序對 (2,1)、(4,1)、(4,3)，3 次。</p>
+<p>數逆序對（前面比後面大的組合）：2 後面比它小的有 1 → 1 個；4 後面比它小的有 1、3 → 2 個；1 後面沒有比它小的。共 3 個逆序對 → swap <strong>3 次</strong>。</p>
 </details>
 <p><strong>T-2.</strong> 0-based heap 陣列中，index 5 的父節點是幾號？index 1 的子節點呢？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>父節點 <span class="arithmatex">\(\lfloor4/2\rfloor=2\)</span>；index 1 的子節點是 3 和 4。</p>
+<p>父節點 <span class="arithmatex">\(\lfloor(5-1)/2\rfloor=\lfloor4/2\rfloor=\)</span> <strong>2</strong>；index 1 的子節點是 <span class="arithmatex">\(2\cdot1+1=\)</span> <strong>3</strong> 和 <span class="arithmatex">\(2\cdot1+2=\)</span> <strong>4</strong>。檢查：index 2 的子節點是 <span class="arithmatex">\(5、6\)</span>，所以 5 的父節點確實是 2。</p>
 </details>
 <p><strong>T-3.</strong> 為什麼 quick sort 對「已經排好」的資料最慢？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>每次選第一個當 pivot，它剛好是最小的，切出來一邊 0 個、一邊 <span class="arithmatex">\(n-1\)</span> 個，要切 <span class="arithmatex">\(n\)</span> 層，總共 <span class="arithmatex">\(O(n^2)\)</span>。</p>
+<p>每次選第一個當 pivot，它剛好是最小的，切出來一邊 0 個、一邊 <span class="arithmatex">\(n-1\)</span> 個，只少了一個。第一層比較 <span class="arithmatex">\(n-1\)</span> 次、第二層 <span class="arithmatex">\(n-2\)</span> 次……總共 <span class="arithmatex">\((n-1)+(n-2)+\cdots+1=\frac{n(n-1)}{2}\)</span> 次，所以是 <span class="arithmatex">\(O(n^2)\)</span>。</p>
 </details>
 <h3 id="u2-1">2.1 比較表（必背）</h3>
 <table>
@@ -774,8 +971,18 @@ f(2): 回來，印 2</code></pre>
 </tr>
 </tbody>
 </table>
+<p><strong>這張表的每一格是怎麼來的</strong>：</p>
 <ul>
-<li><strong>115 Q9（10%）</strong>：最差複雜度 bubble <span class="arithmatex">\(O(n^2)\)</span>、insertion <span class="arithmatex">\(O(n^2)\)</span>、quick <span class="arithmatex">\(O(n^2)\)</span>、merge <span class="arithmatex">\(O(n\log n)\)</span>、heap <span class="arithmatex">\(O(n\log n)\)</span>。</li>
+<li>bubble、insertion <strong>最佳 <span class="arithmatex">\(O(n)\)</span></strong>：資料已排好時，每個數只比一次就知道不用動（bubble 要加「這一輪沒交換就停」）。</li>
+<li>selection <strong>永遠 <span class="arithmatex">\(O(n^2)\)</span></strong>：每一輪都要掃過剩下的全部元素才知道誰最小，比較次數固定是 <span class="arithmatex">\((n-1)+(n-2)+\cdots+1=\frac{n(n-1)}{2}\)</span>，跟資料長什麼樣無關。</li>
+<li>quick 的<strong>額外空間 <span class="arithmatex">\(O(\log n)\)</span></strong>：是遞迴的深度（平均切 <span class="arithmatex">\(\log n\)</span> 層）；最差情況深度是 <span class="arithmatex">\(n\)</span>。</li>
+<li>heap <strong><span class="arithmatex">\(O(n\log n)\)</span></strong>：建 heap <span class="arithmatex">\(O(n)\)</span>，之後拿 <span class="arithmatex">\(n\)</span> 次根，每次 sift-down 最多走樹高 <span class="arithmatex">\(\log n\)</span> 層。</li>
+<li>
+<p>radix <strong><span class="arithmatex">\(O(d(n+r))\)</span></strong>：做 <span class="arithmatex">\(d\)</span> 輪（位數），每輪把 <span class="arithmatex">\(n\)</span> 個數分進 <span class="arithmatex">\(r\)</span> 個桶子再收回。</p>
+</li>
+<li>
+<p><strong>115 Q9（10%）</strong>：最差複雜度 bubble <span class="arithmatex">\(O(n^2)\)</span>、insertion <span class="arithmatex">\(O(n^2)\)</span>、quick <span class="arithmatex">\(O(n^2)\)</span>、merge <span class="arithmatex">\(O(n\log n)\)</span>、heap <span class="arithmatex">\(O(n\log n)\)</span>。</p>
+</li>
 <li><strong>113 Q3（10%）</strong>：穩定的是 bubble、merge、radix；不穩定的是 heap、quick。</li>
 </ul>
 <div class="admonition trap">
@@ -796,20 +1003,61 @@ f(2): 回來，印 2</code></pre>
 </ul>
 <p>共 <strong>9 次</strong>。</p>
 <p>(b) 最少：已排好的 <span class="arithmatex">\(1,2,\dots,n\)</span>，<strong>0 次</strong>。</p>
-<p>(c) 最多：完全反序 <span class="arithmatex">\(n,n-1,\dots,1\)</span>，<strong><span class="arithmatex">\(\frac{n(n-1)}{2}\)</span> 次</strong>。</p>
+<p>(c) 最多：完全反序 <span class="arithmatex">\(n,n-1,\dots,1\)</span>，任兩個都是逆序對，<strong><span class="arithmatex">\(\binom n2=\frac{n(n-1)}{2}\)</span> 次</strong>。</p>
 </div>
+<div class="viz" data-viz="insertion" data-nums="3,9,6,5,8,2" data-title="112 Q2 的數列：swap 次數 ＝ 逆序對數"></div>
+
 <h3 id="u2-3">2.3 heap sort</h3>
-<p><strong>建 heap</strong>：從最後一個非葉節點（index <span class="arithmatex">\(\lfloor n/2\rfloor\)</span>）往前，每個做 sift-down，總共 <span class="arithmatex">\(O(n)\)</span>。
-<strong>輸出</strong>：把根（最大）和最後一個交換，heap 大小減 1，對根做 sift-down。</p>
+<p><strong>建 heap</strong>：從最後一個非葉節點往前，每個做 sift-down。最後一個非葉節點在 0-based 是 index <span class="arithmatex">\(\lfloor n/2\rfloor-1\)</span>（1-based 是 <span class="arithmatex">\(\lfloor n/2\rfloor\)</span>），因為它後面的節點 <span class="arithmatex">\(2i+1\ge n\)</span>，都沒有子節點。</p>
+<p><strong>為什麼建 heap 只要 <span class="arithmatex">\(O(n)\)</span></strong>：一半的節點是葉子，不用動；四分之一的節點最多往下 1 層；八分之一最多 2 層……加起來 <span class="arithmatex">\(\frac n4\cdot1+\frac n8\cdot2+\frac n{16}\cdot3+\cdots\)</span> 不超過 <span class="arithmatex">\(n\)</span>。</p>
+<p><strong>輸出</strong>：把根（最大）和最後一個交換，heap 大小減 1，對根做 sift-down。</p>
 <div class="admonition example">
 <p class="admonition-title">111 Q4（15%）：heap sort 14, 4, 19, 2, 18, 7, 17, 9, 16, 13</p>
-<p>(a) 建 max heap（陣列表示，由上到下、由左到右）：
-<code>19, 18, 17, 16, 13, 7, 14, 9, 2, 4</code></p>
+<p>(a) <span class="arithmatex">\(n=10\)</span>，最後一個非葉節點是 index <span class="arithmatex">\(\lfloor10/2\rfloor-1=4\)</span>（值 18）。從 index 4 往前，每個做 sift-down：</p>
+<table>
+<thead>
+<tr>
+<th>處理</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index 4（18）</td>
+<td>子節點 13，18 較大，不動</td>
+<td>14, 4, 19, 2, 18, 7, 17, 9, 16, 13</td>
+</tr>
+<tr>
+<td>index 3（2）</td>
+<td>子節點 9、16，和 16 交換</td>
+<td>14, 4, 19, <strong>16</strong>, 18, 7, 17, 9, <strong>2</strong>, 13</td>
+</tr>
+<tr>
+<td>index 2（19）</td>
+<td>子節點 7、17，19 較大，不動</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>index 1（4）</td>
+<td>子節點 16、18，和 18 交換；4 到 index 4，子節點 13，再交換</td>
+<td>14, <strong>18</strong>, 19, 16, <strong>13</strong>, 7, 17, 9, 2, <strong>4</strong></td>
+</tr>
+<tr>
+<td>index 0（14）</td>
+<td>子節點 18、19，和 19 交換；14 到 index 2，子節點 7、17，再和 17 交換</td>
+<td><strong>19</strong>, 18, <strong>17</strong>, 16, 13, 7, <strong>14</strong>, 9, 2, 4</td>
+</tr>
+</tbody>
+</table>
+<p>max heap：<code>19, 18, 17, 16, 13, 7, 14, 9, 2, 4</code></p>
 <p>畫成樹：19 的子節點 18、17；18 的子節點 16、13；17 的子節點 7、14；16 的子節點 9、2；13 的左子節點 4。</p>
-<p>(b) 輸出 19（和最後的 4 交換），對根 sift-down：
-<code>18, 16, 17, 9, 13, 7, 14, 4, 2</code></p>
-<p>建 heap 的過程要從 index 5（13）開始往前做，<strong>不是一個一個插入</strong>。兩種方法結果可能不同，題目說 heap sort 的第一階段，就用 bottom-up。</p>
+<p>(b) 輸出 19：和最後的 4 交換，heap 剩 9 個，對根的 4 做 sift-down：4 的子節點 18、17 → 和 18 交換；4 到 index 1，子節點 16、13 → 和 16 交換；4 到 index 3，子節點 9、2 → 和 9 交換。</p>
+<p><code>18, 16, 17, 9, 13, 7, 14, 4, 2</code>（後面的 19 已經排好）</p>
+<p>建 heap 要用 <strong>bottom-up</strong>（從 index 4 往前 sift-down），<strong>不是一個一個插入</strong>。兩種方法結果可能不同，題目說 heap sort 的第一階段，就用 bottom-up。</p>
 </div>
+<div class="viz" data-viz="heap" data-nums="14,4,19,2,18,7,17,9,16,13" data-sort="sort" data-title="111 Q4：建 heap 再做 heap sort"></div>
+
 <h3 id="u2-4">2.4 radix sort</h3>
 <p>LSD radix sort：從個位數開始，每一輪依該位數<strong>穩定地</strong>分到 0–9 的桶子，再依序收回。</p>
 <div class="admonition example">
@@ -820,6 +1068,8 @@ f(2): 回來，印 2</code></pre>
 <code>29, 642, 252, 73, 374, 284</code></p>
 <p>同一個桶子裡<strong>保持上一輪的順序</strong>，這就是為什麼 radix sort 需要穩定。</p>
 </div>
+<div class="viz" data-viz="radix" data-nums="642,374,73,29,284,252" data-title="114 Q2：每個數飛進桶子、再依序收回"></div>
+
 <h3 id="u2-quiz">單元 2 小考</h3>
 <p><strong>2-1.</strong> 5, 1, 4, 2, 3 用 insertion sort 要 swap 幾次？</p>
 <details class="quiz">
@@ -829,12 +1079,67 @@ f(2): 回來，印 2</code></pre>
 <p><strong>2-2.</strong> 對 3, 1, 6, 5, 2, 4 建 max heap（bottom-up）的結果？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>從 index 2（6）開始：6 &gt; 4 不動；index 1（1）：子節點 5、2，和 5 交換；index 0（3）：子節點 5、6，和 6 交換，3 再和 4 交換。結果 <code>6, 5, 4, 1, 2, 3</code>。</p>
+<p><span class="arithmatex">\(n=6\)</span>，最後一個非葉節點是 index <span class="arithmatex">\(\lfloor6/2\rfloor-1=2\)</span>，從它往前做 sift-down：</p>
+<table>
+<thead>
+<tr>
+<th>處理</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index 2（6）</td>
+<td>子節點只有 index 5 的 4，6 ＞ 4，不動</td>
+<td>3, 1, 6, 5, 2, 4</td>
+</tr>
+<tr>
+<td>index 1（1）</td>
+<td>子節點 5、2，較大的 5 ＞ 1，交換</td>
+<td>3, 5, 6, 1, 2, 4</td>
+</tr>
+<tr>
+<td>index 0（3）</td>
+<td>子節點 5、6，較大的 6 ＞ 3，交換</td>
+<td>6, 5, 3, 1, 2, 4</td>
+</tr>
+<tr>
+<td>3 到了 index 2</td>
+<td>子節點 4 ＞ 3，再交換</td>
+<td>6, 5, 4, 1, 2, 3</td>
+</tr>
+</tbody>
+</table>
+<p>結果 <strong><code>6, 5, 4, 1, 2, 3</code></strong>。</p>
 </details>
 <p><strong>2-3.</strong> 170, 45, 75, 90, 802, 24, 2, 66 做 LSD radix sort 第一輪的結果？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><code>170, 90, 802, 2, 24, 45, 75, 66</code></p>
+<p>第一輪看個位數：170→0、45→5、75→5、90→0、802→2、24→4、2→2、66→6。照原本的順序放進桶子：</p>
+<table>
+<thead>
+<tr>
+<th>桶</th>
+<th>0</th>
+<th>2</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>內容</td>
+<td>170, 90</td>
+<td>802, 2</td>
+<td>24</td>
+<td>45, 75</td>
+<td>66</td>
+</tr>
+</tbody>
+</table>
+<p>依桶子 0→9 收回：<strong><code>170, 90, 802, 2, 24, 45, 75, 66</code></strong></p>
 </details>
 <p><strong>2-4.</strong> selection sort 為什麼不穩定？舉例。</p>
 <details class="quiz">
@@ -872,6 +1177,9 @@ f(2): 回來，印 2</code></pre>
 </tbody>
 </table>
 <p>名字裡的 pre／in／post 就是「根在前面、中間、後面」。大一點的樹，對每棵子樹遞迴套用同一個規則。</p>
+<p>動畫裡藍色是「現在在哪個節點」，虛線圈是「還沒走完、等著回來的祖先」，綠色是已經輸出的。換一種走訪比較看看，樹也可以自己改（一層一層從左到右寫，<code>#</code> 表示那個位置是空的）：</p>
+<div class="viz" data-viz="traverse" data-tree="A,B,C,D,E,#,F"></div>
+
 <h4 id="_9">為什麼可以由走訪結果重建樹</h4>
 <ul>
 <li>preorder 的<strong>第一個</strong>、postorder 的<strong>最後一個</strong>一定是根。</li>
@@ -892,6 +1200,10 @@ f(2): 回來，印 2</code></pre>
 1</code></pre>
 <p>3 的左邊高 2、右邊高 0，不平衡；新節點在「左子樹的左邊」→ LL 情況 → 對 3 右旋。旋轉後中間值 2 變成根，<strong>inorder 仍然是 1, 2, 3</strong>，旋轉不會破壞 BST 的順序。</p>
 <p>如果插入順序是 1、3、2，新節點在「右子樹的左邊」（RL），要轉兩次，結果一樣是 2 當根、1 和 3 在兩邊。</p>
+<p><strong>旋轉到底動了什麼</strong>：右旋 <span class="arithmatex">\(z\)</span>（左子節點是 <span class="arithmatex">\(y\)</span>）時只改兩條線：<span class="arithmatex">\(y\)</span> 升上去當這棵子樹的根、<span class="arithmatex">\(z\)</span> 變成 <span class="arithmatex">\(y\)</span> 的右子節點；<span class="arithmatex">\(y\)</span> 原本的右子樹（比 <span class="arithmatex">\(y\)</span> 大、比 <span class="arithmatex">\(z\)</span> 小）改接到 <span class="arithmatex">\(z\)</span> 的左邊。三個部分的大小順序都沒變，所以 inorder 不變。左旋左右對調。</p>
+<p>動畫裡節點右上角的數字是<strong>平衡因子 bf ＝ 左子樹高 − 右子樹高</strong>，變成 ±2 就要轉。把「要插入的數」改成 1,3,2 或 1,2,3 看看另外兩種情況：</p>
+<div class="viz" data-viz="avl" data-keys="3,2,1"></div>
+
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -903,17 +1215,29 @@ f(2): 回來，印 2</code></pre>
 <p><strong>T-1.</strong> 樹：A 的左子 B、右子 C；B 的左子 D、右子 E。寫出 preorder、inorder、postorder。</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>preorder A B D E C；inorder D B E A C；postorder D E B C A。</p>
+<p>對每棵子樹套同一個規則，B 那棵子樹（B、D、E）當成一整塊：</p>
+<ul>
+<li>preorder（根左右）：A → 左子樹（B D E）→ 右子樹（C）＝ <strong>A B D E C</strong></li>
+<li>inorder（左根右）：左子樹（D B E）→ A → 右子樹（C）＝ <strong>D B E A C</strong></li>
+<li>postorder（左右根）：左子樹（D E B）→ 右子樹（C）→ A ＝ <strong>D E B C A</strong></li>
+</ul>
 </details>
 <p><strong>T-2.</strong> 依序插入 5, 3, 8, 4 到空的 BST，inorder 走訪是什麼？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>3 4 5 8（BST 的 inorder 一定是排好的）。</p>
+<p>插入過程：5 當根；3 ＜ 5 放左邊；8 ＞ 5 放右邊；4 ＜ 5 往左、4 ＞ 3 放 3 的右邊。</p>
+<pre class="highlight"><code class="language-text">    5
+   / \
+  3   8
+   \
+    4</code></pre>
+<p>inorder（左根右）：<strong>3 4 5 8</strong>。BST 的 inorder 一定由小到大，不用畫樹也知道答案。</p>
 </details>
 <p><strong>T-3.</strong> 依序插入 1, 3, 2 到空的 AVL tree，結果是什麼？屬於哪種旋轉？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>RL：根 2，左 1、右 3。</p>
+<p>插入 1、3：1 是根，3 在 1 的右邊。插入 2：2 ＞ 1 往右、2 ＜ 3 往左，放在 3 的左邊。</p>
+<p>這時 1 的左子樹高 0、右子樹高 2，bf ＝ −2，不平衡。新節點在 1 的<strong>右</strong>子樹（3）的<strong>左</strong>邊 → <strong>RL</strong>：先對 3 右旋（2 升上來，變成 1→2→3 一直線），再對 1 左旋。結果<strong>根 2，左 1、右 3</strong>。</p>
 </details>
 <h3 id="u3-1">3.1 走訪與重建</h3>
 <ul>
@@ -933,6 +1257,9 @@ f(2): 回來，印 2</code></pre>
 </ol>
 <p>preorder（根左右）：<strong>E C B A D F J H G I</strong></p>
 </div>
+<div class="viz" data-viz="rebuild" data-inorder="ABCDEFGHIJ" data-other="ABDCGIHJFE" data-kind="post" data-title="115 Q6：一步一步切開 inorder"></div>
+
+<p>動畫裡綠色是左子樹、橘色是右子樹。節點畫在它的 inorder 字母正下方，所以樹的左右位置一定跟 inorder 一致。</p>
 <h3 id="u3-2">3.2 BST</h3>
 <p>刪除節點的三種情況：葉節點直接刪；只有一個子節點就讓子節點接上；有兩個子節點就用 <strong>inorder successor</strong>（右子樹最小）或 predecessor 取代。</p>
 <div class="admonition example">
@@ -941,6 +1268,9 @@ f(2): 回來，印 2</code></pre>
 <p>刪除 3：inorder successor 是右子樹最小的 <strong>4</strong>。4 搬到根，原本 4 的位置由它的右子節點 5 接上。</p>
 <p>結果：根 4，左子樹 2（左子 1），右子樹 6（左子 5、右子 7）。</p>
 </div>
+<div class="viz" data-viz="bst" data-keys="3,6,4,5,2,7,1" data-del="3" data-title="111 Q3：插入後刪除 3"></div>
+
+<p>把「有兩個子節點時用」改成 predecessor，會變成用左子樹最大的 2 取代 3。</p>
 <h3 id="u3-3">3.3 AVL tree</h3>
 <p>插入後從新節點往上找<strong>第一個不平衡（左右高度差 &gt; 1）的節點</strong>，依新節點在它的哪一側決定旋轉：</p>
 <table>
@@ -981,35 +1311,133 @@ f(2): 回來，印 2</code></pre>
 <p>(b) 插入 4（不插 1）：4 在 6 的左邊。8 不平衡，新節點在左子樹（3）的右邊（6），<strong>LR</strong> → 先對 3 左旋、再對 8 右旋。</p>
 <p>結果：根 <strong>6</strong>，左子樹 3（左 2、右 4），右子樹 8（右子 9）。</p>
 </div>
+<div class="viz" data-viz="avl" data-base="8,3,9,2,6" data-keys="1" data-title="114 Q3(a)：插入 1（LL）"></div>
+
+<div class="viz" data-viz="avl" data-base="8,3,9,2,6" data-keys="4" data-title="114 Q3(b)：插入 4（LR）"></div>
+
 <h3 id="u3-4">3.4 Optimal BST（動態規劃）</h3>
 <div class="arithmatex">\[c(i,j)=\min_{i\le r\le j}\{c(i,r-1)+c(r+1,j)\}+w(i,j)\]</div>
 <p><span class="arithmatex">\(w(i,j)\)</span> 是 <span class="arithmatex">\(i..j\)</span> 的頻率總和。這樣算出的是 <span class="arithmatex">\(\sum(\text{頻率}\times\text{深度})\)</span>，根的深度算 1。</p>
+<p><strong>這個式子怎麼來的</strong>：<span class="arithmatex">\(c(i,j)\)</span> ＝ 只用第 <span class="arithmatex">\(i\)</span> 到第 <span class="arithmatex">\(j\)</span> 個鍵建 BST，<span class="arithmatex">\(\sum(\text{頻率}\times\text{深度})\)</span> 最小是多少。</p>
+<ul>
+<li>選第 <span class="arithmatex">\(r\)</span> 個鍵當根：左子樹只能是 <span class="arithmatex">\(i..r-1\)</span>、右子樹只能是 <span class="arithmatex">\(r+1..j\)</span>（BST 左小右大），各自用最好的建法，成本是 <span class="arithmatex">\(c(i,r-1)\)</span> 和 <span class="arithmatex">\(c(r+1,j)\)</span>。</li>
+<li>子樹接到 <span class="arithmatex">\(r\)</span> 下面以後，<strong>子樹裡每個節點的深度都多 1</strong>，成本要再加一次子樹全部的頻率；根 <span class="arithmatex">\(r\)</span> 自己深度 1，也算一次它的頻率。合起來剛好是 <span class="arithmatex">\(i..j\)</span> 全部的頻率和 <span class="arithmatex">\(w(i,j)\)</span>。</li>
+<li>每個 <span class="arithmatex">\(r\)</span> 都試，取最小。空的區間 <span class="arithmatex">\(c(i,i-1)=0\)</span>。</li>
+</ul>
+<p>所以填表要<strong>從短的區間填到長的</strong>：算長度 3 的區間時，會用到長度 0、1、2 的答案。</p>
 <div class="admonition example">
 <p class="admonition-title">112 Q3（10%）：A–F 的搜尋頻率 4, 9, 1, 6, 8, 7</p>
-<p>用 DP 表從長度 1 開始填，最小總成本是 <strong>74</strong>，樹的形狀：</p>
+<p>頻率 A 4、B 9、C 1、D 6、E 8、F 7。從長度 1 的區間開始，每一格寫「最小成本（根）」：</p>
+<table>
+<thead>
+<tr>
+<th>長度</th>
+<th>各區間的 <span class="arithmatex">\(c\)</span>（根）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A 4（A）、B 9（B）、C 1（C）、D 6（D）、E 8（E）、F 7（F）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AB 17（B）、BC 11（B）、CD 8（D）、DE 20（E）、EF 22（E）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>AC 19（B）、BD 24（B）、CE 23（E）、DF 34（E）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>AD 32（B）、BE 43（D）、CF 37（E）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>AE 55（B）、BF 62（E）</td>
+</tr>
+<tr>
+<td>6</td>
+<td>AF <strong>74</strong>（E）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>算一格給你看</strong>：CD（頻率 1、6，<span class="arithmatex">\(w=7\)</span>）。根是 C：<span class="arithmatex">\(0+c(D)=6\)</span>，加 7 得 13；根是 D：<span class="arithmatex">\(c(C)+0=1\)</span>，加 7 得 8。取小的，<span class="arithmatex">\(c(C,D)=8\)</span>、根 D。</p>
+<p><strong>最後一格</strong> AF（<span class="arithmatex">\(w=35\)</span>），六種根都試：</p>
+<table>
+<thead>
+<tr>
+<th>根</th>
+<th>左子樹 ＋ 右子樹</th>
+<th>＋35</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>0 ＋ <span class="arithmatex">\(c(B..F)\)</span> 62</td>
+<td>97</td>
+</tr>
+<tr>
+<td>B</td>
+<td><span class="arithmatex">\(c(A)\)</span> 4 ＋ <span class="arithmatex">\(c(C..F)\)</span> 37</td>
+<td>76</td>
+</tr>
+<tr>
+<td>C</td>
+<td><span class="arithmatex">\(c(A..B)\)</span> 17 ＋ <span class="arithmatex">\(c(D..F)\)</span> 34</td>
+<td>86</td>
+</tr>
+<tr>
+<td>D</td>
+<td><span class="arithmatex">\(c(A..C)\)</span> 19 ＋ <span class="arithmatex">\(c(E..F)\)</span> 22</td>
+<td>76</td>
+</tr>
+<tr>
+<td>E</td>
+<td><span class="arithmatex">\(c(A..D)\)</span> 32 ＋ <span class="arithmatex">\(c(F)\)</span> 7</td>
+<td><strong>74</strong></td>
+</tr>
+<tr>
+<td>F</td>
+<td><span class="arithmatex">\(c(A..E)\)</span> 55 ＋ 0</td>
+<td>90</td>
+</tr>
+</tbody>
+</table>
+<p>最小總成本 <strong>74</strong>，根是 E。再查表往下拆：AD 的根是 B（左 A、右 CD），CD 的根是 D（左 C）。樹的形狀：</p>
 <ul>
 <li>根 <strong>E</strong></li>
 <li>E 的左子 <strong>B</strong>：B 的左子 A，右子 <strong>D</strong>（D 的左子 C）</li>
 <li>E 的右子 <strong>F</strong></li>
 </ul>
-<p>檢查：深度 E1、B2、F2、A3、D3、C4 → <span class="arithmatex">\(8+18+14+12+18+4=74\)</span> ✓。</p>
+<p>檢查：深度 E1、B2、F2、A3、D3、C4 → <span class="arithmatex">\(8\times1+9\times2+7\times2+4\times3+6\times3+1\times4=8+18+14+12+18+4=74\)</span> ✓。</p>
 <p>考試時 DP 表很大，至少要寫出遞迴式、填表順序和最後的根，就能拿到大部分分數。</p>
 </div>
 <h3 id="u3-quiz">單元 3 小考</h3>
 <p><strong>3-1.</strong> preorder ABDECF、inorder DBEAFC，postorder 是什麼？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>根 A；左子樹 DBE（根 B，左 D、右 E）；右子樹 FC（根 C，左 F）。postorder：<strong>D E B F C A</strong>。</p>
+<ol>
+<li>preorder 第一個 <strong>A</strong> 是根。inorder <code>DBE A FC</code>：左子樹 DBE（3 個）、右子樹 FC（2 個）。</li>
+<li>preorder 也照個數切：A 後面 3 個 BDE 是左子樹、最後 2 個 CF 是右子樹。</li>
+<li>左子樹：preorder BDE 的第一個 <strong>B</strong> 是根；inorder <code>D B E</code> → 左 D、右 E。</li>
+<li>右子樹：preorder CF 的第一個 <strong>C</strong> 是根；inorder <code>F C</code> → 左 F。</li>
+<li>postorder（左右根）：左子樹 D E B，右子樹 F C，最後根 A → <strong>D E B F C A</strong>。</li>
+</ol>
+<p>可以把這兩個走訪貼進 <a href="#u3-1">3.1 的動畫</a>，另一個走訪選 preorder 檢查。</p>
 </details>
 <p><strong>3-2.</strong> 依序插入 1, 2, 3 到空的 AVL 樹，結果？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>插入 3 時 1 不平衡（RR），對 1 左旋：根 2，左 1、右 3。</p>
+<p>插入 1、2：2 在 1 的右邊。插入 3：3 ＞ 1 往右、3 ＞ 2 放 2 的右邊，變成一條往右的斜線。</p>
+<p>1 的左子樹高 0、右子樹高 2，不平衡；新節點在 1 的<strong>右</strong>子樹的<strong>右</strong>邊 → <strong>RR</strong>，對 1 左旋：2 升上來，<strong>根 2，左 1、右 3</strong>。</p>
 </details>
 <p><strong>3-3.</strong> 4 個不同的鍵可以組成幾種不同形狀的 BST？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>Catalan 數 <span class="arithmatex">\(C_4=\frac{1}{5}\binom84=14\)</span>。</p>
+<p>就是 4 個節點的二元樹形狀數，Catalan 數 <span class="arithmatex">\(C_4=\frac{1}{4+1}\binom84=\frac{70}{5}=\)</span> <strong>14</strong>。</p>
+<p>用遞迴驗算：根是第 1、2、3、4 小的鍵時，左右子樹分別有 (0,3)、(1,2)、(2,1)、(3,0) 個鍵：<span class="arithmatex">\(C_0C_3+C_1C_2+C_2C_1+C_3C_0=5+2+2+5=14\)</span> ✓。</p>
 </details>
 <h2 id="u4">單元 4：雜湊</h2>
 <h3 id="u4-0">4.0 觀念課：依學號尾數分配置物櫃</h3>
@@ -1049,6 +1477,8 @@ f(2): 回來，印 2</code></pre>
 </tbody>
 </table>
 <p>問題：被佔的格子會連成一大塊，之後算到這一塊的 key 都要走很久，越來越長，這叫 <strong>primary clustering</strong>。</p>
+<div class="viz" data-viz="hash" data-keys="7,12,2" data-m="5" data-method="linear"></div>
+
 <h4 id="double-hashing-key">double hashing：每個 key 的步伐不一樣</h4>
 <p>碰撞時不是固定走 1 格，而是走 <span class="arithmatex">\(h_2(k)\)</span> 格：第 <span class="arithmatex">\(i\)</span> 次探測位置是 <span class="arithmatex">\((h_1(k)+i\cdot h_2(k))\bmod M\)</span>。不同的 key 就算第一次撞在同一格，之後走的路線也不同，不會擠成一團。</p>
 <p><span class="arithmatex">\(h_2\)</span> 不能是 0（不然永遠原地踏步），而且最好和 <span class="arithmatex">\(M\)</span> 互質，<span class="arithmatex">\(M\)</span> 取質數最簡單。</p>
@@ -1063,12 +1493,20 @@ f(2): 回來，印 2</code></pre>
 <p><strong>T-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7，各放在哪裡？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>三個 mod 7 都是 0：14→0、21→1、7→2。</p>
+<p><span class="arithmatex">\(14\bmod7=0\)</span>、<span class="arithmatex">\(21\bmod7=0\)</span>、<span class="arithmatex">\(7\bmod7=0\)</span>，三個都撞在 0。</p>
+<ul>
+<li>14：位置 0 空的 → 放 <strong>0</strong></li>
+<li>21：0 被佔 → <span class="arithmatex">\((0+1)\bmod7=1\)</span> 空的 → 放 <strong>1</strong></li>
+<li>7：0、1 被佔 → <span class="arithmatex">\((0+2)\bmod7=2\)</span> 空的 → 放 <strong>2</strong></li>
+</ul>
 </details>
 <p><strong>T-2.</strong> <span class="arithmatex">\(M=7\)</span>、double hashing、<span class="arithmatex">\(h_1=k\bmod7\)</span>、<span class="arithmatex">\(h_2=5-(k\bmod5)\)</span>，依序插入 14、21？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>14：<span class="arithmatex">\(h_1=0\)</span>，放 0。21：<span class="arithmatex">\(h_1=0\)</span> 被佔，<span class="arithmatex">\(h_2=5-1=4\)</span>，放 <span class="arithmatex">\(0+4=4\)</span>。</p>
+<ul>
+<li>14：<span class="arithmatex">\(h_1=14\bmod7=0\)</span>，位置 0 空的 → 放 <strong>0</strong>。</li>
+<li>21：<span class="arithmatex">\(h_1=21\bmod7=0\)</span>，被 14 佔了。<span class="arithmatex">\(h_2=5-(21\bmod5)=5-1=4\)</span>，下一個位置 <span class="arithmatex">\((0+1\times4)\bmod7=4\)</span>，空的 → 放 <strong>4</strong>。</li>
+</ul>
 </details>
 <h3 id="u4-1">4.1 考古題與重點整理</h3>
 <table>
@@ -1095,6 +1533,7 @@ f(2): 回來，印 2</code></pre>
 </table>
 <ul>
 <li>linear probing 會造成 <strong>primary clustering</strong>（連續佔用的區塊越來越長）。</li>
+<li>quadratic probing 依序跳 <span class="arithmatex">\(1,4,9,\dots\)</span> 格，越跳越遠，不會擠成一整塊；但 <span class="arithmatex">\(h(k)\)</span> 相同的 key 走的路線完全一樣（<strong>secondary clustering</strong>）。double hashing 連這個都避開，因為不同 key 的 <span class="arithmatex">\(h_2\)</span> 不同。</li>
 <li>double hashing 的 <span class="arithmatex">\(h_2(k)\)</span> 不能是 0，而且最好和 <span class="arithmatex">\(M\)</span> 互質（<span class="arithmatex">\(M\)</span> 取質數最簡單）。</li>
 </ul>
 <div class="admonition example">
@@ -1147,18 +1586,106 @@ f(2): 回來，印 2</code></pre>
 </tr>
 </tbody>
 </table>
+<p><span class="arithmatex">\(h_2\)</span> 的算法：例如 33，<span class="arithmatex">\(33\bmod7=5\)</span>，<span class="arithmatex">\(h_2=7-5=2\)</span>；第 1 次探測 <span class="arithmatex">\((0+1\times2)\bmod11=2\)</span>。77 的 <span class="arithmatex">\(h_2=7-0=7\)</span>：<span class="arithmatex">\((0+7)\bmod11=7\)</span> 被 7 佔，<span class="arithmatex">\((0+2\times7)\bmod11=14\bmod11=3\)</span> 空的。</p>
 <p>最後：<code>[0]=11, [2]=33, [3]=77, [4]=66, [7]=7</code>，其他空。</p>
 </div>
+<div class="viz" data-viz="hash" data-keys="11,33,66,7,77" data-m="11" data-method="double" data-r="7" data-title="115 Q7：double hashing"></div>
+
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h=k\bmod7\)</span>，插入 10, 3, 17, 24 的結果？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>10→3；3→3 佔用→4；17→3→4→5；24→3→4→5→6。<code>[3]=10, [4]=3, [5]=17, [6]=24</code>。</p>
+<p>先算 <span class="arithmatex">\(h\)</span>：<span class="arithmatex">\(10\bmod7=3\)</span>、<span class="arithmatex">\(3\bmod7=3\)</span>、<span class="arithmatex">\(17\bmod7=3\)</span>、<span class="arithmatex">\(24\bmod7=3\)</span>，四個全部撞在 3。</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th><span class="arithmatex">\(h\)</span></th>
+<th>探測</th>
+<th>放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td>3</td>
+<td>3 空</td>
+<td>3</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>3 佔 → 4 空</td>
+<td>4</td>
+</tr>
+<tr>
+<td>17</td>
+<td>3</td>
+<td>3、4 佔 → 5 空</td>
+<td>5</td>
+</tr>
+<tr>
+<td>24</td>
+<td>3</td>
+<td>3、4、5 佔 → 6 空</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<p>結果 <strong><code>[3]=10, [4]=3, [5]=17, [6]=24</code></strong>。被佔的區塊越長，後面的 key 走越久，這就是 primary clustering。</p>
 </details>
 <p><strong>4-2.</strong> <span class="arithmatex">\(M=13\)</span>、<span class="arithmatex">\(h_1=k\bmod13\)</span>、<span class="arithmatex">\(h_2=7-(k\bmod7)\)</span>，插入 18, 41, 22, 44, 59, 32？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>18→5、41→2、22→9、44→5 佔用，<span class="arithmatex">\(h_2=5\)</span> → 10、59→7、32→6。<code>[2]=41, [5]=18, [6]=32, [7]=59, [9]=22, [10]=44</code>。</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th><span class="arithmatex">\(h_1=k\bmod13\)</span></th>
+<th>探測</th>
+<th>放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>18</td>
+<td><span class="arithmatex">\(18-13=5\)</span></td>
+<td>空</td>
+<td>5</td>
+</tr>
+<tr>
+<td>41</td>
+<td><span class="arithmatex">\(41-39=2\)</span></td>
+<td>空</td>
+<td>2</td>
+</tr>
+<tr>
+<td>22</td>
+<td><span class="arithmatex">\(22-13=9\)</span></td>
+<td>空</td>
+<td>9</td>
+</tr>
+<tr>
+<td>44</td>
+<td><span class="arithmatex">\(44-39=5\)</span></td>
+<td>5 被 18 佔；<span class="arithmatex">\(h_2=7-(44\bmod7)=7-2=5\)</span>，<span class="arithmatex">\((5+5)\bmod13=10\)</span> 空</td>
+<td>10</td>
+</tr>
+<tr>
+<td>59</td>
+<td><span class="arithmatex">\(59-52=7\)</span></td>
+<td>空</td>
+<td>7</td>
+</tr>
+<tr>
+<td>32</td>
+<td><span class="arithmatex">\(32-26=6\)</span></td>
+<td>空</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<p>結果 <strong><code>[2]=41, [5]=18, [6]=32, [7]=59, [9]=22, [10]=44</code></strong>。可以把數字填進上面的動畫（M 改 13）檢查。</p>
 </details>
 <h2 id="u5">單元 5：圖</h2>
 <h3 id="u5-0">5.0 觀念課：用最少的電線連起所有城市</h3>
@@ -1206,6 +1733,10 @@ f(2): 回來，印 2</code></pre>
 </ul>
 <h4 id="dijkstra">最短路徑：Dijkstra</h4>
 <p>從起點出發，每次挑「目前離起點最近、還沒確定」的點，確定它的距離，再用它更新鄰居的距離。前提是<strong>邊的權重不能是負的</strong>，不然「已經確定的最短距離」可能被後來的負邊推翻。</p>
+<p><strong>為什麼「目前最近的」可以直接確定</strong>：假設 <span class="arithmatex">\(u\)</span> 是還沒確定的點裡距離最小的。任何其他走法要到 <span class="arithmatex">\(u\)</span>，都得先經過某個還沒確定的點 <span class="arithmatex">\(x\)</span>，光到 <span class="arithmatex">\(x\)</span> 就已經 <span class="arithmatex">\(\ge d(u)\)</span>，邊又不是負的，後面只會更長。所以 <span class="arithmatex">\(d(u)\)</span> 不可能再變小。</p>
+<p>下面的動畫可以切換三種演算法。圖可以自己改（<code>A-B 4</code> 表示 A、B 之間有一條權重 4 的邊）：</p>
+<div class="viz" data-viz="graph" data-edges="A-B 3, A-C 1, B-C 1, B-D 2, C-D 6, C-E 4, D-E 1" data-algo="dijkstra" data-start="A"></div>
+
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -1217,12 +1748,85 @@ f(2): 回來，印 2</code></pre>
 <p><strong>T-1.</strong> 從 A 開始用 Prim，依序加入哪些邊？總權重？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>A–C（1）、C–B（2）、B–D（5），總權重 8。</p>
+<table>
+<thead>
+<tr>
+<th>步驟</th>
+<th>樹內</th>
+<th>跨出去的邊</th>
+<th>選</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A</td>
+<td>AB 4、AC 1</td>
+<td><strong>AC 1</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>A, C</td>
+<td>AB 4、CB 2、CD 8</td>
+<td><strong>CB 2</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>A, B, C</td>
+<td>BD 5、CD 8</td>
+<td><strong>BD 5</strong></td>
+</tr>
+</tbody>
+</table>
+<p>依序加入 A–C、C–B、B–D，總權重 <span class="arithmatex">\(1+2+5=\)</span> <strong>8</strong>。</p>
 </details>
 <p><strong>T-2.</strong> 從 A 到 D 的最短路徑和距離？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>A → C → B → D，<span class="arithmatex">\(1+2+5=8\)</span>（A→B→D 是 9，A→C→D 也是 9）。</p>
+<p>Dijkstra，每一步確定一個點：</p>
+<table>
+<thead>
+<tr>
+<th>步驟</th>
+<th>確定</th>
+<th>更新</th>
+<th>距離 A, B, C, D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>—</td>
+<td>起點</td>
+<td>0, ∞, ∞, ∞</td>
+</tr>
+<tr>
+<td>1</td>
+<td>A（0）</td>
+<td>B：0＋4＝4、C：0＋1＝1</td>
+<td>0, 4, 1, ∞</td>
+</tr>
+<tr>
+<td>2</td>
+<td>C（1）</td>
+<td>B：1＋2＝3 ＜ 4 更新、D：1＋8＝9</td>
+<td>0, 3, 1, 9</td>
+</tr>
+<tr>
+<td>3</td>
+<td>B（3）</td>
+<td>D：3＋5＝8 ＜ 9 更新</td>
+<td>0, 3, 1, 8</td>
+</tr>
+<tr>
+<td>4</td>
+<td>D（8）</td>
+<td>—</td>
+<td>0, 3, 1, 8</td>
+</tr>
+</tbody>
+</table>
+<p>最短路徑 <strong>A → C → B → D</strong>，距離 <span class="arithmatex">\(1+2+5=\)</span> <strong>8</strong>（A→B→D 是 9，A→C→D 也是 9）。</p>
 </details>
 <h3 id="u5-1">5.1 考古題與重點整理</h3>
 <table>
@@ -1256,6 +1860,13 @@ f(2): 回來，印 2</code></pre>
 </tr>
 </tbody>
 </table>
+<p><strong>這些複雜度怎麼來的</strong>（<span class="arithmatex">\(V\)</span> 個點、<span class="arithmatex">\(E\)</span> 條邊）：</p>
+<ul>
+<li><strong>BFS／DFS</strong>：每個點進出一次（<span class="arithmatex">\(V\)</span>），每條邊在鄰接串列裡被看一次（無向圖是兩次），合起來 <span class="arithmatex">\(O(V+E)\)</span>。改用鄰接矩陣，每個點都要把整列 <span class="arithmatex">\(V\)</span> 格看完，變成 <span class="arithmatex">\(O(V^2)\)</span>。</li>
+<li><strong>Prim</strong>：用 binary heap 時，每條邊最多讓 heap 更新一次，每次 <span class="arithmatex">\(O(\log V)\)</span> → <span class="arithmatex">\(O(E\log V)\)</span>。用陣列時每一步花 <span class="arithmatex">\(O(V)\)</span> 找最小、做 <span class="arithmatex">\(V\)</span> 步 → <span class="arithmatex">\(O(V^2)\)</span>，邊很多（<span class="arithmatex">\(E\)</span> 接近 <span class="arithmatex">\(V^2\)</span>）時陣列反而比較快。</li>
+<li><strong>Kruskal</strong>：主要時間是把 <span class="arithmatex">\(E\)</span> 條邊排序，<span class="arithmatex">\(O(E\log E)\)</span>。因為 <span class="arithmatex">\(E\le V^2\)</span>，<span class="arithmatex">\(\log E\le2\log V\)</span>，也可以寫成 <span class="arithmatex">\(O(E\log V)\)</span>。</li>
+<li><strong>Dijkstra</strong>：結構跟 Prim 一樣，只是 heap 裡放「到起點的距離」。</li>
+</ul>
 <div class="admonition example">
 <p class="admonition-title">115 Q8（10%）：鄰接矩陣的無向圖，從 A 開始用 Prim</p>
 <p>邊：AB 2、AC 4、AE 5、BC 1、BD 9、BF 7、CE 6、CF 10、DF 8、EF 3。</p>
@@ -1299,11 +1910,65 @@ f(2): 回來，印 2</code></pre>
 <p>(a) 加入順序：<strong>2, 1, 5, 3, 8</strong>，總權重 19。</p>
 <p>(b) adjacency list ＋ binary heap：<strong><span class="arithmatex">\(O(E\log V)\)</span></strong>。</p>
 </div>
+<div class="viz" data-viz="graph" data-edges="A-B 2, A-C 4, A-E 5, B-C 1, B-D 9, B-F 7, C-E 6, C-F 10, D-F 8, E-F 3" data-order="A,B,D,F,E,C" data-algo="prim" data-start="A" data-title="115 Q8：Prim（可以切換成 Kruskal 對照 5-1）"></div>
+
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> 同一張圖用 Kruskal，加邊的順序？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>依權重：BC 1、AB 2、EF 3、AC 4（成環跳過）、AE 5、CE 6（跳過）、BF 7（跳過）、DF 8。順序 <strong>1, 2, 3, 5, 8</strong>，總權重同樣 19。</p>
+<p>先把邊照權重排好：BC 1、AB 2、EF 3、AC 4、AE 5、CE 6、BF 7、DF 8、BD 9、CF 10。依序考慮：</p>
+<table>
+<thead>
+<tr>
+<th>邊</th>
+<th>判斷</th>
+<th>目前連通的群</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BC 1</td>
+<td>加入</td>
+<td>{B,C}</td>
+</tr>
+<tr>
+<td>AB 2</td>
+<td>加入</td>
+<td>{A,B,C}</td>
+</tr>
+<tr>
+<td>EF 3</td>
+<td>加入</td>
+<td>{A,B,C}、{E,F}</td>
+</tr>
+<tr>
+<td>AC 4</td>
+<td>A、C 已連通，成環，跳過</td>
+<td></td>
+</tr>
+<tr>
+<td>AE 5</td>
+<td>加入，兩群合併</td>
+<td>{A,B,C,E,F}</td>
+</tr>
+<tr>
+<td>CE 6</td>
+<td>已連通，跳過</td>
+<td></td>
+</tr>
+<tr>
+<td>BF 7</td>
+<td>已連通，跳過</td>
+<td></td>
+</tr>
+<tr>
+<td>DF 8</td>
+<td>加入</td>
+<td>全部 6 個點，已有 5 條邊，結束</td>
+</tr>
+</tbody>
+</table>
+<p>加入順序 <strong>1, 2, 3, 5, 8</strong>，總權重 19，跟 Prim 一樣（MST 的權重唯一）。</p>
 </details>
 <h2 id="u6">單元 6：遞迴計數與 DP</h2>
 <div class="admonition key">
@@ -1314,6 +1979,9 @@ f(2): 回來，印 2</code></pre>
 <h4 id="dp">為什麼需要 DP</h4>
 <p>費氏數列 <span class="arithmatex">\(f(n)=f(n-1)+f(n-2)\)</span> 直接遞迴，<span class="arithmatex">\(f(5)\)</span> 會呼叫 15 次，因為 <span class="arithmatex">\(f(3)\)</span>、<span class="arithmatex">\(f(2)\)</span> 被重複算了好幾次。如果算過就<strong>記在表裡</strong>，<span class="arithmatex">\(f(0)\)</span> 到 <span class="arithmatex">\(f(5)\)</span> 每個只算一次。</p>
 <p><strong>動態規劃（DP）＝ 遞迴的拆法 ＋ 把子問題的答案記下來</strong>。所以 DP 題的核心，其實是寫出正確的遞迴式。</p>
+<p>先看直接遞迴的呼叫樹（橘色是「之前算過、又重算一次」的），再把寫法切換成「算過就記在表裡」比較：</p>
+<div class="viz" data-viz="calltree" data-n="5"></div>
+
 <h4 id="_15">寫遞迴式的四步</h4>
 <ol>
 <li><strong>定義狀態</strong>：用一句話說清楚 <span class="arithmatex">\(g(i,j)\)</span> 是什麼，例如「只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊出 <span class="arithmatex">\(j\)</span> 元的方法數」。</li>
@@ -1370,21 +2038,75 @@ f(2): 回來，印 2</code></pre>
 <p><strong>T-1.</strong> 用 1、2、3 元湊 4 元（不計順序），有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>4 種：1+1+1+1、1+1+2、2+2、1+3。</p>
+<p>填表，每格 ＝ 上一列同一格（不用新硬幣）＋ 同一列往左「硬幣面額」格（至少用一個）：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><span class="arithmatex">\(j=0\)</span></th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>只用 1 元</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>用 1、2 元</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>用 1、2、3 元</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td><strong>4</strong></td>
+</tr>
+</tbody>
+</table>
+<p>最後一格：<span class="arithmatex">\(3+g(3\text{ 種},1)=3+1=4\)</span>。列出來：1+1+1+1、1+1+2、2+2、1+3 ✓。</p>
 </details>
 <p><strong>T-2.</strong> 3 個不同的鍵可以組成幾種形狀的 BST？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(C_3=5\)</span>。</p>
+<p>看哪個鍵當根（鍵 1 ＜ 2 ＜ 3）：</p>
+<ul>
+<li>根 1：左邊 0 個、右邊 2 個 → <span class="arithmatex">\(C_0C_2=1\times2=2\)</span></li>
+<li>根 2：左右各 1 個 → <span class="arithmatex">\(C_1C_1=1\)</span></li>
+<li>根 3：左邊 2 個 → <span class="arithmatex">\(C_2C_0=2\)</span></li>
+</ul>
+<p>共 <span class="arithmatex">\(C_3=2+1+2=\)</span> <strong>5</strong> 種。</p>
 </details>
 <p><strong>T-3.</strong> 用 <span class="arithmatex">\(2\times1\)</span> 骨牌鋪滿 <span class="arithmatex">\(2\times3\)</span>，有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}\)</span>，<span class="arithmatex">\(a_1=1\)</span>、<span class="arithmatex">\(a_2=2\)</span>，<span class="arithmatex">\(a_3=3\)</span>。</p>
+<p>看最右邊：一張直放，前面是 <span class="arithmatex">\(2\times(n-1)\)</span> → <span class="arithmatex">\(a_{n-1}\)</span>；兩張橫放疊在一起，前面是 <span class="arithmatex">\(2\times(n-2)\)</span> → <span class="arithmatex">\(a_{n-2}\)</span>。</p>
+<p><span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}\)</span>，<span class="arithmatex">\(a_1=1\)</span>（一張直放）、<span class="arithmatex">\(a_2=2\)</span>（兩直或兩橫），<span class="arithmatex">\(a_3=2+1=\)</span> <strong>3</strong>。</p>
+<p>列出來（｜是直放、＝是兩張橫放疊起來）：｜｜｜、｜＝、＝｜ ✓。</p>
 </details>
 <h3 id="u6-1">6.1 Catalan 數</h3>
 <p><span class="arithmatex">\(C_n=\frac{1}{n+1}\binom{2n}{n}\)</span>：1, 1, 2, 5, 14, 42, …，遞迴 <span class="arithmatex">\(C_n=\sum_{k=0}^{n-1}C_kC_{n-1-k}\)</span>。</p>
 <p>以下都是 <span class="arithmatex">\(C_n\)</span>：<span class="arithmatex">\(n\)</span> 對合法括號、<span class="arithmatex">\(n\)</span> 個節點的二元樹形狀數、<span class="arithmatex">\(n\)</span> 個元素的 stack 輸出排列數。</p>
+<p><strong>公式 <span class="arithmatex">\(\frac{1}{n+1}\binom{2n}{n}\)</span> 從哪裡來</strong>：把左括號看成「往右上走一步」、右括號看成「往右下走一步」。<span class="arithmatex">\(n\)</span> 對括號是一條走 <span class="arithmatex">\(2n\)</span> 步、最後回到地面的路線，合法 ⇔ 路線從來沒有掉到地面以下。</p>
+<ol>
+<li><strong>不管合不合法</strong>：<span class="arithmatex">\(2n\)</span> 步裡選 <span class="arithmatex">\(n\)</span> 步往上，共 <span class="arithmatex">\(\binom{2n}{n}\)</span> 條。</li>
+<li><strong>不合法的</strong>：找到第一次掉到 <span class="arithmatex">\(-1\)</span> 的地方，把<strong>之後</strong>的每一步上下翻轉，終點會從 0 變成 <span class="arithmatex">\(-2\)</span>。反過來，每條終點在 <span class="arithmatex">\(-2\)</span> 的路線也都翻得回來，所以兩邊一樣多。終點在 <span class="arithmatex">\(-2\)</span> ＝ <span class="arithmatex">\(2n\)</span> 步裡只有 <span class="arithmatex">\(n-1\)</span> 步往上，共 <span class="arithmatex">\(\binom{2n}{n-1}\)</span> 條。</li>
+<li>相減：<span class="arithmatex">\(C_n=\binom{2n}{n}-\binom{2n}{n-1}=\binom{2n}{n}\left(1-\frac{n}{n+1}\right)=\frac{1}{n+1}\binom{2n}{n}\)</span>。</li>
+</ol>
+<p>檢查 <span class="arithmatex">\(n=3\)</span>：<span class="arithmatex">\(\binom63-\binom62=20-15=5\)</span> ✓。</p>
 <div class="admonition example">
 <p class="admonition-title">114 Q4（15%）：<span class="arithmatex">\(n\)</span> 對合法括號 <span class="arithmatex">\(p(n)\)</span></p>
 <p>(a) <span class="arithmatex">\(p(3)=5\)</span>：<code>((()))</code>、<code>(()())</code>、<code>(())()</code>、<code>()(())</code>、<code>()()()</code>。</p>
@@ -1427,6 +2149,8 @@ f(2): 回來，印 2</code></pre>
 </table>
 <p><strong>判斷技巧</strong>：輸出某個字母 <span class="arithmatex">\(X\)</span> 時，比 <span class="arithmatex">\(X\)</span> 早 push 但還沒輸出的字母，之後必須<strong>倒序</strong>輸出。例如 C 開頭時 A、B 還在 stack 裡，B 一定要在 A 前面，所以 CA… 都不可能。</p>
 </div>
+<div class="viz" data-viz="stack" data-input="ABCD" data-output="CABD" data-title="111 Q2：CABD 為什麼不可能（改成 CBDA 看看做得到的）"></div>
+
 <h3 id="u6-2">6.2 寫遞迴式</h3>
 <div class="admonition example">
 <p class="admonition-title">112 Q4（10%）：郵票組合數 <span class="arithmatex">\(g(i,j)\)</span>：用 1 到 <span class="arithmatex">\(i\)</span> 元的郵票湊 <span class="arithmatex">\(j\)</span> 元，3 元和 4 元賣完了</p>
@@ -1457,12 +2181,77 @@ f(2): 回來，印 2</code></pre>
 <p><strong>6-1.</strong> 1, 2, 3, 4, 5 依序 push，可能的輸出有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(C_5=42\)</span>。</p>
+<p>stack 的合法輸出數是 Catalan 數：<span class="arithmatex">\(C_5=\frac{1}{5+1}\binom{10}{5}=\frac{252}{6}=\)</span> <strong>42</strong>。</p>
+<p>用遞迴驗算：<span class="arithmatex">\(C_5=C_0C_4+C_1C_3+C_2C_2+C_3C_1+C_4C_0=14+5+4+5+14=42\)</span> ✓。</p>
 </details>
 <p><strong>6-2.</strong> 用 1、2、5 元湊 10 元的組合數（不計順序）？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><strong>10</strong> 種。可以用 <span class="arithmatex">\(g(i,j)\)</span> 填表，或直接列：5 元用 0、1、2 張，剩下用 1、2 元湊 10、5、0：6＋3＋1＝10。</p>
+<p><strong>方法一：填表</strong>（每格 ＝ 上一列同一格 ＋ 同一列往左「面額」格）：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>只用 1 元</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>用 1、2 元</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+<td>3</td>
+<td>4</td>
+<td>4</td>
+<td>5</td>
+<td>5</td>
+<td>6</td>
+</tr>
+<tr>
+<td>用 1、2、5 元</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>7</td>
+<td>8</td>
+<td><strong>10</strong></td>
+</tr>
+</tbody>
+</table>
+<p>例如最後一格：<span class="arithmatex">\(g(\{1,2,5\},10)=g(\{1,2\},10)+g(\{1,2,5\},5)=6+4=10\)</span>。</p>
+<p><strong>方法二：依 5 元的張數分類</strong>：5 元用 0、1、2 張，剩下 10、5、0 元用 1、2 元湊。湊 <span class="arithmatex">\(m\)</span> 元的方法是「2 元用 0 到 <span class="arithmatex">\(\lfloor m/2\rfloor\)</span> 張」，共 <span class="arithmatex">\(\lfloor m/2\rfloor+1\)</span> 種：<span class="arithmatex">\(6+3+1=\)</span> <strong>10</strong>。</p>
 </details>
 <p><strong>6-3.</strong> 用 <span class="arithmatex">\(2\times1\)</span> 骨牌鋪滿 <span class="arithmatex">\(2\times n\)</span>，寫出遞迴。</p>
 <details class="quiz">
@@ -1523,5 +2312,7 @@ f(2): 回來，印 2</code></pre>
   paint();
 })();
 </script>
+<script src="assets/ink.js"></script>
+<script src="assets/viz.js"></script>
 </body>
 </html>
