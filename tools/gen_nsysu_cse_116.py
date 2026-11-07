@@ -90,6 +90,29 @@ OSDS = [
  ("OS", "OS 綜合小考", "限時", "教材「綜合小考」＋資結各單元小考的錯題", O + "#mix"),
 ]
 
+# 每個單元的第一天：連到觀念課（#uN-0），並提醒先讀觀念課
+import re as _re
+_LESSONS = {D: range(1, 10), A: range(1, 10), O: range(1, 7), S: range(1, 7)}
+def _point_to_lessons(rows, link_idx, read_idx):
+    seen = set()
+    for k, row in enumerate(rows):
+        row = list(row)
+        page, _, anchor = row[link_idx].partition("#")
+        m = _re.match(r"u(\d+)", anchor)
+        if not m or int(m.group(1)) not in _LESSONS.get(page, ()):
+            continue
+        key = (page, int(m.group(1)))
+        if key in seen:
+            continue
+        seen.add(key)
+        n = key[1]
+        row[link_idx] = f"{page}#u{n}-0"
+        row[read_idx] = f"先讀觀念課 {n}.0，再讀" + row[read_idx]
+        rows[k] = tuple(row)
+_point_to_lessons(DM, 3, 1)
+_point_to_lessons(CA, 3, 1)
+_point_to_lessons(OSDS, 4, 2)
+
 def blk(subj, time, title, read, practice, link=""):
     b = {"subject": subj, "time": time, "title": title, "read": read, "practice": practice}
     if link:
@@ -296,10 +319,10 @@ data = {
  "pinned": pinned,
  "notes": [
   {"slug": "method", "title": "學習方法", "desc": "中山怎麼考、五個有研究支持的讀書方法、每天的流程、小考與錯題本", "url": "notes/method.html"},
-  {"slug": "discrete", "subject": "dm", "title": "離散數學", "desc": "111–115 全部 48 題拆成 9 個單元：計數、排容、生成函數、遞迴、數論、鴿籠、關係、FSM、機率", "url": "notes/discrete.html"},
-  {"slug": "arch", "subject": "ca", "title": "計算機結構", "desc": "效能、cache、虛擬記憶體、pipeline、分支、多執行緒、DRAM、平行、ISA 與算術", "url": "notes/arch.html"},
-  {"slug": "os", "subject": "osds", "title": "作業系統", "desc": "行程與排程、同步、死結、記憶體、儲存與 I/O、安全；113–115 填空總表", "url": "notes/os.html"},
-  {"slug": "ds", "subject": "osds", "title": "資料結構", "desc": "C 程式追蹤、排序、樹、雜湊、圖、遞迴計數與 DP", "url": "notes/ds.html"},
+  {"slug": "discrete", "subject": "dm", "title": "離散數學", "desc": "9 個單元各有觀念課，111–115 全部 48 題都有詳解：計數、排容、生成函數、遞迴、數論、鴿籠、關係、FSM、機率", "url": "notes/discrete.html"},
+  {"slug": "arch", "subject": "ca", "title": "計算機結構", "desc": "9 個單元各有觀念課：效能、cache、虛擬記憶體、pipeline、分支、多執行緒、DRAM、平行、ISA 與算術", "url": "notes/arch.html"},
+  {"slug": "os", "subject": "osds", "title": "作業系統", "desc": "6 個單元各有觀念課：行程與排程、同步、死結、記憶體、儲存與 I/O、安全；加上 113–115 填空總表", "url": "notes/os.html"},
+  {"slug": "ds", "subject": "osds", "title": "資料結構", "desc": "6 個單元各有觀念課：C 程式追蹤、排序、樹、雜湊、圖、遞迴計數與 DP", "url": "notes/ds.html"},
  ],
  "strategy": [
   {"title": "你的兩個弱科就是總分的 2/3", "body": "中山資工甲組考計算機結構、作業系統與資料結構、離散數學三科，成績直接相加。離散和計結占了三分之二，所以不能放棄任何一科。計畫把精神最好的上午和下午留給這兩科，OS/資結放在晚上。", "src": [0]},

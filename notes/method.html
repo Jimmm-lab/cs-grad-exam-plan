@@ -247,7 +247,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </tr>
 <tr>
 <td>40–60 分鐘</td>
-<td>讀教材當天的單元：先讀「一句話重點」，再逐步看懂例題</td>
+<td>讀教材當天的單元：新單元的第一天先讀觀念課（第 0 節）並做「換你試試」，再逐步看懂考古題例題</td>
 <td>範例學習</td>
 </tr>
 <tr>
@@ -268,7 +268,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </tbody>
 </table>
 <h2 id="ai">看不懂時：用 AI 當家教</h2>
-<p>教材是<strong>考試地圖和詳解</strong>：告訴你考什麼、標準答案怎麼寫，而且每個答案都用程式驗算過。但讀到看不懂的觀念時，靜態的文字沒辦法回答你「那這裡為什麼要除以 2？」。這時候開 Gemini（或任何 AI 聊天工具）來問，效果通常比多讀幾份講義好，因為它可以針對你卡住的那一步解釋。</p>
+<p>每個單元開頭都有<strong>觀念課</strong>（第 0 節），用比喻和小例子從頭講起，之後才是公式整理和考古題詳解。答案都用程式驗算過。但讀到還是不懂的地方時，靜態的文字沒辦法回答你「那這裡為什麼要除以 2？」。這時候開 Gemini（或任何 AI 聊天工具）來問，效果通常比多讀幾份講義好，因為它可以針對你卡住的那一步解釋。</p>
 <p><strong>提問範本</strong>（把底線換成你卡住的地方，整段貼過去）：</p>
 <pre class="highlight"><code class="language-text">你是我的家教。我在準備台灣資工所考試（中山資工），程度是大學修過但沒學好。
 我卡在：＿＿＿（例如：重複組合為什麼是 C(n+r-1, r)）。
@@ -291,6 +291,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>也可以看影片</strong>：每份教材最後的「資源」都有列中文開放式課程，適合第一次接觸、需要有人從頭講的單元。</p>
 <h2 id="quiz">小考制度</h2>
 <ol>
+<li><strong>觀念課的「換你試試」</strong>：讀完觀念課馬上做，2–3 題，確認觀念懂了才往下讀考古題。</li>
 <li><strong>單元小考</strong>：每個單元後面 3–6 題，讀完當天就做。目標正確率 70% 以上才往下走，不到就隔天重做錯的題目。</li>
 <li><strong>週考</strong>：每 5 個讀書天的複習日，做教材最後的「綜合小考」裡對應的題目，加一份他校同主題題目，限時。</li>
 <li><strong>模考</strong>：照行程表的全真模考，照正式考試時間作答，算分數。</li>
@@ -413,11 +414,17 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
   function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
   var rec = load();
   var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
+  var seen = {};
   quizzes.forEach(function (d, i) {
     var label = "Q" + (i + 1);
     var prev = d.previousElementSibling;
     if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
-    var id = "quiz-" + (i + 1);
+    // 穩定的 id：前一個有 id 的標題 + 在該標題下的第幾題（之後插入新內容也不會打亂舊紀錄）
+    var h = d.previousElementSibling;
+    while (h && !(/^H[23]$/.test(h.tagName) && h.id)) h = h.previousElementSibling;
+    var base = h ? h.id : "top";
+    seen[base] = (seen[base] || 0) + 1;
+    var id = "q-" + base + "-" + seen[base];
     d.id = id; d.dataset.label = label;
     var bar = document.createElement("div");
     bar.className = "judge";

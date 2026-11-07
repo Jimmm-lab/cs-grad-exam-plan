@@ -154,7 +154,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <div class="admonition key">
 <p class="admonition-title">看不懂的時候</p>
 <ol>
-<li>先讀單元開頭的「觀念課」：用小例子把每種情況列出來，再推出公式。目前有觀念課的是離散單元 1、計結單元 2。</li>
+<li>先讀單元開頭的「觀念課」（每個單元的第 0 節）：用比喻和小例子把每種情況列出來，再推出公式。讀完先做觀念課最後的「換你試試」。</li>
 <li>還是不懂：照<a href="method.html#ai">學習方法頁的範本</a>問 Gemini 這類 AI 家教，或看<a href="method.html#videos">中文開放式課程影片</a>。</li>
 <li>懂了以後回來做該單元的小考，確認自己真的會寫。</li>
 </ol>
@@ -658,6 +658,113 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>「至少一個」「或」「上限限制」這三種字眼，幾乎都是排容。算「不要的」比算「要的」簡單時，就用排容。</p>
 </div>
+<h3 id="u2-0">2.0 觀念課：為什麼「或」要扣掉重疊</h3>
+<h4 id="_6">從一個班級開始</h4>
+<p>班上 10 人，6 人會英文、5 人會日文、3 人兩種都會。<strong>至少會一種的有幾人？</strong></p>
+<p>直接相加 <span class="arithmatex">\(6+5=11\)</span>，比全班還多，一定哪裡錯了。原因是兩種都會的 3 個人，在「會英文」裡數了一次、在「會日文」裡又數了一次，<strong>被數了兩次</strong>。</p>
+<p>把人分成不重疊的三塊就清楚了：</p>
+<table>
+<thead>
+<tr>
+<th>區塊</th>
+<th>人數</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>只會英文</td>
+<td><span class="arithmatex">\(6-3=3\)</span></td>
+</tr>
+<tr>
+<td>只會日文</td>
+<td><span class="arithmatex">\(5-3=2\)</span></td>
+</tr>
+<tr>
+<td>兩種都會</td>
+<td>3</td>
+</tr>
+<tr>
+<td><strong>至少一種</strong></td>
+<td><span class="arithmatex">\(3+2+3=8\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>也就是 <span class="arithmatex">\(|A\cup B|=|A|+|B|-|A\cap B|=6+5-3=8\)</span>。<strong>加起來，再把重複數的扣掉</strong>，這就是排容原理。</p>
+<h4 id="_7">三個集合時，為什麼最後要加回來</h4>
+<div class="arithmatex">\[|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|A\cap C|-|B\cap C|+|A\cap B\cap C|\]</div>
+<p>檢查一個人被算了幾次。如果他<strong>剛好屬於 <span class="arithmatex">\(k\)</span> 個集合</strong>：</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(k\)</span></th>
+<th>單獨加（<span class="arithmatex">\(+\)</span>）</th>
+<th>兩兩扣（<span class="arithmatex">\(-\)</span>）</th>
+<th>三個加（<span class="arithmatex">\(+\)</span>）</th>
+<th>總共算了幾次</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>屬於三個集合的人，加了 3 次又扣了 3 次，變成 0 次，所以最後要<strong>加回 1 次</strong>。不管屬於幾個集合，排容公式都讓每個人剛好被算 1 次。</p>
+<h4 id="_8">「都不是」用補集算</h4>
+<p>「1 到 30 中，<strong>不能</strong>被 2 也不能被 3 整除的有幾個？」</p>
+<p>先算「能被 2 <strong>或</strong> 3 整除」：<span class="arithmatex">\(15+10-5=20\)</span>（同時被 2 和 3 整除＝被 6 整除，有 5 個）。</p>
+<p>所以都不能整除的有 <span class="arithmatex">\(30-20=10\)</span> 個：1、5、7、11、13、17、19、23、25、29 ✓。</p>
+<h4 id="3">有上限的整數解：為什麼要「先給 3 個」</h4>
+<p>「<span class="arithmatex">\(x_1+x_2+x_3=5\)</span>，每個 <span class="arithmatex">\(0\le x_i\le2\)</span>」有幾組解？</p>
+<ol>
+<li><strong>先忽略上限</strong>：5 顆星、2 根隔板，<span class="arithmatex">\(\binom72=21\)</span> 組。</li>
+<li><strong>扣掉超過上限的</strong>：「<span class="arithmatex">\(x_1\ge3\)</span>」的解有幾組？<strong>先硬塞 3 個給 <span class="arithmatex">\(x_1\)</span></strong>，剩下 2 個隨便分給三個變數：<span class="arithmatex">\(\binom42=6\)</span> 組。<span class="arithmatex">\(x_2\)</span>、<span class="arithmatex">\(x_3\)</span> 也一樣，共扣 <span class="arithmatex">\(3\times6=18\)</span>。</li>
+<li><strong>加回重複扣的</strong>：兩個變數同時 <span class="arithmatex">\(\ge3\)</span> 需要至少 6，超過 5，不可能，是 0。</li>
+<li>答案：<span class="arithmatex">\(21-18=3\)</span>。</li>
+</ol>
+<p>列出來驗證：(1,2,2)、(2,1,2)、(2,2,1)，剛好 3 組 ✓。</p>
+<p>「先塞 3 個」的道理：<span class="arithmatex">\(x_1\ge3\)</span> 就是 <span class="arithmatex">\(x_1=3+x_1'\)</span>，<span class="arithmatex">\(x_1'\ge0\)</span>，代回去變成 <span class="arithmatex">\(x_1'+x_2+x_3=2\)</span>，又回到沒有上限的星星與隔板。</p>
+<div class="admonition trap">
+<p class="admonition-title">常卡住的地方</p>
+<ul>
+<li>兩個以上的條件<strong>同時</strong>違反時要加回來。大部分考題這一項是 0（像上面的例子），但一定要檢查，不能省略。</li>
+<li>「被 4 或 6 整除」的交集是被 <strong>12</strong>（最小公倍數）整除，不是 24。</li>
+</ul>
+</div>
+<h4 id="_9">換你試試</h4>
+<p><strong>T-1.</strong> 1 到 20 中能被 2 或 5 整除的有幾個？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(10+4-2=12\)</span>（交集是 10 的倍數：10、20）。</p>
+</details>
+<p><strong>T-2.</strong> <span class="arithmatex">\(x_1+x_2=6\)</span>，<span class="arithmatex">\(0\le x_i\le4\)</span> 的解有幾組？先用排容算，再全部列出來檢查。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>不限：7 組（<span class="arithmatex">\(x_1=0..6\)</span>）。<span class="arithmatex">\(x_1\ge5\)</span>：先塞 5 個，剩 1 個分給 2 個變數，2 組；<span class="arithmatex">\(x_2\)</span> 也 2 組。同時 <span class="arithmatex">\(\ge5\)</span> 不可能。<span class="arithmatex">\(7-4=3\)</span>。列出來：(2,4)、(3,3)、(4,2) ✓。</p>
+</details>
+<p><strong>T-3.</strong> A、B、C 三個人重新排座位，<strong>沒有人</strong>坐回原位的排法有幾種？全部列出來。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>BCA、CAB 兩種。這就是錯排 <span class="arithmatex">\(D_3=2\)</span>。</p>
+</details>
 <h3 id="u2-1">2.1 公式</h3>
 <div class="arithmatex">\[|A_1\cup\cdots\cup A_n|=\sum|A_i|-\sum|A_i\cap A_j|+\sum|A_i\cap A_j\cap A_k|-\cdots\]</div>
 <p>三個集合：<span class="arithmatex">\(|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|A\cap C|-|B\cap C|+|A\cap B\cap C|\)</span>。</p>
@@ -775,6 +882,82 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>生成函數把「每個變數可以取哪些值」寫成一個多項式，<strong>相乘之後某一項的係數就是答案</strong>。沒有順序用一般生成函數（OGF），有順序（排列、字串）用指數生成函數（EGF）。</p>
 </div>
+<h3 id="u3-0">3.0 觀念課：多項式乘法會自動幫你數</h3>
+<h4 id="_10">從買水果開始</h4>
+<p>蘋果最多拿 2 個，香蕉拿 0 或 1 個。<strong>總共拿 2 個水果</strong>有幾種拿法？</p>
+<p>把每種水果「可以拿幾個」寫成一個多項式，<span class="arithmatex">\(x\)</span> 的次方代表拿幾個：</p>
+<ul>
+<li>蘋果：<span class="arithmatex">\(1+x+x^2\)</span>（拿 0、1、2 個）</li>
+<li>香蕉：<span class="arithmatex">\(1+x\)</span>（拿 0、1 個）</li>
+</ul>
+<p>相乘：</p>
+<div class="arithmatex">\[(1+x+x^2)(1+x)=1+2x+2x^2+x^3\]</div>
+<p><span class="arithmatex">\(x^2\)</span> 的係數是 2，<strong>就是答案</strong>：(蘋果 2、香蕉 0)、(蘋果 1、香蕉 1)。</p>
+<p>為什麼會這樣？乘開時，每一項都是「蘋果選一項 × 香蕉選一項」，例如 <span class="arithmatex">\(x^1\cdot x^1=x^2\)</span>。<strong>次方相加剛好是總個數</strong>，而次方一樣的項合併時，係數就是「有幾種選法得到這個總數」。多項式乘法把所有組合都列出來、而且自動分類好了。</p>
+<h4 id="_11">沒有上限、有限制時怎麼寫</h4>
+<table>
+<thead>
+<tr>
+<th>限制</th>
+<th>寫法</th>
+<th>化簡</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不限</td>
+<td><span class="arithmatex">\(1+x+x^2+\cdots\)</span></td>
+<td><span class="arithmatex">\(\dfrac{1}{1-x}\)</span></td>
+</tr>
+<tr>
+<td>偶數個</td>
+<td><span class="arithmatex">\(1+x^2+x^4+\cdots\)</span></td>
+<td><span class="arithmatex">\(\dfrac{1}{1-x^2}\)</span></td>
+</tr>
+<tr>
+<td>至少 1 個</td>
+<td><span class="arithmatex">\(x+x^2+x^3+\cdots\)</span></td>
+<td><span class="arithmatex">\(\dfrac{x}{1-x}\)</span></td>
+</tr>
+<tr>
+<td>0 到 <span class="arithmatex">\(m\)</span> 個</td>
+<td><span class="arithmatex">\(1+x+\cdots+x^m\)</span></td>
+<td><span class="arithmatex">\(\dfrac{1-x^{m+1}}{1-x}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="arithmatex">\(\frac{1}{1-x}=1+x+x^2+\cdots\)</span> 是等比級數的和。兩種東西都不限、總共拿 <span class="arithmatex">\(n\)</span> 個：<span class="arithmatex">\(\frac{1}{(1-x)^2}\)</span> 的 <span class="arithmatex">\(x^n\)</span> 係數是 <span class="arithmatex">\(n+1\)</span>（第一種拿 0 到 <span class="arithmatex">\(n\)</span> 個，剩下的給第二種），跟星星與隔板的 <span class="arithmatex">\(\binom{n+1}{1}\)</span> 一樣。</p>
+<h4 id="n">指數生成函數：為什麼要除以 <span class="arithmatex">\(n!\)</span></h4>
+<p><strong>有順序</strong>的時候（字串），同樣的字母組成可以排出好幾種字串。例如用 2 個 a、1 個 b 組成的字串：aab、aba、baa，共 3 種 <span class="arithmatex">\(=\frac{3!}{2!\,1!}\)</span>。</p>
+<p>EGF 把「某字母用 <span class="arithmatex">\(k\)</span> 次」寫成 <span class="arithmatex">\(\frac{x^k}{k!}\)</span>，相乘後再看 <span class="arithmatex">\(\frac{x^n}{n!}\)</span> 的係數：</p>
+<div class="arithmatex">\[\frac{x^2}{2!}\cdot\frac{x^1}{1!}=\frac{x^3}{2}=3\cdot\frac{x^3}{3!}\]</div>
+<p>係數剛好是 3。<strong>分母的 <span class="arithmatex">\(k!\)</span> 自動幫你除掉相同字母互換的重複</strong>，所以 EGF 專門處理字串、排列。</p>
+<h4 id="cosh-sinh">cosh 和 sinh 從哪裡來</h4>
+<p><span class="arithmatex">\(e^x=1+x+\frac{x^2}{2!}+\frac{x^3}{3!}+\cdots\)</span> 代表「這個字母出現任意次」。</p>
+<p><span class="arithmatex">\(e^{-x}=1-x+\frac{x^2}{2!}-\frac{x^3}{3!}+\cdots\)</span>，奇數次方變成負號。</p>
+<ul>
+<li>相加除以 2：奇數項抵消，只剩偶數項 → <span class="arithmatex">\(\cosh x\)</span> ＝「出現<strong>偶數</strong>次」</li>
+<li>相減除以 2：只剩奇數項 → <span class="arithmatex">\(\sinh x\)</span> ＝「出現<strong>奇數</strong>次」</li>
+</ul>
+<p>最後展開成 <span class="arithmatex">\(e^{ax}\)</span> 的和，因為 <span class="arithmatex">\(e^{ax}=\sum a^n\frac{x^n}{n!}\)</span>，所以 <span class="arithmatex">\(\frac{x^n}{n!}\)</span> 的係數就是 <span class="arithmatex">\(a^n\)</span>。</p>
+<p><strong>驗證一個小例子</strong>：長度 3 的二進位字串，1 出現偶數次：</p>
+<p><span class="arithmatex">\(\cosh x\cdot e^x=\frac{e^{2x}+1}{2}\)</span> → 長度 <span class="arithmatex">\(n\ge1\)</span> 時個數 <span class="arithmatex">\(\frac{2^n}{2}=2^{n-1}\)</span>，<span class="arithmatex">\(n=3\)</span> 是 4。列出來：000、011、101、110 ✓。</p>
+<h4 id="_12">換你試試</h4>
+<p><strong>T-1.</strong> 兩種糖，每種最多拿 2 顆，總共拿 2 顆有幾種？寫出生成函數，看 <span class="arithmatex">\(x^2\)</span> 的係數。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\((1+x+x^2)^2=1+2x+3x^2+2x^3+x^4\)</span>，係數 3：(0,2)、(1,1)、(2,0)。</p>
+</details>
+<p><strong>T-2.</strong> 長度 2、由 0、1、2 組成的字串，0 出現偶數次的有幾個？用 EGF 算，再列出來。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(\cosh x\cdot e^{2x}=\frac{e^{3x}+e^x}{2}\)</span> → <span class="arithmatex">\(\frac{3^2+1}{2}=5\)</span>。列出：00、11、12、21、22 ✓。</p>
+</details>
+<p><strong>T-3.</strong> 「至少拿 1 個、最多拿 3 個」的生成函數因子怎麼寫？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(x+x^2+x^3\)</span>。</p>
+</details>
 <h3 id="u3-1">3.1 一般生成函數 OGF</h3>
 <p>數列 <span class="arithmatex">\(a_0,a_1,\dots\)</span> 的 OGF 是 <span class="arithmatex">\(A(x)=\sum a_nx^n\)</span>。</p>
 <p><strong>必背展開</strong>：</p>
@@ -924,6 +1107,89 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p><strong>建立遞迴</strong>：看「最後一步」有幾種可能。<strong>解遞迴</strong>：特徵方程求根，再用初始值解係數。</p>
 </div>
+<h3 id="u4-0">4.0 觀念課：把大問題拆成小問題</h3>
+<h4 id="_13">從爬樓梯開始</h4>
+<p>每次可以走 1 階或 2 階，爬 4 階有幾種走法？全部列出來：</p>
+<p>1+1+1+1、1+1+2、1+2+1、2+1+1、2+2，共 <strong>5 種</strong>。</p>
+<p>換一個角度：<strong>看最後一步</strong>。</p>
+<ul>
+<li>最後一步走 1 階 → 前面是「爬 3 階」的任何走法，有 3 種（111、12、21）</li>
+<li>最後一步走 2 階 → 前面是「爬 2 階」的任何走法，有 2 種（11、2）</li>
+</ul>
+<p><span class="arithmatex">\(3+2=5\)</span> ✓。所以 <span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(n\)</span></th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(a_n\)</span></td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>5</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建立遞迴的三步驟</strong>：</p>
+<ol>
+<li>定義清楚 <span class="arithmatex">\(a_n\)</span> 是什麼（「長度 <span class="arithmatex">\(n\)</span> 的……有幾個」）。</li>
+<li>依「最後一步（或第一步）」分類，每一類對應一個較小的 <span class="arithmatex">\(a_k\)</span>。</li>
+<li>寫初始值，<strong>用小的 <span class="arithmatex">\(n\)</span> 全部列出來驗證</strong>。</li>
+</ol>
+<h4 id="_14">為什麼解遞迴要用特徵方程</h4>
+<p><span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}\)</span> 這種數列大概是<strong>等比成長</strong>的，所以猜 <span class="arithmatex">\(a_n=r^n\)</span>，代進去：</p>
+<div class="arithmatex">\[r^n=r^{n-1}+r^{n-2}\ \Rightarrow\ r^2=r+1\]</div>
+<p>這就是特徵方程。解出兩個根 <span class="arithmatex">\(r_1,r_2\)</span>，兩個都滿足遞迴；而且遞迴是線性的，所以 <span class="arithmatex">\(Ar_1^n+Br_2^n\)</span> 也滿足。最後用初始值解出 <span class="arithmatex">\(A,B\)</span>。</p>
+<p><strong>完整做一次</strong>：<span class="arithmatex">\(a_n=3a_{n-1}+4a_{n-2}\)</span>，<span class="arithmatex">\(a_0=2\)</span>、<span class="arithmatex">\(a_1=3\)</span>。</p>
+<ol>
+<li>特徵方程 <span class="arithmatex">\(r^2-3r-4=0\)</span>，<span class="arithmatex">\((r-4)(r+1)=0\)</span>，<span class="arithmatex">\(r=4,-1\)</span>。</li>
+<li>通解 <span class="arithmatex">\(a_n=A\cdot4^n+B(-1)^n\)</span>。</li>
+<li><span class="arithmatex">\(a_0\)</span>：<span class="arithmatex">\(A+B=2\)</span>；<span class="arithmatex">\(a_1\)</span>：<span class="arithmatex">\(4A-B=3\)</span>。相加得 <span class="arithmatex">\(5A=5\)</span>，<span class="arithmatex">\(A=1\)</span>、<span class="arithmatex">\(B=1\)</span>。</li>
+<li><span class="arithmatex">\(a_n=4^n+(-1)^n\)</span>。驗算 <span class="arithmatex">\(a_2=3\times3+4\times2=17=16+1\)</span> ✓。</li>
+</ol>
+<h4 id="n_1">重根時為什麼要乘 <span class="arithmatex">\(n\)</span></h4>
+<p><span class="arithmatex">\(a_n=4a_{n-1}-4a_{n-2}\)</span> 的特徵方程是 <span class="arithmatex">\((r-2)^2=0\)</span>，只有一個根 2。只有 <span class="arithmatex">\(A\cdot2^n\)</span> 一個式子，配不出兩個初始值，需要第二個解。</p>
+<p>試 <span class="arithmatex">\(n\cdot2^n\)</span>：<span class="arithmatex">\(4(n-1)2^{n-1}-4(n-2)2^{n-2}=2^n[2(n-1)-(n-2)]=n\cdot2^n\)</span> ✓，它也滿足。所以重根時通解是 <span class="arithmatex">\((A+Bn)r^n\)</span>。</p>
+<h4 id="_15">右邊多一項（非齊次）：河內塔</h4>
+<p><span class="arithmatex">\(a_n=2a_{n-1}+1\)</span>，<span class="arithmatex">\(a_0=0\)</span>（<span class="arithmatex">\(n\)</span> 個盤子的河內塔步數）。</p>
+<ol>
+<li><strong>先找一個特解</strong>：右邊是常數，猜 <span class="arithmatex">\(a_n=c\)</span>：<span class="arithmatex">\(c=2c+1\)</span>，<span class="arithmatex">\(c=-1\)</span>。</li>
+<li><strong>加上齊次解</strong>：<span class="arithmatex">\(a_n=-1+A\cdot2^n\)</span>。</li>
+<li><strong>用初始值</strong>：<span class="arithmatex">\(a_0=0\)</span> → <span class="arithmatex">\(A=1\)</span>，<span class="arithmatex">\(a_n=2^n-1\)</span>。</li>
+</ol>
+<p>驗算：0、1、3、7、15 ✓。特解的形式<strong>跟右邊長得像</strong>：右邊是常數就猜常數，是 <span class="arithmatex">\(n\)</span> 就猜 <span class="arithmatex">\(An+B\)</span>，是 <span class="arithmatex">\(k^n\)</span> 就猜 <span class="arithmatex">\(Ak^n\)</span>。</p>
+<div class="admonition trap">
+<p class="admonition-title">常卡住的地方</p>
+<ul>
+<li>初始值要從<strong>題目定義</strong>算，不要硬記。<span class="arithmatex">\(a_0\)</span> 常常是 1（空的情況算一種）。</li>
+<li>求出公式後，一定要代 <span class="arithmatex">\(n=2\)</span> 或 3，跟遞迴直接算的數字比對。</li>
+</ul>
+</div>
+<h4 id="_16">換你試試</h4>
+<p><strong>T-1.</strong> 每次可以走 1、2 或 3 階，寫出遞迴與 <span class="arithmatex">\(a_1,a_2,a_3\)</span>，再算 <span class="arithmatex">\(a_4\)</span>。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}+a_{n-3}\)</span>，<span class="arithmatex">\(a_1=1\)</span>、<span class="arithmatex">\(a_2=2\)</span>、<span class="arithmatex">\(a_3=4\)</span>，<span class="arithmatex">\(a_4=4+2+1=7\)</span>。</p>
+</details>
+<p><strong>T-2.</strong> 解 <span class="arithmatex">\(a_n=a_{n-1}+2a_{n-2}\)</span>，<span class="arithmatex">\(a_0=2\)</span>、<span class="arithmatex">\(a_1=1\)</span>。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(r^2-r-2=0\)</span>，<span class="arithmatex">\(r=2,-1\)</span>。<span class="arithmatex">\(A+B=2\)</span>、<span class="arithmatex">\(2A-B=1\)</span> → <span class="arithmatex">\(A=B=1\)</span>。<span class="arithmatex">\(a_n=2^n+(-1)^n\)</span>。驗算 <span class="arithmatex">\(a_2=1+4=5\)</span> ✓。</p>
+</details>
+<p><strong>T-3.</strong> 解 <span class="arithmatex">\(a_n=3a_{n-1}+2\)</span>，<span class="arithmatex">\(a_0=0\)</span>。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>特解 <span class="arithmatex">\(c=3c+2\)</span> → <span class="arithmatex">\(c=-1\)</span>。<span class="arithmatex">\(a_n=A\cdot3^n-1\)</span>，<span class="arithmatex">\(A=1\)</span>。<span class="arithmatex">\(a_n=3^n-1\)</span>（0、2、8、26 ✓）。</p>
+</details>
 <h3 id="u4-1">4.1 建立遞迴：最後一步分類法</h3>
 <p>問自己「長度 <span class="arithmatex">\(n\)</span> 的東西，最後一塊是什麼？」，每種可能對應一個較短的子問題。</p>
 <div class="admonition example">
@@ -1054,6 +1320,69 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>數論題只用到三個工具：<strong>gcd 是線性組合</strong>、<strong>歐幾里得演算法</strong>、<strong>同餘可以加減乘</strong>。</p>
 </div>
+<h3 id="u5-0">5.0 觀念課：整除、gcd 與時鐘算術</h3>
+<h4 id="gcd">gcd 為什麼是「線性組合」</h4>
+<p><span class="arithmatex">\(\gcd(12,8)=4\)</span>，而且 <span class="arithmatex">\(12\times1+8\times(-1)=4\)</span>。</p>
+<p><strong>關鍵事實</strong>：如果 <span class="arithmatex">\(d\)</span> 同時整除 <span class="arithmatex">\(a\)</span> 和 <span class="arithmatex">\(b\)</span>，那 <span class="arithmatex">\(d\)</span> 一定整除 <span class="arithmatex">\(ax+by\)</span>（任何整數 <span class="arithmatex">\(x,y\)</span>）。</p>
+<p>理由：<span class="arithmatex">\(a=dp\)</span>、<span class="arithmatex">\(b=dq\)</span>，所以 <span class="arithmatex">\(ax+by=d(px+qy)\)</span>。</p>
+<p>這給了證明「互質」的標準方法：<strong>湊出 <span class="arithmatex">\(ax+by=1\)</span></strong>。任何公因數都要整除 1，所以只能是 1。</p>
+<h4 id="_17">歐幾里得演算法為什麼對</h4>
+<p><span class="arithmatex">\(a\bmod b=a-qb\)</span> 也是 <span class="arithmatex">\(a,b\)</span> 的線性組合，所以 <span class="arithmatex">\((a,b)\)</span> 和 <span class="arithmatex">\((b,a\bmod b)\)</span> 的公因數完全一樣，gcd 也一樣。數字一直變小，最後餘數是 0 時，另一個數就是 gcd。</p>
+<p><span class="arithmatex">\(\gcd(48,18)\)</span>：</p>
+<table>
+<thead>
+<tr>
+<th>算式</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(48=2\times18+12\)</span></td>
+<td><span class="arithmatex">\(\gcd(48,18)=\gcd(18,12)\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(18=1\times12+6\)</span></td>
+<td><span class="arithmatex">\(=\gcd(12,6)\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(12=2\times6+0\)</span></td>
+<td><span class="arithmatex">\(=6\)</span></td>
+</tr>
+</tbody>
+</table>
+<h4 id="_18">往回代：求模反元素</h4>
+<p>求 <span class="arithmatex">\(7^{-1}\bmod10\)</span>，也就是找 <span class="arithmatex">\(x\)</span> 使 <span class="arithmatex">\(7x\equiv1\pmod{10}\)</span>。</p>
+<ol>
+<li>歐幾里得：<span class="arithmatex">\(10=1\times7+3\)</span>、<span class="arithmatex">\(7=2\times3+1\)</span>。</li>
+<li>從最後一式往回代：<span class="arithmatex">\(1=7-2\times3=7-2\times(10-7)=3\times7-2\times10\)</span>。</li>
+<li>兩邊 mod 10：<span class="arithmatex">\(3\times7\equiv1\)</span>，所以 <span class="arithmatex">\(7^{-1}\equiv3\)</span>。驗算 <span class="arithmatex">\(21=2\times10+1\)</span> ✓。</li>
+</ol>
+<p><strong>往回代的訣竅</strong>：每一步都把「餘數」換成「上一行的被除數 − 商 × 除數」，只保留兩個原始數字。</p>
+<h4 id="_19">同餘：時鐘上的算術</h4>
+<p><span class="arithmatex">\(a\equiv b\pmod n\)</span> 就是「<span class="arithmatex">\(a\)</span> 和 <span class="arithmatex">\(b\)</span> 除以 <span class="arithmatex">\(n\)</span> 餘數一樣」，像時鐘上 13 點和 1 點是同一個位置（mod 12）。</p>
+<ul>
+<li>加、減、乘都可以直接 mod：<span class="arithmatex">\((a\times b)\bmod n=((a\bmod n)\times(b\bmod n))\bmod n\)</span></li>
+<li><strong>除法不行</strong>，要乘反元素，而且只有和 <span class="arithmatex">\(n\)</span> 互質的數才有反元素</li>
+</ul>
+<p><strong>次方會循環</strong>：3 的次方 mod 7 依序是 3、2、6、4、5、1，然後重複。週期 6 剛好是 <span class="arithmatex">\(7-1\)</span>，這就是 Fermat 小定理：<span class="arithmatex">\(p\)</span> 是質數、<span class="arithmatex">\(p\nmid a\)</span> 時，<span class="arithmatex">\(a^{p-1}\equiv1\pmod p\)</span>。</p>
+<p>所以 <span class="arithmatex">\(3^{100}\bmod7\)</span>：<span class="arithmatex">\(100=6\times16+4\)</span>，<span class="arithmatex">\(3^{100}\equiv3^4\equiv4\)</span>。</p>
+<h4 id="_20">換你試試</h4>
+<p><strong>T-1.</strong> 用歐幾里得演算法算 <span class="arithmatex">\(\gcd(84,36)\)</span>。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(84=2\times36+12\)</span>、<span class="arithmatex">\(36=3\times12+0\)</span>，答案 12。</p>
+</details>
+<p><strong>T-2.</strong> 求 <span class="arithmatex">\(5^{-1}\bmod12\)</span>。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(12=2\times5+2\)</span>、<span class="arithmatex">\(5=2\times2+1\)</span>；<span class="arithmatex">\(1=5-2\times2=5-2(12-2\times5)=5\times5-2\times12\)</span>。所以 <span class="arithmatex">\(5^{-1}\equiv5\)</span>（<span class="arithmatex">\(25=2\times12+1\)</span> ✓）。</p>
+</details>
+<p><strong>T-3.</strong> <span class="arithmatex">\(2^{50}\bmod7\)</span>？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(2^3=8\equiv1\)</span>，<span class="arithmatex">\(50=3\times16+2\)</span>，<span class="arithmatex">\(2^{50}\equiv2^2=4\)</span>。</p>
+</details>
 <h3 id="u5-1">5.1 gcd 與線性組合</h3>
 <p><strong>定理</strong>：<span class="arithmatex">\(\gcd(a,b)\)</span> 是 <span class="arithmatex">\(ax+by\)</span> 能表示的最小正整數。所以只要找到 <span class="arithmatex">\(ax+by=1\)</span>，就證明了 <span class="arithmatex">\(a,b\)</span> 互質。</p>
 <div class="admonition example">
@@ -1158,6 +1487,59 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>證明「一定存在」的題目，先想：<strong>鴿子是什麼？籠子是什麼？</strong> 鴿子比籠子多，就有兩隻擠在一起。</p>
 </div>
+<h3 id="u6-0">6.0 觀念課：鴿子比籠子多</h3>
+<h4 id="_21">最基本的形式</h4>
+<p>13 個人裡，一定有 2 個人同一個月生日。<strong>鴿子</strong>是人（13 個），<strong>籠子</strong>是月份（12 個），鴿子比籠子多，一定有一個籠子至少 2 隻。</p>
+<p>推廣：25 個人裡，一定有至少 <span class="arithmatex">\(\lceil25/12\rceil=3\)</span> 個人同一個月生日。如果每個月最多 2 人，全部最多 24 人，不夠 25。</p>
+<h4 id="_22">真正的難點：設計籠子</h4>
+<p>題目不會告訴你籠子是什麼，要自己找。</p>
+<p>「任選 4 個整數，一定有兩個的差是 3 的倍數。」</p>
+<ul>
+<li>差是 3 的倍數 ⇔ 兩數除以 3 的<strong>餘數相同</strong>。</li>
+<li>所以籠子是「餘數 0、1、2」三個，鴿子是 4 個數。4 &gt; 3，一定有兩個數在同一個籠子。</li>
+</ul>
+<p><strong>找籠子的方法</strong>：把要證明的結論改寫成「某兩個東西的某個性質相同」，那個性質的所有可能值就是籠子。</p>
+<h4 id="erdosszekeres-5-3">Erdős–Szekeres：為什麼 5 個數一定有長度 3 的單調子序列</h4>
+<p>先看 4 個數可以躲掉：3, 1, 4, 2。遞增的最長只有 2（例如 1, 4），遞減的最長也只有 2（例如 3, 1）。</p>
+<p>替每個位置貼一個標籤 (以它結尾的最長遞增長度, 以它結尾的最長遞減長度)：</p>
+<table>
+<thead>
+<tr>
+<th>數</th>
+<th>3</th>
+<th>1</th>
+<th>4</th>
+<th>2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>標籤</td>
+<td>(1,1)</td>
+<td>(1,2)</td>
+<td>(2,1)</td>
+<td>(2,2)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>標籤一定兩兩不同</strong>：前面的數比後面小，後面的遞增長度至少多 1；前面比後面大，後面的遞減長度至少多 1。</p>
+<p>如果兩種長度都不超過 2，標籤只有 <span class="arithmatex">\(2\times2=4\)</span> 種（籠子），所以第 5 個數一定會讓某個長度變成 3。一般化：<span class="arithmatex">\(n^2+1\)</span> 個數一定有長度 <span class="arithmatex">\(n+1\)</span> 的單調子序列。</p>
+<h4 id="_23">換你試試</h4>
+<p><strong>T-1.</strong> 至少要幾個人，才保證有 2 人同一天生日（一年以 366 天計）？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>367 人。</p>
+</details>
+<p><strong>T-2.</strong> 證明：任選 5 個整數，一定有兩個的差是 4 的倍數。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>籠子是除以 4 的餘數 0、1、2、3（4 個），5 個數至少兩個餘數相同，它們的差是 4 的倍數。</p>
+</details>
+<p><strong>T-3.</strong> 17 個相異實數，保證有多長的遞增或遞減子序列？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(17=4^2+1\)</span>，保證長度 5。</p>
+</details>
 <h3 id="u6-1">6.1 基本鴿籠</h3>
 <p><span class="arithmatex">\(n+1\)</span> 隻鴿子放進 <span class="arithmatex">\(n\)</span> 個籠子，至少一個籠子有 2 隻。推廣：<span class="arithmatex">\(kn+1\)</span> 隻 → 至少一個籠子有 <span class="arithmatex">\(k+1\)</span> 隻。</p>
 <div class="admonition example">
@@ -1210,6 +1592,60 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>關係計數題就是在數「矩陣裡哪些格子可以自由選」。</p>
 </div>
+<h3 id="u7-0">7.0 觀念課：關係就是一張打勾的表</h3>
+<h4 id="_24">把關係畫成表格</h4>
+<p><span class="arithmatex">\(A=\{1,2\}\)</span>。所有有序對是 (1,1)、(1,2)、(2,1)、(2,2)，排成 <span class="arithmatex">\(2\times2\)</span> 的表格。一個「關係」就是在這張表裡<strong>勾選一些格子</strong>。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>1</th>
+<th>2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>(1,1)</td>
+<td>(1,2)</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>(2,1)</td>
+<td>(2,2)</td>
+</tr>
+</tbody>
+</table>
+<p>4 個格子各自可勾可不勾 → 關係共 <span class="arithmatex">\(2^4=16\)</span> 種。<span class="arithmatex">\(|A|=n\)</span> 時有 <span class="arithmatex">\(n^2\)</span> 格，所以有 <span class="arithmatex">\(2^{n^2}\)</span> 種。</p>
+<h4 id="_25">每種性質就是「哪些格子被綁住」</h4>
+<ul>
+<li><strong>反身</strong>：對角線 (1,1)、(2,2) 一定要勾 → 只剩 (1,2)、(2,1) 自由 → <span class="arithmatex">\(2^2=4\)</span> 種。</li>
+<li><strong>對稱</strong>：(1,2) 勾了，(2,1) 也一定要勾，兩格綁在一起變成一個選擇 → 自由的是 (1,1)、(2,2)、{(1,2),(2,1)} → <span class="arithmatex">\(2^3=8\)</span> 種。</li>
+<li><strong>反對稱</strong>：(1,2) 和 (2,1) 不能同時勾 → 這一對只有 3 種選法（都不勾、只勾一個、只勾另一個）。</li>
+</ul>
+<p>所以所有關係計數題的做法都一樣：<strong>數「可以自由決定的單位」有幾個、每個單位有幾種選法</strong>，再相乘。</p>
+<h4 id="_26">函數與逆像</h4>
+<p><span class="arithmatex">\(f^{-1}(S)\)</span> 讀作「<strong>哪些元素被送進 <span class="arithmatex">\(S\)</span></strong>」，不是反函數。題目說 <span class="arithmatex">\(f^{-1}(\{4,6\})=\{1,3,7\}\)</span>，意思是：1、3、7 被送到 4 或 6，而且<strong>其他元素都不能</strong>送到 4 或 6。</p>
+<h4 id="_27">二元運算：交換律、結合律</h4>
+<p>把運算想成一張「輸入兩個數、輸出一個數」的表。</p>
+<ul>
+<li><strong>交換律</strong>：<span class="arithmatex">\(f(x,y)=f(y,x)\)</span>，表格沿對角線對稱。</li>
+<li><strong>結合律</strong>：<span class="arithmatex">\(f(f(x,y),z)=f(x,f(y,z))\)</span>。</li>
+</ul>
+<p>判斷「不成立」只要<strong>舉一個反例</strong>；判斷「成立」要<strong>代數展開</strong>證明。先試小的數（0、1、2）找反例最快。</p>
+<h4 id="_28">良序原理和「最小反例」</h4>
+<p>良序原理：任何非空的正整數集合都有最小元素。證明題常用：假設有反例，取<strong>最小的反例</strong> <span class="arithmatex">\(m\)</span>，再證明比 <span class="arithmatex">\(m\)</span> 小的某個數也是反例，矛盾。</p>
+<h4 id="_29">換你試試</h4>
+<p><strong>T-1.</strong> <span class="arithmatex">\(A=\{1,2,3\}\)</span> 上的對稱關係有幾個？反身關係呢？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>對稱：對角 3 格＋3 對，共 6 個自由單位，<span class="arithmatex">\(2^6=64\)</span>。反身：<span class="arithmatex">\(9-3=6\)</span> 格自由，<span class="arithmatex">\(2^6=64\)</span>。</p>
+</details>
+<p><strong>T-2.</strong> 減法 <span class="arithmatex">\(f(x,y)=x-y\)</span> 在整數上有沒有交換律、結合律？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(1-2\ne2-1\)</span>，不交換。<span class="arithmatex">\((1-2)-3=-4\)</span>、<span class="arithmatex">\(1-(2-3)=2\)</span>，不結合。</p>
+</details>
 <h3 id="u7-1">7.1 關係的計數公式</h3>
 <p><span class="arithmatex">\(|A|=n\)</span>，關係是 <span class="arithmatex">\(n\times n\)</span> 矩陣的子集。</p>
 <table>
@@ -1402,6 +1838,88 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>狀態代表「到目前為止，<strong>為了判斷未來還需要記住什麼</strong>」。辨識「以某字串結尾」的機器，狀態就是「目前末尾吻合了幾個字元」。</p>
 </div>
+<h3 id="u8-0">8.0 觀念課：機器只記住「需要記的事」</h3>
+<h4 id="_30">比喻：自動販賣機</h4>
+<p>一瓶飲料 15 元，只收 5 元硬幣。販賣機不需要記住你投了哪幾枚硬幣，只需要記住「<strong>目前投了多少錢</strong>」：0、5、10 元三種狀態。投第三枚時就吐出飲料。</p>
+<p>有限狀態機（FSM）就是這樣：<strong>狀態 ＝ 為了判斷未來，需要記住的資訊</strong>。</p>
+<h4 id="01">做一台辨識「以 01 結尾」的機器</h4>
+<p><strong>第一步：需要記住什麼？</strong> 要知道「最後兩個字元是不是 01」，只要記住「上一個字元是不是 0」。</p>
+<p><strong>第二步：每種記憶一個狀態。</strong></p>
+<ul>
+<li><span class="arithmatex">\(s_0\)</span>：上一個字元不是 0（或還沒讀任何字元）</li>
+<li><span class="arithmatex">\(s_1\)</span>：上一個字元是 0</li>
+</ul>
+<p><strong>第三步：寫轉移與輸出</strong>（輸出 1 代表「讀到這裡為止，字串在語言裡」）。</p>
+<table>
+<thead>
+<tr>
+<th>狀態</th>
+<th>讀 0</th>
+<th>讀 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(s_0\)</span></td>
+<td>→ <span class="arithmatex">\(s_1\)</span> / 0</td>
+<td>→ <span class="arithmatex">\(s_0\)</span> / 0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_1\)</span></td>
+<td>→ <span class="arithmatex">\(s_1\)</span> / 0</td>
+<td>→ <span class="arithmatex">\(s_0\)</span> / <strong>1</strong>（剛好讀到 01）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>第四步：用字串驗證。</strong> 讀 1001：</p>
+<table>
+<thead>
+<tr>
+<th>讀入</th>
+<th>1</th>
+<th>0</th>
+<th>0</th>
+<th>1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>狀態變化</td>
+<td><span class="arithmatex">\(s_0\to s_0\)</span></td>
+<td><span class="arithmatex">\(s_0\to s_1\)</span></td>
+<td><span class="arithmatex">\(s_1\to s_1\)</span></td>
+<td><span class="arithmatex">\(s_1\to s_0\)</span></td>
+</tr>
+<tr>
+<td>輸出</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>最後輸出 1，1001 以 01 結尾 ✓。</p>
+<div class="admonition trap">
+<p class="admonition-title">常卡住的地方</p>
+<ul>
+<li>狀態數不是越多越好。先問「需要記住什麼」，記憶相同的情況就是同一個狀態。</li>
+<li>題目的語言先<strong>用中文翻譯一遍</strong>（例如「結尾是 11 或 01」＝「長度至少 2 且最後是 1」），常常會發現比看起來簡單。</li>
+</ul>
+</div>
+<h4 id="_31">換你試試</h4>
+<p><strong>T-1.</strong> 畫出辨識「以 11 結尾」的 FSM（輸入、輸出都是 {0,1}）。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>要記住「末尾連續幾個 1」：0 個（<span class="arithmatex">\(s_0\)</span>）、1 個（<span class="arithmatex">\(s_1\)</span>）、至少 2 個（<span class="arithmatex">\(s_2\)</span>）。
+<span class="arithmatex">\(s_0\)</span>：0→<span class="arithmatex">\(s_0\)</span>/0、1→<span class="arithmatex">\(s_1\)</span>/0；<span class="arithmatex">\(s_1\)</span>：0→<span class="arithmatex">\(s_0\)</span>/0、1→<span class="arithmatex">\(s_2\)</span>/1；<span class="arithmatex">\(s_2\)</span>：0→<span class="arithmatex">\(s_0\)</span>/0、1→<span class="arithmatex">\(s_2\)</span>/1。</p>
+</details>
+<p><strong>T-2.</strong> 用 T-1 的機器讀 0110，輸出是什麼？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(s_0\to s_0\to s_1\to s_2\to s_0\)</span>，輸出 0010。讀到 011 時輸出 1，最後的 0 讓它回到 <span class="arithmatex">\(s_0\)</span>。</p>
+</details>
+<h3 id="u8-1">8.1 考古題與重點整理</h3>
 <p>Grimaldi 的 FSM 是 Mealy 型：每條邊標「輸入／輸出」，輸出 1 代表<strong>讀完這個字元時，到目前為止的字串屬於該語言</strong>。</p>
 <div class="admonition example">
 <p class="admonition-title">111 Q2（10%）：<span class="arithmatex">\(I=O=\{0,1\}\)</span>，辨識 <span class="arithmatex">\(\{0,1\}^*\{11\}\cup\{0,1\}^*\{01\}\)</span></p>
@@ -1497,6 +2015,42 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>離散的機率題就是「好的個數 ÷ 全部個數」，難的是分子，分子用前面的計數和生成函數算。</p>
 </div>
+<h3 id="u9-0">9.0 觀念課：機率就是兩次計數</h3>
+<h4 id="_32">機率 ＝ 好的情況 ÷ 全部情況</h4>
+<p>前提是每種情況<strong>一樣可能</strong>。擲兩顆骰子，總和是 7 的機率：</p>
+<ul>
+<li>全部情況：<span class="arithmatex">\((\text{第一顆},\text{第二顆})\)</span> 共 <span class="arithmatex">\(6\times6=36\)</span> 種，每種機率相同。</li>
+<li>好的情況：(1,6)、(2,5)、(3,4)、(4,3)、(5,2)、(6,1)，共 6 種。</li>
+<li>機率 <span class="arithmatex">\(\frac{6}{36}=\frac16\)</span>。</li>
+</ul>
+<p><strong>為什麼兩顆骰子長得一樣，還要分「第一顆」「第二顆」？</strong> 因為 (3,4) 和 (4,3) 是兩種不同的結果，各有 <span class="arithmatex">\(\frac1{36}\)</span> 的機率。如果把它們當成同一種，各種情況就不再一樣可能，機率會算錯。所以機率題的分母，通常用「有順序、東西都不同」的方式數。</p>
+<h4 id="_33">期望值：加權平均</h4>
+<p>擲一顆骰子的期望值 <span class="arithmatex">\(=\frac{1+2+3+4+5+6}{6}=3.5\)</span>。</p>
+<p><strong>線性</strong>：<span class="arithmatex">\(E[X+Y]=E[X]+E[Y]\)</span>，就算 <span class="arithmatex">\(X\)</span>、<span class="arithmatex">\(Y\)</span> 不獨立也成立。擲兩顆骰子總和的期望值直接是 <span class="arithmatex">\(3.5+3.5=7\)</span>。</p>
+<h4 id="_34">賭徒破產：用遞迴算期望值</h4>
+<p>一共 <span class="arithmatex">\(N\)</span> 元，你有 <span class="arithmatex">\(k\)</span> 元，每局公平地贏 1 元或輸 1 元，到 0 或 <span class="arithmatex">\(N\)</span> 停止。令 <span class="arithmatex">\(E_k\)</span> 為還要玩幾局的期望值：</p>
+<div class="arithmatex">\[E_k=1+\frac12E_{k-1}+\frac12E_{k+1},\quad E_0=E_N=0\]</div>
+<p>意思是：先玩 1 局，之後一半機會變成 <span class="arithmatex">\(k-1\)</span> 元、一半變成 <span class="arithmatex">\(k+1\)</span> 元。</p>
+<p><strong>小例子</strong>：兩人各 1 元（<span class="arithmatex">\(N=2\)</span>）：<span class="arithmatex">\(E_1=1+\frac12\times0+\frac12\times0=1\)</span>，一局就結束 ✓。</p>
+<p>你 1 元、對方 2 元（<span class="arithmatex">\(N=3\)</span>）：<span class="arithmatex">\(E_1=1+\frac12E_2\)</span>、<span class="arithmatex">\(E_2=1+\frac12E_1\)</span>，解得 <span class="arithmatex">\(E_1=2=1\times2\)</span>。</p>
+<p>一般解是 <span class="arithmatex">\(E_k=k(N-k)\)</span>，也就是<strong>兩人錢數相乘</strong>。</p>
+<h4 id="_35">換你試試</h4>
+<p><strong>T-1.</strong> 擲兩顆骰子，總和是 8 的機率？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>(2,6)、(3,5)、(4,4)、(5,3)、(6,2)，<span class="arithmatex">\(\frac{5}{36}\)</span>。注意 (4,4) 只有一種。</p>
+</details>
+<p><strong>T-2.</strong> 擲兩枚硬幣，至少一個正面的機率？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>全部 4 種（正正、正反、反正、反反），只有反反不行，<span class="arithmatex">\(\frac34\)</span>。</p>
+</details>
+<p><strong>T-3.</strong> 兩人各有 2 元，公平賭局直到一人輸光，期望局數？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(2\times2=4\)</span>。</p>
+</details>
+<h3 id="u9-1">9.1 考古題與重點整理</h3>
 <div class="admonition example">
 <p class="admonition-title">115 B1（10 分）：公平骰子擲 5 次，總和為 15 的機率</p>
 <p><span class="arithmatex">\(x_1+\cdots+x_5=15\)</span>、<span class="arithmatex">\(1\le x_i\le6\)</span>。令 <span class="arithmatex">\(y_i=x_i-1\)</span>：<span class="arithmatex">\(y_1+\cdots+y_5=10\)</span>、<span class="arithmatex">\(0\le y_i\le5\)</span>。</p>
@@ -1567,11 +2121,17 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
   function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
   var rec = load();
   var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
+  var seen = {};
   quizzes.forEach(function (d, i) {
     var label = "Q" + (i + 1);
     var prev = d.previousElementSibling;
     if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
-    var id = "quiz-" + (i + 1);
+    // 穩定的 id：前一個有 id 的標題 + 在該標題下的第幾題（之後插入新內容也不會打亂舊紀錄）
+    var h = d.previousElementSibling;
+    while (h && !(/^H[23]$/.test(h.tagName) && h.id)) h = h.previousElementSibling;
+    var base = h ? h.id : "top";
+    seen[base] = (seen[base] || 0) + 1;
+    var id = "q-" + base + "-" + seen[base];
     d.id = id; d.dataset.label = label;
     var bar = document.createElement("div");
     bar.className = "judge";

@@ -144,7 +144,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <div class="admonition key">
 <p class="admonition-title">看不懂的時候</p>
 <ol>
-<li>先讀單元開頭的「觀念課」：用小例子把每種情況列出來，再推出公式。目前有觀念課的是離散單元 1、計結單元 2。</li>
+<li>先讀單元開頭的「觀念課」（每個單元的第 0 節）：用比喻和小例子把每種情況列出來，再推出公式。讀完先做觀念課最後的「換你試試」。</li>
 <li>還是不懂：照<a href="method.html#ai">學習方法頁的範本</a>問 Gemini 這類 AI 家教，或看<a href="method.html#videos">中文開放式課程影片</a>。</li>
 <li>懂了以後回來做該單元的小考，確認自己真的會寫。</li>
 </ol>
@@ -222,6 +222,113 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>追蹤程式時<strong>畫表格</strong>：每一行是一步，每一欄是一個變數或陣列元素。遞迴就畫<strong>呼叫樹</strong>，標出每次呼叫印了什麼、回傳什麼。</p>
 </div>
+<h3 id="u1-0">1.0 觀念課：把記憶體畫成一排格子</h3>
+<h4 id="_2">陣列與指標</h4>
+<p>記憶體是一排有編號的格子。<code>int a[4] = {10, 20, 30, 40};</code> 佔了連續 4 格：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>a[0]</th>
+<th>a[1]</th>
+<th>a[2]</th>
+<th>a[3]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>值</td>
+<td>10</td>
+<td>20</td>
+<td>30</td>
+<td>40</td>
+</tr>
+</tbody>
+</table>
+<p><strong>指標就是「存放格子編號的變數」</strong>。<code>int *p = &amp;a[1];</code> 表示 p 指向 a[1] 那一格。</p>
+<ul>
+<li><code>*p</code> ＝ p 指的那格的值 ＝ 20</li>
+<li><code>p + 2</code> ＝ 往後數 2 格（是 2 個 int，不是 2 個 byte）→ 指向 a[3]，<code>*(p+2)</code> ＝ 40</li>
+<li><code>p[1]</code> 就是 <code>*(p+1)</code> ＝ a[2] ＝ 30</li>
+<li><code>p - a</code> ＝ 兩個指標差幾格 ＝ 1</li>
+</ul>
+<p><strong>追蹤指標題的方法</strong>：把每個指標換成「它指向原陣列的第幾格」，之後 <code>p[k]</code> 一律換成「原陣列第（那格＋k）格」。</p>
+<h4 id="_3">位元運算：對齊後一位一位算</h4>
+<p>以 6（<code>0110</code>）和 3（<code>0011</code>）為例：</p>
+<table>
+<thead>
+<tr>
+<th>運算</th>
+<th>規則</th>
+<th><code>0110</code> 和 <code>0011</code></th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&amp;</code> AND</td>
+<td>兩個都是 1 才是 1</td>
+<td><code>0010</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>&#124;</code> OR</td>
+<td>有一個是 1 就是 1</td>
+<td><code>0111</code></td>
+<td>7</td>
+</tr>
+<tr>
+<td><code>^</code> XOR</td>
+<td>不一樣才是 1</td>
+<td><code>0101</code></td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>&lt;&lt; 1</code></td>
+<td>全部左移一位，等於 ×2</td>
+<td><code>1100</code></td>
+<td>12</td>
+</tr>
+<tr>
+<td><code>&gt;&gt; 1</code></td>
+<td>全部右移一位，等於 ÷2（取整數）</td>
+<td><code>0011</code></td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p><code>~x</code> 是每一位反相。因為二補數裡 <span class="arithmatex">\(x+\sim x=-1\)</span>，所以 <strong><code>-x</code> 等於 <code>~x + 1</code></strong>，考題常用這個陷阱。</p>
+<h4 id="_4">遞迴：畫出呼叫的過程</h4>
+<pre class="highlight"><code class="language-c">void f(int n) {
+    if (n == 0) return;
+    printf("%d ", n);   // 進去之前印
+    f(n - 1);
+    printf("%d ", n);   // 回來之後印
+}</code></pre>
+<p><code>f(2)</code> 的過程，用縮排表示「呼叫裡面的呼叫」：</p>
+<pre class="highlight"><code class="language-text">f(2): 印 2
+   f(1): 印 1
+      f(0): 直接 return
+   f(1): 回來，印 1
+f(2): 回來，印 2</code></pre>
+<p>輸出 <code>2 1 1 2</code>。<strong>每一層呼叫都有自己的 n</strong>，回來之後 n 還是原本的值。</p>
+<p><strong>static 變數</strong>不一樣：整個程式只有一份，每次呼叫都看到同一個，而且只在第一次初始化。一般的區域變數每次呼叫都重新建立。</p>
+<h4 id="_5">換你試試</h4>
+<p><strong>T-1.</strong> <code>6 &amp; 3</code>、<code>6 | 3</code>、<code>6 ^ 3</code>、<code>6 &lt;&lt; 1</code> 各是多少？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>2、7、5、12。</p>
+</details>
+<p><strong>T-2.</strong> 上面的 <code>f(3)</code> 印出什麼？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><code>3 2 1 1 2 3</code>。</p>
+</details>
+<p><strong>T-3.</strong> <code>int b[] = {1,3,5,7}; int *q = b + 3;</code>，<code>*(q-1)</code> 和 <code>q[-3]</code> 是多少？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>q 指向 b[3]。<code>*(q-1)</code> ＝ b[2] ＝ 5；<code>q[-3]</code> ＝ b[0] ＝ 1。</p>
+</details>
 <h3 id="u1-1">1.1 運算子優先順序</h3>
 <p>中山連續考了 112、113、115 三年的位元運算題，優先順序一定要背：</p>
 <table>
@@ -513,6 +620,72 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>排序題考三件事：<strong>複雜度表</strong>、<strong>穩定性</strong>、<strong>手動模擬某一輪後的結果</strong>。</p>
 </div>
+<h3 id="u2-0">2.0 觀念課：整理撲克牌的幾種方法</h3>
+<h4 id="insertion-sort">insertion sort：像整理手上的牌</h4>
+<p>一張一張拿起來，插到已經排好的那部分的正確位置。排 3, 1, 2：</p>
+<table>
+<thead>
+<tr>
+<th>步驟</th>
+<th>手上（已排好）</th>
+<th>動作</th>
+<th>swap 次數</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>3</td>
+<td>拿 3</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1, 3</td>
+<td>1 比 3 小，換一次</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1, 2, 3</td>
+<td>2 比 3 小換一次，比 1 大停下</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>共 2 次 swap。3, 1, 2 的<strong>逆序對</strong>（前面比後面大的組合）是 (3,1)、(3,2)，也是 2 個。每次相鄰交換剛好消掉一個逆序對，所以 <strong>swap 次數 ＝ 逆序對數</strong>。</p>
+<p>已經排好的資料沒有逆序對，insertion sort 只要 <span class="arithmatex">\(O(n)\)</span>；完全反序有 <span class="arithmatex">\(\frac{n(n-1)}{2}\)</span> 個，要 <span class="arithmatex">\(O(n^2)\)</span>。</p>
+<h4 id="quick-sort-merge-sort">quick sort 和 merge sort</h4>
+<ul>
+<li><strong>quick sort</strong>：選一個 pivot，比它小的放左邊、大的放右邊，再各自遞迴。pivot 剛好在中間時每次切一半，<span class="arithmatex">\(O(n\log n)\)</span>；資料已經排好又每次選第一個當 pivot，每次只切掉一個，變成 <span class="arithmatex">\(O(n^2)\)</span>。</li>
+<li><strong>merge sort</strong>：切成兩半各自排好，再<strong>合併</strong>兩個排好的序列。合併 [1, 4, 7] 和 [2, 3, 9]：每次比較兩邊最前面的，小的拿出來 → 1, 2, 3, 4, 7, 9。合併是 <span class="arithmatex">\(O(n)\)</span>，切了 <span class="arithmatex">\(\log n\)</span> 層，總共 <span class="arithmatex">\(O(n\log n)\)</span>，而且最差也一樣。</li>
+</ul>
+<h4 id="heap">heap：用陣列存的完全二元樹</h4>
+<p>完全二元樹可以一層一層放進陣列，不需要指標。0-based 時：</p>
+<ul>
+<li>節點 <span class="arithmatex">\(i\)</span> 的左子節點 <span class="arithmatex">\(2i+1\)</span>、右子節點 <span class="arithmatex">\(2i+2\)</span></li>
+<li>父節點 <span class="arithmatex">\(\lfloor(i-1)/2\rfloor\)</span></li>
+</ul>
+<p>max heap 的規則：<strong>每個節點都比它的子節點大</strong>，所以最大的一定在根（陣列第 0 格）。heap sort 就是一直把根拿出來。</p>
+<h4 id="_6">穩定性為什麼重要</h4>
+<p><strong>穩定（stable）</strong>：值相同的元素，排序後保持原本的先後順序。</p>
+<p>例如先依姓名排好，再依成績排序。如果用穩定的排序，同分的人還會維持姓名順序；不穩定的排序可能把同分的人打亂。radix sort 從個位數排到最高位，每一輪都<strong>必須穩定</strong>，前一輪排好的順序才不會被破壞。</p>
+<h4 id="_7">換你試試</h4>
+<p><strong>T-1.</strong> 2, 4, 1, 3 用 insertion sort 要 swap 幾次？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>逆序對 (2,1)、(4,1)、(4,3)，3 次。</p>
+</details>
+<p><strong>T-2.</strong> 0-based heap 陣列中，index 5 的父節點是幾號？index 1 的子節點呢？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>父節點 <span class="arithmatex">\(\lfloor4/2\rfloor=2\)</span>；index 1 的子節點是 3 和 4。</p>
+</details>
+<p><strong>T-3.</strong> 為什麼 quick sort 對「已經排好」的資料最慢？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>每次選第一個當 pivot，它剛好是最小的，切出來一邊 0 個、一邊 <span class="arithmatex">\(n-1\)</span> 個，要切 <span class="arithmatex">\(n\)</span> 層，總共 <span class="arithmatex">\(O(n^2)\)</span>。</p>
+</details>
 <h3 id="u2-1">2.1 比較表（必背）</h3>
 <table>
 <thead>
@@ -652,6 +825,72 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p>交換會把前面的元素丟到後面，越過相同的值。例如 <span class="arithmatex">\(2_a, 2_b, 1\)</span>：第一輪把 1 和 <span class="arithmatex">\(2_a\)</span> 交換，得到 <span class="arithmatex">\(1, 2_b, 2_a\)</span>，兩個 2 的順序反了。</p>
 </details>
 <h2 id="u3">單元 3：樹</h2>
+<h3 id="u3-0">3.0 觀念課：三種走訪只差「根」放在哪裡</h3>
+<h4 id="_8">三種走訪</h4>
+<p>最小的樹：根 A，左子 B，右子 C。</p>
+<table>
+<thead>
+<tr>
+<th>走訪</th>
+<th>順序</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>preorder</td>
+<td><strong>根</strong>、左、右</td>
+<td>A B C</td>
+</tr>
+<tr>
+<td>inorder</td>
+<td>左、<strong>根</strong>、右</td>
+<td>B A C</td>
+</tr>
+<tr>
+<td>postorder</td>
+<td>左、右、<strong>根</strong></td>
+<td>B C A</td>
+</tr>
+</tbody>
+</table>
+<p>名字裡的 pre／in／post 就是「根在前面、中間、後面」。大一點的樹，對每棵子樹遞迴套用同一個規則。</p>
+<h4 id="_9">為什麼可以由走訪結果重建樹</h4>
+<ul>
+<li>preorder 的<strong>第一個</strong>、postorder 的<strong>最後一個</strong>一定是根。</li>
+<li>在 inorder 中找到根，<strong>左邊全是左子樹、右邊全是右子樹</strong>。</li>
+<li>知道左子樹有幾個節點，就能把 preorder／postorder 也切開，對左右子樹遞迴。</li>
+</ul>
+<p>只有 preorder ＋ postorder 時，沒辦法知道「只有一個子節點時是左還是右」，所以不能唯一決定。</p>
+<h4 id="bst">BST：左小右大</h4>
+<p>二元搜尋樹的規則：<strong>左子樹所有值 &lt; 節點 &lt; 右子樹所有值</strong>。所以 BST 的 inorder 走訪一定是<strong>由小到大</strong>排好的，這可以用來檢查自己畫的 BST 對不對。</p>
+<h4 id="avl">AVL：不讓樹長歪</h4>
+<p>依序插入 1、2、3 到普通的 BST，會變成一條斜線，搜尋要 <span class="arithmatex">\(O(n)\)</span>。AVL 規定每個節點左右子樹高度差不超過 1，超過就<strong>旋轉</strong>。</p>
+<p>插入 3、2、1：</p>
+<pre class="highlight"><code class="language-text">插入後          右旋（以 3 為軸）
+    3                 2
+   /                 / \
+  2         →       1   3
+ /
+1</code></pre>
+<p>3 的左邊高 2、右邊高 0，不平衡；新節點在「左子樹的左邊」→ LL 情況 → 對 3 右旋。旋轉後中間值 2 變成根，<strong>inorder 仍然是 1, 2, 3</strong>，旋轉不會破壞 BST 的順序。</p>
+<p>如果插入順序是 1、3、2，新節點在「右子樹的左邊」（RL），要轉兩次，結果一樣是 2 當根、1 和 3 在兩邊。</p>
+<h4 id="_10">換你試試</h4>
+<p><strong>T-1.</strong> 樹：A 的左子 B、右子 C；B 的左子 D、右子 E。寫出 preorder、inorder、postorder。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>preorder A B D E C；inorder D B E A C；postorder D E B C A。</p>
+</details>
+<p><strong>T-2.</strong> 依序插入 5, 3, 8, 4 到空的 BST，inorder 走訪是什麼？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>3 4 5 8（BST 的 inorder 一定是排好的）。</p>
+</details>
+<p><strong>T-3.</strong> 依序插入 1, 3, 2 到空的 AVL tree，結果是什麼？屬於哪種旋轉？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>RL：根 2，左 1、右 3。</p>
+</details>
 <h3 id="u3-1">3.1 走訪與重建</h3>
 <ul>
 <li>preorder：根、左、右；inorder：左、根、右；postorder：左、右、根。</li>
@@ -749,6 +988,59 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p>Catalan 數 <span class="arithmatex">\(C_4=\frac{1}{5}\binom84=14\)</span>。</p>
 </details>
 <h2 id="u4">單元 4：雜湊</h2>
+<h3 id="u4-0">4.0 觀念課：依學號尾數分配置物櫃</h3>
+<h4 id="_11">雜湊的想法</h4>
+<p>有 5 個置物櫃（編號 0–4），每個學號放到「學號 mod 5」那一格。要找人時直接算出櫃子號碼，不用一個個翻，平均 <span class="arithmatex">\(O(1)\)</span>。</p>
+<p><strong>碰撞（collision）</strong>：兩個學號算出同一格，例如 7 和 12 都是 mod 5 ＝ 2。</p>
+<h4 id="linear-probing">linear probing：被佔了就往下一格</h4>
+<p><span class="arithmatex">\(M=5\)</span>，依序放 7、12、2：</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th><span class="arithmatex">\(k \bmod 5\)</span></th>
+<th>過程</th>
+<th>放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td>2</td>
+<td>空的</td>
+<td>2</td>
+</tr>
+<tr>
+<td>12</td>
+<td>2</td>
+<td>2 被佔 → 3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>2、3 被佔 → 4</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<p>問題：被佔的格子會連成一大塊，之後算到這一塊的 key 都要走很久，越來越長，這叫 <strong>primary clustering</strong>。</p>
+<h4 id="double-hashing-key">double hashing：每個 key 的步伐不一樣</h4>
+<p>碰撞時不是固定走 1 格，而是走 <span class="arithmatex">\(h_2(k)\)</span> 格：第 <span class="arithmatex">\(i\)</span> 次探測位置是 <span class="arithmatex">\((h_1(k)+i\cdot h_2(k))\bmod M\)</span>。不同的 key 就算第一次撞在同一格，之後走的路線也不同，不會擠成一團。</p>
+<p><span class="arithmatex">\(h_2\)</span> 不能是 0（不然永遠原地踏步），而且最好和 <span class="arithmatex">\(M\)</span> 互質，<span class="arithmatex">\(M\)</span> 取質數最簡單。</p>
+<p><strong>load factor</strong> <span class="arithmatex">\(\alpha=\frac{\text{放了幾個}}{M}\)</span>。<span class="arithmatex">\(\alpha\)</span> 越接近 1，碰撞越多、越慢。</p>
+<h4 id="_12">換你試試</h4>
+<p><strong>T-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7，各放在哪裡？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>三個 mod 7 都是 0：14→0、21→1、7→2。</p>
+</details>
+<p><strong>T-2.</strong> <span class="arithmatex">\(M=7\)</span>、double hashing、<span class="arithmatex">\(h_1=k\bmod7\)</span>、<span class="arithmatex">\(h_2=5-(k\bmod5)\)</span>，依序插入 14、21？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>14：<span class="arithmatex">\(h_1=0\)</span>，放 0。21：<span class="arithmatex">\(h_1=0\)</span> 被佔，<span class="arithmatex">\(h_2=5-1=4\)</span>，放 <span class="arithmatex">\(0+4=4\)</span>。</p>
+</details>
+<h3 id="u4-1">4.1 考古題與重點整理</h3>
 <table>
 <thead>
 <tr>
@@ -839,6 +1131,64 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p>18→5、41→2、22→9、44→5 佔用，<span class="arithmatex">\(h_2=5\)</span> → 10、59→7、32→6。<code>[2]=41, [5]=18, [6]=32, [7]=59, [9]=22, [10]=44</code>。</p>
 </details>
 <h2 id="u5">單元 5：圖</h2>
+<h3 id="u5-0">5.0 觀念課：用最少的電線連起所有城市</h3>
+<h4 id="_13">圖怎麼存</h4>
+<p>三個點 A、B、C，邊 A–B（權重 1）、B–C（權重 2）、A–C（權重 3）：</p>
+<p><strong>鄰接矩陣</strong>（<span class="arithmatex">\(V\times V\)</span> 的表，適合邊很多的圖）：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>0</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>B</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+</tr>
+<tr>
+<td>C</td>
+<td>3</td>
+<td>2</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>鄰接串列</strong>（每個點只記鄰居，適合邊少的圖）：A: B(1), C(3)；B: A(1), C(2)；C: A(3), B(2)。</p>
+<h4 id="mst">最小生成樹（MST）</h4>
+<p>要用電線把所有城市連起來，總長度最短。<strong>不需要環</strong>（有環就能拆掉一條還是連通），所以答案一定是一棵樹，<span class="arithmatex">\(V\)</span> 個點用 <span class="arithmatex">\(V-1\)</span> 條邊。</p>
+<p>上面三個點的 MST：A–B（1）＋ B–C（2），總長 3。A–C（3）會成環，不要。</p>
+<p><strong>為什麼「挑最便宜的」是對的</strong>：把點分成兩群，跨兩群的邊裡最便宜的那條，一定可以出現在某個 MST 裡（換成別的跨群邊只會更貴）。兩種演算法都是重複利用這件事：</p>
+<ul>
+<li><strong>Prim</strong>：從一個點開始長大，每次加「樹內連到樹外最便宜的邊」。</li>
+<li><strong>Kruskal</strong>：所有邊由便宜到貴排好，依序加入，<strong>會成環的跳過</strong>。</li>
+</ul>
+<h4 id="dijkstra">最短路徑：Dijkstra</h4>
+<p>從起點出發，每次挑「目前離起點最近、還沒確定」的點，確定它的距離，再用它更新鄰居的距離。前提是<strong>邊的權重不能是負的</strong>，不然「已經確定的最短距離」可能被後來的負邊推翻。</p>
+<h4 id="_14">換你試試</h4>
+<p>圖：A–B 4、A–C 1、B–C 2、B–D 5、C–D 8。</p>
+<p><strong>T-1.</strong> 從 A 開始用 Prim，依序加入哪些邊？總權重？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>A–C（1）、C–B（2）、B–D（5），總權重 8。</p>
+</details>
+<p><strong>T-2.</strong> 從 A 到 D 的最短路徑和距離？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>A → C → B → D，<span class="arithmatex">\(1+2+5=8\)</span>（A→B→D 是 9，A→C→D 也是 9）。</p>
+</details>
+<h3 id="u5-1">5.1 考古題與重點整理</h3>
 <table>
 <thead>
 <tr>
@@ -924,6 +1274,71 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>這類題和離散數學的「建立遞迴」是同一件事：<strong>看最後一步（或第一步）有幾種可能</strong>。</p>
 </div>
+<h3 id="u6-0">6.0 觀念課：遞迴＋記住算過的答案</h3>
+<h4 id="dp">為什麼需要 DP</h4>
+<p>費氏數列 <span class="arithmatex">\(f(n)=f(n-1)+f(n-2)\)</span> 直接遞迴，<span class="arithmatex">\(f(5)\)</span> 會呼叫 15 次，因為 <span class="arithmatex">\(f(3)\)</span>、<span class="arithmatex">\(f(2)\)</span> 被重複算了好幾次。如果算過就<strong>記在表裡</strong>，<span class="arithmatex">\(f(0)\)</span> 到 <span class="arithmatex">\(f(5)\)</span> 每個只算一次。</p>
+<p><strong>動態規劃（DP）＝ 遞迴的拆法 ＋ 把子問題的答案記下來</strong>。所以 DP 題的核心，其實是寫出正確的遞迴式。</p>
+<h4 id="_15">寫遞迴式的四步</h4>
+<ol>
+<li><strong>定義狀態</strong>：用一句話說清楚 <span class="arithmatex">\(g(i,j)\)</span> 是什麼，例如「只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊出 <span class="arithmatex">\(j\)</span> 元的方法數」。</li>
+<li><strong>看最後一步（或第一步）分類</strong>：「有沒有用到第 <span class="arithmatex">\(i\)</span> 種硬幣」。</li>
+<li><strong>寫邊界</strong>：<span class="arithmatex">\(j=0\)</span> 時有 1 種（什麼都不放）；<span class="arithmatex">\(j&lt;0\)</span> 時 0 種。</li>
+<li><strong>用小數字驗證</strong>：列出來數，跟遞迴算的比。</li>
+</ol>
+<p><strong>例子</strong>：用 1 元、2 元湊 4 元，不計順序。</p>
+<p><span class="arithmatex">\(g(i,j)=g(i-1,j)+g(i,j-c_i)\)</span>：不用第 <span class="arithmatex">\(i\)</span> 種，或至少用一個第 <span class="arithmatex">\(i\)</span> 種（用掉一個後還可以再用，所以第一個參數還是 <span class="arithmatex">\(i\)</span>）。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><span class="arithmatex">\(j=0\)</span></th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>只用 1 元</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>用 1、2 元</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>答案 3：1+1+1+1、1+1+2、2+2 ✓。表格每一格 ＝ 上面一格 ＋ 同一列往左 2 格。</p>
+<h4 id="catalan">Catalan 數：看第一對括號</h4>
+<p>3 對括號的合法排法：<code>((()))</code>、<code>(()())</code>、<code>(())()</code>、<code>()(())</code>、<code>()()()</code>，共 5 種。</p>
+<p>看<strong>第一個左括號跟哪個右括號配對</strong>：它們中間有 <span class="arithmatex">\(k\)</span> 對，右邊還有 <span class="arithmatex">\(n-1-k\)</span> 對，兩邊各自任意合法排列。</p>
+<div class="arithmatex">\[C_n=\sum_{k=0}^{n-1}C_kC_{n-1-k}\]</div>
+<p><span class="arithmatex">\(C_3=C_0C_2+C_1C_1+C_2C_0=2+1+2=5\)</span> ✓。同樣的拆法也適用在「<span class="arithmatex">\(n\)</span> 個節點的二元樹有幾種形狀」（根的左子樹有 <span class="arithmatex">\(k\)</span> 個節點）和 stack 的輸出順序。</p>
+<h4 id="_16">換你試試</h4>
+<p><strong>T-1.</strong> 用 1、2、3 元湊 4 元（不計順序），有幾種？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>4 種：1+1+1+1、1+1+2、2+2、1+3。</p>
+</details>
+<p><strong>T-2.</strong> 3 個不同的鍵可以組成幾種形狀的 BST？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(C_3=5\)</span>。</p>
+</details>
+<p><strong>T-3.</strong> 用 <span class="arithmatex">\(2\times1\)</span> 骨牌鋪滿 <span class="arithmatex">\(2\times3\)</span>，有幾種？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}\)</span>，<span class="arithmatex">\(a_1=1\)</span>、<span class="arithmatex">\(a_2=2\)</span>，<span class="arithmatex">\(a_3=3\)</span>。</p>
+</details>
 <h3 id="u6-1">6.1 Catalan 數</h3>
 <p><span class="arithmatex">\(C_n=\frac{1}{n+1}\binom{2n}{n}\)</span>：1, 1, 2, 5, 14, 42, …，遞迴 <span class="arithmatex">\(C_n=\sum_{k=0}^{n-1}C_kC_{n-1-k}\)</span>。</p>
 <p>以下都是 <span class="arithmatex">\(C_n\)</span>：<span class="arithmatex">\(n\)</span> 對合法括號、<span class="arithmatex">\(n\)</span> 個節點的二元樹形狀數、<span class="arithmatex">\(n\)</span> 個元素的 stack 輸出排列數。</p>
@@ -1026,11 +1441,17 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
   function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
   var rec = load();
   var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
+  var seen = {};
   quizzes.forEach(function (d, i) {
     var label = "Q" + (i + 1);
     var prev = d.previousElementSibling;
     if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
-    var id = "quiz-" + (i + 1);
+    // 穩定的 id：前一個有 id 的標題 + 在該標題下的第幾題（之後插入新內容也不會打亂舊紀錄）
+    var h = d.previousElementSibling;
+    while (h && !(/^H[23]$/.test(h.tagName) && h.id)) h = h.previousElementSibling;
+    var base = h ? h.id : "top";
+    seen[base] = (seen[base] || 0) + 1;
+    var id = "q-" + base + "-" + seen[base];
     d.id = id; d.dataset.label = label;
     var bar = document.createElement("div");
     bar.className = "judge";

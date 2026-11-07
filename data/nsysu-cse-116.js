@@ -157,25 +157,25 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "計數：四個基本模型、球放箱子",
-     "read": "教材 1.1–1.2：先判斷「東西有沒有區別、順序重不重要」",
+     "read": "先讀觀念課 1.0，再讀教材 1.1–1.2：先判斷「東西有沒有區別、順序重不重要」",
      "practice": "例題 111 Q8、113 Q1、113 Q5、114 Q3 先遮詳解自己做",
-     "link": "notes/discrete.html#u1-1"
+     "link": "notes/discrete.html#u1-0"
     },
     {
      "subject": "ca",
      "time": "下午",
      "title": "效能：CPU time 與加權 CPI",
-     "read": "教材 1.1",
+     "read": "先讀觀念課 1.0，再讀教材 1.1",
      "practice": "例題 115 Q1.2、Q2.1",
-     "link": "notes/arch.html#u1-1"
+     "link": "notes/arch.html#u1-0"
     },
     {
      "subject": "osds",
      "time": "晚上",
      "title": "資結：C 程式：運算子優先順序與位元運算",
-     "read": "教材 1.1：背優先順序表",
+     "read": "先讀觀念課 1.0，再讀教材 1.1：背優先順序表",
      "practice": "例題 115 Q5a、112 Q1a、113 Q1a",
-     "link": "notes/ds.html#u1-1"
+     "link": "notes/ds.html#u1-0"
     }
    ],
    "review": [
@@ -211,26 +211,26 @@ window.EXAMS.push({
      "subject": "osds",
      "time": "晚上",
      "title": "OS：行程、PCB、IPC",
-     "read": "教材 1.1",
+     "read": "先讀觀念課 1.0，再讀教材 1.1",
      "practice": "例題 112 Q5a、115 Q2、114 Q6b",
-     "link": "notes/os.html#u1-1"
+     "link": "notes/os.html#u1-0"
     }
    ],
    "review": [
     {
      "subject": "dm",
      "text": "不看答案重做〈計數：四個基本模型、球放箱子〉的小考（昨天學的）",
-     "link": "notes/discrete.html#u1-1"
+     "link": "notes/discrete.html#u1-0"
     },
     {
      "subject": "ca",
      "text": "不看答案重做〈效能：CPU time 與加權 CPI〉的小考（昨天學的）",
-     "link": "notes/arch.html#u1-1"
+     "link": "notes/arch.html#u1-0"
     },
     {
      "subject": "osds",
      "text": "回想〈C 程式：運算子優先順序與位元運算〉的重點，寫不出來就重看",
-     "link": "notes/ds.html#u1-1"
+     "link": "notes/ds.html#u1-0"
     },
     {
      "subject": "osds",
@@ -273,17 +273,17 @@ window.EXAMS.push({
     {
      "subject": "dm",
      "text": "不看答案重做〈計數：四個基本模型、球放箱子〉的小考（約 3 天前學的）",
-     "link": "notes/discrete.html#u1-1"
+     "link": "notes/discrete.html#u1-0"
     },
     {
      "subject": "ca",
      "text": "不看答案重做〈效能：CPU time 與加權 CPI〉的小考（約 3 天前學的）",
-     "link": "notes/arch.html#u1-1"
+     "link": "notes/arch.html#u1-0"
     },
     {
      "subject": "osds",
      "text": "回想〈C 程式：運算子優先順序與位元運算〉的重點，寫不出來就重看",
-     "link": "notes/ds.html#u1-1"
+     "link": "notes/ds.html#u1-0"
     },
     {
      "subject": "osds",
@@ -304,17 +304,17 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "排容：公式與倍數問題",
-     "read": "教材 2.1–2.2",
+     "read": "先讀觀念課 2.0，再讀教材 2.1–2.2",
      "practice": "例題 115 A3；Grimaldi 第 8 章倍數題 5 題",
-     "link": "notes/discrete.html#u2-1"
+     "link": "notes/discrete.html#u2-0"
     },
     {
      "subject": "ca",
      "time": "下午",
      "title": "Cache：位址切割",
-     "read": "教材 2.1：offset、index、tag 三步驟",
+     "read": "先讀觀念課 2.0，再讀教材 2.1：offset、index、tag 三步驟",
      "practice": "COD 第 5 章位址切割習題 6 題",
-     "link": "notes/arch.html#u2-1"
+     "link": "notes/arch.html#u2-0"
     },
     {
      "subject": "osds",
@@ -339,7 +339,7 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "text": "回想〈行程、PCB、IPC〉的重點，寫不出來就重看",
-     "link": "notes/os.html#u1-1"
+     "link": "notes/os.html#u1-0"
     },
     {
      "subject": "osds",
@@ -454,9 +454,9 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "生成函數：OGF 建模與卷積",
-     "read": "教材 3.1：每個變數寫一個因子",
+     "read": "先讀觀念課 3.0，再讀教材 3.1：每個變數寫一個因子",
      "practice": "例題 114 Q7、112 Q5",
-     "link": "notes/discrete.html#u3-1"
+     "link": "notes/discrete.html#u3-0"
     },
     {
      "subject": "ca",
@@ -470,21 +470,21 @@ window.EXAMS.push({
      "subject": "osds",
      "time": "晚上",
      "title": "OS：同步",
-     "read": "教材單元 2",
+     "read": "先讀觀念課 2.0，再讀教材單元 2",
      "practice": "例題 114 Q6a、112 Q5b；做單元 2 小考",
-     "link": "notes/os.html#u2"
+     "link": "notes/os.html#u2-0"
     }
    ],
    "review": [
     {
      "subject": "dm",
      "text": "不看答案重做〈排容：公式與倍數問題〉的小考（約 3 天前學的）",
-     "link": "notes/discrete.html#u2-1"
+     "link": "notes/discrete.html#u2-0"
     },
     {
      "subject": "ca",
      "text": "不看答案重做〈Cache：位址切割〉的小考（約 3 天前學的）",
-     "link": "notes/arch.html#u2-1"
+     "link": "notes/arch.html#u2-0"
     },
     {
      "subject": "osds",
@@ -526,9 +526,9 @@ window.EXAMS.push({
      "subject": "osds",
      "time": "晚上",
      "title": "資結：排序：比較表與逆序數",
-     "read": "教材 2.1–2.2：背複雜度表",
+     "read": "先讀觀念課 2.0，再讀教材 2.1–2.2：背複雜度表",
      "practice": "例題 115 Q9、113 Q3、112 Q2",
-     "link": "notes/ds.html#u2-1"
+     "link": "notes/ds.html#u2-0"
     }
    ],
    "review": [
@@ -582,16 +582,16 @@ window.EXAMS.push({
      "subject": "osds",
      "time": "晚上",
      "title": "OS：死結",
-     "read": "教材單元 3",
+     "read": "先讀觀念課 3.0，再讀教材單元 3",
      "practice": "例題 115 Q3a、112 Q8a；做單元 3 小考",
-     "link": "notes/os.html#u3"
+     "link": "notes/os.html#u3-0"
     }
    ],
    "review": [
     {
      "subject": "dm",
      "text": "不看答案重做〈生成函數：OGF 建模與卷積〉的小考（約 3 天前學的）",
-     "link": "notes/discrete.html#u3-1"
+     "link": "notes/discrete.html#u3-0"
     },
     {
      "subject": "ca",
@@ -601,7 +601,7 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "text": "回想〈同步〉的重點，寫不出來就重看",
-     "link": "notes/os.html#u2"
+     "link": "notes/os.html#u2-0"
     },
     {
      "subject": "osds",
@@ -668,9 +668,9 @@ window.EXAMS.push({
      "subject": "ca",
      "time": "下午",
      "title": "虛擬記憶體：位元切割、page table 大小",
-     "read": "教材 3.1",
+     "read": "先讀觀念課 3.0，再讀教材 3.1",
      "practice": "例題 114 Q2、113 Q7.1、111 P2",
-     "link": "notes/arch.html#u3-1"
+     "link": "notes/arch.html#u3-0"
     },
     {
      "subject": "osds",
@@ -695,7 +695,7 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "text": "回想〈排序：比較表與逆序數〉的重點，寫不出來就重看",
-     "link": "notes/ds.html#u2-1"
+     "link": "notes/ds.html#u2-0"
     },
     {
      "subject": "osds",
@@ -716,9 +716,9 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "遞迴：最後一步分類法",
-     "read": "教材 4.1：112、114 連續兩年考同一模型",
+     "read": "先讀觀念課 4.0，再讀教材 4.1：112、114 連續兩年考同一模型",
      "practice": "例題 112 Q7、114 Q6、111 Q6",
-     "link": "notes/discrete.html#u4-1"
+     "link": "notes/discrete.html#u4-0"
     },
     {
      "subject": "ca",
@@ -732,9 +732,9 @@ window.EXAMS.push({
      "subject": "osds",
      "time": "晚上",
      "title": "OS：位址繫結與 TLB",
-     "read": "教材 4.1",
+     "read": "先讀觀念課 4.0，再讀教材 4.1",
      "practice": "例題 112 Q6a、114 Q7、113 Q5a",
-     "link": "notes/os.html#u4-1"
+     "link": "notes/os.html#u4-0"
     }
    ],
    "review": [
@@ -751,7 +751,7 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "text": "回想〈死結〉的重點，寫不出來就重看",
-     "link": "notes/os.html#u3"
+     "link": "notes/os.html#u3-0"
     },
     {
      "subject": "osds",
@@ -780,17 +780,17 @@ window.EXAMS.push({
      "subject": "ca",
      "time": "下午",
      "title": "Pipeline：時間計算",
-     "read": "教材 4.1",
+     "read": "先讀觀念課 4.0，再讀教材 4.1",
      "practice": "例題 113 Q3",
-     "link": "notes/arch.html#u4-1"
+     "link": "notes/arch.html#u4-0"
     },
     {
      "subject": "osds",
      "time": "晚上",
      "title": "資結：樹：走訪重建與 BST",
-     "read": "教材 3.1–3.2",
+     "read": "先讀觀念課 3.0，再讀教材 3.1–3.2",
      "practice": "例題 115 Q6、111 Q3",
-     "link": "notes/ds.html#u3-1"
+     "link": "notes/ds.html#u3-0"
     }
    ],
    "review": [
@@ -802,7 +802,7 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "text": "不看答案重做〈虛擬記憶體：位元切割、page table 大小〉的小考（約 3 天前學的）",
-     "link": "notes/arch.html#u3-1"
+     "link": "notes/arch.html#u3-0"
     },
     {
      "subject": "osds",
@@ -853,7 +853,7 @@ window.EXAMS.push({
     {
      "subject": "dm",
      "text": "不看答案重做〈遞迴：最後一步分類法〉的小考（約 3 天前學的）",
-     "link": "notes/discrete.html#u4-1"
+     "link": "notes/discrete.html#u4-0"
     },
     {
      "subject": "ca",
@@ -863,7 +863,7 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "text": "回想〈位址繫結與 TLB〉的重點，寫不出來就重看",
-     "link": "notes/os.html#u4-1"
+     "link": "notes/os.html#u4-0"
     },
     {
      "subject": "osds",
@@ -952,12 +952,12 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "text": "不看答案重做〈Pipeline：時間計算〉的小考（約 3 天前學的）",
-     "link": "notes/arch.html#u4-1"
+     "link": "notes/arch.html#u4-0"
     },
     {
      "subject": "osds",
      "text": "回想〈樹：走訪重建與 BST〉的重點，寫不出來就重看",
-     "link": "notes/ds.html#u3-1"
+     "link": "notes/ds.html#u3-0"
     },
     {
      "subject": "osds",
@@ -978,17 +978,17 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "數論：gcd 與線性組合",
-     "read": "教材 5.1",
+     "read": "先讀觀念課 5.0，再讀教材 5.1",
      "practice": "例題 112 Q2、Q8；自己再證 3 題互質",
-     "link": "notes/discrete.html#u5-1"
+     "link": "notes/discrete.html#u5-0"
     },
     {
      "subject": "ca",
      "time": "下午",
      "title": "分支：penalty 與額外 CPI",
-     "read": "教材 5.1",
+     "read": "先讀觀念課 5.0，再讀教材 5.1",
      "practice": "例題 113 Q4、112 Q1.3–1.4",
-     "link": "notes/arch.html#u5-1"
+     "link": "notes/arch.html#u5-0"
     },
     {
      "subject": "osds",
@@ -1098,29 +1098,29 @@ window.EXAMS.push({
      "subject": "ca",
      "time": "下午",
      "title": "多執行緒：fixed 與 data-dependent 切換",
-     "read": "教材 6.1",
+     "read": "先讀觀念課 6.0，再讀教材 6.1",
      "practice": "例題 114 Q5",
-     "link": "notes/arch.html#u6-1"
+     "link": "notes/arch.html#u6-0"
     },
     {
      "subject": "osds",
      "time": "晚上",
      "title": "OS：檔案系統",
-     "read": "教材 5.1",
+     "read": "先讀觀念課 5.0，再讀教材 5.1",
      "practice": "例題 114 Q5a、112 Q7、111 Q5",
-     "link": "notes/os.html#u5-1"
+     "link": "notes/os.html#u5-0"
     }
    ],
    "review": [
     {
      "subject": "dm",
      "text": "不看答案重做〈數論：gcd 與線性組合〉的小考（約 3 天前學的）",
-     "link": "notes/discrete.html#u5-1"
+     "link": "notes/discrete.html#u5-0"
     },
     {
      "subject": "ca",
      "text": "不看答案重做〈分支：penalty 與額外 CPI〉的小考（約 3 天前學的）",
-     "link": "notes/arch.html#u5-1"
+     "link": "notes/arch.html#u5-0"
     },
     {
      "subject": "osds",
@@ -1184,9 +1184,9 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "鴿籠與 Erdős–Szekeres",
-     "read": "教材 6.1–6.2：先想「鴿子是什麼、籠子是什麼」",
+     "read": "先讀觀念課 6.0，再讀教材 6.1–6.2：先想「鴿子是什麼、籠子是什麼」",
      "practice": "例題 111 Q1、114 Q4、112 Q3",
-     "link": "notes/discrete.html#u6-1"
+     "link": "notes/discrete.html#u6-0"
     },
     {
      "subject": "ca",
@@ -1200,9 +1200,9 @@ window.EXAMS.push({
      "subject": "osds",
      "time": "晚上",
      "title": "資結：雜湊",
-     "read": "教材單元 4",
+     "read": "先讀觀念課 4.0，再讀教材單元 4",
      "practice": "例題 115 Q7；做單元 4 小考",
-     "link": "notes/ds.html#u4"
+     "link": "notes/ds.html#u4-0"
     }
    ],
    "review": [
@@ -1248,9 +1248,9 @@ window.EXAMS.push({
      "subject": "ca",
      "time": "下午",
      "title": "DRAM refresh",
-     "read": "教材 7.1",
+     "read": "先讀觀念課 7.0，再讀教材 7.1",
      "practice": "例題 114 Q1、112 Q2",
-     "link": "notes/arch.html#u7-1"
+     "link": "notes/arch.html#u7-0"
     },
     {
      "subject": "osds",
@@ -1270,12 +1270,12 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "text": "不看答案重做〈多執行緒：fixed 與 data-dependent 切換〉的小考（約 3 天前學的）",
-     "link": "notes/arch.html#u6-1"
+     "link": "notes/arch.html#u6-0"
     },
     {
      "subject": "osds",
      "text": "回想〈檔案系統〉的重點，寫不出來就重看",
-     "link": "notes/os.html#u5-1"
+     "link": "notes/os.html#u5-0"
     },
     {
      "subject": "osds",
@@ -1296,9 +1296,9 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "關係的計數",
-     "read": "教材 7.1：把關係想成矩陣的格子",
+     "read": "先讀觀念課 7.0，再讀教材 7.1：把關係想成矩陣的格子",
      "practice": "例題 113 Q7、111 Q3",
-     "link": "notes/discrete.html#u7-1"
+     "link": "notes/discrete.html#u7-0"
     },
     {
      "subject": "ca",
@@ -1312,16 +1312,16 @@ window.EXAMS.push({
      "subject": "osds",
      "time": "晚上",
      "title": "資結：圖：MST",
-     "read": "教材單元 5",
+     "read": "先讀觀念課 5.0，再讀教材單元 5",
      "practice": "例題 115 Q8；做單元 5 小考",
-     "link": "notes/ds.html#u5"
+     "link": "notes/ds.html#u5-0"
     }
    ],
    "review": [
     {
      "subject": "dm",
      "text": "不看答案重做〈鴿籠與 Erdős–Szekeres〉的小考（約 3 天前學的）",
-     "link": "notes/discrete.html#u6-1"
+     "link": "notes/discrete.html#u6-0"
     },
     {
      "subject": "ca",
@@ -1331,7 +1331,7 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "text": "回想〈雜湊〉的重點，寫不出來就重看",
-     "link": "notes/ds.html#u4"
+     "link": "notes/ds.html#u4-0"
     },
     {
      "subject": "osds",
@@ -1360,17 +1360,17 @@ window.EXAMS.push({
      "subject": "ca",
      "time": "下午",
      "title": "GPU、VLIW、superscalar、array processor",
-     "read": "教材 8.1–8.2",
+     "read": "先讀觀念課 8.0，再讀教材 8.1–8.2",
      "practice": "例題 113 Q2、114 Q6",
-     "link": "notes/arch.html#u8-1"
+     "link": "notes/arch.html#u8-0"
     },
     {
      "subject": "osds",
      "time": "晚上",
      "title": "OS：保護、安全與其他",
-     "read": "教材單元 6",
+     "read": "先讀觀念課 6.0，再讀教材單元 6",
      "practice": "例題 112 Q8b–c、Q9、113 Q7",
-     "link": "notes/os.html#u6"
+     "link": "notes/os.html#u6-0"
     }
    ],
    "review": [
@@ -1382,7 +1382,7 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "text": "不看答案重做〈DRAM refresh〉的小考（約 3 天前學的）",
-     "link": "notes/arch.html#u7-1"
+     "link": "notes/arch.html#u7-0"
     },
     {
      "subject": "osds",
@@ -1446,9 +1446,9 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "有限狀態機",
-     "read": "教材單元 8：狀態＝需要記住的資訊",
+     "read": "先讀觀念課 8.0，再讀教材單元 8：狀態＝需要記住的資訊",
      "practice": "例題 111 Q2、114 Q5；做單元 8 小考",
-     "link": "notes/discrete.html#u8"
+     "link": "notes/discrete.html#u8-0"
     },
     {
      "subject": "ca",
@@ -1462,16 +1462,16 @@ window.EXAMS.push({
      "subject": "osds",
      "time": "晚上",
      "title": "資結：Catalan 數",
-     "read": "教材 6.1",
+     "read": "先讀觀念課 6.0，再讀教材 6.1",
      "practice": "例題 114 Q4、111 Q2",
-     "link": "notes/ds.html#u6-1"
+     "link": "notes/ds.html#u6-0"
     }
    ],
    "review": [
     {
      "subject": "dm",
      "text": "不看答案重做〈關係的計數〉的小考（約 3 天前學的）",
-     "link": "notes/discrete.html#u7-1"
+     "link": "notes/discrete.html#u7-0"
     },
     {
      "subject": "ca",
@@ -1481,7 +1481,7 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "text": "回想〈圖：MST〉的重點，寫不出來就重看",
-     "link": "notes/ds.html#u5"
+     "link": "notes/ds.html#u5-0"
     },
     {
      "subject": "osds",
@@ -1502,17 +1502,17 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "機率與期望值",
-     "read": "教材單元 9",
+     "read": "先讀觀念課 9.0，再讀教材單元 9",
      "practice": "例題 115 B1、A10；做單元 9 小考",
-     "link": "notes/discrete.html#u9"
+     "link": "notes/discrete.html#u9-0"
     },
     {
      "subject": "ca",
      "time": "下午",
      "title": "ISA 與算術",
-     "read": "教材單元 9",
+     "read": "先讀觀念課 9.0，再讀教材單元 9",
      "practice": "例題 115 Q3、Q4、111 P1.1；做單元 9 小考",
-     "link": "notes/arch.html#u9"
+     "link": "notes/arch.html#u9-0"
     },
     {
      "subject": "osds",
@@ -1532,12 +1532,12 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "text": "不看答案重做〈GPU、VLIW、superscalar、array processor〉的小考（約 3 天前學的）",
-     "link": "notes/arch.html#u8-1"
+     "link": "notes/arch.html#u8-0"
     },
     {
      "subject": "osds",
      "text": "回想〈保護、安全與其他〉的重點，寫不出來就重看",
-     "link": "notes/os.html#u6"
+     "link": "notes/os.html#u6-0"
     },
     {
      "subject": "osds",
@@ -1583,7 +1583,7 @@ window.EXAMS.push({
     {
      "subject": "dm",
      "text": "不看答案重做〈有限狀態機〉的小考（約 3 天前學的）",
-     "link": "notes/discrete.html#u8"
+     "link": "notes/discrete.html#u8-0"
     },
     {
      "subject": "ca",
@@ -1593,7 +1593,7 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "text": "回想〈Catalan 數〉的重點，寫不出來就重看",
-     "link": "notes/ds.html#u6-1"
+     "link": "notes/ds.html#u6-0"
     },
     {
      "subject": "osds",
@@ -1639,12 +1639,12 @@ window.EXAMS.push({
     {
      "subject": "dm",
      "text": "不看答案重做〈機率與期望值〉的小考（約 3 天前學的）",
-     "link": "notes/discrete.html#u9"
+     "link": "notes/discrete.html#u9-0"
     },
     {
      "subject": "ca",
      "text": "不看答案重做〈ISA 與算術〉的小考（約 3 天前學的）",
-     "link": "notes/arch.html#u9"
+     "link": "notes/arch.html#u9-0"
     },
     {
      "subject": "osds",
@@ -2993,28 +2993,28 @@ window.EXAMS.push({
    "slug": "discrete",
    "subject": "dm",
    "title": "離散數學",
-   "desc": "111–115 全部 48 題拆成 9 個單元：計數、排容、生成函數、遞迴、數論、鴿籠、關係、FSM、機率",
+   "desc": "9 個單元各有觀念課，111–115 全部 48 題都有詳解：計數、排容、生成函數、遞迴、數論、鴿籠、關係、FSM、機率",
    "url": "notes/discrete.html"
   },
   {
    "slug": "arch",
    "subject": "ca",
    "title": "計算機結構",
-   "desc": "效能、cache、虛擬記憶體、pipeline、分支、多執行緒、DRAM、平行、ISA 與算術",
+   "desc": "9 個單元各有觀念課：效能、cache、虛擬記憶體、pipeline、分支、多執行緒、DRAM、平行、ISA 與算術",
    "url": "notes/arch.html"
   },
   {
    "slug": "os",
    "subject": "osds",
    "title": "作業系統",
-   "desc": "行程與排程、同步、死結、記憶體、儲存與 I/O、安全；113–115 填空總表",
+   "desc": "6 個單元各有觀念課：行程與排程、同步、死結、記憶體、儲存與 I/O、安全；加上 113–115 填空總表",
    "url": "notes/os.html"
   },
   {
    "slug": "ds",
    "subject": "osds",
    "title": "資料結構",
-   "desc": "C 程式追蹤、排序、樹、雜湊、圖、遞迴計數與 DP",
+   "desc": "6 個單元各有觀念課：C 程式追蹤、排序、樹、雜湊、圖、遞迴計數與 DP",
    "url": "notes/ds.html"
   }
  ],

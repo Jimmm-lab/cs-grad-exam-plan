@@ -137,11 +137,17 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
   function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
   var rec = load();
   var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
+  var seen = {};
   quizzes.forEach(function (d, i) {
     var label = "Q" + (i + 1);
     var prev = d.previousElementSibling;
     if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
-    var id = "quiz-" + (i + 1);
+    // 穩定的 id：前一個有 id 的標題 + 在該標題下的第幾題（之後插入新內容也不會打亂舊紀錄）
+    var h = d.previousElementSibling;
+    while (h && !(/^H[23]$/.test(h.tagName) && h.id)) h = h.previousElementSibling;
+    var base = h ? h.id : "top";
+    seen[base] = (seen[base] || 0) + 1;
+    var id = "q-" + base + "-" + seen[base];
     d.id = id; d.dataset.label = label;
     var bar = document.createElement("div");
     bar.className = "judge";

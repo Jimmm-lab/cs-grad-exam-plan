@@ -146,7 +146,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <div class="admonition key">
 <p class="admonition-title">看不懂的時候</p>
 <ol>
-<li>先讀單元開頭的「觀念課」：用小例子把每種情況列出來，再推出公式。目前有觀念課的是離散單元 1、計結單元 2。</li>
+<li>先讀單元開頭的「觀念課」（每個單元的第 0 節）：用比喻和小例子把每種情況列出來，再推出公式。讀完先做觀念課最後的「換你試試」。</li>
 <li>還是不懂：照<a href="method.html#ai">學習方法頁的範本</a>問 Gemini 這類 AI 家教，或看<a href="method.html#videos">中文開放式課程影片</a>。</li>
 <li>懂了以後回來做該單元的小考，確認自己真的會寫。</li>
 </ol>
@@ -203,6 +203,123 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </div>
 <p><strong>建議讀的順序</strong>：單元 1 行程與排程 → 2 同步 → 3 死結 → 4 記憶體 → 5 儲存與檔案 → 6 保護、安全與其他 → 7 名詞總表。</p>
 <h2 id="u1">單元 1：行程、執行緒與 CPU 排程</h2>
+<h3 id="u1-0">1.0 觀念課：食譜和正在做菜的廚師</h3>
+<h4 id="_2">程式和行程差在哪</h4>
+<p><strong>程式（program）</strong> 是食譜，靜靜放在磁碟上。<strong>行程（process）</strong> 是正在照著食譜做菜的廚師：他做到第幾步（<strong>program counter</strong>）、手邊有哪些材料（<strong>暫存器、記憶體</strong>），這些「進度」都屬於這個行程。</p>
+<p>同一份食譜可以有好幾個廚師同時在做，就像同一個程式可以開好幾個行程。作業系統用 <strong>PCB</strong> 記錄每個行程的進度，換人做的時候先把現在的進度存進 PCB，再把下一個人的進度讀出來，這就是 <strong>context switch</strong>。換人本身不做任何有用的工作，所以是額外開銷。</p>
+<h4 id="_3">行程的五種狀態</h4>
+<table>
+<thead>
+<tr>
+<th>狀態</th>
+<th>意思</th>
+<th>怎麼進來</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>new</td>
+<td>剛建立</td>
+<td>程式被執行</td>
+</tr>
+<tr>
+<td>ready</td>
+<td>準備好了，在等 CPU</td>
+<td>被建立、I/O 完成、時間片用完被換下</td>
+</tr>
+<tr>
+<td>running</td>
+<td>正在 CPU 上跑</td>
+<td>被排程器選中（dispatch）</td>
+</tr>
+<tr>
+<td>waiting</td>
+<td>在等某件事（I/O、子行程結束）</td>
+<td>自己發出 I/O 請求或等待</td>
+</tr>
+<tr>
+<td>terminated</td>
+<td>結束</td>
+<td>執行完畢</td>
+</tr>
+</tbody>
+</table>
+<p>最常考的兩條路：running → waiting（<strong>發 I/O 請求</strong>）、running → ready（<strong>時間片用完</strong>或被更高優先權的搶走）。</p>
+<h4 id="cpu">排程：誰先用 CPU</h4>
+<p>只有一個 CPU、很多行程在 ready queue 等。三個常用的衡量指標：</p>
+<ul>
+<li><strong>waiting time</strong>：在 ready queue 裡等的總時間</li>
+<li><strong>turnaround time</strong>：從進來到完成的總時間 ＝ waiting ＋ 執行時間</li>
+<li><strong>response time</strong>：從進來到第一次被執行</li>
+</ul>
+<p><strong>為什麼短的先做，平均等待時間最短</strong>：P1 要 4、P2 要 1，同時到達。</p>
+<table>
+<thead>
+<tr>
+<th>順序</th>
+<th>P1 等</th>
+<th>P2 等</th>
+<th>平均</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1 → P2（FCFS）</td>
+<td>0</td>
+<td>4</td>
+<td>2</td>
+</tr>
+<tr>
+<td>P2 → P1（SJF）</td>
+<td>1</td>
+<td>0</td>
+<td>0.5</td>
+</tr>
+</tbody>
+</table>
+<p>長的排在前面，後面每個人都要多等它那麼久；短的先做，大家多等的時間就少。</p>
+<p><strong>Round Robin</strong>：每人輪流用一小段時間（time quantum）。P1 要 5、P2 要 3，quantum ＝ 2：</p>
+<table>
+<thead>
+<tr>
+<th>時間</th>
+<th>0–2</th>
+<th>2–4</th>
+<th>4–6</th>
+<th>6–7</th>
+<th>7–8</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>執行</td>
+<td>P1</td>
+<td>P2</td>
+<td>P1</td>
+<td>P2</td>
+<td>P1</td>
+</tr>
+</tbody>
+</table>
+<p>P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時間：P1 <span class="arithmatex">\(8-5=3\)</span>、P2 <span class="arithmatex">\(7-3=4\)</span>，平均 3.5。</p>
+<h4 id="thread-process">thread 和 process</h4>
+<p>同一個 process 裡的 threads <strong>共用</strong>程式碼、全域資料、開啟的檔案，但各自有自己的 <strong>program counter、暫存器、stack</strong>。像同一個廚房裡的幾個廚師，共用冰箱和爐子，但各自做到不同步驟。</p>
+<h4 id="_4">換你試試</h4>
+<p><strong>T-1.</strong> P1、P2、P3 同時到達，執行時間 3、6、1，SJF 的平均等待時間？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>順序 P3、P1、P2，等待 0、1、4 → P1 1、P2 4、P3 0，平均 <span class="arithmatex">\(\frac53\)</span>。</p>
+</details>
+<p><strong>T-2.</strong> P1、P2 都要 3，quantum ＝ 2 的 RR，平均等待時間？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>P1 0–2、P2 2–4、P1 4–5、P2 5–6。完成 5、6，等待 <span class="arithmatex">\(5-3=2\)</span>、<span class="arithmatex">\(6-3=3\)</span>，平均 2.5。</p>
+</details>
+<p><strong>T-3.</strong> 一個 running 的行程呼叫 <code>read()</code> 讀檔案，會進入哪個狀態？讀完之後呢？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>running → waiting；I/O 完成後 → ready（不是直接回 running，要等排程器再選它）。</p>
+</details>
 <h3 id="u1-1">1.1 行程</h3>
 <ul>
 <li><strong>記憶體配置</strong>：text（程式碼）、data（全域變數）、<strong>heap</strong>（動態配置）、stack（函式呼叫）。（114 Q8b 填空）</li>
@@ -286,6 +403,86 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>多個 process 同時存取共享資料、結果又跟執行順序有關，就是 <strong>race condition</strong>。解法是讓<strong>臨界區（critical section）</strong>一次只有一個人進去。</p>
 </div>
+<h3 id="u2-0">2.0 觀念課：一行 <code>counter++</code> 其實是三步</h3>
+<h4 id="race-condition">race condition 怎麼發生</h4>
+<p><code>counter++</code> 在機器上是三步：讀到暫存器、加 1、寫回記憶體。counter 一開始是 5，兩個 thread 各做一次 <code>counter++</code>，正確答案是 7。但如果交錯成這樣：</p>
+<table>
+<thead>
+<tr>
+<th>時間</th>
+<th>Thread 1</th>
+<th>Thread 2</th>
+<th>counter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>讀到 5</td>
+<td></td>
+<td>5</td>
+</tr>
+<tr>
+<td>2</td>
+<td></td>
+<td>讀到 5</td>
+<td>5</td>
+</tr>
+<tr>
+<td>3</td>
+<td>加 1 → 6，寫回</td>
+<td></td>
+<td>6</td>
+</tr>
+<tr>
+<td>4</td>
+<td></td>
+<td>加 1 → 6，寫回</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<p>結果是 6，有一次加法不見了。<strong>結果取決於交錯的順序</strong>，這就是 race condition。</p>
+<h4 id="critical-section">critical section：一次只能一個人進去</h4>
+<p>存取共享資料的那段程式碼叫 <strong>critical section</strong>。像只有一把鑰匙的廁所：拿到鑰匙（lock）才能進去，出來再把鑰匙還回去。</p>
+<p>好的解法要滿足三個條件：</p>
+<ol>
+<li><strong>mutual exclusion</strong>：一次最多一個人在裡面。</li>
+<li><strong>progress</strong>：沒人在裡面時，想進去的人不能一直被擋著。</li>
+<li><strong>bounded waiting</strong>：排隊的人等待的次數有上限，不會一直被插隊（不會餓死）。</li>
+</ol>
+<h4 id="_5">硬體怎麼幫忙：不可分割的指令</h4>
+<p>自己寫「先檢查 lock 是不是空的，再把它設成佔用」不行，因為兩個 thread 可能<strong>同時檢查到空的</strong>，又出現上面那種交錯。</p>
+<p><code>test_and_set</code> 這類指令把「讀舊值、設成 true」<strong>合成一個不可分割的動作</strong>：</p>
+<ul>
+<li>讀到舊值 false → 你搶到 lock 了（它同時變成 true）。</li>
+<li>讀到舊值 true → 別人已經拿走了，繼續等。</li>
+</ul>
+<h4 id="semaphore">semaphore：停車場的剩餘車位</h4>
+<p>semaphore 是一個整數，像停車場門口的「剩餘車位」看板：</p>
+<ul>
+<li><code>wait()</code>：要進場，車位減 1；減完小於 0 就在門口排隊。</li>
+<li><code>signal()</code>：離場，車位加 1；有人在排隊就叫醒一個。</li>
+</ul>
+<p>初始值 1 的 semaphore 就是一把 lock（一次一台車）；初始值 <span class="arithmatex">\(n\)</span> 就能管理 <span class="arithmatex">\(n\)</span> 份資源。</p>
+<p><strong>生產者－消費者</strong>用三個 semaphore：<code>empty</code>（空格數，初始 <span class="arithmatex">\(n\)</span>）、<code>full</code>（有資料的格數，初始 0）、<code>mutex</code>（保護 buffer，初始 1）。生產者先 <code>wait(empty)</code> 再放資料再 <code>signal(full)</code>，消費者反過來。</p>
+<h4 id="_6">換你試試</h4>
+<p><strong>T-1.</strong> counter ＝ 0，兩個 thread 各做一次 <code>counter++</code>，沒有 lock，最後可能是多少？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>1 或 2。</p>
+</details>
+<p><strong>T-2.</strong> semaphore 初始值 3，有 5 個行程依序呼叫 <code>wait()</code>，幾個會被擋住？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>2 個（值變成 −2，負多少就有幾個在排隊）。</p>
+</details>
+<p><strong>T-3.</strong> 為什麼在多處理器上，「關掉中斷」不能保護 critical section？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>關中斷只影響自己這顆 CPU，其他 CPU 照樣可以同時執行同一段 critical section。</p>
+</details>
+<h3 id="u2-1">2.1 考古題與重點整理</h3>
 <ul>
 <li><strong>race condition</strong>：多個 process 並行存取同一份資料，結果取決於存取的順序。（112 Q9e、114 Q8c）</li>
 <li>critical-section 問題的解法必須滿足三個條件：<strong>mutual exclusion</strong>、<strong>progress</strong>、<strong>bounded waiting</strong>。（113 Q8b、115 Q1d）</li>
@@ -317,6 +514,78 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>死結要<strong>四個條件同時成立</strong>：mutual exclusion、hold and wait、no preemption、circular wait。破壞其中一個就不會死結。</p>
 </div>
+<h3 id="u3-0">3.0 觀念課：兩個人各拿一支筷子</h3>
+<h4 id="_7">最小的死結</h4>
+<p>P1 拿著資源 R1、在等 R2；P2 拿著 R2、在等 R1。兩人都不放手，永遠等下去。像兩個人吃飯，各拿了一支筷子，都在等對方的那一支。</p>
+<p>把四個必要條件對到這個例子：</p>
+<table>
+<thead>
+<tr>
+<th>條件</th>
+<th>在例子裡</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mutual exclusion</td>
+<td>一支筷子一次只能一個人用</td>
+</tr>
+<tr>
+<td>hold and wait</td>
+<td>手上拿著一支，還在等另一支</td>
+</tr>
+<tr>
+<td>no preemption</td>
+<td>不能把別人手上的筷子搶過來</td>
+</tr>
+<tr>
+<td>circular wait</td>
+<td>P1 等 P2、P2 等 P1，繞成一圈</td>
+</tr>
+</tbody>
+</table>
+<p>四個都成立才會死結。<strong>破壞任何一個就不會死結</strong>，這就是 deadlock prevention 的思路，例如「一次把兩支筷子都拿到才開始吃」破壞了 hold and wait。</p>
+<h4 id="_8">避免死結：銀行家只借「還得回來」的錢</h4>
+<p>Banker's algorithm 的想法：銀行只在「借出去之後，<strong>仍然存在某個順序</strong>能讓每個客戶都借滿、用完、還錢」時才借。這種狀態叫 <strong>safe state</strong>。</p>
+<p><strong>小例子</strong>：一種資源共 10 份。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>最多需要</th>
+<th>目前持有</th>
+<th>還需要</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>8</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>5</td>
+<td>2</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>可用 <span class="arithmatex">\(10-4-2=4\)</span>。P2 還需要 3 ≤ 4 → P2 可以做完，還回 2 份 → 可用 6。P1 還需要 4 ≤ 6 → 也能做完。存在順序 P2 → P1，所以是 <strong>safe</strong>。</p>
+<p>判斷方法就是：<strong>反覆找一個「還需要 ≤ 目前可用」的行程，讓它做完、把它持有的加回可用</strong>。全部都能做完就是 safe。</p>
+<h4 id="_9">換你試試</h4>
+<p><strong>T-1.</strong> 「要求行程一開始就申請所有需要的資源」破壞的是哪個條件？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>hold and wait。</p>
+</details>
+<p><strong>T-2.</strong> 一種資源共 12 份：P0 最多 10、持有 5；P1 最多 4、持有 2；P2 最多 9、持有 2。是 safe 嗎？順序是？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>可用 <span class="arithmatex">\(12-9=3\)</span>。P1 還需 2 ≤ 3 → 做完，可用 5；P0 還需 5 ≤ 5 → 做完，可用 10；P2 還需 7 ≤ 10 → 做完。safe，順序 P1、P0、P2。</p>
+</details>
+<h3 id="u3-1">3.1 考古題與重點整理</h3>
 <ul>
 <li>四個必要條件。（114 Q8d 填 hold and wait）</li>
 <li><strong>circular wait 蘊含 hold and wait</strong>：形成循環的每個 process 都正在持有資源又在等別的資源。（115 Q1g）</li>
@@ -350,6 +619,106 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>邏輯位址要轉成實體位址。<strong>什麼時候轉</strong>（binding）、<strong>怎麼轉</strong>（paging、TLB）、<strong>記憶體不夠時怎麼辦</strong>（demand paging、置換、thrashing）是這個單元的三條主線。</p>
 </div>
+<h3 id="u4-0">4.0 觀念課：記憶體不夠時，誰要讓出來</h3>
+<h4 id="paging">paging 的想法</h4>
+<p>（計結教材 3.0 的「門牌對照表」講的是同一件事，可以先看那一節。）</p>
+<p>把程式的位址空間切成一樣大的 <strong>page</strong>，實體記憶體切成一樣大的 <strong>frame</strong>。任何 page 可以放進任何 frame，用 page table 記錄對應。好處是不會有「中間有空隙但塞不下」的外部碎片。</p>
+<h4 id="page-fault">page fault 時發生什麼事</h4>
+<ol>
+<li>程式存取一個 page，page table 標示它不在記憶體（valid ＝ 0）。</li>
+<li>硬體產生 trap，交給作業系統。</li>
+<li>作業系統找一個空的 frame；<strong>沒有空的就挑一個 page 踢出去</strong>（如果它被改過，dirty bit ＝ 1，要先寫回磁碟）。</li>
+<li>從磁碟把需要的 page 讀進來，更新 page table。</li>
+<li>重新執行剛剛那條指令。</li>
+</ol>
+<p>只在用到時才載入 page，叫 <strong>demand paging</strong>。</p>
+<h4 id="_10">踢誰出去：三種策略</h4>
+<p>3 個 frame，存取順序 7, 0, 1, 2, 0, 3, 0, 4：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>規則</th>
+<th>page fault 次數</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FIFO</td>
+<td>踢最早進來的</td>
+<td>7</td>
+</tr>
+<tr>
+<td>LRU</td>
+<td>踢最久沒被用到的</td>
+<td>6</td>
+</tr>
+<tr>
+<td>OPT</td>
+<td>踢「未來最晚才會用到」的（理論最佳，無法實作）</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+<p>FIFO 的過程（F 代表 page fault）：</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>7</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>0</th>
+<th>3</th>
+<th>0</th>
+<th>4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frame 內容</td>
+<td>7</td>
+<td>7,0</td>
+<td>7,0,1</td>
+<td>0,1,2</td>
+<td>0,1,2</td>
+<td>1,2,3</td>
+<td>2,3,0</td>
+<td>3,0,4</td>
+</tr>
+<tr>
+<td>結果</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>hit</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+</tr>
+</tbody>
+</table>
+<p>LRU 在第 6 次存取（3）時，踢的是 1（0 剛剛才用過），所以之後的 0 會 hit，少一次 fault。</p>
+<h4 id="eat-page-fault">EAT：為什麼 page fault 要極少</h4>
+<div class="arithmatex">\[\text{EAT}=(1-p)\times\text{記憶體存取時間}+p\times\text{page fault 處理時間}\]</div>
+<p>記憶體 100 ns、page fault 10 ms（<span class="arithmatex">\(10^7\)</span> ns），<span class="arithmatex">\(p=0.001\)</span>：</p>
+<div class="arithmatex">\[0.999\times100+0.001\times10^7\approx10100\text{ ns}\]</div>
+<p>每 1000 次才 fault 一次，平均存取時間就變成原本的 <strong>100 倍</strong>。這就是考題要你算「page fault rate 要低於多少」的原因。</p>
+<h4 id="thrashing">thrashing</h4>
+<p>行程太多、每個人分到的 frame 太少，每個行程都在不斷 page fault、等磁碟，CPU 使用率反而掉下來。作業系統看到 CPU 閒著，又加更多行程進來，情況更糟。解法是用 working set 估計每個行程需要多少 frame，不夠時<strong>減少</strong>同時執行的行程數。</p>
+<h4 id="_11">換你試試</h4>
+<p><strong>T-1.</strong> 3 個 frame，存取 1, 2, 3, 1, 4, 1。FIFO 和 LRU 各幾次 page fault？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>FIFO 5 次（4 進來時踢掉 1，最後的 1 又 fault）；LRU 4 次（4 進來時踢掉最久沒用的 2，最後的 1 hit）。</p>
+</details>
+<p><strong>T-2.</strong> 為什麼 dirty bit 能讓置換變快？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>沒被改過的 page（dirty ＝ 0）磁碟上的副本還是最新的，直接丟掉就好，不用寫回磁碟。</p>
+</details>
 <h3 id="u4-1">4.1 位址繫結與轉換</h3>
 <div class="admonition example">
 <p class="admonition-title">112 Q6a（6%）：compile time、load time、execution time 的位址繫結差別</p>
@@ -455,6 +824,90 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><code>fork()</code> 之後子行程馬上呼叫 <code>exec()</code> 載入新程式時：父行程的 page 幾乎都不會被寫入，完全不用複製。</p>
 </details>
 <h2 id="u5">單元 5：儲存、檔案與 I/O</h2>
+<h3 id="u5-0">5.0 觀念課：硬碟像一台唱片機</h3>
+<h4 id="_12">讀一個區塊要花三段時間</h4>
+<p>硬碟是好幾片疊在一起旋轉的碟片，讀寫頭裝在一支可以前後移動的手臂上，像唱片機。</p>
+<table>
+<thead>
+<tr>
+<th>時間</th>
+<th>在做什麼</th>
+<th>比喻</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>seek time</td>
+<td>手臂移到正確的磁軌</td>
+<td>唱針移到第幾首歌</td>
+</tr>
+<tr>
+<td>rotational latency</td>
+<td>等要讀的那一段轉到讀寫頭下面</td>
+<td>等那首歌的開頭轉過來</td>
+</tr>
+<tr>
+<td>transfer time</td>
+<td>真正讀資料</td>
+<td>播放</td>
+</tr>
+</tbody>
+</table>
+<p><strong>平均 rotational latency ＝ 轉半圈的時間</strong>。7200 RPM：一圈 <span class="arithmatex">\(\frac{60}{7200}\)</span> 秒 ≈ 8.33 ms，半圈約 4.17 ms。</p>
+<p>隨機讀取時，seek 和 rotational latency 遠大於 transfer，所以把同一個檔案的區塊<strong>放在一起</strong>（111 Q7 的 clustering）可以省下大量時間。</p>
+<h4 id="i-node">檔案的區塊放在哪：i-node</h4>
+<p>i-node 像一本書的<strong>目錄頁</strong>：前面幾格直接寫「第 1 章在第幾頁」（direct pointer），後面一格寫「其他章節的目錄在第幾頁」（indirect pointer），那一頁整頁都是指標。</p>
+<p><strong>小例子</strong>：區塊 1 KB、指標 4 bytes → 一個區塊可以放 <span class="arithmatex">\(1024/4=256\)</span> 個指標。</p>
+<table>
+<thead>
+<tr>
+<th>種類</th>
+<th>可以指到幾個資料區塊</th>
+<th>容量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>12 個 direct</td>
+<td>12</td>
+<td>12 KB</td>
+</tr>
+<tr>
+<td>single indirect</td>
+<td>256</td>
+<td>256 KB</td>
+</tr>
+<tr>
+<td>double indirect</td>
+<td><span class="arithmatex">\(256^2\)</span></td>
+<td>64 MB</td>
+</tr>
+</tbody>
+</table>
+<p>小檔案只用 direct pointer，讀取很快；大檔案才用到間接區塊。</p>
+<h4 id="raid">RAID：用多顆硬碟換速度或安全</h4>
+<ul>
+<li><strong>RAID 0</strong>（striping）：資料分散在多顆，同時讀寫比較快，但任何一顆壞掉資料就毀了。</li>
+<li><strong>RAID 1</strong>（mirroring）：每份資料存兩份，壞一顆沒關係，但容量剩一半。</li>
+<li><strong>RAID 5</strong>（分散的 parity）：多存一份 XOR 校驗。</li>
+</ul>
+<p><strong>XOR 為什麼能救回資料</strong>：資料 1100 和 1010，parity ＝ 1100 XOR 1010 ＝ 0110。第二顆壞了，把剩下的 XOR 起來：1100 XOR 0110 ＝ 1010，就是原本的資料。RAID 6 再多一份不同算法的校驗（P＋Q），可以同時壞兩顆。</p>
+<h4 id="_13">換你試試</h4>
+<p><strong>T-1.</strong> 10000 RPM 的硬碟，平均 rotational latency？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>一圈 <span class="arithmatex">\(\frac{60}{10000}\)</span> 秒 ＝ 6 ms，半圈 3 ms。</p>
+</details>
+<p><strong>T-2.</strong> 資料 0101 和 0011，parity 是多少？如果 0101 那顆壞了，怎麼救回來？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>parity ＝ 0110。0011 XOR 0110 ＝ 0101。</p>
+</details>
+<p><strong>T-3.</strong> 區塊 4 KB、指標 4 bytes，single indirect 可以多指到多少容量？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>一個區塊放 1024 個指標，<span class="arithmatex">\(1024\times4\text{ KB}=4\)</span> MB。</p>
+</details>
 <h3 id="u5-1">5.1 檔案系統</h3>
 <ul>
 <li>檔案是記錄在次要儲存裝置上、<strong>有名字（named）</strong>的相關資訊集合。（115 Q1h）</li>
@@ -522,6 +975,110 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p>RAID 5 用分散的單一 parity，可承受 1 顆故障；RAID 6 多一份 Q（另一種錯誤更正碼），可承受 2 顆同時故障。</p>
 </details>
 <h2 id="u6">單元 6：保護、安全與其他</h2>
+<h3 id="u6-0">6.0 觀念課：保護和安全在防什麼</h3>
+<h4 id="cia">安全的三個目標（CIA）</h4>
+<table>
+<thead>
+<tr>
+<th>目標</th>
+<th>被破壞時</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>confidentiality（機密性）</td>
+<td>沒有權限的人<strong>讀到</strong>資料</td>
+<td>成績被別人偷看</td>
+</tr>
+<tr>
+<td>integrity（完整性）</td>
+<td>沒有權限的人<strong>改了</strong>資料</td>
+<td>成績被竄改</td>
+</tr>
+<tr>
+<td>availability（可用性）</td>
+<td>合法使用者<strong>用不了</strong>服務</td>
+<td>選課系統被灌爆</td>
+</tr>
+</tbody>
+</table>
+<h4 id="_14">最小權限</h4>
+<p><strong>need-to-know</strong> 和 principle of least privilege 是同一個想法：每個行程、每個使用者只拿到<strong>完成目前工作需要</strong>的權限。出事時，損害才會被限制在小範圍。</p>
+<h4 id="_15">存取矩陣：誰能對什麼做什麼</h4>
+<p>把權限畫成一張表：列是使用者（domain），欄是檔案（object），格子裡是權限。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>file1</th>
+<th>file2</th>
+<th>printer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Alice</td>
+<td>read, write</td>
+<td>read</td>
+<td>print</td>
+</tr>
+<tr>
+<td>Bob</td>
+<td>read</td>
+<td>—</td>
+<td>print</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>照<strong>欄</strong>存（每個檔案記錄誰能用它）→ <strong>access control list（ACL）</strong></li>
+<li>照<strong>列</strong>存（每個使用者帶著自己能用什麼）→ <strong>capability list</strong></li>
+</ul>
+<h4 id="_16">惡意程式的名詞</h4>
+<table>
+<thead>
+<tr>
+<th>名詞</th>
+<th>特徵</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>virus</td>
+<td>附在別的程式上，靠程式執行來散播</td>
+</tr>
+<tr>
+<td>worm</td>
+<td>自己透過網路複製散播，不用附在別的程式上</td>
+</tr>
+<tr>
+<td>trojan horse</td>
+<td>假裝成有用的程式，暗中做壞事</td>
+</tr>
+<tr>
+<td>logic bomb</td>
+<td>平常不動，特定條件（日期、事件）成立才發作</td>
+</tr>
+<tr>
+<td>stealth virus</td>
+<td>修改系統中可能偵測到它的部分，躲避防毒</td>
+</tr>
+</tbody>
+</table>
+<p>這一單元的分數幾乎都在<strong>名詞填空</strong>，看懂意思後，把英文名詞做成閃卡背起來。</p>
+<h4 id="_17">換你試試</h4>
+<p><strong>T-1.</strong> 有人偷改了資料庫裡的成績，破壞的是 CIA 的哪一項？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>integrity。</p>
+</details>
+<p><strong>T-2.</strong> 每個檔案附一份「誰可以讀寫」的名單，這叫什麼？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>access control list（ACL）。</p>
+</details>
+<h3 id="u6-1">6.1 考古題與重點整理</h3>
 <ul>
 <li><strong>need-to-know principle</strong>：process 任何時候只能存取完成工作<strong>目前需要</strong>的資源。（115 Q1i）</li>
 <li><strong>role-based access control</strong> 中，<strong>privilege</strong> 是執行某個 system call 或使用其選項的權利。（113 Q8h）</li>
@@ -753,11 +1310,17 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
   function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
   var rec = load();
   var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
+  var seen = {};
   quizzes.forEach(function (d, i) {
     var label = "Q" + (i + 1);
     var prev = d.previousElementSibling;
     if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
-    var id = "quiz-" + (i + 1);
+    // 穩定的 id：前一個有 id 的標題 + 在該標題下的第幾題（之後插入新內容也不會打亂舊紀錄）
+    var h = d.previousElementSibling;
+    while (h && !(/^H[23]$/.test(h.tagName) && h.id)) h = h.previousElementSibling;
+    var base = h ? h.id : "top";
+    seen[base] = (seen[base] || 0) + 1;
+    var id = "q-" + base + "-" + seen[base];
     d.id = id; d.dataset.label = label;
     var bar = document.createElement("div");
     bar.className = "judge";

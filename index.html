@@ -448,7 +448,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
   function renderNotes() {
     var el = document.getElementById("v-notes"), list = exam.notes || [];
     if (!list.length) { el.innerHTML = "<p>這個考試還沒有教材。</p>"; return; }
-    var html = '<div><h2>教材</h2><p class="lede">從 111–115 年考古題逐題拆出來的教材。每個單元有一句話重點、考古題詳解和小考；小考的對錯會記在這台裝置的瀏覽器裡，下面顯示進度。建議先讀「學習方法」。</p></div><div class="ncards">';
+    var html = '<div><h2>教材</h2><p class="lede">從 111–115 年考古題逐題拆出來的教材。每個單元先用觀念課從小例子講起，再接公式整理、考古題詳解和小考；小考的對錯會記在這台裝置的瀏覽器裡，下面顯示進度。建議先讀「學習方法」。</p></div><div class="ncards">';
     list.forEach(function (n) {
       var rec = load("cgep:quiz:" + n.slug, {}), done = 0, wrong = 0;
       Object.keys(rec).forEach(function (k) { done++; if (rec[k] === 0) wrong++; });
