@@ -3,8 +3,8 @@
  * - 筆跡以向量存（每一筆的點座標＋壓力），座標以「紙寬 1000」為基準，
  *   手機轉橫、換電腦看時等比例縮放，不會糊掉。
  * - 紙可以縮放：兩指捏合／拖曳、工具列的放大縮小鈕、電腦上 Ctrl＋滾輪。
- * - 存在這台裝置瀏覽器的 IndexedDB（資料庫 cgep-ink、表 pads），key 是「頁面:題目 id」。
- *   側欄可以把全部筆跡匯出成一個 JSON 檔，換裝置時再匯入。
+ * - 存在這台裝置瀏覽器的 IndexedDB（notes/assets/inkdb.js），key 是「頁面:題目 id」。
+ *   側欄可以把全部筆跡匯出成一個 JSON 檔，換裝置時再匯入；登入 Supabase 後會自動同步（sync.js）。
  * - 觸控筆模式：只有筆會寫字，一指拖曳是捲動頁面（第一次偵測到觸控筆時自動開啟）。
  */
 (function () {
@@ -25,50 +25,12 @@
 
   function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
 
-  /* ---------- 儲存 ---------- */
-  var dbp = null;
-  function openDB() {
-    if (dbp) return dbp;
-    dbp = new Promise(function (res, rej) {
-      if (!window.indexedDB) { rej(new Error("no indexedDB")); return; }
-      var r;
-      try { r = indexedDB.open("cgep-ink", 1); } catch (e) { rej(e); return; }
-      r.onupgradeneeded = function () { r.result.createObjectStore("pads"); };
-      r.onsuccess = function () { res(r.result); };
-      r.onerror = function () { rej(r.error); };
-      r.onblocked = function () { rej(new Error("blocked")); };
-    });
-    return dbp;
-  }
-  function tx(mode, fn) {
-    return openDB().then(function (db) {
-      return new Promise(function (res, rej) {
-        var t = db.transaction("pads", mode), out;
-        var req = fn(t.objectStore("pads"));
-        if (req) req.onsuccess = function () { out = req.result; };
-        t.oncomplete = function () { res(out); };
-        t.onerror = t.onabort = function () { rej(t.error); };
-      });
-    });
-  }
+  /* ---------- 儲存（notes/assets/inkdb.js） ---------- */
+  var DB = window.CGEP_INKDB;
   var store = {
-    get: function (k) { return tx("readonly", function (s) { return s.get(k); }); },
-    put: function (k, v) { return tx("readwrite", function (s) { return s.put(v, k); }); },
-    del: function (k) { return tx("readwrite", function (s) { return s.delete(k); }); },
-    keys: function () { return tx("readonly", function (s) { return s.getAllKeys ? s.getAllKeys() : null; }); },
-    dump: function () {
-      return openDB().then(function (db) {
-        return new Promise(function (res, rej) {
-          var out = {}, t = db.transaction("pads", "readonly"), req = t.objectStore("pads").openCursor();
-          req.onsuccess = function () { var c = req.result; if (c) { out[c.key] = c.value; c.continue(); } };
-          t.oncomplete = function () { res(out); };
-          t.onerror = function () { rej(t.error); };
-        });
-      });
-    },
-    putMany: function (obj) {
-      return tx("readwrite", function (s) { Object.keys(obj).forEach(function (k) { s.put(obj[k], k); }); return null; });
-    }
+    get: DB.get, keys: DB.keys, dump: DB.pads, putMany: DB.putMany,
+    put: DB.put,
+    del: function (k) { return DB.remove(k, Date.now()); }
   };
   var askedPersist = false;
   function askPersist() {
@@ -382,7 +344,7 @@
           } else if (act && act.mode === "erase" && act.removed.length) {
             self.push({ t: "del", items: act.removed });
           }
-          if (!act || act.mode !== "draw" || !act.s.pen) { e.preventDefault(); startPinch(); }
+          if (!act || act.mode !== "draw" || !act.s.pen) { e.preventDefault(); startPinch(); self.busy = false; }
           return;
         }
         if (touches.size > 2 || act) return;
@@ -401,12 +363,14 @@
       var sideButton = (e.buttons & 32) || (isPen && (e.buttons & 2));
       if (self.tool === "eraser" || sideButton) {
         act = { id: e.pointerId, mode: "erase", removed: [] };
+        self.busy = true;
         self.eraseAt(q[0], q[1], act);
         return;
       }
       var s = { c: pref.color || 0, w: pref.size == null ? 1 : pref.size, pen: isPen, p: [q[0], q[1], pres(e)] };
       if (self.z > 1.001) s.k = Math.round(100 / self.z) / 100;
       self.strokes.push(s);
+      self.busy = true;
       act = { id: e.pointerId, mode: "draw", s: s, pal: palette(false) };
     });
 
@@ -440,6 +404,7 @@
       if (e.pointerId !== act.id) return;
       var a = act;
       act = null;
+      self.busy = false;
       if (a.mode === "draw") {
         if (a.s.p.length === 3) drawStroke(self.ctx, a.s, a.pal);
         else { setColor(self.ctx, a.s, a.pal); tail(self.ctx, a.s); }
@@ -513,7 +478,7 @@
       var job = self.strokes.length
         ? store.put(self.key, { v: 1, H: self.H, s: self.strokes, t: Date.now() })
         : store.del(self.key);
-      job.then(function () { self.status("已存在這台裝置"); askPersist(); })
+      job.then(function () { self.status(window.CGEP_SYNC && CGEP_SYNC.signedIn() ? "已存在這台裝置，稍後同步到雲端" : "已存在這台裝置"); askPersist(); })
          .catch(function () { self.status("儲存失敗：瀏覽器的儲存空間可能滿了"); });
     }, 400);
   };
@@ -541,7 +506,7 @@
   }
 
   /* ---------- 掛到每一題 ---------- */
-  var toggles = {};
+  var toggles = {}, padsByKey = {};
   document.querySelectorAll("details.quiz").forEach(function (quiz) {
     if (!quiz.id) return;
     var key = SLUG + ":" + quiz.id;
@@ -555,7 +520,7 @@
     var pad = null;
     toggle.addEventListener("click", function () {
       var first = !pad;
-      if (first) { pad = new Pad(wrap, key, toggle); openPads.push(pad); }
+      if (first) { pad = new Pad(wrap, key, toggle); openPads.push(pad); padsByKey[key] = pad; }
       var open = pad.panel.hidden;
       pad.panel.hidden = !open;
       toggle.setAttribute("aria-expanded", String(open));
@@ -566,6 +531,27 @@
   store.keys().then(function (keys) {
     (keys || []).forEach(function (k) { if (toggles[k]) markToggle(toggles[k], true); });
   }).catch(function () {});
+
+  // 雲端同步拉下比較新的筆跡：更新按鈕上的「有筆跡」，已經打開的手寫板重新載入
+  document.addEventListener("cgep:ink-remote", function (e) {
+    (e.detail.keys || []).forEach(function (k) {
+      if (!toggles[k]) return;
+      store.get(k).then(function (v) {
+        var has = !!(v && v.s && v.s.length);
+        markToggle(toggles[k], has);
+        var pad = padsByKey[k];
+        if (!pad || pad.busy) return;
+        pad.strokes = has ? v.s : [];
+        pad.H = (v && v.H) || DEFAULT_H;
+        pad.hist = []; pad.fut = [];
+        pad.layout(); pad.syncTools();
+        pad.status("已載入雲端上比較新的筆跡");
+      });
+    });
+  });
+  document.addEventListener("cgep:synced", function (e) {
+    (e.detail.pushed || []).forEach(function (k) { if (padsByKey[k]) padsByKey[k].status("已同步到雲端"); });
+  });
 
   if (window.matchMedia) {
     var mq = window.matchMedia("(prefers-color-scheme: dark)");

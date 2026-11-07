@@ -138,6 +138,22 @@ Dunlosky 等人在 2013 年整理了十種常見讀書方法的研究證據。�
 
 **用法建議**：先在手寫板上寫完整的過程，再打開答案逐行對照，然後按「答對了／答錯了」。不要先看答案再抄，那樣沒有練到回想。
 
+### 雲端同步（Supabase） {#sync}
+
+登入後，手寫筆跡會自動同步到你自己的 Supabase 資料庫，手機、平板、電腦用同一組帳號登入就會看到同一份筆跡。沒網路時照樣寫，連上網路後會自動補傳。每一題以「最後修改的那一份」為準。
+
+**第一次設定**（約 10 分鐘，只要做一次）：
+
+1. 到 [supabase.com](https://supabase.com/) 登入（可以用 GitHub 帳號），按 **New project**。名字隨意，區域選離台灣近的（例如 Tokyo 或 Singapore），資料庫密碼自己記下來。免費方案就夠用。
+2. 專案建好後，左邊點 **SQL Editor** → New query，把 repo 裡的 [`supabase/schema.sql`](https://github.com/Jimmm-lab/cs-grad-exam-plan/blob/main/supabase/schema.sql) 整段貼上，按 **Run**。這一步建立存筆跡的資料表，並設定「每個人只能讀寫自己的資料」。
+3. 左邊點 **Authentication** → Sign In / Providers → **Email**，把 **Confirm email** 關掉（自己用不需要確認信，而且免費方案寄信的額度很少）。如果想保留確認信，就到 Authentication → URL Configuration，把 Site URL 改成 `https://jimmm-lab.github.io/cs-grad-exam-plan/`。
+4. 到專案首頁的 **Connect**，或 Project Settings 裡的 **Data API／API Keys**，複製 **Project URL** 和 **publishable key**（沒有的話用 legacy 的 **anon public** key）。
+5. 打開教材任何一頁 → **目錄** → 最下面的「雲端同步」，貼上這兩個值，按「儲存設定」。第一次按「**註冊**」，之後每台裝置都用同一組 Email、密碼「登入」。
+
+也可以把 Project URL 和 publishable key 傳給我，我寫進網站的 `notes/assets/supabase-config.js`，以後每台裝置打開就能直接登入，不用再貼。這兩個值本來就是公開的（網頁原始碼看得到），資料靠第 2 步的權限設定保護。**service_role／secret key 絕對不要貼到任何地方。**
+
+**注意**：Supabase 免費專案如果一個禮拜都沒有人使用會被暫停，回 Supabase 網站按 Restore 就會恢復，資料不會不見。每天讀書都會同步的話，通常不會遇到。
+
 ### 手動模擬的題目有動畫
 
 資料結構、計結、OS 很多題目要你「一步一步模擬」。教材裡標著 **動畫** 的方塊，每一步都會說明在做什麼，可以按「下一步」慢慢看，也可以拉下面的滑桿跳到某一步。**數字都可以改**，把考古題或他校題目的數字填進去，就能檢查自己手算的每一步。

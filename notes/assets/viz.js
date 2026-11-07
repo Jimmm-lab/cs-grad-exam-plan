@@ -142,7 +142,7 @@
       }));
       const pad = 14, w = x1 - x0 + 2 * pad, h = y1 - y0 + 2 * pad;
       this.svg.setAttribute("viewBox", `${x0 - pad} ${y0 - pad} ${w} ${h}`);
-      this.svg.style.minWidth = Math.round(w * 0.62) + "px";
+      this.svg.style.minWidth = Math.round(w * 0.57) + "px";
       this.svg.style.maxWidth = Math.round(w * 1.15) + "px";
       this.range.max = frames.length - 1;
       this.host.classList.remove("vz-error");

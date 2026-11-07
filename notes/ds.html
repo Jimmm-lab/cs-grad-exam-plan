@@ -96,7 +96,7 @@ details.quiz[open] > summary { margin-bottom: 8px; }
 .judge button { font: 700 13px/1 var(--font-body); padding: 7px 12px; border-radius: 6px; cursor: pointer; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); }
 .judge button[aria-pressed="true"][data-v="1"] { background: var(--ok); border-color: var(--ok); color: var(--card); }
 .judge button[aria-pressed="true"][data-v="0"] { background: var(--accent); border-color: var(--accent); color: var(--card); }
-.arithmatex { overflow-x: auto; max-width: 100%; }
+.arithmatex { overflow-x: auto; max-width: 100%; overflow-wrap: anywhere; }
 div.arithmatex { padding: 4px 0; }
 mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
 /* 手寫作答板 */
@@ -216,6 +216,8 @@ aside.toc .toc-sub a { padding: 3px 0 3px 10px; font-size: 12.5px; }
 .fab button .ico { width: 22px; height: 22px; }
 .fab .fab-toc { display: none; background: var(--ink); color: var(--card); border-color: var(--ink); }
 .fab.fab-off { opacity: 0; pointer-events: none; }
+.fab button { transition: opacity .2s, visibility .2s; }
+.fab button.is-off { opacity: 0; visibility: hidden; pointer-events: none; }
 .toc-backdrop { display: none; }
 
 /* 手寫筆跡備份 */
@@ -224,35 +226,71 @@ aside.toc .toc-sub a { padding: 3px 0 3px 10px; font-size: 12.5px; }
 .inkbak-btns { display: flex; gap: 6px; flex-wrap: wrap; }
 .inkbak button { display: inline-flex; align-items: center; gap: 4px; font: 500 12.5px/1 var(--font-body); background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 7px 9px; cursor: pointer; }
 .inkbak .inkbak-msg:empty { display: none; }
+.sync-form { display: grid; gap: 6px; margin: 6px 0; }
+.sync-form input { width: 100%; min-height: 40px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font: 500 15px/1.4 var(--font-body); }
+.sync-form button[type="submit"] { justify-content: center; min-height: 38px; }
+.inkbak .linkish { border: 0; padding: 0; background: none; color: var(--muted); text-decoration: underline; font-size: 12px; }
+.inkbak b { color: var(--ink); word-break: break-all; }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; gap: 16px; padding-bottom: 180px; }
-  aside.toc { position: fixed; top: 0; right: 0; bottom: 0; z-index: 30; width: min(88vw, 360px); max-height: none; margin: 0; padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px)); background: var(--card); border-left: 1px solid var(--line); overflow-y: auto; overscroll-behavior: contain; font-size: 14.5px; transform: translateX(105%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; }
-  body.toc-open aside.toc { transform: none; visibility: visible; transition: transform .25s ease; }
+  aside.toc { position: fixed; top: var(--hdr, 52px); left: 8px; right: 8px; z-index: 30; max-height: calc(100vh - var(--hdr, 52px) - 14px); max-height: calc(100dvh - var(--hdr, 52px) - 14px); margin: 0; padding: 0 16px calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--card); border: 1px solid var(--line); border-top: 0; border-radius: 0 0 14px 14px; box-shadow: 0 16px 32px rgba(5, 8, 15, .25); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; font-size: 14.5px; opacity: 0; transform: translateY(-16px); clip-path: inset(0 -24px 100% -24px); visibility: hidden; transition: clip-path .32s ease, transform .32s ease, opacity .2s ease, visibility 0s linear .32s; }
+  body.toc-open aside.toc { opacity: 1; transform: none; clip-path: inset(0 -24px -48px -24px); visibility: visible; transition: clip-path .32s ease, transform .32s ease, opacity .2s ease; }
   aside.toc a { padding: 7px 0; }
-  .toc-head { display: flex; align-items: center; justify-content: space-between; position: sticky; top: -12px; margin: -12px -16px 8px; padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line); z-index: 1; }
+  .toc-head { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; margin: 0 -16px 8px; padding: 8px 16px; background: var(--card); border-bottom: 1px solid var(--line); z-index: 1; }
   .toc-head .eyebrow { margin: 0; }
   aside.toc > .eyebrow { display: none; }
   .toc-close { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--card); color: var(--ink); cursor: pointer; }
   .toc-close .ico { width: 20px; height: 20px; }
-  .toc-backdrop { display: block; position: fixed; inset: 0; z-index: 25; background: rgba(5, 8, 15, .45); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .toc-backdrop { display: block; position: fixed; inset: var(--hdr, 52px) 0 0 0; z-index: 25; background: rgba(5, 8, 15, .45); opacity: 0; pointer-events: none; transition: opacity .25s; }
   body.toc-open .toc-backdrop { opacity: 1; pointer-events: auto; }
-  body.toc-open { overflow: hidden; }
+  html.toc-lock { overflow: hidden; overscroll-behavior: none; }
   .fab .fab-toc { display: grid; }
+  @media (prefers-reduced-motion: reduce) { aside.toc, body.toc-open aside.toc { transition: none; } }
   article h1 { font-size: 25px; }
   .pager { grid-template-columns: 1fr; }
   .pager .pg-next { grid-row: 1; }
 }
-@media (max-width: 600px) {
-  span.arithmatex { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
+@media (max-width: 700px) {
+  body { font-size: 15.5px; }
+  article table { font-size: 14px; }
+  article th, article td { padding: 6px 8px; }
+  article th { white-space: normal; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+  article code { overflow-wrap: anywhere; }
+  .admonition, details { padding: 10px 12px; }
+  article ul, article ol { padding-left: 1.2em; }
+  .vz-stage { padding: 10px 4px; }
+  div.arithmatex { margin-left: -8px; margin-right: -8px; }
+  /* 欄位多、列數少的表：轉成直的（nav.js 加 .tbl-t） */
+  article table.tbl-t tr:first-child > * { background: var(--code); font-weight: 700; }
+  /* 文字多的表：每一列變成一張卡片，欄位名稱寫在左邊（nav.js 加 .tbl-stack） */
+  article table.tbl-stack { display: block; border: 0; overflow: visible; font-size: 15px; }
+  .tbl-stack thead { display: none; }
+  .tbl-stack tbody { display: grid; gap: 10px; }
+  .tbl-stack tr { display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); overflow: hidden; }
+  .tbl-stack tr > * { display: grid; grid-template-columns: minmax(4.6em, 30%) minmax(0, 1fr); gap: 4px 10px; align-items: baseline; border: 0; border-top: 1px solid var(--line); padding: 7px 12px; white-space: normal; }
+  .tbl-stack tr > :first-child { border-top: 0; background: var(--code); font-weight: 700; }
+  .tbl-stack tr > *::before { content: attr(data-label); font: 700 12.5px/1.6 var(--font-body); color: var(--muted); }
+  .tbl-stack tr > :not([data-label]) { grid-template-columns: minmax(0, 1fr); }
+  .tbl-stack tr > :not([data-label])::before { content: none; }
 }
 </style>
 <script>
-window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
-  options: { processHtmlClass: "arithmatex", ignoreHtmlClass: ".*" }, svg: { fontCache: "global" },
-  startup: { pageReady: function () { return MathJax.startup.defaultPageReady().then(function () { document.dispatchEvent(new Event("cgep:mathjax")); }); } } };
+// MathJax 4：太長的公式自動換行（手機上不用左右滑）。只排版正在看的單元（nav.js 負責），開頁面比較快。
+window.MathJax = {
+  tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+  options: {
+    processHtmlClass: "arithmatex", ignoreHtmlClass: ".*",
+    enableMenu: false, enableEnrichment: false, enableSpeech: false, enableBraille: false, enableExplorer: false,
+    menuOptions: { settings: { enrich: false, speech: false, braille: false, collapsible: false, assistiveMml: false } }
+  },
+  output: { displayOverflow: "linebreak", linebreaks: { inline: true, width: "100%" } },
+  svg: { fontCache: "global" },
+  startup: { typeset: false, pageReady: function () { return MathJax.startup.defaultPageReady().then(function () { document.dispatchEvent(new Event("cgep:mathjax")); }); } }
+};
 </script>
-<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4.1.3/tex-svg.js"></script>
 </head>
 <body data-slug="ds" data-split="1">
 <header class="top"><div class="wrap top-row">
@@ -920,10 +958,11 @@ f(3) 回來，印 3</code></pre>
 <li><strong>merge sort</strong>：切成兩半各自排好，再<strong>合併</strong>兩個排好的序列。合併 [1, 4, 7] 和 [2, 3, 9]：每次比較兩邊最前面的，小的拿出來 → 1, 2, 3, 4, 7, 9。</li>
 </ul>
 <p><strong>為什麼 merge sort 是 <span class="arithmatex">\(O(n\log n)\)</span></strong>：把 8 個數一直對半切：</p>
-<pre class="highlight"><code class="language-text">第 0 層：[5 2 4 7 1 3 2 6]           1 段，每段 8 個
-第 1 層：[5 2 4 7] [1 3 2 6]         2 段，每段 4 個
-第 2 層：[5 2] [4 7] [1 3] [2 6]     4 段，每段 2 個
-第 3 層：[5] [2] [4] [7] [1] [3] [2] [6]</code></pre>
+<pre class="highlight"><code class="language-text">第 0 層：[5 2 4 7 1 3 2 6]
+第 1 層：[5 2 4 7] [1 3 2 6]
+第 2 層：[5 2] [4 7] [1 3] [2 6]
+第 3 層：[5][2][4][7][1][3][2][6]</code></pre>
+<p>每一層分別是 1、2、4、8 段，每段 8、4、2、1 個數。</p>
 <p><span class="arithmatex">\(n\)</span> 個數每次減半，切 <span class="arithmatex">\(\log_2 n\)</span> 次才剩 1 個（<span class="arithmatex">\(8\to4\to2\to1\)</span> 是 3 次）。合併回去時，<strong>每一層</strong>的所有段加起來剛好是 <span class="arithmatex">\(n\)</span> 個數，每個數搬一次，所以一層 <span class="arithmatex">\(O(n)\)</span>、共 <span class="arithmatex">\(\log_2n\)</span> 層 → <span class="arithmatex">\(O(n\log n)\)</span>。不管資料長什麼樣都要切這麼多層，所以最差也一樣。</p>
 <p>quick sort 平均也是這個道理：pivot 大概在中間時，每層把資料切成兩半、每層 partition 總共掃 <span class="arithmatex">\(n\)</span> 個。</p>
 <h4 id="heap">heap：用陣列存的完全二元樹</h4>
@@ -2392,8 +2431,11 @@ f(3) 回來，印 3</code></pre>
 })();
 </script>
 <script src="assets/icons.js"></script>
+<script src="assets/inkdb.js"></script>
 <script src="assets/ink.js"></script>
 <script src="assets/viz.js"></script>
 <script src="assets/nav.js"></script>
+<script src="assets/supabase-config.js"></script>
+<script src="assets/sync.js"></script>
 </body>
 </html>

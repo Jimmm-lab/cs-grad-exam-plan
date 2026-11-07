@@ -258,7 +258,7 @@ $$S(n,k)=\frac{1}{k!}\sum_{i=0}^{k}(-1)^i\binom{k}{i}(k-i)^n$$
 
 例：
 
-$$S(4,2)=\frac{1}{2!}\left(2^4-\binom21\cdot1^4+\binom22\cdot0^4\right)=\frac{16-2+0}{2}=7\ \checkmark$$
+$$\begin{aligned}S(4,2)&=\frac{1}{2!}\left(2^4-\binom21\cdot1^4+\binom22\cdot0^4\right)\\&=\frac{16-2+0}{2}=7\ \checkmark\end{aligned}$$
 
 #### 公式二：遞迴（看最後一個東西）
 
