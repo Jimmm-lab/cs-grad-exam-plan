@@ -46,7 +46,7 @@ a { color: var(--accent); }
 header.top { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
 .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .top-row { display: flex; gap: 16px; align-items: center; padding-block: 10px; flex-wrap: wrap; }
-.home { font: 700 14px/1 var(--font-mono); color: var(--accent); text-decoration: none; white-space: nowrap; }
+.home { display: inline-flex; align-items: center; gap: 2px; font: 700 14px/1 var(--font-mono); color: var(--accent); text-decoration: none; white-space: nowrap; }
 nav.notes { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
 nav.notes a { text-decoration: none; color: var(--muted); padding: 6px 10px; font-size: 14px; font-weight: 500; white-space: nowrap; border-bottom: 2px solid transparent; }
 nav.notes a[aria-current="page"] { color: var(--ink); border-color: var(--accent); }
@@ -109,12 +109,15 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .ink-panel { margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow: hidden; }
 .ink-tools { display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 8px; background: var(--paper); border-bottom: 1px solid var(--line); }
 .ink-grp { display: flex; gap: 4px; align-items: center; }
-.ink-tools button { min-height: 36px; min-width: 36px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 13px/1 var(--font-body); cursor: pointer; }
+.ink-tools button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 36px; min-width: 36px; padding: 0 9px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 13px/1 var(--font-body); cursor: pointer; }
+.ink-tools .ico { width: 18px; height: 18px; }
+.ink-tools .ink-zl { min-width: 52px; font: 600 12px/1 var(--font-mono); }
+.ink-hint { flex: 1 0 100%; }
 .ink-tools button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); font-weight: 700; }
 .ink-tools button:disabled { opacity: .4; cursor: default; }
 .ink-tools .ink-sw { padding: 0; display: inline-grid; place-items: center; }
 .ink-sw span { display: block; width: 18px; height: 18px; border-radius: 50%; }
-.ink-canvas { display: block; width: 100%; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; background-color: var(--card); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 28px 28px; }
+.ink-canvas { display: block; width: 100%; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; background-color: var(--card); }
 .ink-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; color: var(--muted); }
 .ink-pen { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
 .ink-pen input { width: 18px; height: 18px; margin: 0; accent-color: var(--ex); }
@@ -128,7 +131,9 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-form input, .vz-form select { width: 100%; min-width: 0; min-height: 36px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font: 500 14px/1.4 var(--font-mono); }
 .vz-form select { font-family: var(--font-body); }
 .vz-formbtn { display: flex; gap: 6px; }
-.vz-form button, .vz-ctrl button { min-height: 38px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 14px/1 var(--font-body); cursor: pointer; white-space: nowrap; }
+.vz-form button, .vz-ctrl button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 38px; min-width: 38px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 14px/1 var(--font-body); cursor: pointer; white-space: nowrap; }
+.vz-ctrl .ico { width: 18px; height: 18px; }
+.vz-ctrl [data-a="first"] { padding: 0 8px; }
 .vz-form button[type="submit"] { border-color: var(--ex); color: var(--ex); }
 .vz-stage { overflow-x: auto; padding: 12px 10px; }
 .vz-svg { display: block; width: 100%; height: auto; margin: 0 auto; }
@@ -182,12 +187,61 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 @media (prefers-reduced-motion: reduce) {
   .vz-svg g, .vz-edge path { transition: none; }
 }
+/* 圖示 */
+.ico { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; }
+article .ico-ok { color: var(--ok); }
+article .ico-no { color: var(--accent); }
+article .ico-star { color: var(--trap); width: 1em; height: 1em; vertical-align: -0.12em; }
+article [id] { scroll-margin-top: 70px; }
+section.unit > :first-child { margin-top: 0; }
+section.unit > h2:first-child, section.unit > h1 + p + h2 { margin-top: 0; }
+
+/* 目錄：現在的單元與它的小節 */
+aside.toc a.cur { color: var(--ink); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); padding-left: 9px; }
+aside.toc .toc-sub { list-style: none; margin: 2px 0 8px 12px; padding: 0; display: grid; gap: 0; border-left: 1px solid var(--line); }
+aside.toc .toc-sub a { padding: 3px 0 3px 10px; font-size: 12.5px; }
+.toc-head { display: none; }
+
+/* 換單元 */
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 56px 0 0; padding-top: 18px; border-top: 1px solid var(--line); }
+.pager a { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--ink); text-decoration: none; line-height: 1.45; font-weight: 700; font-size: 15px; }
+.pager a:hover { border-color: var(--accent); }
+.pager a small { display: block; font-weight: 500; font-size: 12px; color: var(--muted); }
+.pager .pg-next { justify-content: flex-end; text-align: right; }
+.pager .ico { width: 20px; height: 20px; color: var(--accent); }
+
+/* 右下角按鈕 */
+.fab { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 10px; z-index: 18; transition: opacity .2s; }
+.fab button { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 10px rgba(10, 15, 30, .16); }
+.fab button .ico { width: 22px; height: 22px; }
+.fab .fab-toc { display: none; background: var(--ink); color: var(--card); border-color: var(--ink); }
+.fab.fab-off { opacity: 0; pointer-events: none; }
+.toc-backdrop { display: none; }
+
+/* 手寫筆跡備份 */
+.inkbak { margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.inkbak p { margin: 6px 0; font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+.inkbak-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.inkbak button { display: inline-flex; align-items: center; gap: 4px; font: 500 12.5px/1 var(--font-body); background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 7px 9px; cursor: pointer; }
+.inkbak .inkbak-msg:empty { display: none; }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 860px) {
-  .layout { grid-template-columns: 1fr; gap: 16px; }
-  aside.toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--card); }
-  aside.toc ul { grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  .layout { grid-template-columns: 1fr; gap: 16px; padding-bottom: 180px; }
+  aside.toc { position: fixed; top: 0; right: 0; bottom: 0; z-index: 30; width: min(88vw, 360px); max-height: none; margin: 0; padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px)); background: var(--card); border-left: 1px solid var(--line); overflow-y: auto; overscroll-behavior: contain; font-size: 14.5px; transform: translateX(105%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; }
+  body.toc-open aside.toc { transform: none; visibility: visible; transition: transform .25s ease; }
+  aside.toc a { padding: 7px 0; }
+  .toc-head { display: flex; align-items: center; justify-content: space-between; position: sticky; top: -12px; margin: -12px -16px 8px; padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line); z-index: 1; }
+  .toc-head .eyebrow { margin: 0; }
+  aside.toc > .eyebrow { display: none; }
+  .toc-close { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--card); color: var(--ink); cursor: pointer; }
+  .toc-close .ico { width: 20px; height: 20px; }
+  .toc-backdrop { display: block; position: fixed; inset: 0; z-index: 25; background: rgba(5, 8, 15, .45); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  body.toc-open .toc-backdrop { opacity: 1; pointer-events: auto; }
+  body.toc-open { overflow: hidden; }
+  .fab .fab-toc { display: grid; }
   article h1 { font-size: 25px; }
+  .pager { grid-template-columns: 1fr; }
+  .pager .pg-next { grid-row: 1; }
 }
 @media (max-width: 600px) {
   span.arithmatex { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
@@ -195,13 +249,14 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 </style>
 <script>
 window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
-  options: { processHtmlClass: "arithmatex", ignoreHtmlClass: ".*" }, svg: { fontCache: "global" } };
+  options: { processHtmlClass: "arithmatex", ignoreHtmlClass: ".*" }, svg: { fontCache: "global" },
+  startup: { pageReady: function () { return MathJax.startup.defaultPageReady().then(function () { document.dispatchEvent(new Event("cgep:mathjax")); }); } } };
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js"></script>
 </head>
-<body data-slug="{{SLUG}}">
+<body data-slug="{{SLUG}}" data-split="{{SPLIT}}">
 <header class="top"><div class="wrap top-row">
-  <a class="home" href="../index.html">← 備考計畫</a>
+  <a class="home" href="../index.html"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"/></svg>備考計畫</a>
   <nav class="notes" aria-label="教材">{{NAV}}</nav>
 </div></header>
 <div class="wrap layout">
@@ -266,7 +321,9 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
   paint();
 })();
 </script>
+<script src="assets/icons.js"></script>
 <script src="assets/ink.js"></script>
 <script src="assets/viz.js"></script>
+<script src="assets/nav.js"></script>
 </body>
 </html>

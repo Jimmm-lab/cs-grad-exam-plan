@@ -1,25 +1,29 @@
-/* 手寫作答板：每一題「看答案」上方加一塊可以用觸控筆（S Pen）寫字的畫布。
+/* 手寫作答板：每一題「看答案」上方加一塊可以用觸控筆（S Pen）寫字的方格紙。
  *
- * - 筆跡以向量存（每一筆的點座標＋壓力），座標以「寬度 1000」為基準，
+ * - 筆跡以向量存（每一筆的點座標＋壓力），座標以「紙寬 1000」為基準，
  *   手機轉橫、換電腦看時等比例縮放，不會糊掉。
+ * - 紙可以縮放：兩指捏合／拖曳、工具列的放大縮小鈕、電腦上 Ctrl＋滾輪。
  * - 存在這台裝置瀏覽器的 IndexedDB（資料庫 cgep-ink、表 pads），key 是「頁面:題目 id」。
- * - 觸控筆模式：只有筆會寫字，手指拖曳是捲動頁面（第一次偵測到觸控筆時自動開啟）。
- * - S Pen 側鍵（瀏覽器回報成 barrel / eraser button 時）按住可以直接擦。
+ *   側欄可以把全部筆跡匯出成一個 JSON 檔，換裝置時再匯入。
+ * - 觸控筆模式：只有筆會寫字，一指拖曳是捲動頁面（第一次偵測到觸控筆時自動開啟）。
  */
 (function () {
   "use strict";
   if (!document.querySelector("details.quiz")) return;
 
+  var I = window.CGEP_ICON || function () { return ""; };
   var SLUG = document.body.getAttribute("data-slug") || location.pathname;
-  var W = 1000;                       // 邏輯寬度
+  var W = 1000;                       // 紙的邏輯寬度
   var DEFAULT_H = 900, STEP_H = 600, MAX_H = 6000;
-  var SIZES = [3.5, 6, 10];           // 細、中、粗（邏輯單位）
+  var GRID = 50, ZMAX = 4;
+  var SIZES = [3.5, 6, 10];           // 細、中、粗（邏輯單位，縮放 100% 時）
   var SIZE_NAMES = ["細", "中", "粗"];
   var COLOR_VARS = ["--pen-ink", "--pen-red", "--pen-blue", "--pen-green"];
   var COLOR_NAMES = ["黑", "紅", "藍", "綠"];
   var LIGHT = ["#1a2130", "#d0343f", "#2d5fd3", "#2f7d3b"];   // 存成圖片時用白底配色
   var PREF_KEY = "cgep:ink:pref";
-  var PEN_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
+
+  function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
 
   /* ---------- 儲存 ---------- */
   var dbp = null;
@@ -51,8 +55,27 @@
     get: function (k) { return tx("readonly", function (s) { return s.get(k); }); },
     put: function (k, v) { return tx("readwrite", function (s) { return s.put(v, k); }); },
     del: function (k) { return tx("readwrite", function (s) { return s.delete(k); }); },
-    keys: function () { return tx("readonly", function (s) { return s.getAllKeys ? s.getAllKeys() : null; }); }
+    keys: function () { return tx("readonly", function (s) { return s.getAllKeys ? s.getAllKeys() : null; }); },
+    dump: function () {
+      return openDB().then(function (db) {
+        return new Promise(function (res, rej) {
+          var out = {}, t = db.transaction("pads", "readonly"), req = t.objectStore("pads").openCursor();
+          req.onsuccess = function () { var c = req.result; if (c) { out[c.key] = c.value; c.continue(); } };
+          t.oncomplete = function () { res(out); };
+          t.onerror = function () { rej(t.error); };
+        });
+      });
+    },
+    putMany: function (obj) {
+      return tx("readwrite", function (s) { Object.keys(obj).forEach(function (k) { s.put(obj[k], k); }); return null; });
+    }
   };
+  var askedPersist = false;
+  function askPersist() {
+    if (askedPersist) return;
+    askedPersist = true;
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+  }
 
   function loadPref() { try { return JSON.parse(localStorage.getItem(PREF_KEY) || "{}") || {}; } catch (e) { return {}; } }
   var pref = loadPref();
@@ -65,7 +88,7 @@
     lastPen = Date.now();
     if (pref.penOnly === undefined) {
       pref.penOnly = true; savePref();
-      openPads.forEach(function (p) { p.syncPenOnly(); p.status("偵測到觸控筆：已切換成觸控筆模式，手指拖曳會捲動頁面"); });
+      openPads.forEach(function (p) { p.syncPenOnly(); p.status("偵測到觸控筆：已切換成觸控筆模式，一指拖曳會捲動頁面"); });
     }
   }
   ["pointerdown", "pointermove"].forEach(function (t) {
@@ -78,7 +101,8 @@
     var cs = getComputedStyle(document.documentElement);
     return COLOR_VARS.map(function (v, i) { return cs.getPropertyValue(v).trim() || LIGHT[i]; });
   }
-  function widthAt(s, pr) { return SIZES[s.w] * (s.pen ? 0.35 + (pr / 100) * 1.3 : 1); }
+  // s.k：寫這一筆時的縮放倒數。放大時寫的字，線條在紙上會比較細，看起來跟 100% 時一樣粗
+  function widthAt(s, pr) { return SIZES[s.w] * (s.k || 1) * (s.pen ? 0.35 + (pr / 100) * 1.3 : 1); }
   // 畫第 k 段：從 (k-2,k-1) 的中點到 (k-1,k) 的中點，以第 k-1 點為控制點，線條才會圓滑
   function seg(ctx, s, k) {
     var p = s.p, i = 3 * k;
@@ -134,12 +158,19 @@
     if (html != null) e.innerHTML = html;
     return e;
   }
+  function download(name, blob) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  }
 
   /* ---------- 一塊手寫板 ---------- */
   function Pad(wrap, key, toggle) {
     this.key = key; this.toggle = toggle;
     this.strokes = []; this.hist = []; this.fut = [];
-    this.H = DEFAULT_H; this.tool = "pen"; this.scale = 1; this.ctx = null;
+    this.H = DEFAULT_H; this.tool = "pen"; this.scale = 1; this.ratio = 1; this.ctx = null;
+    this.z = 1; this.ox = 0; this.oy = 0; this.raf = 0;
     this.saveTimer = 0; this.persist = true;
 
     var colors = COLOR_NAMES.map(function (n, i) {
@@ -152,15 +183,17 @@
     panel.hidden = true;
     panel.innerHTML =
       '<div class="ink-tools" role="toolbar" aria-label="手寫工具">' +
-        '<div class="ink-grp"><button type="button" data-tool="pen">筆</button><button type="button" data-tool="eraser">橡皮擦</button></div>' +
+        '<div class="ink-grp"><button type="button" data-tool="pen">' + I("pen") + '<span>筆</span></button><button type="button" data-tool="eraser">' + I("eraser") + "<span>橡皮擦</span></button></div>" +
         '<div class="ink-grp">' + colors + "</div>" +
         '<div class="ink-grp">' + sizes + "</div>" +
-        '<div class="ink-grp"><button type="button" data-act="undo">↶ 復原</button><button type="button" data-act="redo" aria-label="重做">↷</button></div>' +
-        '<div class="ink-grp"><button type="button" data-act="more">加長</button><button type="button" data-act="clear">清除</button><button type="button" data-act="png">存成圖片</button></div>' +
+        '<div class="ink-grp"><button type="button" data-act="undo" aria-label="復原" title="復原">' + I("undo") + '</button><button type="button" data-act="redo" aria-label="重做" title="重做">' + I("redo") + "</button></div>" +
+        '<div class="ink-grp"><button type="button" data-act="zout" aria-label="縮小紙張" title="縮小">' + I("zoomOut") + '</button><button type="button" data-act="zreset" class="ink-zl" aria-label="恢復 100%" title="恢復 100%">100%</button><button type="button" data-act="zin" aria-label="放大紙張" title="放大">' + I("zoomIn") + "</button></div>" +
+        '<div class="ink-grp"><button type="button" data-act="more">' + I("extend") + '<span>加長</span></button><button type="button" data-act="clear">' + I("trash") + '<span>清除</span></button><button type="button" data-act="png">' + I("image") + "<span>存成圖片</span></button></div>" +
       "</div>" +
       '<div class="ink-sheet"><canvas class="ink-canvas" aria-label="手寫區"></canvas></div>' +
       '<div class="ink-foot">' +
-        '<label class="ink-pen"><input type="checkbox"> 觸控筆模式（只有筆會寫，手指拖曳是捲動）</label>' +
+        '<label class="ink-pen"><input type="checkbox"> 觸控筆模式（只有筆會寫，一指拖曳是捲動）</label>' +
+        '<span class="ink-hint">兩指捏合可以縮放、移動紙張；電腦用 Ctrl＋滾輪</span>' +
         '<span class="ink-status" aria-live="polite"></span>' +
       "</div>";
     wrap.appendChild(panel);
@@ -168,6 +201,7 @@
     this.canvas = panel.querySelector("canvas");
     this.penBox = panel.querySelector(".ink-pen input");
     this.statusEl = panel.querySelector(".ink-status");
+    this.zLabel = panel.querySelector(".ink-zl");
     this.bindTools();
     this.bindPointer();
     this.syncTools();
@@ -200,21 +234,70 @@
     var cssH = Math.round(this.H * this.scale);
     var r = Math.min(window.devicePixelRatio || 1, 2.5);
     while (cssW * cssH * r * r > 16e6 && r > 1) r -= 0.25;
+    this.ratio = r;
     var c = this.canvas;
     c.style.height = cssH + "px";
     c.width = Math.round(cssW * r);
     c.height = Math.round(cssH * r);
     this.ctx = c.getContext("2d");
-    this.ctx.setTransform(r * this.scale, 0, 0, r * this.scale, 0, 0);
+    this.clampView();
     this.redraw();
+    this.syncZoom();
+  };
+
+  /* 縮放：畫面顯示紙上 (ox, oy) 開始、寬 W/z、高 H/z 的範圍 */
+  Pad.prototype.clampView = function () {
+    this.z = clamp(this.z, 1, ZMAX);
+    this.ox = clamp(this.ox, 0, W - W / this.z);
+    this.oy = clamp(this.oy, 0, this.H - this.H / this.z);
+  };
+  Pad.prototype.toLogical = function (cx, cy) {
+    var r = this.canvas.getBoundingClientRect(), s = this.scale * this.z;
+    return [(cx - r.left) / s + this.ox, (cy - r.top) / s + this.oy];
+  };
+  Pad.prototype.setView = function () {
+    var k = this.ratio * this.scale * this.z;
+    this.ctx.setTransform(k, 0, 0, k, -this.ox * k, -this.oy * k);
+  };
+  Pad.prototype.zoomAt = function (nz, cx, cy) {
+    var L = this.toLogical(cx, cy), r = this.canvas.getBoundingClientRect();
+    this.z = clamp(nz, 1, ZMAX);
+    var s = this.scale * this.z;
+    this.ox = L[0] - (cx - r.left) / s;
+    this.oy = L[1] - (cy - r.top) / s;
+    this.clampView();
+    this.requestDraw();
+    this.syncZoom();
+  };
+  Pad.prototype.zoomBy = function (f) {
+    var r = this.canvas.getBoundingClientRect();
+    this.zoomAt(this.z * f, r.left + r.width / 2, r.top + Math.min(r.height, window.innerHeight) / 2);
+  };
+  Pad.prototype.syncZoom = function () {
+    this.zLabel.textContent = Math.round(this.z * 100) + "%";
+    this.panel.querySelector('[data-act="zout"]').disabled = this.z <= 1.001;
+    this.panel.querySelector('[data-act="zin"]').disabled = this.z >= ZMAX - 0.001;
+  };
+  Pad.prototype.requestDraw = function () {
+    var self = this;
+    if (this.raf) return;
+    this.raf = requestAnimationFrame(function () { self.raf = 0; self.redraw(); });
   };
 
   Pad.prototype.redraw = function () {
     var ctx = this.ctx;
     if (!ctx) return;
-    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.restore();
+    this.setView();
+    // 方格線畫在紙上，縮放時跟著放大
+    var x1 = this.ox + W / this.z, y1 = this.oy + this.H / this.z, x, y;
+    ctx.beginPath();
+    for (x = Math.ceil(this.ox / GRID) * GRID; x <= x1; x += GRID) { ctx.moveTo(x, this.oy); ctx.lineTo(x, y1); }
+    for (y = Math.ceil(this.oy / GRID) * GRID; y <= y1; y += GRID) { ctx.moveTo(this.ox, y); ctx.lineTo(x1, y); }
+    ctx.lineWidth = 1 / (this.scale * this.z);
+    ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim() || "#e9ecf2";
+    ctx.stroke();
     var pal = palette(false);
     for (var i = 0; i < this.strokes.length; i++) drawStroke(ctx, this.strokes[i], pal);
   };
@@ -237,14 +320,18 @@
     this.panel.querySelector(".ink-tools").addEventListener("click", function (e) {
       var b = e.target.closest("button");
       if (!b) return;
+      var a = b.dataset.act;
       if (b.dataset.tool) self.tool = b.dataset.tool;
       else if (b.dataset.color) { pref.color = +b.dataset.color; self.tool = "pen"; savePref(); syncAll(); }
       else if (b.dataset.size) { pref.size = +b.dataset.size; self.tool = "pen"; savePref(); syncAll(); }
-      else if (b.dataset.act === "undo") self.undo();
-      else if (b.dataset.act === "redo") self.redo();
-      else if (b.dataset.act === "more") self.extend();
-      else if (b.dataset.act === "clear") self.clear();
-      else if (b.dataset.act === "png") self.png();
+      else if (a === "undo") self.undo();
+      else if (a === "redo") self.redo();
+      else if (a === "zin") self.zoomBy(1.5);
+      else if (a === "zout") self.zoomBy(1 / 1.5);
+      else if (a === "zreset") { self.z = 1; self.ox = self.oy = 0; self.requestDraw(); self.syncZoom(); }
+      else if (a === "more") self.extend();
+      else if (a === "clear") self.clear();
+      else if (a === "png") self.png();
       self.syncTools();
     });
     this.penBox.addEventListener("change", function () {
@@ -254,21 +341,57 @@
   };
 
   Pad.prototype.bindPointer = function () {
-    var self = this, c = this.canvas, act = null;
+    var self = this, c = this.canvas, act = null, touches = new Map();
     function pos(e) {
-      var r = c.getBoundingClientRect();
-      return [Math.round((e.clientX - r.left) / self.scale * 10) / 10, Math.round((e.clientY - r.top) / self.scale * 10) / 10];
+      var L = self.toLogical(e.clientX, e.clientY);
+      return [Math.round(L[0] * 10) / 10, Math.round(L[1] * 10) / 10];
     }
     function pres(e) { return e.pointerType === "pen" ? Math.round((e.pressure || 0.5) * 100) : 50; }
+    function twoTouches() { var v = []; touches.forEach(function (t) { v.push(t); }); return v; }
+    function startPinch() {
+      var t = twoTouches(), mx = (t[0].x + t[1].x) / 2, my = (t[0].y + t[1].y) / 2;
+      act = { mode: "pinch", d0: Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y) || 1, z0: self.z, L0: self.toLogical(mx, my) };
+    }
+    function movePinch() {
+      var t = twoTouches(), mx = (t[0].x + t[1].x) / 2, my = (t[0].y + t[1].y) / 2;
+      var d = Math.hypot(t[0].x - t[1].x, t[0].y - t[1].y) || 1;
+      var r = c.getBoundingClientRect();
+      self.z = clamp(act.z0 * d / act.d0, 1, ZMAX);
+      var s = self.scale * self.z;
+      self.ox = act.L0[0] - (mx - r.left) / s;
+      self.oy = act.L0[1] - (my - r.top) / s;
+      self.clampView();
+      self.requestDraw();
+      self.syncZoom();
+    }
 
     c.addEventListener("pointerdown", function (e) {
-      if (act || !self.ctx) return;
+      if (!self.ctx) return;
       var isPen = e.pointerType === "pen";
       if (isPen) notePen();
-      if (e.pointerType === "touch" && pref.penOnly === true) {
-        // 觸控筆模式：手指只用來捲動；剛用過筆（手掌靠在螢幕上）或接觸面積很大時直接忽略
-        if (Date.now() - lastPen < 600 || (e.width > 40 && e.height > 40)) return;
-        act = { id: e.pointerId, mode: "scroll", y: e.clientY };
+      if (e.pointerType === "touch") {
+        // 觸控筆模式：剛用過筆（手掌靠在螢幕上）或接觸面積很大的觸碰直接忽略，不捲動也不縮放
+        if (pref.penOnly === true && (Date.now() - lastPen < 600 || (e.width > 40 && e.height > 40))) return;
+        touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        if (touches.size === 2) {
+          // 第二根手指：改成縮放／移動紙張。第一根手指如果已經開始畫，那一筆取消
+          if (act && act.mode === "draw" && !act.s.pen) {
+            var at = self.strokes.lastIndexOf(act.s);
+            if (at >= 0) self.strokes.splice(at, 1);
+            self.requestDraw();
+          } else if (act && act.mode === "erase" && act.removed.length) {
+            self.push({ t: "del", items: act.removed });
+          }
+          if (!act || act.mode !== "draw" || !act.s.pen) { e.preventDefault(); startPinch(); }
+          return;
+        }
+        if (touches.size > 2 || act) return;
+        if (pref.penOnly === true) {
+          // 觸控筆模式：一根手指只用來捲動頁面
+          act = { id: e.pointerId, mode: "scroll", y: e.clientY };
+          return;
+        }
+      } else if (act) {
         return;
       }
       if (e.pointerType === "mouse" && e.button !== 0) return;
@@ -282,12 +405,19 @@
         return;
       }
       var s = { c: pref.color || 0, w: pref.size == null ? 1 : pref.size, pen: isPen, p: [q[0], q[1], pres(e)] };
+      if (self.z > 1.001) s.k = Math.round(100 / self.z) / 100;
       self.strokes.push(s);
       act = { id: e.pointerId, mode: "draw", s: s, pal: palette(false) };
     });
 
     c.addEventListener("pointermove", function (e) {
-      if (!act || e.pointerId !== act.id) return;
+      if (e.pointerType === "touch" && touches.has(e.pointerId)) touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (!act) return;
+      if (act.mode === "pinch") {
+        if (touches.has(e.pointerId) && touches.size >= 2) { e.preventDefault(); movePinch(); }
+        return;
+      }
+      if (e.pointerId !== act.id) return;
       if (act.mode === "scroll") { window.scrollBy(0, act.y - e.clientY); act.y = e.clientY; return; }
       e.preventDefault();
       var list = (e.getCoalescedEvents && e.getCoalescedEvents()) || [];
@@ -296,7 +426,7 @@
         var q = pos(list[i]);
         if (act.mode === "erase") { self.eraseAt(q[0], q[1], act); continue; }
         var p = act.s.p, n = p.length;
-        if (Math.hypot(q[0] - p[n - 3], q[1] - p[n - 2]) < 0.8) continue;
+        if (Math.hypot(q[0] - p[n - 3], q[1] - p[n - 2]) < 0.6 / self.z) continue;
         p.push(q[0], q[1], pres(list[i]));
         setColor(self.ctx, act.s, act.pal);
         seg(self.ctx, act.s, p.length / 3 - 1);
@@ -304,7 +434,10 @@
     });
 
     function end(e) {
-      if (!act || e.pointerId !== act.id) return;
+      if (e.pointerType === "touch") touches.delete(e.pointerId);
+      if (!act) return;
+      if (act.mode === "pinch") { if (touches.size < 2) act = null; return; }
+      if (e.pointerId !== act.id) return;
       var a = act;
       act = null;
       if (a.mode === "draw") {
@@ -318,13 +451,25 @@
     c.addEventListener("pointerup", end);
     c.addEventListener("pointercancel", end);
     c.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    c.addEventListener("wheel", function (e) {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        self.zoomAt(self.z * Math.exp(-e.deltaY * 0.01), e.clientX, e.clientY);
+        return;
+      }
+      if (self.z <= 1.001) return;
+      var s = self.scale * self.z, ox = self.ox, oy = self.oy;
+      self.ox += e.deltaX / s; self.oy += e.deltaY / s;
+      self.clampView();
+      if (ox !== self.ox || oy !== self.oy) { e.preventDefault(); self.requestDraw(); }
+    }, { passive: false });
   };
 
   Pad.prototype.eraseAt = function (x, y, a) {
-    var hit = false;
+    var hit = false, R = 14 / this.z;
     for (var i = this.strokes.length - 1; i >= 0; i--) {
       var s = this.strokes[i];
-      if (near(s, x, y, 14 + SIZES[s.w])) { a.removed.push([i, s]); this.strokes.splice(i, 1); hit = true; }
+      if (near(s, x, y, R + SIZES[s.w] * (s.k || 1))) { a.removed.push([i, s]); this.strokes.splice(i, 1); hit = true; }
     }
     if (hit) this.redraw();
   };
@@ -368,7 +513,7 @@
       var job = self.strokes.length
         ? store.put(self.key, { v: 1, H: self.H, s: self.strokes, t: Date.now() })
         : store.del(self.key);
-      job.then(function () { self.status("已存在這台裝置"); })
+      job.then(function () { self.status("已存在這台裝置"); askPersist(); })
          .catch(function () { self.status("儲存失敗：瀏覽器的儲存空間可能滿了"); });
     }, 400);
   };
@@ -386,13 +531,7 @@
     var pal = palette(true);
     this.strokes.forEach(function (s) { drawStroke(x, s, pal); });
     var name = this.key.replace(/[^\w-]+/g, "_") + ".png";
-    cv.toBlob(function (b) {
-      if (!b) return;
-      var a = document.createElement("a");
-      a.href = URL.createObjectURL(b); a.download = name;
-      document.body.appendChild(a); a.click();
-      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
-    }, "image/png");
+    cv.toBlob(function (b) { if (b) download(name, b); }, "image/png");
   };
 
   function syncAll() { openPads.forEach(function (p) { p.syncTools(); }); }
@@ -407,7 +546,7 @@
     if (!quiz.id) return;
     var key = SLUG + ":" + quiz.id;
     var wrap = el("div", "ink");
-    var toggle = el("button", "ink-toggle", PEN_SVG + "<span>手寫作答</span>");
+    var toggle = el("button", "ink-toggle", I("pen") + "<span>手寫作答</span>");
     toggle.type = "button";
     toggle.setAttribute("aria-expanded", "false");
     wrap.appendChild(toggle);
@@ -433,5 +572,43 @@
     var redrawAll = function () { openPads.forEach(function (p) { p.redraw(); }); };
     if (mq.addEventListener) mq.addEventListener("change", redrawAll);
     else if (mq.addListener) mq.addListener(redrawAll);
+  }
+
+  /* ---------- 側欄：備份與還原（換手機、清瀏覽器資料之前用） ---------- */
+  var side = document.querySelector("aside.toc");
+  if (side) {
+    var bak = el("div", "inkbak",
+      '<div class="eyebrow">手寫筆跡備份</div>' +
+      "<p>筆跡只存在這台裝置的瀏覽器。換手機或清除瀏覽器資料之前，先匯出備份檔，之後在新的裝置匯入。</p>" +
+      '<div class="inkbak-btns"><button type="button" data-bak="out">' + I("download") + '<span>匯出全部</span></button><button type="button" data-bak="in">' + I("upload") + "<span>匯入</span></button></div>" +
+      '<input type="file" accept="application/json,.json" hidden>' +
+      '<p class="inkbak-msg" aria-live="polite"></p>');
+    side.appendChild(bak);
+    var msg = bak.querySelector(".inkbak-msg"), file = bak.querySelector("input");
+    bak.querySelector('[data-bak="out"]').addEventListener("click", function () {
+      store.dump().then(function (all) {
+        var n = Object.keys(all).length;
+        if (!n) { msg.textContent = "還沒有任何筆跡可以匯出。"; return; }
+        var d = new Date(), stamp = d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
+        download("cgep-handwriting-" + stamp + ".json", new Blob([JSON.stringify({ app: "cgep-ink", v: 1, exported: d.toISOString(), pads: all })], { type: "application/json" }));
+        msg.textContent = "已匯出 " + n + " 題的筆跡（所有科目）。";
+      }).catch(function () { msg.textContent = "這個瀏覽器讀不到筆跡資料。"; });
+    });
+    bak.querySelector('[data-bak="in"]').addEventListener("click", function () { file.click(); });
+    file.addEventListener("change", function () {
+      var f = file.files && file.files[0];
+      file.value = "";
+      if (!f) return;
+      f.text().then(function (txt) {
+        var data = JSON.parse(txt);
+        if (!data || data.app !== "cgep-ink" || typeof data.pads !== "object") throw new Error("format");
+        var n = Object.keys(data.pads).length;
+        if (!window.confirm("匯入 " + n + " 題的筆跡？這台裝置上同一題已經有的筆跡，會被備份檔裡的蓋掉。")) return;
+        return store.putMany(data.pads).then(function () {
+          msg.textContent = "已匯入 " + n + " 題，重新整理頁面後就會看到。";
+          setTimeout(function () { location.reload(); }, 800);
+        });
+      }).catch(function () { msg.textContent = "這個檔案不是手寫筆跡的備份檔。"; });
+    });
   }
 })();

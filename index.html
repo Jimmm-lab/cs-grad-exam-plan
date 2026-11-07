@@ -236,6 +236,13 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
   .dday b { font-size: 28px; }
 }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+.ico { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; }
+.ico-star { color: var(--accent); width: 1em; height: 1em; vertical-align: -0.12em; }
+.done-btn .ico { margin-right: 4px; }
+.fab { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 10px; z-index: 18; }
+.fab button { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 10px rgba(10, 15, 30, .16); }
+.fab .ico { width: 22px; height: 22px; }
+main.wrap { padding-bottom: 140px; }
 </style>
 </head>
 <body>
@@ -272,6 +279,11 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
   <section class="view" id="v-resources" hidden></section>
 </main>
 
+<div class="fab">
+  <button type="button" data-go="top" aria-label="回到最上面" title="回到最上面"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h14"/><path d="M12 20V9"/><path d="M7 13.5l5-5 5 5"/></svg></button>
+  <button type="button" data-go="bottom" aria-label="到最下面" title="到最下面"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19.5h14"/><path d="M12 4v11"/><path d="M7 10.5l5 5 5-5"/></svg></button>
+</div>
+
 <!-- 考試資料：每個考試一個檔案，新增考試就在這裡多加一行 -->
 <script src="data/nsysu-cse-116.js"></script>
 
@@ -296,6 +308,9 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
   function md(d) { return (d.getMonth() + 1) + "/" + d.getDate(); }
   function todayDate() { var n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  // 內文裡的 ★（錯題本記號）畫成 SVG，不用 emoji 字型
+  var STAR = '<svg class="ico ico-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 9.7l5.4-.8z" fill="currentColor"/></svg>';
+  function rich(s) { return esc(s).replace(/★/g, STAR); }
 
   /* ---------- exam selection ---------- */
   var params = new URLSearchParams(location.search);
@@ -379,7 +394,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
   function renderBlocks(task) {
     return '<div class="blocks">' + task.blocks.map(function (b) {
       return '<div class="block"><div class="when"><span>' + esc(b.time) + "</span>" + subjChip(b.subject, true) + '</div><div class="what"><h4>' + esc(b.title) + "</h4><dl>" +
-        (b.read ? "<dt>讀</dt><dd>" + esc(b.read) + "</dd>" : "") + (b.practice ? "<dt>練</dt><dd>" + esc(b.practice) + "</dd>" : "") + "</dl>" + (b.link ? '<a class="nlink" href="' + esc(b.link) + '">開教材 →</a>' : "") + "</div></div>";
+        (b.read ? "<dt>讀</dt><dd>" + rich(b.read) + "</dd>" : "") + (b.practice ? "<dt>練</dt><dd>" + rich(b.practice) + "</dd>" : "") + "</dl>" + (b.link ? '<a class="nlink" href="' + esc(b.link) + '">開教材 →</a>' : "") + "</div></div>";
     }).join("") + "</div>";
   }
   function renderReview(t) {
@@ -414,7 +429,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
         (next ? "下一個讀書天是 " + md(next.date) + "（" + WD[next.date.getDay()] + "）：" + esc(next.task.title) + "。" : "") + "</p></div>";
     } else {
       var t = slot.task, isDone = !!state.done[t.id];
-      html += '<div class="today-card"><div class="today-head"><div><div class="date">' + label + "・" + iso(slot.date).replace(/-/g, "/") + "（" + WD[slot.date.getDay()] + "）・" + esc(phaseOf(t.phase).name) + "期</div><h3>" + esc(t.title) + '</h3></div><button class="done-btn" id="today-done" aria-pressed="' + isDone + '">' + (isDone ? "✓ 今天完成了" : "標記今天完成") + "</button></div>" +
+      html += '<div class="today-card"><div class="today-head"><div><div class="date">' + label + "・" + iso(slot.date).replace(/-/g, "/") + "（" + WD[slot.date.getDay()] + "）・" + esc(phaseOf(t.phase).name) + "期</div><h3>" + esc(t.title) + '</h3></div><button class="done-btn" id="today-done" aria-pressed="' + isDone + '">' + (isDone ? '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>今天完成了' : "標記今天完成") + "</button></div>" +
         renderBlocks(t) + (t.note ? '<p class="note">' + esc(t.note) + "</p>" : "") + renderReview(t) +
         '<p class="flow">每個區塊的流程：<b>10 分鐘</b>白紙回想昨天 → <b>讀</b>觀念課與例題 → <b>練</b>小考與考古題（限時） → <b>訂正</b>寫錯因進錯題本。<a href="notes/method.html#daily">為什麼這樣排</a></p></div>';
     }
@@ -492,7 +507,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
           var t = s.task, d = !!state.done[t.id];
           html += '<div class="day' + (d ? " done" : "") + isToday + '" id="day-' + k + '"><input type="checkbox" class="chk" id="c-' + esc(t.id) + '" data-id="' + esc(t.id) + '"' + (d ? " checked" : "") + ' aria-label="' + md(s.date) + ' 完成">' + dt +
             '<div class="main"><div class="t">' + esc(t.title) + (t.tag ? ' <span class="tag">' + esc(t.tag) + "</span>" : "") + (t.optional ? ' <span class="tag opt">選做</span>' : "") + msTags + '</div><div class="items">' +
-            t.blocks.map(function (b) { var tt = b.link ? '<a href="' + esc(b.link) + '">' + esc(b.title) + "</a>" : esc(b.title); return "<div>" + subjChip(b.subject) + "<span>" + tt + (b.practice ? "・" + esc(b.practice) : "") + "</span></div>"; }).join("") +
+            t.blocks.map(function (b) { var tt = b.link ? '<a href="' + esc(b.link) + '">' + esc(b.title) + "</a>" : esc(b.title); return "<div>" + subjChip(b.subject) + "<span>" + tt + (b.practice ? "・" + rich(b.practice) : "") + "</span></div>"; }).join("") +
             "</div>" + (t.note ? '<div style="font-size:13px;color:var(--muted)">' + esc(t.note) + "</div>" : "") +
             (t.review && t.review.length ? '<div class="rv-line">複習：' + t.review.map(function (r) { return esc(r.text.replace(/（.*?）/g, "")); }).join("；") + "</div>" : "") + "</div></div>";
         }
@@ -579,6 +594,11 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
   }
   renderToday(); renderNotes(); renderPlan(); renderPapers(); renderStrategy(); renderResources();
   window.addEventListener("hashchange", function () { route(); window.scrollTo(0, 0); });
+  document.querySelector(".fab").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    var y = b.dataset.go === "top" ? 0 : document.documentElement.scrollHeight - window.innerHeight;
+    window.scrollTo({ top: y, behavior: Math.abs(y - window.scrollY) > window.innerHeight * 3 ? "instant" : "smooth" });
+  });
   route();
 })();
 </script>

@@ -46,7 +46,7 @@ a { color: var(--accent); }
 header.top { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
 .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .top-row { display: flex; gap: 16px; align-items: center; padding-block: 10px; flex-wrap: wrap; }
-.home { font: 700 14px/1 var(--font-mono); color: var(--accent); text-decoration: none; white-space: nowrap; }
+.home { display: inline-flex; align-items: center; gap: 2px; font: 700 14px/1 var(--font-mono); color: var(--accent); text-decoration: none; white-space: nowrap; }
 nav.notes { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
 nav.notes a { text-decoration: none; color: var(--muted); padding: 6px 10px; font-size: 14px; font-weight: 500; white-space: nowrap; border-bottom: 2px solid transparent; }
 nav.notes a[aria-current="page"] { color: var(--ink); border-color: var(--accent); }
@@ -109,12 +109,15 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .ink-panel { margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow: hidden; }
 .ink-tools { display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 8px; background: var(--paper); border-bottom: 1px solid var(--line); }
 .ink-grp { display: flex; gap: 4px; align-items: center; }
-.ink-tools button { min-height: 36px; min-width: 36px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 13px/1 var(--font-body); cursor: pointer; }
+.ink-tools button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 36px; min-width: 36px; padding: 0 9px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 13px/1 var(--font-body); cursor: pointer; }
+.ink-tools .ico { width: 18px; height: 18px; }
+.ink-tools .ink-zl { min-width: 52px; font: 600 12px/1 var(--font-mono); }
+.ink-hint { flex: 1 0 100%; }
 .ink-tools button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); font-weight: 700; }
 .ink-tools button:disabled { opacity: .4; cursor: default; }
 .ink-tools .ink-sw { padding: 0; display: inline-grid; place-items: center; }
 .ink-sw span { display: block; width: 18px; height: 18px; border-radius: 50%; }
-.ink-canvas { display: block; width: 100%; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; background-color: var(--card); background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px); background-size: 28px 28px; }
+.ink-canvas { display: block; width: 100%; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; background-color: var(--card); }
 .ink-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; color: var(--muted); }
 .ink-pen { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
 .ink-pen input { width: 18px; height: 18px; margin: 0; accent-color: var(--ex); }
@@ -128,7 +131,9 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-form input, .vz-form select { width: 100%; min-width: 0; min-height: 36px; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); font: 500 14px/1.4 var(--font-mono); }
 .vz-form select { font-family: var(--font-body); }
 .vz-formbtn { display: flex; gap: 6px; }
-.vz-form button, .vz-ctrl button { min-height: 38px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 14px/1 var(--font-body); cursor: pointer; white-space: nowrap; }
+.vz-form button, .vz-ctrl button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 38px; min-width: 38px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 14px/1 var(--font-body); cursor: pointer; white-space: nowrap; }
+.vz-ctrl .ico { width: 18px; height: 18px; }
+.vz-ctrl [data-a="first"] { padding: 0 8px; }
 .vz-form button[type="submit"] { border-color: var(--ex); color: var(--ex); }
 .vz-stage { overflow-x: auto; padding: 12px 10px; }
 .vz-svg { display: block; width: 100%; height: auto; margin: 0 auto; }
@@ -182,12 +187,61 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 @media (prefers-reduced-motion: reduce) {
   .vz-svg g, .vz-edge path { transition: none; }
 }
+/* 圖示 */
+.ico { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; }
+article .ico-ok { color: var(--ok); }
+article .ico-no { color: var(--accent); }
+article .ico-star { color: var(--trap); width: 1em; height: 1em; vertical-align: -0.12em; }
+article [id] { scroll-margin-top: 70px; }
+section.unit > :first-child { margin-top: 0; }
+section.unit > h2:first-child, section.unit > h1 + p + h2 { margin-top: 0; }
+
+/* 目錄：現在的單元與它的小節 */
+aside.toc a.cur { color: var(--ink); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); padding-left: 9px; }
+aside.toc .toc-sub { list-style: none; margin: 2px 0 8px 12px; padding: 0; display: grid; gap: 0; border-left: 1px solid var(--line); }
+aside.toc .toc-sub a { padding: 3px 0 3px 10px; font-size: 12.5px; }
+.toc-head { display: none; }
+
+/* 換單元 */
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 56px 0 0; padding-top: 18px; border-top: 1px solid var(--line); }
+.pager a { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--ink); text-decoration: none; line-height: 1.45; font-weight: 700; font-size: 15px; }
+.pager a:hover { border-color: var(--accent); }
+.pager a small { display: block; font-weight: 500; font-size: 12px; color: var(--muted); }
+.pager .pg-next { justify-content: flex-end; text-align: right; }
+.pager .ico { width: 20px; height: 20px; color: var(--accent); }
+
+/* 右下角按鈕 */
+.fab { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 10px; z-index: 18; transition: opacity .2s; }
+.fab button { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 10px rgba(10, 15, 30, .16); }
+.fab button .ico { width: 22px; height: 22px; }
+.fab .fab-toc { display: none; background: var(--ink); color: var(--card); border-color: var(--ink); }
+.fab.fab-off { opacity: 0; pointer-events: none; }
+.toc-backdrop { display: none; }
+
+/* 手寫筆跡備份 */
+.inkbak { margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.inkbak p { margin: 6px 0; font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+.inkbak-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.inkbak button { display: inline-flex; align-items: center; gap: 4px; font: 500 12.5px/1 var(--font-body); background: none; border: 1px solid var(--line); color: var(--ink); border-radius: 6px; padding: 7px 9px; cursor: pointer; }
+.inkbak .inkbak-msg:empty { display: none; }
 button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 860px) {
-  .layout { grid-template-columns: 1fr; gap: 16px; }
-  aside.toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--card); }
-  aside.toc ul { grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  .layout { grid-template-columns: 1fr; gap: 16px; padding-bottom: 180px; }
+  aside.toc { position: fixed; top: 0; right: 0; bottom: 0; z-index: 30; width: min(88vw, 360px); max-height: none; margin: 0; padding: 12px 16px calc(24px + env(safe-area-inset-bottom, 0px)); background: var(--card); border-left: 1px solid var(--line); overflow-y: auto; overscroll-behavior: contain; font-size: 14.5px; transform: translateX(105%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s; }
+  body.toc-open aside.toc { transform: none; visibility: visible; transition: transform .25s ease; }
+  aside.toc a { padding: 7px 0; }
+  .toc-head { display: flex; align-items: center; justify-content: space-between; position: sticky; top: -12px; margin: -12px -16px 8px; padding: 10px 16px; background: var(--card); border-bottom: 1px solid var(--line); z-index: 1; }
+  .toc-head .eyebrow { margin: 0; }
+  aside.toc > .eyebrow { display: none; }
+  .toc-close { width: 40px; height: 40px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--card); color: var(--ink); cursor: pointer; }
+  .toc-close .ico { width: 20px; height: 20px; }
+  .toc-backdrop { display: block; position: fixed; inset: 0; z-index: 25; background: rgba(5, 8, 15, .45); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  body.toc-open .toc-backdrop { opacity: 1; pointer-events: auto; }
+  body.toc-open { overflow: hidden; }
+  .fab .fab-toc { display: grid; }
   article h1 { font-size: 25px; }
+  .pager { grid-template-columns: 1fr; }
+  .pager .pg-next { grid-row: 1; }
 }
 @media (max-width: 600px) {
   span.arithmatex { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
@@ -195,13 +249,14 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
 </style>
 <script>
 window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
-  options: { processHtmlClass: "arithmatex", ignoreHtmlClass: ".*" }, svg: { fontCache: "global" } };
+  options: { processHtmlClass: "arithmatex", ignoreHtmlClass: ".*" }, svg: { fontCache: "global" },
+  startup: { pageReady: function () { return MathJax.startup.defaultPageReady().then(function () { document.dispatchEvent(new Event("cgep:mathjax")); }); } } };
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js"></script>
 </head>
-<body data-slug="ds">
+<body data-slug="ds" data-split="1">
 <header class="top"><div class="wrap top-row">
-  <a class="home" href="../index.html">← 備考計畫</a>
+  <a class="home" href="../index.html"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6l-6 6 6 6"/></svg>備考計畫</a>
   <nav class="notes" aria-label="教材"><a href="method.html">學習方法</a><a href="discrete.html">離散數學</a><a href="arch.html">計算機結構</a><a href="os.html">作業系統</a><a href="ds.html" aria-current="page">資料結構</a></nav>
 </div></header>
 <div class="wrap layout">
@@ -229,6 +284,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
     </div>
   </aside>
   <article>
+<section class="unit" data-unit="u0">
 <h1 id="_1">資料結構：從中山考古題學</h1>
 <p>「作業系統與資料結構」的另一半。中山的資料結構題目有一個很明顯的特色：<strong>每年第 1 題都是「這段 C 程式印出什麼」</strong>，其他題目則是要你<strong>手動模擬</strong>排序、樹、雜湊、圖的演算法。這份教材把 111–115 年的資結題目全部拆進各單元，所有程式題的答案都實際編譯執行驗證過。</p>
 <div class="admonition key">
@@ -307,6 +363,9 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p>資結題不考你「寫程式」，考你<strong>一步一步模擬</strong>。準備方法是：每個演算法都要能在紙上畫出每一步的狀態，而且畫得又快又不會錯。</p>
 </div>
 <p><strong>建議讀的順序</strong>：單元 1 C 程式追蹤 → 2 排序 → 3 樹 → 4 雜湊 → 5 圖 → 6 遞迴計數與 DP。</p>
+
+</section>
+<section class="unit" data-unit="u1">
 <h2 id="u1">單元 1：C 程式追蹤</h2>
 <div class="admonition key">
 <p class="admonition-title">一句話重點</p>
@@ -809,6 +868,9 @@ f(3) 回來，印 3</code></pre>
 </table>
 <p>單元 6 觀念課有這題的<a href="#u6-0">呼叫樹動畫</a>，可以看到 f(2) 被重算了 3 次。</p>
 </details>
+
+</section>
+<section class="unit" data-unit="u2">
 <h2 id="u2">單元 2：排序</h2>
 <div class="admonition key">
 <p class="admonition-title">一句話重點</p>
@@ -919,7 +981,7 @@ f(3) 回來，印 3</code></pre>
 <td><span class="arithmatex">\(O(n)\)</span></td>
 <td><span class="arithmatex">\(O(n^2)\)</span></td>
 <td><span class="arithmatex">\(O(n^2)\)</span></td>
-<td>✓</td>
+<td><svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
 <td><span class="arithmatex">\(O(1)\)</span></td>
 </tr>
 <tr>
@@ -927,7 +989,7 @@ f(3) 回來，印 3</code></pre>
 <td><span class="arithmatex">\(O(n)\)</span></td>
 <td><span class="arithmatex">\(O(n^2)\)</span></td>
 <td><span class="arithmatex">\(O(n^2)\)</span></td>
-<td>✓</td>
+<td><svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
 <td><span class="arithmatex">\(O(1)\)</span></td>
 </tr>
 <tr>
@@ -935,7 +997,7 @@ f(3) 回來，印 3</code></pre>
 <td><span class="arithmatex">\(O(n^2)\)</span></td>
 <td><span class="arithmatex">\(O(n^2)\)</span></td>
 <td><span class="arithmatex">\(O(n^2)\)</span></td>
-<td>✗</td>
+<td><svg class="ico ico-no" viewBox="0 0 24 24" role="img" aria-label="錯" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10M17 7L7 17"/></svg></td>
 <td><span class="arithmatex">\(O(1)\)</span></td>
 </tr>
 <tr>
@@ -943,7 +1005,7 @@ f(3) 回來，印 3</code></pre>
 <td><span class="arithmatex">\(O(n\log n)\)</span></td>
 <td><span class="arithmatex">\(O(n\log n)\)</span></td>
 <td><span class="arithmatex">\(O(n^2)\)</span></td>
-<td>✗</td>
+<td><svg class="ico ico-no" viewBox="0 0 24 24" role="img" aria-label="錯" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10M17 7L7 17"/></svg></td>
 <td><span class="arithmatex">\(O(\log n)\)</span></td>
 </tr>
 <tr>
@@ -951,7 +1013,7 @@ f(3) 回來，印 3</code></pre>
 <td><span class="arithmatex">\(O(n\log n)\)</span></td>
 <td><span class="arithmatex">\(O(n\log n)\)</span></td>
 <td><span class="arithmatex">\(O(n\log n)\)</span></td>
-<td>✓</td>
+<td><svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
 <td><span class="arithmatex">\(O(n)\)</span></td>
 </tr>
 <tr>
@@ -959,7 +1021,7 @@ f(3) 回來，印 3</code></pre>
 <td><span class="arithmatex">\(O(n\log n)\)</span></td>
 <td><span class="arithmatex">\(O(n\log n)\)</span></td>
 <td><span class="arithmatex">\(O(n\log n)\)</span></td>
-<td>✗</td>
+<td><svg class="ico ico-no" viewBox="0 0 24 24" role="img" aria-label="錯" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10M17 7L7 17"/></svg></td>
 <td><span class="arithmatex">\(O(1)\)</span></td>
 </tr>
 <tr>
@@ -967,7 +1029,7 @@ f(3) 回來，印 3</code></pre>
 <td><span class="arithmatex">\(O(d(n+r))\)</span></td>
 <td></td>
 <td></td>
-<td>✓</td>
+<td><svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
 <td><span class="arithmatex">\(O(n+r)\)</span></td>
 </tr>
 </tbody>
@@ -1147,6 +1209,9 @@ f(3) 回來，印 3</code></pre>
 <summary>看答案</summary>
 <p>交換會把前面的元素丟到後面，越過相同的值。例如 <span class="arithmatex">\(2_a, 2_b, 1\)</span>：第一輪把 1 和 <span class="arithmatex">\(2_a\)</span> 交換，得到 <span class="arithmatex">\(1, 2_b, 2_a\)</span>，兩個 2 的順序反了。</p>
 </details>
+
+</section>
+<section class="unit" data-unit="u3">
 <h2 id="u3">單元 3：樹</h2>
 <h3 id="u3-0">3.0 觀念課：三種走訪只差「根」放在哪裡</h3>
 <h4 id="_8">三種走訪</h4>
@@ -1412,7 +1477,7 @@ f(3) 回來，印 3</code></pre>
 <li>E 的左子 <strong>B</strong>：B 的左子 A，右子 <strong>D</strong>（D 的左子 C）</li>
 <li>E 的右子 <strong>F</strong></li>
 </ul>
-<p>檢查：深度 E1、B2、F2、A3、D3、C4 → <span class="arithmatex">\(8\times1+9\times2+7\times2+4\times3+6\times3+1\times4=8+18+14+12+18+4=74\)</span> ✓。</p>
+<p>檢查：深度 E1、B2、F2、A3、D3、C4 → <span class="arithmatex">\(8\times1+9\times2+7\times2+4\times3+6\times3+1\times4=8+18+14+12+18+4=74\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 <p>考試時 DP 表很大，至少要寫出遞迴式、填表順序和最後的根，就能拿到大部分分數。</p>
 </div>
 <h3 id="u3-quiz">單元 3 小考</h3>
@@ -1438,8 +1503,11 @@ f(3) 回來，印 3</code></pre>
 <details class="quiz">
 <summary>看答案</summary>
 <p>就是 4 個節點的二元樹形狀數，Catalan 數 <span class="arithmatex">\(C_4=\frac{1}{4+1}\binom84=\frac{70}{5}=\)</span> <strong>14</strong>。</p>
-<p>用遞迴驗算：根是第 1、2、3、4 小的鍵時，左右子樹分別有 (0,3)、(1,2)、(2,1)、(3,0) 個鍵：<span class="arithmatex">\(C_0C_3+C_1C_2+C_2C_1+C_3C_0=5+2+2+5=14\)</span> ✓。</p>
+<p>用遞迴驗算：根是第 1、2、3、4 小的鍵時，左右子樹分別有 (0,3)、(1,2)、(2,1)、(3,0) 個鍵：<span class="arithmatex">\(C_0C_3+C_1C_2+C_2C_1+C_3C_0=5+2+2+5=14\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </details>
+
+</section>
+<section class="unit" data-unit="u4">
 <h2 id="u4">單元 4：雜湊</h2>
 <h3 id="u4-0">4.0 觀念課：依學號尾數分配置物櫃</h3>
 <h4 id="_11">雜湊的想法</h4>
@@ -1688,6 +1756,9 @@ f(3) 回來，印 3</code></pre>
 </table>
 <p>結果 <strong><code>[2]=41, [5]=18, [6]=32, [7]=59, [9]=22, [10]=44</code></strong>。可以把數字填進上面的動畫（M 改 13）檢查。</p>
 </details>
+
+</section>
+<section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：圖</h2>
 <h3 id="u5-0">5.0 觀念課：用最少的電線連起所有城市</h3>
 <h4 id="_13">圖怎麼存</h4>
@@ -1971,6 +2042,9 @@ f(3) 回來，印 3</code></pre>
 </table>
 <p>加入順序 <strong>1, 2, 3, 5, 8</strong>，總權重 19，跟 Prim 一樣（MST 的權重唯一）。</p>
 </details>
+
+</section>
+<section class="unit" data-unit="u6">
 <h2 id="u6">單元 6：遞迴計數與 DP</h2>
 <div class="admonition key">
 <p class="admonition-title">一句話重點</p>
@@ -2022,12 +2096,12 @@ f(3) 回來，印 3</code></pre>
 </tr>
 </tbody>
 </table>
-<p>答案 3：1+1+1+1、1+1+2、2+2 ✓。表格每一格 ＝ 上面一格 ＋ 同一列往左 2 格。</p>
+<p>答案 3：1+1+1+1、1+1+2、2+2 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。表格每一格 ＝ 上面一格 ＋ 同一列往左 2 格。</p>
 <h4 id="catalan">Catalan 數：看第一對括號</h4>
 <p>3 對括號的合法排法：<code>((()))</code>、<code>(()())</code>、<code>(())()</code>、<code>()(())</code>、<code>()()()</code>，共 5 種。</p>
 <p>看<strong>第一個左括號跟哪個右括號配對</strong>：它們中間有 <span class="arithmatex">\(k\)</span> 對，右邊還有 <span class="arithmatex">\(n-1-k\)</span> 對，兩邊各自任意合法排列。</p>
 <div class="arithmatex">\[C_n=\sum_{k=0}^{n-1}C_kC_{n-1-k}\]</div>
-<p><span class="arithmatex">\(C_3=C_0C_2+C_1C_1+C_2C_0=2+1+2=5\)</span> ✓。同樣的拆法也適用在「<span class="arithmatex">\(n\)</span> 個節點的二元樹有幾種形狀」（根的左子樹有 <span class="arithmatex">\(k\)</span> 個節點）和 stack 的輸出順序。</p>
+<p><span class="arithmatex">\(C_3=C_0C_2+C_1C_1+C_2C_0=2+1+2=5\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。同樣的拆法也適用在「<span class="arithmatex">\(n\)</span> 個節點的二元樹有幾種形狀」（根的左子樹有 <span class="arithmatex">\(k\)</span> 個節點）和 stack 的輸出順序。</p>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -2078,7 +2152,7 @@ f(3) 回來，印 3</code></pre>
 </tr>
 </tbody>
 </table>
-<p>最後一格：<span class="arithmatex">\(3+g(3\text{ 種},1)=3+1=4\)</span>。列出來：1+1+1+1、1+1+2、2+2、1+3 ✓。</p>
+<p>最後一格：<span class="arithmatex">\(3+g(3\text{ 種},1)=3+1=4\)</span>。列出來：1+1+1+1、1+1+2、2+2、1+3 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </details>
 <p><strong>T-2.</strong> 3 個不同的鍵可以組成幾種形狀的 BST？</p>
 <details class="quiz">
@@ -2096,7 +2170,7 @@ f(3) 回來，印 3</code></pre>
 <summary>看答案</summary>
 <p>看最右邊：一張直放，前面是 <span class="arithmatex">\(2\times(n-1)\)</span> → <span class="arithmatex">\(a_{n-1}\)</span>；兩張橫放疊在一起，前面是 <span class="arithmatex">\(2\times(n-2)\)</span> → <span class="arithmatex">\(a_{n-2}\)</span>。</p>
 <p><span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}\)</span>，<span class="arithmatex">\(a_1=1\)</span>（一張直放）、<span class="arithmatex">\(a_2=2\)</span>（兩直或兩橫），<span class="arithmatex">\(a_3=2+1=\)</span> <strong>3</strong>。</p>
-<p>列出來（｜是直放、＝是兩張橫放疊起來）：｜｜｜、｜＝、＝｜ ✓。</p>
+<p>列出來（｜是直放、＝是兩張橫放疊起來）：｜｜｜、｜＝、＝｜ <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </details>
 <h3 id="u6-1">6.1 Catalan 數</h3>
 <p><span class="arithmatex">\(C_n=\frac{1}{n+1}\binom{2n}{n}\)</span>：1, 1, 2, 5, 14, 42, …，遞迴 <span class="arithmatex">\(C_n=\sum_{k=0}^{n-1}C_kC_{n-1-k}\)</span>。</p>
@@ -2107,7 +2181,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>不合法的</strong>：找到第一次掉到 <span class="arithmatex">\(-1\)</span> 的地方，把<strong>之後</strong>的每一步上下翻轉，終點會從 0 變成 <span class="arithmatex">\(-2\)</span>。反過來，每條終點在 <span class="arithmatex">\(-2\)</span> 的路線也都翻得回來，所以兩邊一樣多。終點在 <span class="arithmatex">\(-2\)</span> ＝ <span class="arithmatex">\(2n\)</span> 步裡只有 <span class="arithmatex">\(n-1\)</span> 步往上，共 <span class="arithmatex">\(\binom{2n}{n-1}\)</span> 條。</li>
 <li>相減：<span class="arithmatex">\(C_n=\binom{2n}{n}-\binom{2n}{n-1}=\binom{2n}{n}\left(1-\frac{n}{n+1}\right)=\frac{1}{n+1}\binom{2n}{n}\)</span>。</li>
 </ol>
-<p>檢查 <span class="arithmatex">\(n=3\)</span>：<span class="arithmatex">\(\binom63-\binom62=20-15=5\)</span> ✓。</p>
+<p>檢查 <span class="arithmatex">\(n=3\)</span>：<span class="arithmatex">\(\binom63-\binom62=20-15=5\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 <div class="admonition example">
 <p class="admonition-title">114 Q4（15%）：<span class="arithmatex">\(n\)</span> 對合法括號 <span class="arithmatex">\(p(n)\)</span></p>
 <p>(a) <span class="arithmatex">\(p(3)=5\)</span>：<code>((()))</code>、<code>(()())</code>、<code>(())()</code>、<code>()(())</code>、<code>()()()</code>。</p>
@@ -2170,20 +2244,20 @@ f(3) 回來，印 3</code></pre>
 <li>最右三行用兩個 L 形互相咬合 → 2 種 → <span class="arithmatex">\(2\,d(m-3)\)</span></li>
 </ul>
 <div class="arithmatex">\[d(m)=d(m-1)+4d(m-2)+2d(m-3)\]</div>
-<p>所以 <span class="arithmatex">\(a=1\)</span>、<span class="arithmatex">\(b=4\)</span>、<span class="arithmatex">\(c=2\)</span>。驗算：<span class="arithmatex">\(d(3)=5+4\times1+2\times1=11\)</span> ✓、<span class="arithmatex">\(d(4)=11+20+2=33\)</span>。</p>
+<p>所以 <span class="arithmatex">\(a=1\)</span>、<span class="arithmatex">\(b=4\)</span>、<span class="arithmatex">\(c=2\)</span>。驗算：<span class="arithmatex">\(d(3)=5+4\times1+2\times1=11\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>、<span class="arithmatex">\(d(4)=11+20+2=33\)</span>。</p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">113 Q2（10%）：二維陣列的蛇形編號，求 <span class="arithmatex">\(N[i][j]\)</span></p>
 <p>觀察：<span class="arithmatex">\(m=\max(i,j)\)</span> 相同的格子形成一個「L 形殼」，裡面的數字是 <span class="arithmatex">\(m^2\)</span> 到 <span class="arithmatex">\(m^2+2m\)</span>。<span class="arithmatex">\(m\)</span> 是偶數時從右上 <span class="arithmatex">\((0,m)\)</span> 往下再往左；<span class="arithmatex">\(m\)</span> 是奇數時從左下 <span class="arithmatex">\((m,0)\)</span> 往右再往上。</p>
 <div class="arithmatex">\[N[i][j]=\begin{cases}m^2+i &amp; m\text{ 偶數}, j=m\\ m^2+2m-j &amp; m\text{ 偶數}, i=m\\ m^2+j &amp; m\text{ 奇數}, i=m\\ m^2+2m-i &amp; m\text{ 奇數}, j=m\end{cases}\]</div>
-<p>驗算：<span class="arithmatex">\(N[0][2]=4\)</span>、<span class="arithmatex">\(N[2][0]=4+4-0=8\)</span>、<span class="arithmatex">\(N[3][3]=9+3=12\)</span>、<span class="arithmatex">\(N[0][3]=9+6-0=15\)</span> ✓。</p>
+<p>驗算：<span class="arithmatex">\(N[0][2]=4\)</span>、<span class="arithmatex">\(N[2][0]=4+4-0=8\)</span>、<span class="arithmatex">\(N[3][3]=9+3=12\)</span>、<span class="arithmatex">\(N[0][3]=9+6-0=15\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </div>
 <h3 id="u6-quiz">單元 6 小考</h3>
 <p><strong>6-1.</strong> 1, 2, 3, 4, 5 依序 push，可能的輸出有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>
 <p>stack 的合法輸出數是 Catalan 數：<span class="arithmatex">\(C_5=\frac{1}{5+1}\binom{10}{5}=\frac{252}{6}=\)</span> <strong>42</strong>。</p>
-<p>用遞迴驗算：<span class="arithmatex">\(C_5=C_0C_4+C_1C_3+C_2C_2+C_3C_1+C_4C_0=14+5+4+5+14=42\)</span> ✓。</p>
+<p>用遞迴驗算：<span class="arithmatex">\(C_5=C_0C_4+C_1C_3+C_2C_2+C_3C_1+C_4C_0=14+5+4+5+14=42\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </details>
 <p><strong>6-2.</strong> 用 1、2、5 元湊 10 元的組合數（不計順序）？</p>
 <details class="quiz">
@@ -2259,12 +2333,16 @@ f(3) 回來，印 3</code></pre>
 <summary>看答案</summary>
 <p>最右邊一張直放 → <span class="arithmatex">\(a_{n-1}\)</span>；兩張橫放疊在一起 → <span class="arithmatex">\(a_{n-2}\)</span>。<span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}\)</span>，<span class="arithmatex">\(a_1=1\)</span>、<span class="arithmatex">\(a_2=2\)</span>（費氏數列）。</p>
 </details>
+
+</section>
+<section class="unit" data-unit="res">
 <h2 id="res">資源</h2>
 <ul>
 <li><strong>Horowitz《Fundamentals of Data Structures in C》</strong>：中山的題目風格（C 語言、手動模擬）和這本最接近。</li>
 <li><strong>自己編譯驗證</strong>：C 程式題做完後，把程式打進電腦跑一次，確認答案。這是最快抓到「自以為懂」的方法。</li>
 <li><strong><a href="https://visualgo.net/">VisuAlgo</a></strong>：排序、BST、AVL、heap、雜湊、MST 都有動畫，可以一步一步看。</li>
 </ul>
+</section>
   </article>
 </div>
 <script>
@@ -2313,7 +2391,9 @@ f(3) 回來，印 3</code></pre>
   paint();
 })();
 </script>
+<script src="assets/icons.js"></script>
 <script src="assets/ink.js"></script>
 <script src="assets/viz.js"></script>
+<script src="assets/nav.js"></script>
 </body>
 </html>

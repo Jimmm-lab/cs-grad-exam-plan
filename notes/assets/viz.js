@@ -12,6 +12,7 @@
   if (!hosts.length) return;
 
   const NS = "http://www.w3.org/2000/svg";
+  const I = window.CGEP_ICON || (() => "");
   const CAN_D = !!(window.CSS && CSS.supports && CSS.supports("d", 'path("M0 0")'));
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const toks = s => String(s).split(/[\s,，、;；]+/).filter(Boolean);
@@ -87,10 +88,10 @@
         `<div class="vz-cap" aria-live="polite"></div>` +
         `<div class="vz-info"></div>` +
         `<div class="vz-ctrl">` +
-          `<button type="button" data-a="first" aria-label="回到第一步">⏮</button>` +
-          `<button type="button" data-a="prev">◀ 上一步</button>` +
-          `<button type="button" data-a="play" class="vz-play">▶ 自動播放</button>` +
-          `<button type="button" data-a="next" class="vz-next">下一步 ▶</button>` +
+          `<button type="button" data-a="first" aria-label="回到第一步" title="回到第一步">${I("first")}</button>` +
+          `<button type="button" data-a="prev">${I("prev")}<span>上一步</span></button>` +
+          `<button type="button" data-a="play" class="vz-play" aria-pressed="false">${I("play")}<span>自動播放</span></button>` +
+          `<button type="button" data-a="next" class="vz-next"><span>下一步</span>${I("next")}</button>` +
           `<span class="vz-count"></span>` +
           `<input type="range" class="vz-range" min="0" max="0" value="0" aria-label="跳到第幾步">` +
         `</div>`;
@@ -174,7 +175,7 @@
     play() {
       if (this.i >= this.frames.length - 1) this.go(0);
       const b = this.host.querySelector(".vz-play");
-      b.textContent = "⏸ 暫停";
+      b.innerHTML = I("pause") + "<span>暫停</span>";
       b.setAttribute("aria-pressed", "true");
       this.timer = setInterval(() => {
         if (this.i >= this.frames.length - 1) { this.stop(); return; }
@@ -186,7 +187,7 @@
       clearInterval(this.timer);
       this.timer = 0;
       const b = this.host.querySelector(".vz-play");
-      b.textContent = "▶ 自動播放";
+      b.innerHTML = I("play") + "<span>自動播放</span>";
       b.setAttribute("aria-pressed", "false");
     }
     apply(items) {
@@ -1182,7 +1183,7 @@
         refs.forEach((p, i) => {
           const x = (i % PER) * RS, y = ry + Math.floor(i / PER) * 74;
           items.push(text("ri" + i, x + RW / 2, y - 9, "#" + (i + 1), "vz-sub"));
-          items.push(box("r" + i, x, y, String(p), i === t ? "cur" : i < t ? (res[i] ? "bad" : "done") : "dim", { w: RW, h: 30, sub: i <= t && res[i] != null ? (res[i] ? "F" : "✓") : "" }));
+          items.push(box("r" + i, x, y, String(p), i === t ? "cur" : i < t ? (res[i] ? "bad" : "done") : "dim", { w: RW, h: 30, sub: i <= t && res[i] != null ? (res[i] ? "F" : "hit") : "" }));
         });
         F.push({ items, cap, info: `page fault：<b>${faults}</b> 次` + (t >= 0 ? `（已處理 ${Math.min(t + 1, refs.length)}／${refs.length} 個）` : "") });
       };
