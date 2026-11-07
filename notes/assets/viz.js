@@ -1049,6 +1049,285 @@
     }
   };
 
+  /* ---------- cache 模擬 ---------- */
+  defs.cache = {
+    title: "cache 模擬：位址切割、hit／miss、替換",
+    fields: [
+      { name: "addrs", label: "依序存取的位址", def: "45,109,45" },
+      { name: "unit", label: "位址單位", def: "byte", type: "select", options: [["byte", "byte address"], ["word", "word address"]] },
+      { name: "block", label: "block 大小（幾個 byte 或 word）", def: "4", mode: "numeric" },
+      { name: "sets", label: "set 數（fully associative 填 1）", def: "4", mode: "numeric" },
+      { name: "ways", label: "每個 set 幾格（direct-mapped 填 1）", def: "1", mode: "numeric" },
+      { name: "policy", label: "set 滿了踢誰", def: "lru", type: "select", options: [["lru", "LRU：最久沒用的"], ["fifo", "FIFO：最早放進來的"]] }
+    ],
+    gen(v) {
+      const addrs = nums(v.addrs, "位址", { int: true, max: 24 });
+      const B = Number(v.block), S = Number(v.sets), W = Number(v.ways);
+      const p2 = x => Number.isInteger(x) && x >= 1 && (x & (x - 1)) === 0;
+      if (!p2(B) || !p2(S) || !p2(W)) throw new Error("block 大小、set 數、每個 set 的格數都要是 2 的次方（1、2、4、8…）");
+      if (S > 16 || W > 8 || S * W > 32) throw new Error("cache 太大畫不下：set 數最多 16、每個 set 最多 8 格、總共最多 32 格");
+      const ob = Math.log2(B), ib = Math.log2(S), u = v.unit === "word" ? "word" : "byte";
+      const nb = Math.max(ob + ib + 2, Math.ceil(Math.log2(Math.max(...addrs) + 1)));
+      const tb = nb - ob - ib;
+      const sets = Array.from({ length: S }, () => []);
+      const seen = new Set(), hist = [];
+      let clock = 0, hits = 0;
+      const CW = 62, CX = 64, ty = 104, RH = 46;
+      const F = [];
+      const parts = a => {
+        const s = a.toString(2).padStart(nb, "0");
+        return { t: s.slice(0, tb), i: s.slice(tb, tb + ib), o: s.slice(tb + ib) };
+      };
+      const snap = (cur, marks, cap) => {
+        const items = [];
+        if (cur != null) {
+          const p = parts(cur);
+          let x = 0;
+          items.push(text("aa", 0, -16, `位址 ${cur} 的二進位`, "vz-sub", "start"));
+          [["tag", p.t, "cmp"], ["index", p.i, "cur"], ["offset", p.o, ""]].forEach(([nm, bits, cls]) => {
+            if (!bits.length) return;
+            const w = Math.max(70, bits.length * 10 + 18);
+            items.push(box("ad-" + nm, x, 0, bits, cls, { w, sub: nm }));
+            x += w + 6;
+          });
+          if (!ib) items.push(text("ad-noi", x + 4, BH / 2, "沒有 index（只有 1 個 set）", "vz-sub", "start"));
+        }
+        for (let w = 0; w < W; w++) items.push(text("hw" + w, CX + w * (CW + 6) + CW / 2, ty - 14, W > 1 ? `way ${w}` : "tag", "vz-sub"));
+        for (let s = 0; s < S; s++) {
+          items.push(text("hs" + s, 0, ty + s * RH + BH / 2, `set ${s}`, "vz-sub", "start"));
+          for (let w = 0; w < W; w++) {
+            const e = sets[s][w];
+            items.push(box(`c${s}-${w}`, CX + w * (CW + 6), ty + s * RH, e ? String(e.tag) : "", marks[`${s}-${w}`] || (e ? "" : "slot"), { w: CW }));
+          }
+        }
+        const chips = hist.map(h => `<span class="vz-chip ${h[1] ? "hit" : "on"}">${h[0]} ${h[1] ? "H" : "M"}</span>`).join("");
+        F.push({ items, cap, info: `<div class="vz-chips">${chips || "（還沒有存取）"}</div>hit ${hits} 次、miss ${hist.length - hits} 次（cache 格子裡寫的是 tag）` });
+      };
+      snap(null, {}, `${u} address，block ${B} 個 ${u} → offset ${ob} 位元；${S} 個 set → index ${ib} 位元；其他 ${tb} 位元是 tag。` + (S === 1 ? "（fully associative）" : W === 1 ? "（direct-mapped）" : `（${W}-way set-associative）`));
+      for (const a of addrs) {
+        const blk = Math.floor(a / B), idx = blk % S, tag = Math.floor(blk / S);
+        const how = (B > 1 ? `block 位址 ＝ ⌊${a}/${B}⌋ ＝ ${blk}，` : `block 位址 ＝ ${blk}，`) +
+          (S > 1 ? `index ＝ ${blk} mod ${S} ＝ <b>${idx}</b>，tag ＝ ⌊${blk}/${S}⌋ ＝ <b>${tag}</b>` : `只有 1 個 set，tag ＝ block 位址 ＝ <b>${tag}</b>`);
+        const m0 = {};
+        for (let w = 0; w < W; w++) m0[`${idx}-${w}`] = "cmp";
+        snap(a, m0, `存取 <b>${a}</b>：${how}。到 set ${idx} 找 tag ${tag}。`);
+        clock++;
+        const row = sets[idx];
+        const hw = row.findIndex(e => e && e.tag === tag);
+        if (hw >= 0) {
+          hits++; hist.push([a, true]);
+          if (v.policy !== "fifo") row[hw].used = clock;
+          snap(a, { [`${idx}-${hw}`]: "done" }, `set ${idx} 裡有 tag ${tag} → <b>hit</b>。` + (v.policy !== "fifo" && W > 1 ? "（LRU：它變成最近用過的）" : ""));
+          seen.add(blk);
+          continue;
+        }
+        hist.push([a, false]);
+        const kind = !seen.has(blk) ? "第一次用到這個 block，是 compulsory miss" : "這個 block 之前用過但被踢掉了";
+        seen.add(blk);
+        let w = -1;
+        for (let k = 0; k < W; k++) if (!row[k]) { w = k; break; }
+        if (w >= 0) {
+          row[w] = { tag, blk, used: clock, put: clock };
+          snap(a, { [`${idx}-${w}`]: "cur" }, `set ${idx} 沒有 tag ${tag} → <b>miss</b>（${kind}）。從記憶體搬 block ${blk} 進來，放進空的${W > 1 ? ` way ${w}` : "格子"}。`);
+        } else {
+          const key = v.policy === "fifo" ? "put" : "used";
+          w = 0;
+          for (let k = 1; k < W; k++) if (row[k][key] < row[w][key]) w = k;
+          const old = row[w];
+          const emptyElse = !kind.startsWith("第一次") && sets.some((r, s) => s !== idx && r.filter(Boolean).length < W);
+          row[w] = { tag, blk, used: clock, put: clock };
+          snap(a, { [`${idx}-${w}`]: "bad" }, `set ${idx} 沒有 tag ${tag} → <b>miss</b>（${kind}）。set ${idx} 已經滿了，` +
+            (W > 1 ? `${v.policy === "fifo" ? "最早放進來" : "最久沒用"}的是 way ${w} 的 tag ${old.tag}` : `只好把原本的 tag ${old.tag}`) +
+            `（block ${old.blk}）踢掉，換成 tag ${tag}。` + (emptyElse ? "其他 set 明明還有空位，這叫 <b>conflict miss</b>。" : ""));
+        }
+      }
+      snap(null, {}, `做完了：hit ${hits} 次、miss ${addrs.length - hits} 次，hit rate ${hits}/${addrs.length}。可以把 set 數或每個 set 的格數改掉，看 miss 怎麼變。`);
+      return F;
+    }
+  };
+
+  /* ---------- 分頁置換 ---------- */
+  defs.paging = {
+    title: "page 置換：FIFO／LRU／OPT",
+    fields: [
+      { name: "refs", label: "page 存取順序", def: "7,0,1,2,0,3,0,4" },
+      { name: "frames", label: "frame 數", def: "3", mode: "numeric" },
+      { name: "algo", label: "置換策略", def: "fifo", type: "select", options: [["fifo", "FIFO：踢最早進來的"], ["lru", "LRU：踢最久沒用到的"], ["opt", "OPT：踢未來最晚才用到的"]] }
+    ],
+    gen(v) {
+      const refs = nums(v.refs, "存取順序", { int: true, max: 30 });
+      const K = Number(v.frames);
+      if (!Number.isInteger(K) || K < 1 || K > 6) throw new Error("frame 數要是 1 到 6");
+      const algo = v.algo, name = { fifo: "FIFO", lru: "LRU", opt: "OPT" }[algo];
+      const fr = new Array(K).fill(null);
+      const res = [];
+      let faults = 0;
+      const FW = 76, RW = 30, RS = 34, PER = 11, ry = 112;
+      const note = (slot, t) => {
+        const e = fr[slot];
+        if (!e) return "";
+        if (algo === "fifo") return `#${e.in + 1} 進來`;
+        if (algo === "lru") return `上次用 #${e.last + 1}`;
+        const nx = refs.indexOf(e.p, t + 1);
+        return nx < 0 ? "不再用" : `下次用 #${nx + 1}`;
+      };
+      const F = [];
+      const snap = (t, marks, cap) => {
+        const items = [text("hf", 0, -16, `記憶體裡的 ${K} 個 frame`, "vz-sub", "start")];
+        for (let s = 0; s < K; s++) {
+          const e = fr[s];
+          items.push(box("f" + s, s * (FW + 8), 0, e ? String(e.p) : "", marks["f" + s] || (e ? "" : "slot"), { w: FW, sub: note(s, t) }));
+        }
+        items.push(text("hr", 0, ry - 30, "存取順序（上面是第幾個，下面 F ＝ page fault）", "vz-sub", "start"));
+        refs.forEach((p, i) => {
+          const x = (i % PER) * RS, y = ry + Math.floor(i / PER) * 74;
+          items.push(text("ri" + i, x + RW / 2, y - 9, "#" + (i + 1), "vz-sub"));
+          items.push(box("r" + i, x, y, String(p), i === t ? "cur" : i < t ? (res[i] ? "bad" : "done") : "dim", { w: RW, h: 30, sub: i <= t && res[i] != null ? (res[i] ? "F" : "✓") : "" }));
+        });
+        F.push({ items, cap, info: `page fault：<b>${faults}</b> 次` + (t >= 0 ? `（已處理 ${Math.min(t + 1, refs.length)}／${refs.length} 個）` : "") });
+      };
+      snap(-1, {}, `${K} 個 frame 一開始都是空的。${name}：${{ fifo: "frame 滿了就踢掉最早進來的那一頁。", lru: "frame 滿了就踢掉最久沒被用到的那一頁。", opt: "frame 滿了就踢掉「未來最晚才會用到（或再也不用）」的那一頁。這是理論最佳，實際上做不到，因為不知道未來。" }[algo]}`);
+      refs.forEach((p, t) => {
+        const hit = fr.findIndex(e => e && e.p === p);
+        if (hit >= 0) {
+          res[t] = false;
+          if (algo === "lru") fr[hit].last = t;
+          snap(t, { ["f" + hit]: "done" }, `存取 ${p}：已經在 frame 裡 → <b>hit</b>，不用載入。` + (algo === "lru" ? "（LRU：更新它的「上次用」）" : ""));
+          return;
+        }
+        res[t] = true; faults++;
+        const empty = fr.findIndex(e => !e);
+        if (empty >= 0) {
+          fr[empty] = { p, in: t, last: t };
+          snap(t, { ["f" + empty]: "cur" }, `存取 ${p}：不在記憶體 → <b>page fault</b>，還有空的 frame，直接放進去。`);
+          return;
+        }
+        let vi = 0;
+        const score = s => {
+          const e = fr[s];
+          if (algo === "fifo") return -e.in;
+          if (algo === "lru") return -e.last;
+          const nx = refs.indexOf(e.p, t + 1);
+          return nx < 0 ? Infinity : nx;
+        };
+        for (let s = 1; s < K; s++) if (score(s) > score(vi)) vi = s;
+        const old = fr[vi].p;
+        const why = { fifo: `最早進來的是 ${old}`, lru: `最久沒被用到的是 ${old}`, opt: refs.indexOf(old, t + 1) < 0 ? `${old} 之後再也不會用到` : `${old} 是所有 frame 裡最晚才會再用到的（第 ${refs.indexOf(old, t + 1) + 1} 個）` }[algo];
+        snap(t, { ["f" + vi]: "bad" }, `存取 ${p}：不在記憶體 → <b>page fault</b>。frame 都滿了，${why} → 踢掉 ${old}。`);
+        fr[vi] = { p, in: t, last: t };
+        snap(t, { ["f" + vi]: "cur" }, `把 ${p} 載入剛空出來的 frame。`);
+      });
+      snap(refs.length, {}, `${name} 一共 <b>${faults}</b> 次 page fault。換一種策略或改 frame 數比較看看（FIFO 用 1,2,3,4,1,2,5,1,2,3,4,5 試 3 和 4 個 frame，會看到 Belady's anomaly）。`);
+      return F;
+    }
+  };
+
+  /* ---------- CPU 排程 ---------- */
+  defs.sched = {
+    title: "CPU 排程：畫 Gantt chart",
+    fields: [
+      { name: "procs", label: "行程（名稱 到達時間 burst [priority]，用逗號隔開）", def: "P1 0 10 3, P2 0 1 1, P3 0 2 3, P4 0 1 4, P5 0 5 2" },
+      { name: "algo", label: "演算法", def: "rr", type: "select", options: [["fcfs", "FCFS：先來先做"], ["sjf", "SJF：burst 最短的先做（不搶）"], ["srtf", "SRTF：剩餘時間最短的先做（會搶）"], ["pri", "Priority：數字小的先做（不搶）"], ["ppri", "Priority：數字小的先做（會搶）"], ["rr", "Round Robin"]] },
+      { name: "q", label: "RR 的 time quantum", def: "1", mode: "numeric" }
+    ],
+    gen(v) {
+      const P = v.procs.split(/[,，;；\n]+/).map(s => s.trim()).filter(Boolean).map((s, i) => {
+        const a = s.split(/\s+/);
+        const o = { n: a[0], at: Number(a[1]), bt: Number(a[2]), pr: a[3] != null ? Number(a[3]) : 0, i };
+        if (a.length < 3 || ![o.at, o.bt, o.pr].every(Number.isFinite) || o.bt <= 0 || o.at < 0) throw new Error(`看不懂「${s}」，請寫成「P1 0 10」或「P1 0 10 3」`);
+        o.rem = o.bt;
+        return o;
+      });
+      if (!P.length || P.length > 8) throw new Error("行程要 1 到 8 個");
+      const total = Math.max(...P.map(p => p.at)) + P.reduce((s, p) => s + p.bt, 0);
+      if (total > 60) throw new Error("總時間太長了（最多 60）");
+      const q = Number(v.q), algo = v.algo;
+      if (algo === "rr" && (!Number.isInteger(q) || q < 1)) throw new Error("quantum 要是正整數");
+      const U = Math.max(14, Math.min(30, Math.floor(400 / total)));
+      const segs = [], F = [];
+      let t = 0;
+      const gy = 22, qy = 112;
+      const fmtQ = list => (list.length ? list.map(p => p.n).join("、") : "（空）");
+      const snap = (ready, mark, cap) => {
+        const items = [text("hg", 0, gy - 18, "Gantt chart", "vz-sub", "start")];
+        const ticks = new Set([0]);
+        segs.forEach((s, k) => {
+          items.push(box("g" + k, s.a * U, gy, s.p ? s.p.n : "閒置", k === segs.length - 1 && mark ? "cur" : s.p ? "" : "slot", { w: Math.max(1, (s.b - s.a) * U), h: 36 }));
+          ticks.add(s.b);
+        });
+        ticks.forEach(x => items.push(text("t" + x, x * U, gy + 50, String(x), "vz-sub")));
+        items.push(text("hq", 0, qy - 14, algo === "rr" ? "ready queue（左邊是前面）" : "ready queue", "vz-sub", "start"));
+        ready.forEach((p, k) => items.push(box("q" + p.n, k * STEP, qy, p.n, "cmp", { sub: `剩 ${p.rem}` })));
+        F.push({ items, cap });
+      };
+      const arrived = (from, to) => P.filter(p => p.at > from && p.at <= to);
+      const key = { fcfs: p => [p.at, p.i], sjf: p => [p.bt, p.at, p.i], srtf: p => [p.rem, p.at, p.i], pri: p => [p.pr, p.at, p.i], ppri: p => [p.pr, p.at, p.i] }[algo];
+      const cmp = (a, b) => { const x = key(a), y = key(b); for (let i = 0; i < x.length; i++) if (x[i] !== y[i]) return x[i] - y[i]; return 0; };
+      const rule = { fcfs: "最早到的", sjf: "burst 最短的", srtf: "剩餘時間最短的", pri: "priority 數字最小的", ppri: "priority 數字最小的" }[algo];
+      const run = (p, a, b) => {
+        const last = segs[segs.length - 1];
+        if (last && last.p === p && last.b === a) last.b = b; else segs.push({ p, a, b });
+        p.rem -= b - a;
+        if (p.first == null) p.first = a;
+        if (!p.rem) p.done = b;
+      };
+      snap([], false, `${P.length} 個行程。${algo === "rr" ? `Round Robin，每次最多跑 ${q} 個時間單位，沒跑完就排到 queue 最後面。` : `每次從已經到達的行程裡挑${rule}。`}`);
+      if (algo === "rr") {
+        const qu = [];
+        P.filter(p => p.at <= 0).sort((a, b) => a.at - b.at || a.i - b.i).forEach(p => qu.push(p));
+        while (P.some(p => p.rem)) {
+          if (!qu.length) {
+            const nx = Math.min(...P.filter(p => p.rem && p.at > t).map(p => p.at));
+            segs.push({ p: null, a: t, b: nx });
+            arrived(t, nx).sort((a, b) => a.at - b.at || a.i - b.i).forEach(p => qu.push(p));
+            t = nx;
+            snap(qu, false, `CPU 閒置到 ${t}，${fmtQ(qu)} 到達。`);
+            continue;
+          }
+          const p = qu.shift();
+          const d = Math.min(q, p.rem), from = t;
+          run(p, t, t + d);
+          t += d;
+          const nw = arrived(from, t).sort((a, b) => a.at - b.at || a.i - b.i);
+          nw.forEach(x => qu.push(x));
+          if (p.rem) qu.push(p);
+          snap(qu, true, `時間 ${from}–${t}：從 queue 前面拿出 <b>${p.n}</b> 跑 ${d}。` + (nw.length ? `這段時間 ${nw.map(x => x.n).join("、")} 到達，排到後面。` : "") + (p.rem ? `${p.n} 還剩 ${p.rem}，排回 queue 最後面。` : `${p.n} 做完了（完成時間 ${t}）。`));
+        }
+      } else {
+        const pre = algo === "srtf" || algo === "ppri";
+        while (P.some(p => p.rem)) {
+          const ready = P.filter(p => p.rem && p.at <= t).sort(cmp);
+          if (!ready.length) {
+            const nx = Math.min(...P.filter(p => p.rem).map(p => p.at));
+            segs.push({ p: null, a: t, b: nx });
+            t = nx;
+            snap(P.filter(p => p.rem && p.at <= t).sort(cmp), false, `沒有行程可以跑，CPU 閒置到 ${t}。`);
+            continue;
+          }
+          const p = ready[0];
+          let end = t + p.rem;
+          if (pre) {
+            const nxt = P.filter(x => x.rem && x.at > t).map(x => x.at);
+            if (nxt.length) end = Math.min(end, Math.min(...nxt));
+          }
+          const from = t, others = ready.slice(1);
+          run(p, t, end);
+          t = end;
+          const why = others.length ? `ready 裡有 ${ready.map(x => `${x.n}（${algo === "srtf" ? "剩 " + (x === p ? x.rem + (end - from) : x.rem) : algo === "sjf" ? "burst " + x.bt : algo === "fcfs" ? "到達 " + x.at : "priority " + x.pr}）`).join("、")}，挑${rule} → ` : "";
+          snap(P.filter(x => x.rem && x.at <= t && x !== p).sort(cmp), true,
+            `時間 ${from}–${t}：${why}<b>${p.n}</b>。` + (p.rem ? `${t} 時有新行程到達，重新比較（${p.n} 還剩 ${p.rem}）。` : `${p.n} 做完了（完成時間 ${t}）。`));
+        }
+      }
+      const rows = P.map(p => ({ n: p.n, done: p.done, ta: p.done - p.at, w: p.done - p.at - p.bt, rs: p.first - p.at }));
+      const avg = k => (rows.reduce((s, r) => s + r[k], 0) / rows.length);
+      const f2 = x => (Number.isInteger(x) ? String(x) : x.toFixed(2));
+      const tbl = `<table class="vz-tbl"><tr><th>行程</th><th>完成</th><th>turnaround</th><th>waiting</th><th>response</th></tr>${rows.map(r => `<tr><td>${r.n}</td><td>${r.done}</td><td>${r.ta}</td><td>${r.w}</td><td>${r.rs}</td></tr>`).join("")}<tr><td>平均</td><td></td><td>${f2(avg("ta"))}</td><td><b>${f2(avg("w"))}</b></td><td>${f2(avg("rs"))}</td></tr></table>turnaround ＝ 完成 − 到達；waiting ＝ turnaround − burst；response ＝ 第一次執行 − 到達`;
+      snap([], false, `全部做完。平均 waiting time ＝ <b>${f2(avg("w"))}</b>，平均 turnaround ＝ ${f2(avg("ta"))}。`);
+      F[F.length - 1].info = tbl;
+      return F;
+    }
+  };
+
   hosts.forEach(h => {
     const def = defs[h.dataset.viz];
     if (!def) { h.textContent = `（找不到動畫：${h.dataset.viz}）`; return; }

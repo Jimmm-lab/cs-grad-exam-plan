@@ -149,6 +149,7 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-chip { font: 500 12px/1.6 var(--font-mono); padding: 0 6px; border-radius: 4px; border: 1px solid var(--line); }
 .vz-chip.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .vz-chip.skip { text-decoration: line-through; opacity: .55; }
+.vz-chip.hit { border-color: var(--ok); color: var(--ok); font-weight: 700; }
 .vz-svg text { font: 600 15px var(--font-mono); fill: var(--ink); }
 .vz-svg .vz-sub, .vz-svg .vz-note { font: 500 12px var(--font-mono); fill: var(--muted); }
 .vz-svg .vz-note { font-weight: 700; }
@@ -391,6 +392,10 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </tbody>
 </table>
 <p>P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時間：P1 <span class="arithmatex">\(8-5=3\)</span>、P2 <span class="arithmatex">\(7-3=4\)</span>，平均 3.5。</p>
+<p><strong>為什麼「等待 ＝ 完成 − 到達 − 執行時間」</strong>：從到達到完成的這段時間（turnaround）裡，行程不是在跑就是在 ready queue 等（這裡不考慮 I/O），所以扣掉跑的時間，剩下的就是等的時間。</p>
+<p>動畫可以切換演算法、改行程（每個寫「名稱 到達時間 burst」，有 priority 就寫在最後）：</p>
+<div class="viz" data-viz="sched" data-procs="P1 0 5, P2 0 3" data-algo="rr" data-q="2"></div>
+
 <h4 id="thread-process">thread 和 process</h4>
 <p>同一個 process 裡的 threads <strong>共用</strong>程式碼、全域資料、開啟的檔案，但各自有自己的 <strong>program counter、暫存器、stack</strong>。像同一個廚房裡的幾個廚師，共用冰箱和爐子，但各自做到不同步驟。</p>
 <div class="admonition read">
@@ -404,7 +409,32 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>T-1.</strong> P1、P2、P3 同時到達，執行時間 3、6、1，SJF 的平均等待時間？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>順序 P3、P1、P2，等待 0、1、4 → P1 1、P2 4、P3 0，平均 <span class="arithmatex">\(\frac53\)</span>。</p>
+<p>SJF 照 burst 由短到長：P3（1）、P1（3）、P2（6）。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>P3</th>
+<th>P1</th>
+<th>P2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>時間</td>
+<td>0–1</td>
+<td>1–4</td>
+<td>4–10</td>
+</tr>
+<tr>
+<td>等待</td>
+<td>0</td>
+<td>1</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<p>平均等待 <span class="arithmatex">\(=\frac{0+1+4}{3}=\frac53\approx\)</span> <strong>1.67</strong>。</p>
 </details>
 <p><strong>T-2.</strong> P1、P2 都要 3，quantum ＝ 2 的 RR，平均等待時間？</p>
 <details class="quiz">
@@ -414,7 +444,8 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>T-3.</strong> 一個 running 的行程呼叫 <code>read()</code> 讀檔案，會進入哪個狀態？讀完之後呢？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>running → waiting；I/O 完成後 → ready（不是直接回 running，要等排程器再選它）。</p>
+<p><code>read()</code> 要等磁碟，行程不能繼續跑 → <strong>running → waiting</strong>（CPU 先給別人用）。</p>
+<p>I/O 完成後 → <strong>ready</strong>（不是直接回 running，要排隊等排程器再選它）。</p>
 </details>
 <h3 id="u1-1">1.1 行程</h3>
 <ul>
@@ -477,17 +508,112 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </tr>
 </tbody>
 </table>
-<p>平均等待 <span class="arithmatex">\(=\frac{0+1+2+4+9}{5}=3.2\)</span>。</p>
-<p><strong>Non-preemptive priority</strong>：P2(1)、P5(2)、P1(3)、P3(3)、P4(4)，開始時間 0、1、6、16、18，平均 <span class="arithmatex">\(\frac{41}{5}=8.2\)</span>。</p>
+<p>都在時間 0 到達，所以等待時間就是開始時間。平均等待 <span class="arithmatex">\(=\frac{0+1+2+4+9}{5}=\frac{16}{5}=3.2\)</span>。</p>
+<p><strong>Non-preemptive priority</strong>（數字小的先）：P2(1)、P5(2)、P1(3)、P3(3)、P4(4)。P1、P3 同為 3，照編號 P1 先。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>P2</th>
+<th>P5</th>
+<th>P1</th>
+<th>P3</th>
+<th>P4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>時間</td>
+<td>0–1</td>
+<td>1–6</td>
+<td>6–16</td>
+<td>16–18</td>
+<td>18–19</td>
+</tr>
+</tbody>
+</table>
+<p>等待（＝開始時間）<span class="arithmatex">\(0+1+6+16+18=41\)</span>，平均 <span class="arithmatex">\(\frac{41}{5}=8.2\)</span>。</p>
 <p><strong>RR（q＝1，佇列初始順序 P1–P5）</strong>：完成時間 P1＝19、P2＝2、P3＝7、P4＝4、P5＝14。等待 ＝ 完成 <span class="arithmatex">\(-\)</span> burst：<span class="arithmatex">\(9,1,5,3,9\)</span>，平均 <span class="arithmatex">\(\frac{27}{5}=5.4\)</span>。</p>
 <p>RR 的 Gantt chart 最容易算錯，畫的時候把每一輪寫成一列：
 <code>P1 P2 P3 P4 P5 | P1 P3 P5 | P1 P5 | P1 P5 | P1 P5 | P1 P1 P1 P1 P1</code></p>
+<p>加上時間（每格 1）：</p>
+<table>
+<thead>
+<tr>
+<th>時間</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+<th>10</th>
+<th>11</th>
+<th>12</th>
+<th>13</th>
+<th>14–19</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>執行</td>
+<td>P1</td>
+<td><strong>P2</strong></td>
+<td>P3</td>
+<td><strong>P4</strong></td>
+<td>P5</td>
+<td>P1</td>
+<td><strong>P3</strong></td>
+<td>P5</td>
+<td>P1</td>
+<td>P5</td>
+<td>P1</td>
+<td>P5</td>
+<td>P1</td>
+<td><strong>P5</strong></td>
+<td>P1 ×5</td>
+</tr>
+</tbody>
+</table>
+<p>粗體是該行程最後一次跑，下一格的時間就是它的完成時間：P2＝2、P4＝4、P3＝7、P5＝14、P1＝19。</p>
 </div>
+<div class="viz" data-viz="sched" data-procs="P1 0 10 3, P2 0 1 1, P3 0 2 3, P4 0 1 4, P5 0 5 2" data-algo="rr" data-q="1" data-title="113 Q6a：切換成 SJF、Priority 對照上面的答案"></div>
+
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> 三個 process 在時間 0 依序到達，burst 6、3、1，FCFS 和 SJF 的平均等待時間？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>FCFS：<span class="arithmatex">\(\frac{0+6+9}{3}=5\)</span>。SJF（1、3、6）：<span class="arithmatex">\(\frac{0+1+4}{3}=\frac53\approx1.67\)</span>。</p>
+<p><strong>FCFS</strong>（照到達順序 P1、P2、P3）：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>P1</th>
+<th>P2</th>
+<th>P3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>時間</td>
+<td>0–6</td>
+<td>6–9</td>
+<td>9–10</td>
+</tr>
+<tr>
+<td>等待</td>
+<td>0</td>
+<td>6</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<p>平均 <span class="arithmatex">\(\frac{0+6+9}{3}=\)</span> <strong>5</strong>。</p>
+<p><strong>SJF</strong>（P3、P2、P1）：時間 0–1、1–4、4–10，等待 0、1、4，平均 <span class="arithmatex">\(\frac{0+1+4}{3}=\frac53\approx\)</span> <strong>1.67</strong>。長的排前面時，後面每個人都要多等它。</p>
 </details>
 <p><strong>1-2.</strong> PCB 的七個欄位？</p>
 <details class="quiz">
@@ -573,12 +699,13 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>T-1.</strong> counter ＝ 0，兩個 thread 各做一次 <code>counter++</code>，沒有 lock，最後可能是多少？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>1 或 2。</p>
+<p><strong>2</strong>：一個 thread 做完三步，另一個才開始。</p>
+<p><strong>1</strong>：兩個都先讀到 0，各自加 1 得 1，再先後寫回 1，其中一次加法被蓋掉（跟觀念課的表一樣）。</p>
 </details>
 <p><strong>T-2.</strong> semaphore 初始值 3，有 5 個行程依序呼叫 <code>wait()</code>，幾個會被擋住？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>2 個（值變成 −2，負多少就有幾個在排隊）。</p>
+<p>每次 <code>wait()</code> 減 1：<span class="arithmatex">\(3\to2\to1\to0\to-1\to-2\)</span>。前 3 個減完還 <span class="arithmatex">\(\ge0\)</span>，直接進去；第 4、5 個減完是負的，要排隊 → <strong>2 個</strong>被擋住。負多少，就有幾個在排隊。</p>
 </details>
 <p><strong>T-3.</strong> 為什麼在多處理器上，「關掉中斷」不能保護 critical section？</p>
 <details class="quiz">
@@ -811,11 +938,66 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </tbody>
 </table>
 <p>LRU 在第 6 次存取（3）時，踢的是 1（0 剛剛才用過），所以之後的 0 會 hit，少一次 fault。</p>
+<p>LRU 的過程：</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>7</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>0</th>
+<th>3</th>
+<th>0</th>
+<th>4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frame 內容</td>
+<td>7</td>
+<td>7,0</td>
+<td>7,0,1</td>
+<td>2,0,1</td>
+<td>2,0,1</td>
+<td>2,0,3</td>
+<td>2,0,3</td>
+<td>4,0,3</td>
+</tr>
+<tr>
+<td>踢掉</td>
+<td></td>
+<td></td>
+<td></td>
+<td>7（最久沒用）</td>
+<td></td>
+<td>1</td>
+<td></td>
+<td>2</td>
+</tr>
+<tr>
+<td>結果</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>hit</td>
+<td>F</td>
+<td>hit</td>
+<td>F</td>
+</tr>
+</tbody>
+</table>
+<p>OPT 的過程（看<strong>未來</strong>誰最晚才用到）：存取 2 時，未來是 0, 3, 0, 4，7 再也不會用到 → 踢 7；存取 3 時，1 和 2 之後都不會用到 → 踢其中一個（例如 1）；存取 4 時隨便踢一個不再用的。一樣是 6 次。這個短字串剛好打平，長一點的字串（下面延伸練習）OPT 會明顯最少。</p>
+<p>動畫可以換策略、改 frame 數，也可以把延伸練習的長字串貼進去對答案：</p>
+<p><div class="viz" data-viz="paging" data-refs="7,0,1,2,0,3,0,4" data-frames="3" data-algo="lru"></div></p>
 <h4 id="eat-page-fault">EAT：為什麼 page fault 要極少</h4>
 <div class="arithmatex">\[\text{EAT}=(1-p)\times\text{記憶體存取時間}+p\times\text{page fault 處理時間}\]</div>
 <p>記憶體 100 ns、page fault 10 ms（<span class="arithmatex">\(10^7\)</span> ns），<span class="arithmatex">\(p=0.001\)</span>：</p>
 <div class="arithmatex">\[0.999\times100+0.001\times10^7\approx10100\text{ ns}\]</div>
 <p>每 1000 次才 fault 一次，平均存取時間就變成原本的 <strong>100 倍</strong>。這就是考題要你算「page fault rate 要低於多少」的原因。</p>
+<p><strong>公式就是加權平均</strong>：<span class="arithmatex">\(p\)</span> 是 page fault 的機率。沒 fault（機率 <span class="arithmatex">\(1-p\)</span>）時只花一次記憶體存取的時間；fault（機率 <span class="arithmatex">\(p\)</span>）時要花處理 page fault 的時間（讀磁碟為主）。兩種情況的時間乘上各自的機率再相加。</p>
 <h4 id="thrashing">thrashing</h4>
 <p>行程太多、每個人分到的 frame 太少，每個行程都在不斷 page fault、等磁碟，CPU 使用率反而掉下來。作業系統看到 CPU 閒著，又加更多行程進來，情況更糟。解法是用 working set 估計每個行程需要多少 frame，不夠時<strong>減少</strong>同時執行的行程數。</p>
 <div class="admonition read">
@@ -830,7 +1012,42 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>T-1.</strong> 3 個 frame，存取 1, 2, 3, 1, 4, 1。FIFO 和 LRU 各幾次 page fault？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>FIFO 5 次（4 進來時踢掉 1，最後的 1 又 fault）；LRU 4 次（4 進來時踢掉最久沒用的 2，最後的 1 hit）。</p>
+<p><strong>FIFO</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>1</th>
+<th>4</th>
+<th>1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>frame</td>
+<td>1</td>
+<td>1,2</td>
+<td>1,2,3</td>
+<td>1,2,3</td>
+<td>4,2,3</td>
+<td>4,1,3</td>
+</tr>
+<tr>
+<td>結果</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>hit</td>
+<td>F（踢最早進來的 1）</td>
+<td>F（踢 2）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>5 次</strong>。1 雖然剛用過，FIFO 只看進來的順序，照樣把它踢掉。</p>
+<p><strong>LRU</strong>：前四次一樣；存取 4 時，最久沒用的是 2（1 剛剛才用過）→ 踢 2，變成 1,4,3；最後的 1 <strong>hit</strong>。共 <strong>4 次</strong>。</p>
 </details>
 <p><strong>T-2.</strong> 為什麼 dirty bit 能讓置換變快？</p>
 <details class="quiz">
@@ -897,6 +1114,12 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </tr>
 </tbody>
 </table>
+<p><strong>有 TLB 的 EAT 怎麼算</strong>（單層 page table）：每次都先查 TLB。</p>
+<ul>
+<li><strong>TLB hit</strong>（機率 <span class="arithmatex">\(h\)</span>）：TLB 時間 ＋ 1 次記憶體（拿資料）。</li>
+<li><strong>TLB miss</strong>（機率 <span class="arithmatex">\(1-h\)</span>）：TLB 時間 ＋ 1 次記憶體（查 page table）＋ 1 次記憶體（拿資料）。</li>
+</ul>
+<p>兩種情況乘上機率相加。<span class="arithmatex">\(k\)</span> 層 page table 時，miss 要多查 <span class="arithmatex">\(k\)</span> 次記憶體。題目只問「轉換的開銷」（111 Q6）時，就不算拿資料的那一次。</p>
 <div class="admonition example">
 <p class="admonition-title">111 Q9（10%）：48-bit 虛擬位址、32-bit 實體位址、4 KB page，page table 有幾個 entry</p>
 <p><span class="arithmatex">\(2^{48}/2^{12}=2^{36}\)</span> 個（每個 process 一張單層 page table 時）。</p>
@@ -907,11 +1130,14 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </div>
 <div class="admonition example">
 <p class="admonition-title">111 Q6（10%）：讀 page table 500 ns、TLB 查詢 50 ns，miss 時才查 page table。平均開銷 ≤ 100 ns 需要多少 hit rate</p>
-<p>開銷 <span class="arithmatex">\(=50+(1-h)\times500\le100\)</span> → <span class="arithmatex">\(1-h\le0.1\)</span> → <strong><span class="arithmatex">\(h\ge0.9\)</span></strong>。</p>
+<p>每次都要查 TLB（50 ns），miss 時才多花 500 ns 查 page table：</p>
+<div class="arithmatex">\[\text{平均開銷}=50+(1-h)\times500\le100\ \Rightarrow\ (1-h)\times500\le50\ \Rightarrow\ 1-h\le0.1\]</div>
+<p>所以 <strong><span class="arithmatex">\(h\ge0.9\)</span></strong>，hit rate 至少 90%。</p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">113 Q6b（4%）：記憶體存取 150 ns、page fault 處理 60000 ns，EAT &lt; 175 ns 時 page fault rate 上限</p>
-<p><span class="arithmatex">\((1-p)\times150+p\times60000&lt;175\)</span> → <span class="arithmatex">\(59850p&lt;25\)</span> → <span class="arithmatex">\(p&lt;\frac{25}{59850}\approx4.18\times10^{-4}\)</span>。</p>
+<div class="arithmatex">\[(1-p)\times150+p\times60000&lt;175\]</div>
+<p>展開：<span class="arithmatex">\(150-150p+60000p&lt;175\)</span> → <span class="arithmatex">\(59850p&lt;25\)</span> → <span class="arithmatex">\(p&lt;\frac{25}{59850}\approx4.18\times10^{-4}\)</span>。</p>
 <p>也就是大約每 2400 次存取才能有 1 次 page fault。</p>
 </div>
 <h3 id="u4-3">4.3 置換與 thrashing</h3>
@@ -929,12 +1155,20 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>4-1.</strong> 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(2^{32-13}\times4=2^{21}\)</span> B ＝ 2 MB。</p>
+<ul>
+<li>offset：8 KB ＝ <span class="arithmatex">\(2^{13}\)</span> → 13 位元</li>
+<li>VPN：<span class="arithmatex">\(32-13=19\)</span> 位元 → <span class="arithmatex">\(2^{19}\)</span> 個 entry</li>
+<li>大小：<span class="arithmatex">\(2^{19}\times4\text{ B}=2^{21}\text{ B}=\)</span> <strong>2 MB</strong>（<span class="arithmatex">\(2^{20}\)</span> B ＝ 1 MB）</li>
+</ul>
 </details>
 <p><strong>4-2.</strong> TLB hit rate 80%，TLB 20 ns、記憶體 100 ns（單層 page table），有效存取時間？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>hit：<span class="arithmatex">\(20+100=120\)</span>；miss：<span class="arithmatex">\(20+100+100=220\)</span>。EAT <span class="arithmatex">\(=0.8\times120+0.2\times220=140\)</span> ns。</p>
+<ul>
+<li><strong>TLB hit</strong>：查 TLB 20 ＋ 拿資料 100 ＝ 120 ns</li>
+<li><strong>TLB miss</strong>：查 TLB 20 ＋ 查 page table 100 ＋ 拿資料 100 ＝ 220 ns</li>
+</ul>
+<p>EAT <span class="arithmatex">\(=0.8\times120+0.2\times220=96+44=\)</span> <strong>140 ns</strong>。</p>
 </details>
 <p><strong>4-3.</strong> copy-on-write 在什麼情況下最省？</p>
 <details class="quiz">
@@ -1022,17 +1256,22 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>T-1.</strong> 10000 RPM 的硬碟，平均 rotational latency？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>一圈 <span class="arithmatex">\(\frac{60}{10000}\)</span> 秒 ＝ 6 ms，半圈 3 ms。</p>
+<p>10000 RPM ＝ 每分鐘 10000 圈，一圈 <span class="arithmatex">\(\frac{60}{10000}\)</span> 秒 <span class="arithmatex">\(=0.006\)</span> 秒 ＝ 6 ms。要讀的位置平均在半圈外 → 平均 rotational latency <strong>3 ms</strong>。</p>
 </details>
 <p><strong>T-2.</strong> 資料 0101 和 0011，parity 是多少？如果 0101 那顆壞了，怎麼救回來？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>parity ＝ 0110。0011 XOR 0110 ＝ 0101。</p>
+<p>XOR 是「一樣得 0、不一樣得 1」，一位一位算：</p>
+<ul>
+<li>parity ＝ <code>0101</code> XOR <code>0011</code> ＝ <strong><code>0110</code></strong></li>
+<li>0101 那顆壞了：把剩下的 XOR 起來，<code>0011</code> XOR <code>0110</code> ＝ <strong><code>0101</code></strong>，救回來了</li>
+</ul>
+<p>原理：<span class="arithmatex">\(a\oplus b\oplus b=a\)</span>，同一個值 XOR 兩次會抵銷。</p>
 </details>
 <p><strong>T-3.</strong> 區塊 4 KB、指標 4 bytes，single indirect 可以多指到多少容量？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>一個區塊放 1024 個指標，<span class="arithmatex">\(1024\times4\text{ KB}=4\)</span> MB。</p>
+<p>一個 4 KB 的區塊可以放 <span class="arithmatex">\(4096\div4=1024\)</span> 個指標，每個指標指到一個 4 KB 的資料區塊：<span class="arithmatex">\(1024\times4\text{ KB}=4096\text{ KB}=\)</span> <strong>4 MB</strong>。</p>
 </details>
 <h3 id="u5-1">5.1 檔案系統</h3>
 <ul>
@@ -1093,7 +1332,13 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>5-1.</strong> i-node 有 12 個直接區塊和 single、double indirect，區塊 4 KB、指標 4 B，最大檔案幾個資料區塊？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>每區塊 1024 個指標：<span class="arithmatex">\(12+1024+1024^2=1049612\)</span> 個。</p>
+<p>每個區塊放 <span class="arithmatex">\(4\text{ KB}\div4\text{ B}=1024\)</span> 個指標。</p>
+<ul>
+<li>12 個 direct：12 個資料區塊</li>
+<li>single indirect：一個區塊的指標 → 1024 個</li>
+<li>double indirect：1024 個指標各指到一個指標區塊，各再指 1024 個 → <span class="arithmatex">\(1024^2=1048576\)</span> 個</li>
+</ul>
+<p>共 <span class="arithmatex">\(12+1024+1048576=\)</span> <strong>1049612</strong> 個資料區塊（約 <span class="arithmatex">\(1049612\times4\text{ KB}\approx4\)</span> GB）。</p>
 </details>
 <p><strong>5-2.</strong> RAID 5 和 RAID 6 的差別？</p>
 <details class="quiz">

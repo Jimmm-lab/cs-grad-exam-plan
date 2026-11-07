@@ -94,23 +94,36 @@ $$\text{新時間}=(1-f)+\frac fs,\qquad\text{Speedup}=\frac{1}{(1-f)+\frac fs}$
 **T-1.** 100 條指令：70 條 ALU（CPI 1）、30 條 load（CPI 4），平均 CPI？
 
 ??? quiz "看答案"
-    $0.7\times1+0.3\times4=1.9$。
+    總 cycle 數 $=70\times1+30\times4=70+120=190$，平均 CPI $=190\div100=$ **1.9**。
+
+    用比例直接算也一樣：$0.7\times1+0.3\times4=0.7+1.2=1.9$。
 
 **T-2.** 佔 50% 時間的部分加速 2 倍，整體 speedup？
 
 ??? quiz "看答案"
-    $\frac{1}{0.5+0.25}\approx1.33$。
+    把原本時間當成 1：不能加速的 0.5 不變，能加速的 0.5 變成 $0.5\div2=0.25$。新時間 $0.5+0.25=0.75$。
+
+    speedup $=\frac{1}{0.75}\approx$ **1.33**。
 
 **T-3.** A：3 GHz、CPI 2.4；B：2 GHz、CPI 1.5。同一個程式誰快？
 
 ??? quiz "看答案"
-    每條指令 A $=2.4/3=0.8$ ns、B $=1.5/2=0.75$ ns，B 較快。
+    指令數一樣，比「每條指令平均多久」＝ CPI × 週期 ＝ CPI ÷ 時脈：
+
+    - A：$2.4\div3\text{ GHz}=0.8$ ns
+    - B：$1.5\div2\text{ GHz}=0.75$ ns
+
+    **B 較快**（快 $0.8/0.75\approx1.07$ 倍），雖然它的時脈比較低。
 
 ### 1.1 CPU time 與加權 CPI {#u1-1}
 
 $$\text{CPU time}=\text{IC}\times\text{CPI}\times T_{\text{clock}}=\frac{\text{IC}\times\text{CPI}}{f}$$
 
 $$\text{CPI}_{\text{avg}}=\sum_i(\text{指令類別 } i \text{ 的比例})\times\text{CPI}_i$$
+
+**用單位檢查公式**：IC（條）× CPI（cycle／條）＝ 總 cycle 數；再 × 週期（秒／cycle）＝ 秒。週期 $T=\frac1f$，所以乘 $T$ 跟除以時脈 $f$ 是同一件事。單位對得起來，公式就不會記錯。
+
+**加權 CPI 為什麼是「比例 × CPI」**：總 cycle 數 $=\sum(\text{第 }i\text{ 類的條數}\times\text{CPI}_i)$，除以總條數 IC，每一類的條數 ÷ IC 就是它的比例。
 
 !!! example "115 Q1.2（7 分）：$2\times10^9$ 條指令，50% CPI 1、30% CPI 5、20% CPI 2，2 GHz；記憶體指令 CPI 從 5 降到 2"
     $\text{CPI}=0.5\times1+0.3\times5+0.2\times2=2.4$，時間 $=\frac{2\times10^9\times2.4}{2\times10^9}=2.4$ 秒。
@@ -125,6 +138,10 @@ $$\text{CPI}_{\text{avg}}=\sum_i(\text{指令類別 } i \text{ 的比例})\times
 只有比例 $f$ 的部分加速 $s$ 倍：
 
 $$\text{Speedup}=\frac{1}{(1-f)+\dfrac{f}{s}}\qquad\text{上限}=\frac{1}{1-f}$$
+
+**公式怎麼來的**：原本時間當成 1。不能加速的部分佔 $1-f$，時間不變；能加速的部分原本 $f$，變成 $\frac fs$。新時間 $=(1-f)+\frac fs$，speedup ＝ 舊時間 ÷ 新時間。$s$ 再大，$\frac fs$ 也只會趨近 0，新時間至少是 $1-f$，所以上限是 $\frac{1}{1-f}$。
+
+**反過來問「要加速幾倍」**：令 speedup 等於目標 $S$，解 $(1-f)+\frac fs=\frac1S$。如果算出 $\frac fs\le0$，就是**不可能**（111 P4.2）。
 
 **make the common case fast**（115 Q1.3）就是 Amdahl 的白話版：佔比大的部分加速才有用；把佔 1% 的情況加速 100 倍，整體幾乎不變，如果因此拖慢了常見情況，整體反而變慢。
 
@@ -145,7 +162,7 @@ $$\text{Speedup}=\frac{1}{(1-f)+\dfrac{f}{s}}\qquad\text{上限}=\frac{1}{1-f}$$
 
 115 Q1.1（7 分）要你講兩個限制：
 
-1. **功耗牆（power wall）**：動態功耗 $\propto C V^2 f$。時脈上去，功耗和散熱一起上去，晶片撐不住。→ 改用**多核、平行**，用更多較慢的核心換效能。
+1. **功耗牆（power wall）**：動態功耗 $\approx\frac12CV^2f$。每個電晶體每切換一次，要把電容 $C$ 充電到電壓 $V$，耗能約 $\frac12CV^2$；每秒切換 $f$ 次，功率就是 $\frac12CV^2f$。時脈 $f$ 上去功耗跟著上去，而且高時脈通常要更高的 $V$，$V$ 又是平方，散熱撐不住。→ 改用**多核、平行**，用更多較慢的核心換效能。
 2. **記憶體牆（memory wall）**：DRAM 延遲沒有跟著 CPU 變快，時脈再高也只是多等幾個週期。→ 發展**記憶體階層**（多層 cache）來隱藏延遲。
 3. （可再補）**pipeline 越切越細的極限**：每級都有 pipeline 暫存器的固定延遲，切到最後收益變小，而 branch misprediction penalty 越來越大。→ 需要更好的**分支預測**與推測執行。
 
@@ -154,17 +171,27 @@ $$\text{Speedup}=\frac{1}{(1-f)+\dfrac{f}{s}}\qquad\text{上限}=\frac{1}{1-f}$$
 **1-1.** 40% ALU（CPI 1）、30% load（CPI 4）、20% store（CPI 3）、10% branch（CPI 2），1 GHz，$10^9$ 條指令，CPU time？
 
 ??? quiz "看答案"
-    $\text{CPI}=0.4+1.2+0.6+0.2=2.4$，時間 $=10^9\times2.4\times1\text{ ns}=2.4$ 秒。
+    **平均 CPI**：$0.4\times1+0.3\times4+0.2\times3+0.1\times2=0.4+1.2+0.6+0.2=2.4$。
+
+    **週期**：1 GHz → $T=\frac{1}{10^9}$ 秒 $=1$ ns。
+
+    **CPU time** $=10^9\times2.4\times1\text{ ns}=2.4\times10^9\text{ ns}=$ **2.4 秒**。
 
 **1-2.** 佔 80% 時間的部分要加速幾倍，整體才會快 2 倍？
 
 ??? quiz "看答案"
-    $0.2+\frac{0.8}{s}=0.5$ → $s=\frac{8}{3}\approx2.67$ 倍。
+    要整體快 2 倍 → 新時間是原本的 $\frac12$：
+
+    $$(1-0.8)+\frac{0.8}{s}=0.5\ \Rightarrow\ \frac{0.8}{s}=0.3\ \Rightarrow\ s=\frac{0.8}{0.3}=\frac83\approx2.67$$
+
+    那 80% 要加速約 **2.67 倍**。（檢查上限：$\frac1{0.2}=5\ge2$，做得到。）
 
 **1-3.** 90% 可平行，10 個核心的 speedup？
 
 ??? quiz "看答案"
-    $\frac{1}{0.1+0.09}=\frac1{0.19}\approx5.26$。
+    $f=0.9$、$s=10$：新時間 $=0.1+\frac{0.9}{10}=0.1+0.09=0.19$。
+
+    speedup $=\frac{1}{0.19}\approx$ **5.26**（10 個核心只快 5 倍多，上限是 $\frac1{0.1}=10$）。
 
 ## 單元 2：Cache {#u2}
 
@@ -226,6 +253,10 @@ CPU 要一筆資料時，先看書桌：
 
 其他三格明明都空著，卻一直 miss，這叫 **conflict miss**。改成 2-way（每個 set 有 2 格），45 和 109 就能同時放在同一個 set 裡，第三次就 hit 了。
 
+下面是這個例子的動畫。看完以後把「set 數」改成 2、「每個 set 幾格」改成 2（容量一樣是 4 個 block），再按重播，第三次就變成 hit。位址序列也可以換成任何考題的數字：
+
+<div class="viz" data-viz="cache" data-addrs="45,109,45" data-unit="byte" data-block="4" data-sets="4" data-ways="1"></div>
+
 !!! key "為什麼 offset 在最右邊、index 在中間"
     相鄰的 byte（例如 44、45、46、47）只差最右邊兩位，所以在**同一個 block**。相鄰的 block（例如 44 和 48）只差 index，所以會放到**不同格**，不會互相搶位置。這樣排，讀陣列時就不會一直 conflict。
 
@@ -254,7 +285,11 @@ hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles
 **T-1.** 8 位元位址、block 2 bytes、8 個 set、direct-mapped。offset、index、tag 各幾位元？位址 90 的 tag、index、offset 是多少？
 
 ??? quiz "看答案"
-    offset 1、index 3、tag 4。90 ＝ `0101 1010` → tag `0101`、index `101`（5 號格）、offset `0`。
+    - offset：block 2 bytes → $\log_2 2=$ **1** 位元
+    - index：8 個 set → $\log_2 8=$ **3** 位元
+    - tag：$8-3-1=$ **4** 位元
+
+    90 ＝ 64＋16＋8＋2 ＝ `0101 1010`，從右邊切：offset 是最右 1 位 `0`、index 是接著 3 位 `101`（5 號格）、tag 是剩下的 `0101`。
 
 **T-2.** 同一個 cache，依序讀 90、91、26。哪幾次 hit？
 
@@ -272,6 +307,10 @@ hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles
 1. **offset 位元** $=\log_2(\text{block 大小，byte})$
 2. **set 數** $=\dfrac{\text{cache 容量}}{\text{block 大小}\times\text{associativity}}$，**index 位元** $=\log_2(\text{set 數})$
 3. **tag 位元** $=\text{位址位元}-\text{index}-\text{offset}$
+
+**為什麼是這樣**：$k$ 個位元可以表示 $2^k$ 種情況。一個 block 有 $B$ 個 byte，要分出是第幾個 byte，需要 $\log_2B$ 位元；有 $S$ 個 set，要選第幾個，需要 $\log_2S$ 位元。容量 ÷ block 大小 ＝ 總共幾格，再 ÷ 每個 set 幾格 ＝ set 數。
+
+**注意單位**：題目給 word address 時，offset 是「block 裡第幾個 word」，用 word 數算；給 byte address 時用 byte 數算。一個 word 通常是 4 bytes。
 
 fully associative 沒有 index（只有 1 個 set）；direct-mapped 是 1-way。
 
@@ -306,6 +345,8 @@ $$\text{總位元數}=\text{block 數}\times(\text{data}+\text{tag}+\text{valid}
 !!! example "113 Q5.1（9%）：word address 序列、direct-mapped、2-word block、8 個 block"
     **block 位址** $=\lfloor\text{word address}/2\rfloor$，**index** $=\text{block 位址}\bmod8$，**tag** $=\lfloor\text{block 位址}/8\rfloor$。
 
+    **用十進位算比切二進位快**：例如 180 → block 位址 $\lfloor180/2\rfloor=90$ → index $90\bmod8=2$、tag $\lfloor90/8\rfloor=11$。這跟把 `1011 0100` 切成 tag `1011`、index `010`、offset `0` 是同一件事。
+
     | word address | 二進位 | tag | index | H/M |
     |---|---|---|---|---|
     | 3 | 0000 0011 | 0 | 1 | M |
@@ -323,11 +364,24 @@ $$\text{總位元數}=\text{block 數}\times(\text{data}+\text{tag}+\text{valid}
 
     **注意**：題目表格的示範列寫「3 → tag 0, index 3」，那是 1-word block 的切法（COD 原題的上一小題）。2-word block 時最低位元是 offset，index 是位元 [3:1]，所以 3 的 index 是 1。考試遇到這種情況，**寫出你的切法並說明**。
 
+<div class="viz" data-viz="cache" data-addrs="3,180,43,2,191,88,190,14,181,44,186,253" data-unit="word" data-block="2" data-sets="8" data-ways="1" data-title="113 Q5.1：一個一個位址看 hit／miss"></div>
+
 ### 2.4 AMAT 與含記憶體停頓的 CPU time {#u2-4}
 
 $$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
 
 多層：$\text{AMAT}=t_{L1}+m_{L1}\times(t_{L2}+m_{L2}\times t_{mem})$，$m_{L2}$ 是 L2 的 local miss rate。
+
+**多層公式怎麼讀**：每次都先查 L1（$t_{L1}$）。L1 miss 的那 $m_{L1}$ 比例，要再查 L2（$t_{L2}$）；L2 也 miss 的，再去記憶體（$t_{mem}$）。括號裡就是「L1 miss 之後平均還要多久」，也就是 L1 的 miss penalty。
+
+- **local miss rate** $m_{L2}$：L2 被問到的那些存取裡，miss 的比例。
+- **global miss rate** $=m_{L1}\times m_{L2}$：全部存取裡，一路 miss 到記憶體的比例。題目沒說清楚時要寫出你用哪一種。
+
+**把 cache miss 算進 CPI**：每條指令平均要等記憶體的 cycle 數 ＝ 每條指令存取幾次 × miss rate × miss penalty，加到原本的 CPI 上：
+
+$$\text{CPI}_{\text{實際}}=\text{CPI}_{\text{base}}+\frac{\text{記憶體存取次數}}{\text{指令}}\times\text{miss rate}\times\text{miss penalty（cycle）}$$
+
+每條指令都要抓指令（I-cache 1 次），load／store 再多 1 次 D-cache。綜合小考 M-1 就是這個公式。
 
 !!! example "112 Q1.1–1.2（10%）：miss latency 10；direct-mapped hit 2 cycle、miss rate 15%；set-associative hit 3 cycle"
     DM：$2+0.15\times10=3.5$。
@@ -376,23 +430,43 @@ $$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
 **2-1.** 32-bit 位址、64 KB direct-mapped、16 B block、write-through：offset、index、tag 各幾位元？總位元數？
 
 ??? quiz "看答案"
-    offset 4、block 數 4096 → index 12、tag 16。總位元數 $4096\times(128+16+1)=593920$。
+    - offset：16 B block → $\log_2 16=$ **4**
+    - block 數：$64\text{ KB}\div16\text{ B}=2^{16}\div2^4=2^{12}=4096$；direct-mapped 一個 set 一格 → 4096 個 set → index **12**
+    - tag：$32-12-4=$ **16**
+
+    每個 block 要存：data $16\times8=128$ 位元 ＋ tag 16 ＋ valid 1（write-through 不用 dirty）＝ 145 位元。
+
+    總位元數 $4096\times145=$ **593920**。
 
 **2-2.** 同上但改成 4-way，index 和 tag？
 
 ??? quiz "看答案"
-    set 數 $4096/4=1024$ → index 10、tag 18。
+    block 數還是 4096，但每個 set 有 4 格：set 數 $4096\div4=1024=2^{10}$ → index **10**。offset 不變是 4，tag $=32-10-4=$ **18**。
+
+    associativity 加倍，index 少 1 位、tag 多 1 位。
 
 **2-3.** 4 個 block 的 direct-mapped cache（1-word block），word address 序列 0、8、0、6、8，幾次 miss？改成 fully associative LRU 呢？
 
 ??? quiz "看答案"
-    DM：0、8、0、8 都映到 index 0 互踢，6 映到 index 2 → 5 次全 miss。
-    FA：0 M、8 M、0 H、6 M、8 H → 3 次 miss。
+    **Direct-mapped**：1-word block，index ＝ 位址 mod 4：0→0、8→0、6→2。
+
+    | 存取 | 0 | 8 | 0 | 6 | 8 |
+    |---|---|---|---|---|---|
+    | index | 0 | 0 | 0 | 2 | 0 |
+    | 結果 | M | M（踢掉 0） | M（踢掉 8） | M | M（踢掉 0） |
+
+    **5 次全 miss**。0 和 8 搶同一格，cache 其他格卻空著（conflict miss）。
+
+    **Fully associative、LRU**（4 格都可以放）：0 M、8 M、0 **H**、6 M、8 **H** → **3 次 miss**（都是第一次用到的 compulsory miss）。
+
+    可以把數字填進 [2.0 的動畫](#u2-0)檢查：位址單位選 word、block 1、set 數 4 或 1、每個 set 1 或 4 格。
 
 **2-4.** L1 hit 1 cycle、miss rate 5%；L2 hit 10 cycle、local miss rate 20%；主記憶體 100 cycle。AMAT？
 
 ??? quiz "看答案"
-    $1+0.05\times(10+0.2\times100)=1+0.05\times30=2.5$ cycles。
+    先算 L1 miss 之後平均還要多久（L1 的 miss penalty）：查 L2 要 10，其中 20% 還要再去記憶體 100 → $10+0.2\times100=30$ cycles。
+
+    $\text{AMAT}=1+0.05\times30=1+1.5=$ **2.5 cycles**。
 
 ## 單元 3：虛擬記憶體與 TLB {#u3}
 
@@ -451,17 +525,21 @@ page table 放在記憶體裡，所以每次存取資料都要**先讀一次記�
 **T-1.** 虛擬位址 0x07 的實體位址？
 
 ??? quiz "看答案"
-    `0000 0111` → VPN 0、offset 7 → PPN 2 → `10 0111` ＝ 39。
+    0x07 ＝ `0000 0111` → VPN `0000` ＝ 0、offset `0111` ＝ 7。查表 VPN 0 → PPN 2。
+
+    實體位址 ＝ PPN 接上 offset ＝ `10 0111` ＝ **39**。用十進位算：PPN × page 大小 ＋ offset ＝ $2\times16+7=39$。
 
 **T-2.** 虛擬位址 0x5F 的實體位址？
 
 ??? quiz "看答案"
-    VPN 5、offset 15 → PPN 0 → `00 1111` ＝ 15。
+    0x5F ＝ `0101 1111` → VPN 5、offset 15。查表 VPN 5 → PPN 0。
+
+    實體位址 ＝ $0\times16+15=$ **15**（`00 1111`）。
 
 **T-3.** 16 位元虛擬位址、page 256 bytes，page table 有幾格？
 
 ??? quiz "看答案"
-    offset 8 位元、VPN 8 位元 → $2^8=256$ 格。
+    page 256 bytes → offset $\log_2256=8$ 位元；VPN $=16-8=8$ 位元。page table 要替每個虛擬頁留一格：$2^8=$ **256** 格。
 
 ### 3.1 位元切割與 page table 大小 {#u3-1}
 
@@ -518,12 +596,16 @@ page table 放在記憶體裡，所以每次存取資料都要**先讀一次記�
 **3-1.** 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？
 
 ??? quiz "看答案"
-    offset 13、VPN 19 → $2^{19}\times4=2\text{ MB}$。
+    - offset：8 KB ＝ $2^{13}$ → 13 位元
+    - VPN：$32-13=19$ 位元 → $2^{19}$ 個 entry
+    - 大小：$2^{19}\times4\text{ B}=2^{21}\text{ B}=$ **2 MB**
 
 **3-2.** VPN 19 位元，TLB 16 entries、4-way，TLB index 和 tag 幾位元？
 
 ??? quiz "看答案"
-    set 數 4 → index 2、tag 17。
+    TLB 就是 page table 的 cache，切法跟 cache 一樣（只是沒有 offset，因為 TLB 的一格存一整個 VPN 的對照）：
+
+    set 數 $=16\div4=4$ → TLB index $\log_24=$ **2** 位元；TLB tag $=$ VPN $-$ index $=19-2=$ **17** 位元。
 
 **3-3.** 為什麼 page offset 不用轉換？
 
@@ -592,7 +674,11 @@ add 在第 3 個 cycle 結束時其實已經算出 x1 了，只是還沒寫回�
 **T-1.** 10 條指令、5 級 pipeline、每級 200 ps。pipeline 和非 pipeline（每條 1000 ps）各要多久？
 
 ??? quiz "看答案"
-    pipeline $(5+9)\times200=2800$ ps；非 pipeline $10\times1000=10000$ ps。
+    **pipeline**：第 1 條要走完 5 級（5 個 cycle），之後每個 cycle 多完成 1 條，剩下 9 條再 9 個 cycle：$(5+9)\times200=$ **2800 ps**。
+
+    **非 pipeline**：一條做完才做下一條，$10\times1000=$ **10000 ps**。
+
+    speedup $=10000/2800\approx3.6$，比 5 小，因為填滿 pipeline 的前 4 個 cycle 沒有完整利用；指令越多，越接近 5 倍。
 
 **T-2.** 有 forwarding 時，下面兩組各要停幾個 cycle？(a) `lw x1, 0(x2)` 接 `add x3, x1, x4` (b) `add x1, x2, x3` 接 `add x4, x1, x5`
 
@@ -654,12 +740,29 @@ add 在第 3 個 cycle 結束時其實已經算出 x1 了，只是還沒寫回�
 **4-1.** 各級 200、100、250、200、150 ps。single-cycle 和 pipeline 的週期？1000 條指令時 pipeline 的總時間和 speedup？
 
 ??? quiz "看答案"
-    single-cycle 900 ps、pipeline 250 ps。pipeline 總時間 $(5+999)\times250=251000$ ps；single-cycle $900\times1000=900000$ ps；speedup ≈ 3.59。
+    - **single-cycle 週期**：一個 cycle 要做完所有級，$200+100+250+200+150=$ **900 ps**
+    - **pipeline 週期**：最慢的那一級 **250 ps**
+
+    1000 條指令：
+
+    - pipeline：$(5+1000-1)\times250=1004\times250=$ **251000 ps**
+    - single-cycle：$1000\times900=900000$ ps
+
+    speedup $=900000\div251000\approx$ **3.59**（理想是 5 倍，但各級不平均，週期被最慢的 250 拖住：$900/250=3.6$）。
 
 **4-2.** `lw x1, 0(x2)` 接 `add x3, x1, x4`：有 forwarding 時 stall 幾個？沒 forwarding（但 register file 前寫後讀）時呢？
 
 ??? quiz "看答案"
-    有 forwarding：1 個。沒有：2 個（add 的 ID 要等到 lw 的 WB）。
+    **有 forwarding**：lw 的資料在 MEM（第 4 cycle）結束才有，add 的 EX 最早只能在第 5 cycle → 停 **1 個**，再從 MEM/WB forward 過去。
+
+    | | 1 | 2 | 3 | 4 | 5 | 6 |
+    |---|---|---|---|---|---|---|
+    | lw | IF | ID | EX | MEM | WB | |
+    | add | | IF | stall | ID | EX | MEM |
+
+    （也可以畫成 add 在 ID 停一拍，重點是 EX 落在第 5 cycle。）
+
+    **沒有 forwarding**：add 要在 ID 讀暫存器時讀到新值。lw 在第 5 cycle 的 WB 才寫回，register file 前半寫、後半讀，add 的 ID 最早在第 5 cycle，原本在第 3 → 停 **2 個**。
 
 ## 單元 5：分支預測 {#u5}
 
@@ -704,7 +807,9 @@ $$\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty
 **T-1.** 30% 是 branch、準確率 80%、penalty 3，CPI？
 
 ??? quiz "看答案"
-    $1+0.3\times0.2\times3=1.18$。
+    每條指令平均多出：branch 比例 0.3 × 猜錯率 $(1-0.8)=0.2$ × 每次 3 cycle $=0.18$。
+
+    $\text{CPI}=1+0.18=$ **1.18**。
 
 **T-2.** branch 在第 4 級結束時決定，penalty 是多少？
 
@@ -714,7 +819,15 @@ $$\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty
 **T-3.** 結果依序是 T、T、T、N，重複 3 輪。1-bit 預測器一開始預測 T，總共猜錯幾次？
 
 ??? quiz "看答案"
-    第一輪只錯 N 那一次；之後每輪開頭的 T 也錯（因為上一次是 N）。$1+2+2=5$ 次。
+    1-bit 預測器每次都猜「跟上一次一樣」：
+
+    | 輪 | 實際 | T | T | T | N |
+    |---|---|---|---|---|---|
+    | 1 | 預測 | T ✓ | T ✓ | T ✓ | T ✗ |
+    | 2 | 預測 | N ✗ | T ✓ | T ✓ | T ✗ |
+    | 3 | 預測 | N ✗ | T ✓ | T ✓ | T ✗ |
+
+    $1+2+2=$ **5 次**。
 
 ### 5.1 公式 {#u5-1}
 
@@ -768,12 +881,23 @@ $$\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty
 **5-1.** 25% branch、penalty 3、準確率 90%，CPI（理想 1）？
 
 ??? quiz "看答案"
-    $1+0.25\times0.1\times3=1.075$。
+    額外 CPI ＝ branch 比例 × 猜錯率 × penalty $=0.25\times(1-0.9)\times3=0.075$。
+
+    $\text{CPI}=1+0.075=$ **1.075**。
 
 **5-2.** 2-bit 預測器從 00 開始，實際結果依序 T、T、N、T，預測錯幾次？
 
 ??? quiz "看答案"
-    00 預測 N（錯）→01；預測 N（錯）→10；預測 T（錯，實際 N）→01；預測 N（錯）→10。4 次全錯。這說明 2-bit 在剛開始和模式交替時表現不好。
+    狀態 ≥ 10 才預測 T；實際 T 就加 1、實際 N 就減 1：
+
+    | 第幾次 | 狀態 | 預測 | 實際 | 對錯 | 新狀態 |
+    |---|---|---|---|---|---|
+    | 1 | 00 | N | T | ✗ | 01 |
+    | 2 | 01 | N | T | ✗ | 10 |
+    | 3 | 10 | T | N | ✗ | 01 |
+    | 4 | 01 | N | T | ✗ | 10 |
+
+    **4 次全錯**。2-bit 在一開始（還在「學」）和結果剛好交替時表現不好；它擅長的是迴圈那種「一直跳、偶爾不跳」。
 
 ## 單元 6：多執行緒 {#u6}
 
@@ -869,7 +993,9 @@ switch-on-stall 需要的 thread 比較少，因為不會讓「其實可以繼�
 **6-1.** 迴圈只有兩條相依指令：LD（延遲 20）、緊接著用它的 ADD，再加一條 BNE。Fixed switching 需要幾個 thread？
 
 ??? quiz "看答案"
-    ADD 距 LD 1 條：$N\ge20$。
+    Fixed switching：$N$ 個 thread 輪流，同一個 thread 相鄰的兩條指令相隔 $N$ 個 cycle。ADD 緊接在 LD 後面（距離 1 條），要等 LD 的 20 cycle：$1\times N\ge20$ → **20 個 thread**。
+
+    （BNE 不依賴 LD，不會讓需求變大。）
 
 ## 單元 7：DRAM 與資料重用 {#u7}
 
@@ -940,7 +1066,9 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
     1.1 64 ms 內要 refresh $8\times2^{16}=2^{19}$ 次：
     $$\frac{2^{19}\times5\text{ ns}}{64\text{ ms}}=\frac{2^{19}\times5}{2^6\times10^6}=\frac{2^{13}\times5}{10^6}=4.096\%$$
 
-    1.2 70% 的列只要 256 ms 一次：新的使用率 $=4.096\%\times(0.3+0.7\times\frac{64}{256})=4.096\%\times0.475$，**減少 $1-0.475=52.5\%$**。
+    1.2 70% 的列只要 256 ms 一次：在同樣的時間裡，這些列的 refresh 次數只剩 $\frac{64}{256}=\frac14$；另外 30% 不變。refresh 總次數變成原本的 $0.3\times1+0.7\times\frac14=0.475$ 倍。
+
+    新的使用率 $=4.096\%\times0.475\approx1.95\%$，**減少 $1-0.475=52.5\%$**。
 
     這就是 Mutlu 團隊的 RAIDR 想法：依各列的保存時間分組 refresh。
 
@@ -968,7 +1096,11 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
 **7-1.** 4 banks × $2^{14}$ 列，refresh 間隔 32 ms，每次 refresh 佔 command bus 4 ns，使用率？
 
 ??? quiz "看答案"
-    $\frac{2^{16}\times4\text{ ns}}{32\text{ ms}}=\frac{262144}{32\times10^6}=0.8192\%$。
+    32 ms 內每一列都要 refresh 一次：$4\times2^{14}=2^{16}=65536$ 次，每次佔 4 ns → 共 $262144$ ns。
+
+    $$\frac{262144\text{ ns}}{32\text{ ms}}=\frac{262144}{32\times10^6}=0.008192=\mathbf{0.8192\%}$$
+
+    不用計算機的算法：$\frac{2^{16}\times4}{2^5\times10^6}=\frac{2^{13}}{10^6}=\frac{8192}{10^6}$。
 
 ## 單元 8：平行與微架構 {#u8}
 
@@ -1022,7 +1154,7 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
 **T-1.** 95% 可平行，處理器無限多，speedup 上限？
 
 ??? quiz "看答案"
-    $1/0.05=20$。
+    處理器無限多時，可平行的 95% 時間趨近 0，只剩不能平行的 5%：speedup 上限 $=\frac{1}{1-f}=\frac{1}{0.05}=$ **20**。
 
 **T-2.** 上面 P1、P2 的例子，寫出一種得到 (r1, r2) ＝ (1, 1) 的洗法。
 
@@ -1093,6 +1225,12 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
 
 $$(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})$$
 
+**每一部分的意思**：
+
+- $s$：正負號，0 正 1 負。
+- $1.f$：二進位科學記號的有效數字。整理成 $1.xxx\times2^k$ 時，小數點前一定是 1，所以**那個 1 不存**（省一位元），只存小數點後的 $f$。
+- $e-127$：指數要能是負的，但 $e$ 用無號數存，所以存「實際指數 ＋ 127」（bias）。$e$ 從 1 到 254 對應指數 −126 到 127；全 0 和全 1 留給 0、非正規數、無限大和 NaN。
+
 例：$5.0=101.0_2=1.01\times2^2$。
 
 - $s=0$
@@ -1162,17 +1300,26 @@ $$(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\tex
 **M-1.** CPI 1.5 的處理器，每條指令 0.3 次資料存取，I-cache miss rate 2%、D-cache miss rate 5%，miss penalty 50 cycle。實際 CPI？
 
 ??? quiz "看答案"
-    $1.5+1\times0.02\times50+0.3\times0.05\times50=1.5+1+0.75=3.25$。
+    每條指令都要抓指令，I-cache 存取 1 次；另外平均 0.3 次資料存取走 D-cache：
+
+    - I-cache 平均多出：$1\times0.02\times50=1$ cycle
+    - D-cache 平均多出：$0.3\times0.05\times50=0.75$ cycle
+
+    $\text{CPI}=1.5+1+0.75=$ **3.25**，記憶體停頓讓 CPI 變成兩倍多。
 
 **M-2.** 48-bit 虛擬位址、32-bit 實體位址、4 KB page，page table 有幾個 entry？（111 年 OS 也考過這題）
 
 ??? quiz "看答案"
-    $2^{48-12}=2^{36}$ 個。
+    page table 的 entry 數只看**虛擬**位址：offset $=\log_2 4\text{K}=12$ 位元，VPN $=48-12=36$ 位元 → **$2^{36}$ 個 entry**。
+
+    實體位址 32 位元只決定每個 entry 裡 PPN 的長度（$32-12=20$ 位元）。
 
 **M-3.** 6 級 pipeline，branch 在第 4 級結束時決定，branch 佔 20%、預測準確率 85%，CPI？
 
 ??? quiz "看答案"
-    penalty 3：$1+0.2\times0.15\times3=1.09$。
+    第 4 級結束時決定 → 前 3 級抓進來的指令可能要丟掉，penalty $=4-1=3$。
+
+    $\text{CPI}=1+0.2\times(1-0.85)\times3=1+0.09=$ **1.09**。
 
 ## 資源 {#res}
 

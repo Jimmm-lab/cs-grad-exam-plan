@@ -149,6 +149,7 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-chip { font: 500 12px/1.6 var(--font-mono); padding: 0 6px; border-radius: 4px; border: 1px solid var(--line); }
 .vz-chip.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .vz-chip.skip { text-decoration: line-through; opacity: .55; }
+.vz-chip.hit { border-color: var(--ok); color: var(--ok); font-weight: 700; }
 .vz-svg text { font: 600 15px var(--font-mono); fill: var(--ink); }
 .vz-svg .vz-sub, .vz-svg .vz-note { font: 500 12px var(--font-mono); fill: var(--muted); }
 .vz-svg .vz-note { font-weight: 700; }
@@ -213,6 +214,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <li><a href="#daily">每天的讀書流程</a></li>
 <li><a href="#ai">看不懂時：用 AI 當家教</a></li>
 <li><a href="#quiz">小考制度</a></li>
+<li><a href="#tools">手寫作答板和動畫</a></li>
 <li><a href="#errlog">錯題本：建議手寫</a></li>
 <li><a href="#resources">輔助教材</a></li>
 </ul>
@@ -385,6 +387,42 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <li><strong>週考</strong>：每 5 個讀書天的複習日，做教材最後的「綜合小考」裡對應的題目，加一份他校同主題題目，限時。</li>
 <li><strong>模考</strong>：照行程表的全真模考，照正式考試時間作答，算分數。</li>
 </ol>
+<h2 id="tools">手寫作答板和動畫</h2>
+<h3 id="_2">每一題都可以直接手寫</h3>
+<p>每一題「看答案」上面都有一個 <strong>手寫作答</strong> 按鈕，打開是一張方格紙，可以用 S Pen 直接在題目下面寫計算過程，不用截圖到 Samsung Notes。</p>
+<ul>
+<li><strong>觸控筆模式</strong>：第一次用觸控筆寫字時會自動打開。打開後只有筆會寫字，<strong>手指拖曳是捲動頁面</strong>，手掌靠在螢幕上也不會畫到。沒有觸控筆的話，關掉這個選項就能用手指寫。</li>
+<li><strong>筆、橡皮擦、顏色、粗細</strong>：橡皮擦是「碰到哪一筆就擦掉整筆」。筆的粗細會跟著壓力變化。有些瀏覽器會把 S Pen 的側鍵當成橡皮擦，可以試試按住側鍵擦。</li>
+<li><strong>復原／重做、清除、加長</strong>：寫不下就按「加長」，每次多一段。</li>
+<li><strong>存成圖片</strong>：答錯的題目可以存成 PNG，印出來貼進錯題本，或匯入 Samsung Notes。</li>
+<li><strong>儲存位置</strong>：筆跡自動存在<strong>這台裝置的這個瀏覽器</strong>裡（IndexedDB），不會上傳，手機和電腦之間不會同步；清除瀏覽器資料會一起刪掉。重要的題目記得存成圖片。</li>
+</ul>
+<p><strong>用法建議</strong>：先在手寫板上寫完整的過程，再打開答案逐行對照，然後按「答對了／答錯了」。不要先看答案再抄，那樣沒有練到回想。</p>
+<h3 id="_3">手動模擬的題目有動畫</h3>
+<p>資料結構、計結、OS 很多題目要你「一步一步模擬」。教材裡標著 <strong>動畫</strong> 的方塊，每一步都會說明在做什麼，可以按「下一步」慢慢看，也可以拉下面的滑桿跳到某一步。<strong>數字都可以改</strong>，把考古題或他校題目的數字填進去，就能檢查自己手算的每一步。</p>
+<table>
+<thead>
+<tr>
+<th>科目</th>
+<th>有動畫的主題</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>資料結構</td>
+<td>insertion sort、heap（建 heap、heap sort）、radix sort、樹的走訪、由走訪重建樹、BST 插入刪除、AVL 旋轉、雜湊探測、Prim／Kruskal／Dijkstra、stack 輸出順序、遞迴呼叫樹</td>
+</tr>
+<tr>
+<td>計算機結構</td>
+<td>cache 位址切割與 hit／miss（direct-mapped、set-associative、LRU／FIFO）</td>
+</tr>
+<tr>
+<td>作業系統</td>
+<td>CPU 排程 Gantt chart（FCFS、SJF、SRTF、Priority、RR）、page 置換（FIFO、LRU、OPT）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>用法建議</strong>：<strong>先自己在紙上（或手寫板上）算完，再用動畫對答案</strong>，看到哪一步開始不一樣，就知道自己錯在哪個觀念。直接看動畫會覺得「好像懂了」，但考試時還是畫不出來。</p>
 <h2 id="errlog">錯題本：建議手寫</h2>
 <p><strong>建議用手寫</strong>（活頁紙或活頁本，按科目、單元分隔），理由：</p>
 <ul>
@@ -419,7 +457,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </tbody>
 </table>
 <p><strong>什麼時候用 Notion</strong>：如果你本來就每天用 Notion，可以只建一張表當<strong>索引</strong>：題目來源、單元、下次重做日期、錯題本頁碼，用日期篩選「今天要重做的題目」。題目內容和重算還是寫在紙上。</p>
-<p>另外，教材網頁上每題小考的「答錯了」會自動記在網頁左側的錯題清單（只存在你這台裝置的瀏覽器），可以當作教材小考的錯題索引。</p>
+<p>另外，教材網頁上每題小考的「答錯了」會自動記在網頁左側的錯題清單（只存在你這台裝置的瀏覽器），可以當作教材小考的錯題索引。在<a href="#tools">手寫作答板</a>寫錯的題目，可以按「存成圖片」把過程存下來貼進錯題本。</p>
 <h2 id="resources">輔助教材</h2>
 <table>
 <thead>

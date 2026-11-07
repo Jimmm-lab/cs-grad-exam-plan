@@ -149,6 +149,7 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-chip { font: 500 12px/1.6 var(--font-mono); padding: 0 6px; border-radius: 4px; border: 1px solid var(--line); }
 .vz-chip.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
 .vz-chip.skip { text-decoration: line-through; opacity: .55; }
+.vz-chip.hit { border-color: var(--ok); color: var(--ok); font-weight: 700; }
 .vz-svg text { font: 600 15px var(--font-mono); fill: var(--ink); }
 .vz-svg .vz-sub, .vz-svg .vz-note { font: 500 12px var(--font-mono); fill: var(--muted); }
 .vz-svg .vz-note { font-weight: 700; }
@@ -445,21 +446,30 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>T-1.</strong> 100 條指令：70 條 ALU（CPI 1）、30 條 load（CPI 4），平均 CPI？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(0.7\times1+0.3\times4=1.9\)</span>。</p>
+<p>總 cycle 數 <span class="arithmatex">\(=70\times1+30\times4=70+120=190\)</span>，平均 CPI <span class="arithmatex">\(=190\div100=\)</span> <strong>1.9</strong>。</p>
+<p>用比例直接算也一樣：<span class="arithmatex">\(0.7\times1+0.3\times4=0.7+1.2=1.9\)</span>。</p>
 </details>
 <p><strong>T-2.</strong> 佔 50% 時間的部分加速 2 倍，整體 speedup？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(\frac{1}{0.5+0.25}\approx1.33\)</span>。</p>
+<p>把原本時間當成 1：不能加速的 0.5 不變，能加速的 0.5 變成 <span class="arithmatex">\(0.5\div2=0.25\)</span>。新時間 <span class="arithmatex">\(0.5+0.25=0.75\)</span>。</p>
+<p>speedup <span class="arithmatex">\(=\frac{1}{0.75}\approx\)</span> <strong>1.33</strong>。</p>
 </details>
 <p><strong>T-3.</strong> A：3 GHz、CPI 2.4；B：2 GHz、CPI 1.5。同一個程式誰快？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>每條指令 A <span class="arithmatex">\(=2.4/3=0.8\)</span> ns、B <span class="arithmatex">\(=1.5/2=0.75\)</span> ns，B 較快。</p>
+<p>指令數一樣，比「每條指令平均多久」＝ CPI × 週期 ＝ CPI ÷ 時脈：</p>
+<ul>
+<li>A：<span class="arithmatex">\(2.4\div3\text{ GHz}=0.8\)</span> ns</li>
+<li>B：<span class="arithmatex">\(1.5\div2\text{ GHz}=0.75\)</span> ns</li>
+</ul>
+<p><strong>B 較快</strong>（快 <span class="arithmatex">\(0.8/0.75\approx1.07\)</span> 倍），雖然它的時脈比較低。</p>
 </details>
 <h3 id="u1-1">1.1 CPU time 與加權 CPI</h3>
 <div class="arithmatex">\[\text{CPU time}=\text{IC}\times\text{CPI}\times T_{\text{clock}}=\frac{\text{IC}\times\text{CPI}}{f}\]</div>
 <div class="arithmatex">\[\text{CPI}_{\text{avg}}=\sum_i(\text{指令類別 } i \text{ 的比例})\times\text{CPI}_i\]</div>
+<p><strong>用單位檢查公式</strong>：IC（條）× CPI（cycle／條）＝ 總 cycle 數；再 × 週期（秒／cycle）＝ 秒。週期 <span class="arithmatex">\(T=\frac1f\)</span>，所以乘 <span class="arithmatex">\(T\)</span> 跟除以時脈 <span class="arithmatex">\(f\)</span> 是同一件事。單位對得起來，公式就不會記錯。</p>
+<p><strong>加權 CPI 為什麼是「比例 × CPI」</strong>：總 cycle 數 <span class="arithmatex">\(=\sum(\text{第 }i\text{ 類的條數}\times\text{CPI}_i)\)</span>，除以總條數 IC，每一類的條數 ÷ IC 就是它的比例。</p>
 <div class="admonition example">
 <p class="admonition-title">115 Q1.2（7 分）：<span class="arithmatex">\(2\times10^9\)</span> 條指令，50% CPI 1、30% CPI 5、20% CPI 2，2 GHz；記憶體指令 CPI 從 5 降到 2</p>
 <p><span class="arithmatex">\(\text{CPI}=0.5\times1+0.3\times5+0.2\times2=2.4\)</span>，時間 <span class="arithmatex">\(=\frac{2\times10^9\times2.4}{2\times10^9}=2.4\)</span> 秒。</p>
@@ -472,6 +482,8 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <h3 id="u1-2">1.2 Amdahl 定律</h3>
 <p>只有比例 <span class="arithmatex">\(f\)</span> 的部分加速 <span class="arithmatex">\(s\)</span> 倍：</p>
 <div class="arithmatex">\[\text{Speedup}=\frac{1}{(1-f)+\dfrac{f}{s}}\qquad\text{上限}=\frac{1}{1-f}\]</div>
+<p><strong>公式怎麼來的</strong>：原本時間當成 1。不能加速的部分佔 <span class="arithmatex">\(1-f\)</span>，時間不變；能加速的部分原本 <span class="arithmatex">\(f\)</span>，變成 <span class="arithmatex">\(\frac fs\)</span>。新時間 <span class="arithmatex">\(=(1-f)+\frac fs\)</span>，speedup ＝ 舊時間 ÷ 新時間。<span class="arithmatex">\(s\)</span> 再大，<span class="arithmatex">\(\frac fs\)</span> 也只會趨近 0，新時間至少是 <span class="arithmatex">\(1-f\)</span>，所以上限是 <span class="arithmatex">\(\frac{1}{1-f}\)</span>。</p>
+<p><strong>反過來問「要加速幾倍」</strong>：令 speedup 等於目標 <span class="arithmatex">\(S\)</span>，解 <span class="arithmatex">\((1-f)+\frac fs=\frac1S\)</span>。如果算出 <span class="arithmatex">\(\frac fs\le0\)</span>，就是<strong>不可能</strong>（111 P4.2）。</p>
 <p><strong>make the common case fast</strong>（115 Q1.3）就是 Amdahl 的白話版：佔比大的部分加速才有用；把佔 1% 的情況加速 100 倍，整體幾乎不變，如果因此拖慢了常見情況，整體反而變慢。</p>
 <div class="admonition example">
 <p class="admonition-title">115 Q2.2（10 分）：浮點指令佔 30% 時間，加速 5 倍，整體最多快幾倍</p>
@@ -490,7 +502,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <h3 id="u1-3">1.3 時脈為什麼不能一直加</h3>
 <p>115 Q1.1（7 分）要你講兩個限制：</p>
 <ol>
-<li><strong>功耗牆（power wall）</strong>：動態功耗 <span class="arithmatex">\(\propto C V^2 f\)</span>。時脈上去，功耗和散熱一起上去，晶片撐不住。→ 改用<strong>多核、平行</strong>，用更多較慢的核心換效能。</li>
+<li><strong>功耗牆（power wall）</strong>：動態功耗 <span class="arithmatex">\(\approx\frac12CV^2f\)</span>。每個電晶體每切換一次，要把電容 <span class="arithmatex">\(C\)</span> 充電到電壓 <span class="arithmatex">\(V\)</span>，耗能約 <span class="arithmatex">\(\frac12CV^2\)</span>；每秒切換 <span class="arithmatex">\(f\)</span> 次，功率就是 <span class="arithmatex">\(\frac12CV^2f\)</span>。時脈 <span class="arithmatex">\(f\)</span> 上去功耗跟著上去，而且高時脈通常要更高的 <span class="arithmatex">\(V\)</span>，<span class="arithmatex">\(V\)</span> 又是平方，散熱撐不住。→ 改用<strong>多核、平行</strong>，用更多較慢的核心換效能。</li>
 <li><strong>記憶體牆（memory wall）</strong>：DRAM 延遲沒有跟著 CPU 變快，時脈再高也只是多等幾個週期。→ 發展<strong>記憶體階層</strong>（多層 cache）來隱藏延遲。</li>
 <li>（可再補）<strong>pipeline 越切越細的極限</strong>：每級都有 pipeline 暫存器的固定延遲，切到最後收益變小，而 branch misprediction penalty 越來越大。→ 需要更好的<strong>分支預測</strong>與推測執行。</li>
 </ol>
@@ -498,17 +510,22 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>1-1.</strong> 40% ALU（CPI 1）、30% load（CPI 4）、20% store（CPI 3）、10% branch（CPI 2），1 GHz，<span class="arithmatex">\(10^9\)</span> 條指令，CPU time？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(\text{CPI}=0.4+1.2+0.6+0.2=2.4\)</span>，時間 <span class="arithmatex">\(=10^9\times2.4\times1\text{ ns}=2.4\)</span> 秒。</p>
+<p><strong>平均 CPI</strong>：<span class="arithmatex">\(0.4\times1+0.3\times4+0.2\times3+0.1\times2=0.4+1.2+0.6+0.2=2.4\)</span>。</p>
+<p><strong>週期</strong>：1 GHz → <span class="arithmatex">\(T=\frac{1}{10^9}\)</span> 秒 <span class="arithmatex">\(=1\)</span> ns。</p>
+<p><strong>CPU time</strong> <span class="arithmatex">\(=10^9\times2.4\times1\text{ ns}=2.4\times10^9\text{ ns}=\)</span> <strong>2.4 秒</strong>。</p>
 </details>
 <p><strong>1-2.</strong> 佔 80% 時間的部分要加速幾倍，整體才會快 2 倍？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(0.2+\frac{0.8}{s}=0.5\)</span> → <span class="arithmatex">\(s=\frac{8}{3}\approx2.67\)</span> 倍。</p>
+<p>要整體快 2 倍 → 新時間是原本的 <span class="arithmatex">\(\frac12\)</span>：</p>
+<div class="arithmatex">\[(1-0.8)+\frac{0.8}{s}=0.5\ \Rightarrow\ \frac{0.8}{s}=0.3\ \Rightarrow\ s=\frac{0.8}{0.3}=\frac83\approx2.67\]</div>
+<p>那 80% 要加速約 <strong>2.67 倍</strong>。（檢查上限：<span class="arithmatex">\(\frac1{0.2}=5\ge2\)</span>，做得到。）</p>
 </details>
 <p><strong>1-3.</strong> 90% 可平行，10 個核心的 speedup？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(\frac{1}{0.1+0.09}=\frac1{0.19}\approx5.26\)</span>。</p>
+<p><span class="arithmatex">\(f=0.9\)</span>、<span class="arithmatex">\(s=10\)</span>：新時間 <span class="arithmatex">\(=0.1+\frac{0.9}{10}=0.1+0.09=0.19\)</span>。</p>
+<p>speedup <span class="arithmatex">\(=\frac{1}{0.19}\approx\)</span> <strong>5.26</strong>（10 個核心只快 5 倍多，上限是 <span class="arithmatex">\(\frac1{0.1}=10\)</span>）。</p>
 </details>
 <h2 id="u2">單元 2：Cache</h2>
 <div class="admonition key">
@@ -585,6 +602,9 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <li>45：3 號格是 <code>0110</code> → 又 miss</li>
 </ol>
 <p>其他三格明明都空著，卻一直 miss，這叫 <strong>conflict miss</strong>。改成 2-way（每個 set 有 2 格），45 和 109 就能同時放在同一個 set 裡，第三次就 hit 了。</p>
+<p>下面是這個例子的動畫。看完以後把「set 數」改成 2、「每個 set 幾格」改成 2（容量一樣是 4 個 block），再按重播，第三次就變成 hit。位址序列也可以換成任何考題的數字：</p>
+<div class="viz" data-viz="cache" data-addrs="45,109,45" data-unit="byte" data-block="4" data-sets="4" data-ways="1"></div>
+
 <div class="admonition key">
 <p class="admonition-title">為什麼 offset 在最右邊、index 在中間</p>
 <p>相鄰的 byte（例如 44、45、46、47）只差最右邊兩位，所以在<strong>同一個 block</strong>。相鄰的 block（例如 44 和 48）只差 index，所以會放到<strong>不同格</strong>，不會互相搶位置。這樣排，讀陣列時就不會一直 conflict。</p>
@@ -631,7 +651,12 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>T-1.</strong> 8 位元位址、block 2 bytes、8 個 set、direct-mapped。offset、index、tag 各幾位元？位址 90 的 tag、index、offset 是多少？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>offset 1、index 3、tag 4。90 ＝ <code>0101 1010</code> → tag <code>0101</code>、index <code>101</code>（5 號格）、offset <code>0</code>。</p>
+<ul>
+<li>offset：block 2 bytes → <span class="arithmatex">\(\log_2 2=\)</span> <strong>1</strong> 位元</li>
+<li>index：8 個 set → <span class="arithmatex">\(\log_2 8=\)</span> <strong>3</strong> 位元</li>
+<li>tag：<span class="arithmatex">\(8-3-1=\)</span> <strong>4</strong> 位元</li>
+</ul>
+<p>90 ＝ 64＋16＋8＋2 ＝ <code>0101 1010</code>，從右邊切：offset 是最右 1 位 <code>0</code>、index 是接著 3 位 <code>101</code>（5 號格）、tag 是剩下的 <code>0101</code>。</p>
 </details>
 <p><strong>T-2.</strong> 同一個 cache，依序讀 90、91、26。哪幾次 hit？</p>
 <details class="quiz">
@@ -649,6 +674,8 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <li><strong>set 數</strong> <span class="arithmatex">\(=\dfrac{\text{cache 容量}}{\text{block 大小}\times\text{associativity}}\)</span>，<strong>index 位元</strong> <span class="arithmatex">\(=\log_2(\text{set 數})\)</span></li>
 <li><strong>tag 位元</strong> <span class="arithmatex">\(=\text{位址位元}-\text{index}-\text{offset}\)</span></li>
 </ol>
+<p><strong>為什麼是這樣</strong>：<span class="arithmatex">\(k\)</span> 個位元可以表示 <span class="arithmatex">\(2^k\)</span> 種情況。一個 block 有 <span class="arithmatex">\(B\)</span> 個 byte，要分出是第幾個 byte，需要 <span class="arithmatex">\(\log_2B\)</span> 位元；有 <span class="arithmatex">\(S\)</span> 個 set，要選第幾個，需要 <span class="arithmatex">\(\log_2S\)</span> 位元。容量 ÷ block 大小 ＝ 總共幾格，再 ÷ 每個 set 幾格 ＝ set 數。</p>
+<p><strong>注意單位</strong>：題目給 word address 時，offset 是「block 裡第幾個 word」，用 word 數算；給 byte address 時用 byte 數算。一個 word 通常是 4 bytes。</p>
 <p>fully associative 沒有 index（只有 1 個 set）；direct-mapped 是 1-way。</p>
 <h3 id="u2-2">2.2 Cache 總位元數</h3>
 <p>每個 block 需要：<strong>data + tag + valid</strong>，write-back 再加 <strong>dirty</strong>，set-associative 用 LRU 再加 <strong>LRU 位元</strong>（2-way 每個 set 1 個位元）。</p>
@@ -711,6 +738,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <div class="admonition example">
 <p class="admonition-title">113 Q5.1（9%）：word address 序列、direct-mapped、2-word block、8 個 block</p>
 <p><strong>block 位址</strong> <span class="arithmatex">\(=\lfloor\text{word address}/2\rfloor\)</span>，<strong>index</strong> <span class="arithmatex">\(=\text{block 位址}\bmod8\)</span>，<strong>tag</strong> <span class="arithmatex">\(=\lfloor\text{block 位址}/8\rfloor\)</span>。</p>
+<p><strong>用十進位算比切二進位快</strong>：例如 180 → block 位址 <span class="arithmatex">\(\lfloor180/2\rfloor=90\)</span> → index <span class="arithmatex">\(90\bmod8=2\)</span>、tag <span class="arithmatex">\(\lfloor90/8\rfloor=11\)</span>。這跟把 <code>1011 0100</code> 切成 tag <code>1011</code>、index <code>010</code>、offset <code>0</code> 是同一件事。</p>
 <table>
 <thead>
 <tr>
@@ -810,9 +838,19 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </table>
 <p><strong>注意</strong>：題目表格的示範列寫「3 → tag 0, index 3」，那是 1-word block 的切法（COD 原題的上一小題）。2-word block 時最低位元是 offset，index 是位元 [3:1]，所以 3 的 index 是 1。考試遇到這種情況，<strong>寫出你的切法並說明</strong>。</p>
 </div>
+<div class="viz" data-viz="cache" data-addrs="3,180,43,2,191,88,190,14,181,44,186,253" data-unit="word" data-block="2" data-sets="8" data-ways="1" data-title="113 Q5.1：一個一個位址看 hit／miss"></div>
+
 <h3 id="u2-4">2.4 AMAT 與含記憶體停頓的 CPU time</h3>
 <div class="arithmatex">\[\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}\]</div>
 <p>多層：<span class="arithmatex">\(\text{AMAT}=t_{L1}+m_{L1}\times(t_{L2}+m_{L2}\times t_{mem})\)</span>，<span class="arithmatex">\(m_{L2}\)</span> 是 L2 的 local miss rate。</p>
+<p><strong>多層公式怎麼讀</strong>：每次都先查 L1（<span class="arithmatex">\(t_{L1}\)</span>）。L1 miss 的那 <span class="arithmatex">\(m_{L1}\)</span> 比例，要再查 L2（<span class="arithmatex">\(t_{L2}\)</span>）；L2 也 miss 的，再去記憶體（<span class="arithmatex">\(t_{mem}\)</span>）。括號裡就是「L1 miss 之後平均還要多久」，也就是 L1 的 miss penalty。</p>
+<ul>
+<li><strong>local miss rate</strong> <span class="arithmatex">\(m_{L2}\)</span>：L2 被問到的那些存取裡，miss 的比例。</li>
+<li><strong>global miss rate</strong> <span class="arithmatex">\(=m_{L1}\times m_{L2}\)</span>：全部存取裡，一路 miss 到記憶體的比例。題目沒說清楚時要寫出你用哪一種。</li>
+</ul>
+<p><strong>把 cache miss 算進 CPI</strong>：每條指令平均要等記憶體的 cycle 數 ＝ 每條指令存取幾次 × miss rate × miss penalty，加到原本的 CPI 上：</p>
+<div class="arithmatex">\[\text{CPI}_{\text{實際}}=\text{CPI}_{\text{base}}+\frac{\text{記憶體存取次數}}{\text{指令}}\times\text{miss rate}\times\text{miss penalty（cycle）}\]</div>
+<p>每條指令都要抓指令（I-cache 1 次），load／store 再多 1 次 D-cache。綜合小考 M-1 就是這個公式。</p>
 <div class="admonition example">
 <p class="admonition-title">112 Q1.1–1.2（10%）：miss latency 10；direct-mapped hit 2 cycle、miss rate 15%；set-associative hit 3 cycle</p>
 <p>DM：<span class="arithmatex">\(2+0.15\times10=3.5\)</span>。</p>
@@ -862,23 +900,63 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>2-1.</strong> 32-bit 位址、64 KB direct-mapped、16 B block、write-through：offset、index、tag 各幾位元？總位元數？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>offset 4、block 數 4096 → index 12、tag 16。總位元數 <span class="arithmatex">\(4096\times(128+16+1)=593920\)</span>。</p>
+<ul>
+<li>offset：16 B block → <span class="arithmatex">\(\log_2 16=\)</span> <strong>4</strong></li>
+<li>block 數：<span class="arithmatex">\(64\text{ KB}\div16\text{ B}=2^{16}\div2^4=2^{12}=4096\)</span>；direct-mapped 一個 set 一格 → 4096 個 set → index <strong>12</strong></li>
+<li>tag：<span class="arithmatex">\(32-12-4=\)</span> <strong>16</strong></li>
+</ul>
+<p>每個 block 要存：data <span class="arithmatex">\(16\times8=128\)</span> 位元 ＋ tag 16 ＋ valid 1（write-through 不用 dirty）＝ 145 位元。</p>
+<p>總位元數 <span class="arithmatex">\(4096\times145=\)</span> <strong>593920</strong>。</p>
 </details>
 <p><strong>2-2.</strong> 同上但改成 4-way，index 和 tag？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>set 數 <span class="arithmatex">\(4096/4=1024\)</span> → index 10、tag 18。</p>
+<p>block 數還是 4096，但每個 set 有 4 格：set 數 <span class="arithmatex">\(4096\div4=1024=2^{10}\)</span> → index <strong>10</strong>。offset 不變是 4，tag <span class="arithmatex">\(=32-10-4=\)</span> <strong>18</strong>。</p>
+<p>associativity 加倍，index 少 1 位、tag 多 1 位。</p>
 </details>
 <p><strong>2-3.</strong> 4 個 block 的 direct-mapped cache（1-word block），word address 序列 0、8、0、6、8，幾次 miss？改成 fully associative LRU 呢？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>DM：0、8、0、8 都映到 index 0 互踢，6 映到 index 2 → 5 次全 miss。
-FA：0 M、8 M、0 H、6 M、8 H → 3 次 miss。</p>
+<p><strong>Direct-mapped</strong>：1-word block，index ＝ 位址 mod 4：0→0、8→0、6→2。</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>0</th>
+<th>8</th>
+<th>0</th>
+<th>6</th>
+<th>8</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+</tr>
+<tr>
+<td>結果</td>
+<td>M</td>
+<td>M（踢掉 0）</td>
+<td>M（踢掉 8）</td>
+<td>M</td>
+<td>M（踢掉 0）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>5 次全 miss</strong>。0 和 8 搶同一格，cache 其他格卻空著（conflict miss）。</p>
+<p><strong>Fully associative、LRU</strong>（4 格都可以放）：0 M、8 M、0 <strong>H</strong>、6 M、8 <strong>H</strong> → <strong>3 次 miss</strong>（都是第一次用到的 compulsory miss）。</p>
+<p>可以把數字填進 <a href="#u2-0">2.0 的動畫</a>檢查：位址單位選 word、block 1、set 數 4 或 1、每個 set 1 或 4 格。</p>
 </details>
 <p><strong>2-4.</strong> L1 hit 1 cycle、miss rate 5%；L2 hit 10 cycle、local miss rate 20%；主記憶體 100 cycle。AMAT？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(1+0.05\times(10+0.2\times100)=1+0.05\times30=2.5\)</span> cycles。</p>
+<p>先算 L1 miss 之後平均還要多久（L1 的 miss penalty）：查 L2 要 10，其中 20% 還要再去記憶體 100 → <span class="arithmatex">\(10+0.2\times100=30\)</span> cycles。</p>
+<p><span class="arithmatex">\(\text{AMAT}=1+0.05\times30=1+1.5=\)</span> <strong>2.5 cycles</strong>。</p>
 </details>
 <h2 id="u3">單元 3：虛擬記憶體與 TLB</h2>
 <div class="admonition key">
@@ -946,17 +1024,19 @@ FA：0 M、8 M、0 H、6 M、8 H → 3 次 miss。</p>
 <p><strong>T-1.</strong> 虛擬位址 0x07 的實體位址？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><code>0000 0111</code> → VPN 0、offset 7 → PPN 2 → <code>10 0111</code> ＝ 39。</p>
+<p>0x07 ＝ <code>0000 0111</code> → VPN <code>0000</code> ＝ 0、offset <code>0111</code> ＝ 7。查表 VPN 0 → PPN 2。</p>
+<p>實體位址 ＝ PPN 接上 offset ＝ <code>10 0111</code> ＝ <strong>39</strong>。用十進位算：PPN × page 大小 ＋ offset ＝ <span class="arithmatex">\(2\times16+7=39\)</span>。</p>
 </details>
 <p><strong>T-2.</strong> 虛擬位址 0x5F 的實體位址？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>VPN 5、offset 15 → PPN 0 → <code>00 1111</code> ＝ 15。</p>
+<p>0x5F ＝ <code>0101 1111</code> → VPN 5、offset 15。查表 VPN 5 → PPN 0。</p>
+<p>實體位址 ＝ <span class="arithmatex">\(0\times16+15=\)</span> <strong>15</strong>（<code>00 1111</code>）。</p>
 </details>
 <p><strong>T-3.</strong> 16 位元虛擬位址、page 256 bytes，page table 有幾格？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>offset 8 位元、VPN 8 位元 → <span class="arithmatex">\(2^8=256\)</span> 格。</p>
+<p>page 256 bytes → offset <span class="arithmatex">\(\log_2256=8\)</span> 位元；VPN <span class="arithmatex">\(=16-8=8\)</span> 位元。page table 要替每個虛擬頁留一格：<span class="arithmatex">\(2^8=\)</span> <strong>256</strong> 格。</p>
 </details>
 <h3 id="u3-1">3.1 位元切割與 page table 大小</h3>
 <ul>
@@ -1055,12 +1135,17 @@ FA：0 M、8 M、0 H、6 M、8 H → 3 次 miss。</p>
 <p><strong>3-1.</strong> 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>offset 13、VPN 19 → <span class="arithmatex">\(2^{19}\times4=2\text{ MB}\)</span>。</p>
+<ul>
+<li>offset：8 KB ＝ <span class="arithmatex">\(2^{13}\)</span> → 13 位元</li>
+<li>VPN：<span class="arithmatex">\(32-13=19\)</span> 位元 → <span class="arithmatex">\(2^{19}\)</span> 個 entry</li>
+<li>大小：<span class="arithmatex">\(2^{19}\times4\text{ B}=2^{21}\text{ B}=\)</span> <strong>2 MB</strong></li>
+</ul>
 </details>
 <p><strong>3-2.</strong> VPN 19 位元，TLB 16 entries、4-way，TLB index 和 tag 幾位元？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>set 數 4 → index 2、tag 17。</p>
+<p>TLB 就是 page table 的 cache，切法跟 cache 一樣（只是沒有 offset，因為 TLB 的一格存一整個 VPN 的對照）：</p>
+<p>set 數 <span class="arithmatex">\(=16\div4=4\)</span> → TLB index <span class="arithmatex">\(\log_24=\)</span> <strong>2</strong> 位元；TLB tag <span class="arithmatex">\(=\)</span> VPN <span class="arithmatex">\(-\)</span> index <span class="arithmatex">\(=19-2=\)</span> <strong>17</strong> 位元。</p>
 </details>
 <p><strong>3-3.</strong> 為什麼 page offset 不用轉換？</p>
 <details class="quiz">
@@ -1209,7 +1294,9 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p><strong>T-1.</strong> 10 條指令、5 級 pipeline、每級 200 ps。pipeline 和非 pipeline（每條 1000 ps）各要多久？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>pipeline <span class="arithmatex">\((5+9)\times200=2800\)</span> ps；非 pipeline <span class="arithmatex">\(10\times1000=10000\)</span> ps。</p>
+<p><strong>pipeline</strong>：第 1 條要走完 5 級（5 個 cycle），之後每個 cycle 多完成 1 條，剩下 9 條再 9 個 cycle：<span class="arithmatex">\((5+9)\times200=\)</span> <strong>2800 ps</strong>。</p>
+<p><strong>非 pipeline</strong>：一條做完才做下一條，<span class="arithmatex">\(10\times1000=\)</span> <strong>10000 ps</strong>。</p>
+<p>speedup <span class="arithmatex">\(=10000/2800\approx3.6\)</span>，比 5 小，因為填滿 pipeline 的前 4 個 cycle 沒有完整利用；指令越多，越接近 5 倍。</p>
 </details>
 <p><strong>T-2.</strong> 有 forwarding 時，下面兩組各要停幾個 cycle？(a) <code>lw x1, 0(x2)</code> 接 <code>add x3, x1, x4</code> (b) <code>add x1, x2, x3</code> 接 <code>add x4, x1, x5</code></p>
 <details class="quiz">
@@ -1306,12 +1393,56 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p><strong>4-1.</strong> 各級 200、100、250、200、150 ps。single-cycle 和 pipeline 的週期？1000 條指令時 pipeline 的總時間和 speedup？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>single-cycle 900 ps、pipeline 250 ps。pipeline 總時間 <span class="arithmatex">\((5+999)\times250=251000\)</span> ps；single-cycle <span class="arithmatex">\(900\times1000=900000\)</span> ps；speedup ≈ 3.59。</p>
+<ul>
+<li><strong>single-cycle 週期</strong>：一個 cycle 要做完所有級，<span class="arithmatex">\(200+100+250+200+150=\)</span> <strong>900 ps</strong></li>
+<li><strong>pipeline 週期</strong>：最慢的那一級 <strong>250 ps</strong></li>
+</ul>
+<p>1000 條指令：</p>
+<ul>
+<li>pipeline：<span class="arithmatex">\((5+1000-1)\times250=1004\times250=\)</span> <strong>251000 ps</strong></li>
+<li>single-cycle：<span class="arithmatex">\(1000\times900=900000\)</span> ps</li>
+</ul>
+<p>speedup <span class="arithmatex">\(=900000\div251000\approx\)</span> <strong>3.59</strong>（理想是 5 倍，但各級不平均，週期被最慢的 250 拖住：<span class="arithmatex">\(900/250=3.6\)</span>）。</p>
 </details>
 <p><strong>4-2.</strong> <code>lw x1, 0(x2)</code> 接 <code>add x3, x1, x4</code>：有 forwarding 時 stall 幾個？沒 forwarding（但 register file 前寫後讀）時呢？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>有 forwarding：1 個。沒有：2 個（add 的 ID 要等到 lw 的 WB）。</p>
+<p><strong>有 forwarding</strong>：lw 的資料在 MEM（第 4 cycle）結束才有，add 的 EX 最早只能在第 5 cycle → 停 <strong>1 個</strong>，再從 MEM/WB forward 過去。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lw</td>
+<td>IF</td>
+<td>ID</td>
+<td>EX</td>
+<td>MEM</td>
+<td>WB</td>
+<td></td>
+</tr>
+<tr>
+<td>add</td>
+<td></td>
+<td>IF</td>
+<td>stall</td>
+<td>ID</td>
+<td>EX</td>
+<td>MEM</td>
+</tr>
+</tbody>
+</table>
+<p>（也可以畫成 add 在 ID 停一拍，重點是 EX 落在第 5 cycle。）</p>
+<p><strong>沒有 forwarding</strong>：add 要在 ID 讀暫存器時讀到新值。lw 在第 5 cycle 的 WB 才寫回，register file 前半寫、後半讀，add 的 ID 最早在第 5 cycle，原本在第 3 → 停 <strong>2 個</strong>。</p>
 </details>
 <h2 id="u5">單元 5：分支預測</h2>
 <div class="admonition key">
@@ -1377,7 +1508,8 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p><strong>T-1.</strong> 30% 是 branch、準確率 80%、penalty 3，CPI？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(1+0.3\times0.2\times3=1.18\)</span>。</p>
+<p>每條指令平均多出：branch 比例 0.3 × 猜錯率 <span class="arithmatex">\((1-0.8)=0.2\)</span> × 每次 3 cycle <span class="arithmatex">\(=0.18\)</span>。</p>
+<p><span class="arithmatex">\(\text{CPI}=1+0.18=\)</span> <strong>1.18</strong>。</p>
 </details>
 <p><strong>T-2.</strong> branch 在第 4 級結束時決定，penalty 是多少？</p>
 <details class="quiz">
@@ -1387,7 +1519,46 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p><strong>T-3.</strong> 結果依序是 T、T、T、N，重複 3 輪。1-bit 預測器一開始預測 T，總共猜錯幾次？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>第一輪只錯 N 那一次；之後每輪開頭的 T 也錯（因為上一次是 N）。<span class="arithmatex">\(1+2+2=5\)</span> 次。</p>
+<p>1-bit 預測器每次都猜「跟上一次一樣」：</p>
+<table>
+<thead>
+<tr>
+<th>輪</th>
+<th>實際</th>
+<th>T</th>
+<th>T</th>
+<th>T</th>
+<th>N</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>預測</td>
+<td>T ✓</td>
+<td>T ✓</td>
+<td>T ✓</td>
+<td>T ✗</td>
+</tr>
+<tr>
+<td>2</td>
+<td>預測</td>
+<td>N ✗</td>
+<td>T ✓</td>
+<td>T ✓</td>
+<td>T ✗</td>
+</tr>
+<tr>
+<td>3</td>
+<td>預測</td>
+<td>N ✗</td>
+<td>T ✓</td>
+<td>T ✓</td>
+<td>T ✗</td>
+</tr>
+</tbody>
+</table>
+<p><span class="arithmatex">\(1+2+2=\)</span> <strong>5 次</strong>。</p>
 </details>
 <h3 id="u5-1">5.1 公式</h3>
 <ul>
@@ -1454,12 +1625,60 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p><strong>5-1.</strong> 25% branch、penalty 3、準確率 90%，CPI（理想 1）？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(1+0.25\times0.1\times3=1.075\)</span>。</p>
+<p>額外 CPI ＝ branch 比例 × 猜錯率 × penalty <span class="arithmatex">\(=0.25\times(1-0.9)\times3=0.075\)</span>。</p>
+<p><span class="arithmatex">\(\text{CPI}=1+0.075=\)</span> <strong>1.075</strong>。</p>
 </details>
 <p><strong>5-2.</strong> 2-bit 預測器從 00 開始，實際結果依序 T、T、N、T，預測錯幾次？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>00 預測 N（錯）→01；預測 N（錯）→10；預測 T（錯，實際 N）→01；預測 N（錯）→10。4 次全錯。這說明 2-bit 在剛開始和模式交替時表現不好。</p>
+<p>狀態 ≥ 10 才預測 T；實際 T 就加 1、實際 N 就減 1：</p>
+<table>
+<thead>
+<tr>
+<th>第幾次</th>
+<th>狀態</th>
+<th>預測</th>
+<th>實際</th>
+<th>對錯</th>
+<th>新狀態</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>00</td>
+<td>N</td>
+<td>T</td>
+<td>✗</td>
+<td>01</td>
+</tr>
+<tr>
+<td>2</td>
+<td>01</td>
+<td>N</td>
+<td>T</td>
+<td>✗</td>
+<td>10</td>
+</tr>
+<tr>
+<td>3</td>
+<td>10</td>
+<td>T</td>
+<td>N</td>
+<td>✗</td>
+<td>01</td>
+</tr>
+<tr>
+<td>4</td>
+<td>01</td>
+<td>N</td>
+<td>T</td>
+<td>✗</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<p><strong>4 次全錯</strong>。2-bit 在一開始（還在「學」）和結果剛好交替時表現不好；它擅長的是迴圈那種「一直跳、偶爾不跳」。</p>
 </details>
 <h2 id="u6">單元 6：多執行緒</h2>
 <div class="admonition key">
@@ -1572,7 +1791,8 @@ BNE  ...</code></pre>
 <p><strong>6-1.</strong> 迴圈只有兩條相依指令：LD（延遲 20）、緊接著用它的 ADD，再加一條 BNE。Fixed switching 需要幾個 thread？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>ADD 距 LD 1 條：<span class="arithmatex">\(N\ge20\)</span>。</p>
+<p>Fixed switching：<span class="arithmatex">\(N\)</span> 個 thread 輪流，同一個 thread 相鄰的兩條指令相隔 <span class="arithmatex">\(N\)</span> 個 cycle。ADD 緊接在 LD 後面（距離 1 條），要等 LD 的 20 cycle：<span class="arithmatex">\(1\times N\ge20\)</span> → <strong>20 個 thread</strong>。</p>
+<p>（BNE 不依賴 LD，不會讓需求變大。）</p>
 </details>
 <h2 id="u7">單元 7：DRAM 與資料重用</h2>
 <div class="admonition key">
@@ -1628,7 +1848,8 @@ BNE  ...</code></pre>
 <p class="admonition-title">114 Q1（18%）：8 banks × <span class="arithmatex">\(2^{16}\)</span> 列，每次 refresh 佔 command bus 5 ns</p>
 <p>1.1 64 ms 內要 refresh <span class="arithmatex">\(8\times2^{16}=2^{19}\)</span> 次：</p>
 <div class="arithmatex">\[\frac{2^{19}\times5\text{ ns}}{64\text{ ms}}=\frac{2^{19}\times5}{2^6\times10^6}=\frac{2^{13}\times5}{10^6}=4.096\%\]</div>
-<p>1.2 70% 的列只要 256 ms 一次：新的使用率 <span class="arithmatex">\(=4.096\%\times(0.3+0.7\times\frac{64}{256})=4.096\%\times0.475\)</span>，<strong>減少 <span class="arithmatex">\(1-0.475=52.5\%\)</span></strong>。</p>
+<p>1.2 70% 的列只要 256 ms 一次：在同樣的時間裡，這些列的 refresh 次數只剩 <span class="arithmatex">\(\frac{64}{256}=\frac14\)</span>；另外 30% 不變。refresh 總次數變成原本的 <span class="arithmatex">\(0.3\times1+0.7\times\frac14=0.475\)</span> 倍。</p>
+<p>新的使用率 <span class="arithmatex">\(=4.096\%\times0.475\approx1.95\%\)</span>，<strong>減少 <span class="arithmatex">\(1-0.475=52.5\%\)</span></strong>。</p>
 <p>這就是 Mutlu 團隊的 RAIDR 想法：依各列的保存時間分組 refresh。</p>
 </div>
 <div class="admonition example">
@@ -1671,7 +1892,9 @@ BNE  ...</code></pre>
 <p><strong>7-1.</strong> 4 banks × <span class="arithmatex">\(2^{14}\)</span> 列，refresh 間隔 32 ms，每次 refresh 佔 command bus 4 ns，使用率？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(\frac{2^{16}\times4\text{ ns}}{32\text{ ms}}=\frac{262144}{32\times10^6}=0.8192\%\)</span>。</p>
+<p>32 ms 內每一列都要 refresh 一次：<span class="arithmatex">\(4\times2^{14}=2^{16}=65536\)</span> 次，每次佔 4 ns → 共 <span class="arithmatex">\(262144\)</span> ns。</p>
+<div class="arithmatex">\[\frac{262144\text{ ns}}{32\text{ ms}}=\frac{262144}{32\times10^6}=0.008192=\mathbf{0.8192\%}\]</div>
+<p>不用計算機的算法：<span class="arithmatex">\(\frac{2^{16}\times4}{2^5\times10^6}=\frac{2^{13}}{10^6}=\frac{8192}{10^6}\)</span>。</p>
 </details>
 <h2 id="u8">單元 8：平行與微架構</h2>
 <h3 id="u8-0">8.0 觀念課：同時做好幾件事的三種方式</h3>
@@ -1766,7 +1989,7 @@ BNE  ...</code></pre>
 <p><strong>T-1.</strong> 95% 可平行，處理器無限多，speedup 上限？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(1/0.05=20\)</span>。</p>
+<p>處理器無限多時，可平行的 95% 時間趨近 0，只剩不能平行的 5%：speedup 上限 <span class="arithmatex">\(=\frac{1}{1-f}=\frac{1}{0.05}=\)</span> <strong>20</strong>。</p>
 </details>
 <p><strong>T-2.</strong> 上面 P1、P2 的例子，寫出一種得到 (r1, r2) ＝ (1, 1) 的洗法。</p>
 <details class="quiz">
@@ -1870,6 +2093,12 @@ BNE  ...</code></pre>
 <p><strong>溢位</strong>：兩個正數相加得到負數（或兩個負數相加得到正數），結果就超出範圍了。例：<span class="arithmatex">\(5+4=1001\)</span>，讀起來是 −7，溢位。</p>
 <h4 id="_24">浮點數：二進位的科學記號</h4>
 <div class="arithmatex">\[(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})\]</div>
+<p><strong>每一部分的意思</strong>：</p>
+<ul>
+<li><span class="arithmatex">\(s\)</span>：正負號，0 正 1 負。</li>
+<li><span class="arithmatex">\(1.f\)</span>：二進位科學記號的有效數字。整理成 <span class="arithmatex">\(1.xxx\times2^k\)</span> 時，小數點前一定是 1，所以<strong>那個 1 不存</strong>（省一位元），只存小數點後的 <span class="arithmatex">\(f\)</span>。</li>
+<li><span class="arithmatex">\(e-127\)</span>：指數要能是負的，但 <span class="arithmatex">\(e\)</span> 用無號數存，所以存「實際指數 ＋ 127」（bias）。<span class="arithmatex">\(e\)</span> 從 1 到 254 對應指數 −126 到 127；全 0 和全 1 留給 0、非正規數、無限大和 NaN。</li>
+</ul>
 <p>例：<span class="arithmatex">\(5.0=101.0_2=1.01\times2^2\)</span>。</p>
 <ul>
 <li><span class="arithmatex">\(s=0\)</span></li>
@@ -1937,17 +2166,24 @@ BNE  ...</code></pre>
 <p><strong>M-1.</strong> CPI 1.5 的處理器，每條指令 0.3 次資料存取，I-cache miss rate 2%、D-cache miss rate 5%，miss penalty 50 cycle。實際 CPI？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(1.5+1\times0.02\times50+0.3\times0.05\times50=1.5+1+0.75=3.25\)</span>。</p>
+<p>每條指令都要抓指令，I-cache 存取 1 次；另外平均 0.3 次資料存取走 D-cache：</p>
+<ul>
+<li>I-cache 平均多出：<span class="arithmatex">\(1\times0.02\times50=1\)</span> cycle</li>
+<li>D-cache 平均多出：<span class="arithmatex">\(0.3\times0.05\times50=0.75\)</span> cycle</li>
+</ul>
+<p><span class="arithmatex">\(\text{CPI}=1.5+1+0.75=\)</span> <strong>3.25</strong>，記憶體停頓讓 CPI 變成兩倍多。</p>
 </details>
 <p><strong>M-2.</strong> 48-bit 虛擬位址、32-bit 實體位址、4 KB page，page table 有幾個 entry？（111 年 OS 也考過這題）</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p><span class="arithmatex">\(2^{48-12}=2^{36}\)</span> 個。</p>
+<p>page table 的 entry 數只看<strong>虛擬</strong>位址：offset <span class="arithmatex">\(=\log_2 4\text{K}=12\)</span> 位元，VPN <span class="arithmatex">\(=48-12=36\)</span> 位元 → <strong><span class="arithmatex">\(2^{36}\)</span> 個 entry</strong>。</p>
+<p>實體位址 32 位元只決定每個 entry 裡 PPN 的長度（<span class="arithmatex">\(32-12=20\)</span> 位元）。</p>
 </details>
 <p><strong>M-3.</strong> 6 級 pipeline，branch 在第 4 級結束時決定，branch 佔 20%、預測準確率 85%，CPI？</p>
 <details class="quiz">
 <summary>看答案</summary>
-<p>penalty 3：<span class="arithmatex">\(1+0.2\times0.15\times3=1.09\)</span>。</p>
+<p>第 4 級結束時決定 → 前 3 級抓進來的指令可能要丟掉，penalty <span class="arithmatex">\(=4-1=3\)</span>。</p>
+<p><span class="arithmatex">\(\text{CPI}=1+0.2\times(1-0.85)\times3=1+0.09=\)</span> <strong>1.09</strong>。</p>
 </details>
 <h2 id="res">資源</h2>
 <ul>
