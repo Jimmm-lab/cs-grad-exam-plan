@@ -97,8 +97,14 @@ def blk(subj, time, title, read, practice, link=""):
     return b
 
 days = []
-def add(phase, title, blocks, note="", optional=False, tag=""):
+DUE = {"text": "錯題本：重做右上角日期是今天的題目"}
+CARDS = {"subject": "osds", "text": "OS 名詞閃卡 10 分鐘", "link": O + "#u7"}
+
+def add(phase, title, blocks, note="", optional=False, tag="", review=None):
     d = {"phase": phase, "title": title, "blocks": blocks}
+    if review is None and phase in ("papers", "sprint"):
+        review = [DUE, CARDS]
+    if review: d["review"] = review
     if note: d["note"] = note
     if optional: d["optional"] = True
     if tag: d["tag"] = tag
@@ -121,17 +127,27 @@ ti = 0
 for week in range(6):
     for k in range(4):
         dm, ca, od = DM[ti], CA[ti], OSDS[ti]
+        rv = []
+        # 間隔複習：重做約 3 天前（2 個主題日之前）那個單元的小考；第 2 天先回想第 1 天
+        back = 2 if ti >= 2 else (1 if ti == 1 else None)
+        if back:
+            when = "約 3 天前" if back == 2 else "昨天"
+            rv.append({"subject": "dm", "text": f"不看答案重做〈{DM[ti-back][0]}〉的小考（{when}學的）", "link": DM[ti-back][3]})
+            rv.append({"subject": "ca", "text": f"不看答案重做〈{CA[ti-back][0]}〉的小考（{when}學的）", "link": CA[ti-back][3]})
+            rv.append({"subject": "osds", "text": f"回想〈{OSDS[ti-back][1]}〉的重點，寫不出來就重看", "link": OSDS[ti-back][4]})
+        rv.append(CARDS)
+        if ti >= 2: rv.append(DUE)
         add("foundation", f"{dm[0]}｜{ca[0]}｜{od[1]}", [
           blk("dm", "上午", dm[0], dm[1], dm[2], dm[3]),
           blk("ca", "下午", ca[0], ca[1], ca[2], ca[3]),
           blk("osds", "晚上", f"{od[0]}：{od[1]}", od[2], od[3], od[4]),
-        ])
+        ], review=rv)
         ti += 1
     add("foundation", f"第 {week+1} 輪複習日（週考）", [
-      blk("dm", "上午", "離散：本輪錯題重做＋小考錯題", "只看題目重做，用「1–3–7」節奏", "他校同主題考古題 10 題，限時", "notes/method.html#quiz"),
+      blk("dm", "上午", "離散：本輪錯題重做＋小考錯題", "只看題目重做，做錯題本上今天到期的題目", "他校同主題考古題 10 題，限時", "notes/method.html#quiz"),
       blk("ca", "下午", "計結：本輪計算題蓋住答案重算", "寫一頁公式卡", "再做一次這 4 天的單元小考", "notes/method.html#quiz"),
       blk("osds", "晚上", "OS／資結：一頁總整理", "把這 4 天的內容寫成一頁重點", "OS 閃卡全部過一遍", "notes/method.html#quiz"),
-    ], note="複習日不學新東西，目標是把這輪的錯題清掉。", tag="週考")
+    ], note="複習日不學新東西，目標是把這輪的錯題清掉。這一天重做的是約 1 週前學的單元，正好是第二次間隔複習。", tag="週考", review=[DUE])
 
 # Phase 2: 中山 100–107 逐年＋重做 111–114 整份＋補強
 def year_day(y):
@@ -290,7 +306,7 @@ data = {
   {"title": "弱科其實是題型最固定的科目", "body": "111–115 年的離散，計數、生成函數、遞迴每年都佔一半以上，圖論幾乎沒考；計結每年都在算 CPI、Amdahl、AMAT、cache 位元數、pipeline 與分支。教材把這五年的題目全部拆成單元，照單元把模板練熟，弱科也能穩定拿分。", "src": [7]},
   {"title": "知道出題來源，就知道去哪裡找練習題", "body": "計結 113 年幾乎全是 Patterson & Hennessy 課本習題，112、114 年是 Onur Mutlu（ETH／CMU）課程考題的風格；OS 的填空和觀念題幾乎都是恐龍書原文。所以計結多做 COD 習題和 Mutlu 附詳解的考古題，OS 把恐龍書名詞做成閃卡。", "src": [7, 8]},
   {"title": "111–115 拆成教材，108–109 留做模考", "body": "最近五年的題目用來學（每題都有詳解）；108、109 年先不要碰，留到一月當全真模考。110 年第一天已用來診斷。115 年是新格式，衝刺期再整份重考一次。", "src": [7]},
-  {"title": "主動回想＋間隔複習，不要重讀", "body": "研究評價最高的讀書方法是練習測驗和分散練習，重讀和畫重點效果最差。所以每個單元都先做小考再看答案、錯題用 1–3–7 天節奏重做、每 5 天一次週考。", "src": [9]},
+  {"title": "主動回想＋間隔複習，不要重讀", "body": "研究評價最高的讀書方法是練習測驗和分散練習，重讀和畫重點效果最差。所以每個單元都先做小考再看答案、錯題在 3、7、14 天後各重做一次、每 5 天一次週考。", "src": [9]},
   {"title": "弱科先看範例，再逐步自己做", "body": "新手先研究完整的解題範例學得最快，熟練後要改成自己解。離散、計結第一次讀時先看懂例題每一步，第二次遮住詳解，第三次限時獨立做。", "src": [10]},
   {"title": "115 年格式改了，116 很可能沿用", "body": "115 年離散改成 10 題簡答（只寫答案）＋ 3 題計算，計結改成按章節出題、概念與簡單計算為主。答案正確和速度變得更重要，衝刺期要用這個格式練限時。", "src": [7]},
   {"title": "多報幾間當保險", "body": "中山資工甲組近年錄取率很低（113 學年度報名 1386 人、招 28 人，約 2%；實際到考人數通常比報名少）。同時報考考科相近的學校（例如中正、中興、中央），注意考試日期不要撞期。", "src": [1]},

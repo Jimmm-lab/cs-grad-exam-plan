@@ -151,6 +151,14 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <li><strong>考古題例題</strong>：完整詳解，標註年份和題號。</li>
 <li><strong>小考</strong>：自己先寫，再打開答案、按「答對／答錯」。</li>
 </ol>
+<div class="admonition key">
+<p class="admonition-title">看不懂的時候</p>
+<ol>
+<li>先讀單元開頭的「觀念課」：用小例子把每種情況列出來，再推出公式。目前有觀念課的是離散單元 1、計結單元 2。</li>
+<li>還是不懂：照<a href="method.html#ai">學習方法頁的範本</a>問 Gemini 這類 AI 家教，或看<a href="method.html#videos">中文開放式課程影片</a>。</li>
+<li>懂了以後回來做該單元的小考，確認自己真的會寫。</li>
+</ol>
+</div>
 <h2 id="u0">0. 中山離散怎麼考</h2>
 <table>
 <thead>
@@ -272,7 +280,196 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p class="admonition-title">一句話重點</p>
 <p>所有計數題都在問兩件事：<strong>東西有沒有區別</strong>、<strong>順序重不重要</strong>。先回答這兩個問題，就知道要用哪個公式。</p>
 </div>
-<h3 id="u1-1">1.1 四個基本模型</h3>
+<h3 id="u1-0">1.0 觀念課：先用小例子把每種情況列出來</h3>
+<p>看公式之前，先用最小的例子把所有可能<strong>一個一個寫出來</strong>。自己數得出來，公式才會有意義；考試時忘了公式，也能用這個方法救回來。</p>
+<h4 id="abc-2">從 A、B、C 選 2 個</h4>
+<p>把四種規則下的所有結果全部列出來：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>不能重複</th>
+<th>可以重複</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>順序重要</strong>（AB 和 BA 算不同）</td>
+<td>AB、AC、BA、BC、CA、CB → <strong>6</strong></td>
+<td>AA、AB、AC、BA、BB、BC、CA、CB、CC → <strong>9</strong></td>
+</tr>
+<tr>
+<td><strong>順序不重要</strong>（AB 和 BA 算同一個）</td>
+<td>{A,B}、{A,C}、{B,C} → <strong>3</strong></td>
+<td>AA、AB、AC、BB、BC、CC → <strong>6</strong></td>
+</tr>
+</tbody>
+</table>
+<p>再看公式是怎麼從這些數字來的：</p>
+<ul>
+<li><strong>排列 6</strong>：第一個位置有 3 種選法，選完剩 2 種給第二個位置：<span class="arithmatex">\(3\times2=6=P(3,2)\)</span>。</li>
+<li><strong>重複排列 9</strong>：每個位置都有 3 種，互不影響：<span class="arithmatex">\(3\times3=3^2\)</span>。</li>
+<li><strong>組合 3</strong>：看排列的 6 個，{A,B} 被數了兩次（AB 和 BA）。<strong>每一組都被重複數了 <span class="arithmatex">\(2!\)</span> 次</strong>，所以 <span class="arithmatex">\(6\div2!=3=\binom32\)</span>。<ul>
+<li>一般來說，選出的 <span class="arithmatex">\(r\)</span> 個東西有 <span class="arithmatex">\(r!\)</span> 種排法，所以 <strong>組合 ＝ 排列 ÷ <span class="arithmatex">\(r!\)</span></strong>，也就是 <span class="arithmatex">\(\binom nr=\dfrac{P(n,r)}{r!}\)</span>。</li>
+</ul>
+</li>
+<li><strong>重複組合 6</strong>：這個最不直觀，下面專門講。</li>
+</ul>
+<h4 id="_2">重複組合：星星與隔板</h4>
+<p>「從 A、B、C 可重複選 2 個、不管順序」其實只是在問：<strong>A 拿幾個、B 拿幾個、C 拿幾個，加起來是 2</strong>。</p>
+<p>用 ★ 代表拿到的東西，用 ｜ 把三種字母隔開（3 種字母之間要 2 根隔板）：</p>
+<table>
+<thead>
+<tr>
+<th>選法</th>
+<th>星星與隔板</th>
+<th>讀法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AA</td>
+<td>★★ ｜ ｜</td>
+<td>A 拿 2 個</td>
+</tr>
+<tr>
+<td>AB</td>
+<td>★ ｜ ★ ｜</td>
+<td>A 拿 1、B 拿 1</td>
+</tr>
+<tr>
+<td>AC</td>
+<td>★ ｜ ｜ ★</td>
+<td>A 拿 1、C 拿 1</td>
+</tr>
+<tr>
+<td>BB</td>
+<td>｜ ★★ ｜</td>
+<td>B 拿 2 個</td>
+</tr>
+<tr>
+<td>BC</td>
+<td>｜ ★ ｜ ★</td>
+<td>B 拿 1、C 拿 1</td>
+</tr>
+<tr>
+<td>CC</td>
+<td>｜ ｜ ★★</td>
+<td>C 拿 2 個</td>
+</tr>
+</tbody>
+</table>
+<p>每一種選法，剛好對應「2 顆星和 2 根隔板排成一列」的一種排法。總共 4 個位置，選 2 個放星星：<span class="arithmatex">\(\binom42=6\)</span> ✓。</p>
+<p><strong>一般化</strong>：<span class="arithmatex">\(n\)</span> 種東西可重複選 <span class="arithmatex">\(r\)</span> 個 → <span class="arithmatex">\(r\)</span> 顆星、<span class="arithmatex">\(n-1\)</span> 根隔板，共 <span class="arithmatex">\(n+r-1\)</span> 個位置，選 <span class="arithmatex">\(r\)</span> 個放星：</p>
+<div class="arithmatex">\[\binom{n+r-1}{r}\]</div>
+<p><strong>這跟「相同的球放進不同的箱子」是同一件事</strong>：球是星星，箱子之間的牆是隔板。113 Q1 的「9 顆相同的球放進 3 個桶子」就是 9 顆星、2 根隔板，沒有限制時有 <span class="arithmatex">\(\binom{11}{2}=55\)</span> 種。</p>
+<h4 id="2-2">球放箱子：用 2 顆球、2 個箱子全部列出來</h4>
+<table>
+<thead>
+<tr>
+<th>情況</th>
+<th>全部列出</th>
+<th>個數</th>
+<th>用公式驗證</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>球不同（a、b）、箱子不同（1 號、2 號）</td>
+<td>ab｜空、空｜ab、a｜b、b｜a</td>
+<td>4</td>
+<td><span class="arithmatex">\(k^n=2^2=4\)</span></td>
+</tr>
+<tr>
+<td>球相同（●●）、箱子不同</td>
+<td>●●｜空、●｜●、空｜●●</td>
+<td>3</td>
+<td><span class="arithmatex">\(\binom{n+k-1}{k-1}=\binom31=3\)</span></td>
+</tr>
+<tr>
+<td>球不同、箱子相同（箱子沒編號）</td>
+<td>{ab}、{a}{b}</td>
+<td>2</td>
+<td><span class="arithmatex">\(S(2,1)+S(2,2)=1+1=2\)</span></td>
+</tr>
+<tr>
+<td>球相同、箱子相同</td>
+<td>2、1＋1</td>
+<td>2</td>
+<td>2 的分割數</td>
+</tr>
+</tbody>
+</table>
+<p><strong>怎麼判斷「相不相同」</strong>：問自己「把兩顆球（或兩個箱子）互換，算不算新的放法？」算新的就是不同，不算就是相同。</p>
+<table>
+<thead>
+<tr>
+<th>題目裡的說法</th>
+<th>判斷</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不同顏色的彈珠、編號 1 到 9 的元素、每個人、每個質因數</td>
+<td>球<strong>不同</strong></td>
+</tr>
+<tr>
+<td>相同的白球、書（不分哪本）、一包一包的糖、買幾盒肉</td>
+<td>球<strong>相同</strong></td>
+</tr>
+<tr>
+<td>不同的罐子、甲乙丙三組、函數的值 a、b、c、字串的第幾個位置</td>
+<td>箱子<strong>不同</strong></td>
+</tr>
+<tr>
+<td>分成 3 組（組沒有名字）、因數分解（不計順序）</td>
+<td>箱子<strong>相同</strong></td>
+</tr>
+</tbody>
+</table>
+<h4 id="_3">「每箱至少一個」為什麼要用排容</h4>
+<p>3 顆不同的球（a、b、c）放進 2 個不同的箱子，每箱至少一顆：</p>
+<ol>
+<li>全部放法：每顆球選一個箱子，<span class="arithmatex">\(2^3=8\)</span>。</li>
+<li>不合格的：全在 1 號（1 種）、全在 2 號（1 種）。</li>
+<li>答案：<span class="arithmatex">\(8-2=6\)</span>。</li>
+</ol>
+<p>箱子多的時候，「1 號空」和「2 號空」這兩種情況會<strong>重疊</strong>（1、2 號都空），直接相減會扣太多，所以要用排容（單元 2）把扣太多的加回來：</p>
+<div class="arithmatex">\[k^n-\binom k1(k-1)^n+\binom k2(k-2)^n-\cdots\]</div>
+<p>把上面那 6 種的箱子編號拿掉（變成「分成 2 組」），a｜bc 和 bc｜a 就變成同一種，每種都被數了 <span class="arithmatex">\(2!\)</span> 次，所以 <span class="arithmatex">\(6\div2!=3\)</span>，這就是 <span class="arithmatex">\(S(3,2)\)</span>：{a}{bc}、{b}{ac}、{c}{ab}。</p>
+<p><strong>這就是為什麼 Stirling 數 <span class="arithmatex">\(S(n,k)\)</span> ＝ onto 的個數 ÷ <span class="arithmatex">\(k!\)</span></strong>，跟「組合 ＝ 排列 ÷ <span class="arithmatex">\(r!\)</span>」是同一個道理：拿掉編號，就要除以編號的排法數。</p>
+<h4 id="_4">看到計數題，先問三個問題</h4>
+<ol>
+<li>被分配的東西（球）有沒有區別？</li>
+<li>分配到的地方（箱子）有沒有區別？或是：順序重不重要？</li>
+<li>有沒有「至少一個」「最多幾個」「偶數個」這類限制？</li>
+</ol>
+<p>前兩個問題決定用表格裡哪一格的公式，第三個問題決定要不要加上排容（單元 2）或生成函數（單元 3）。</p>
+<div class="admonition trap">
+<p class="admonition-title">常卡住的地方</p>
+<ul>
+<li><strong>字串、排成一列、密碼、信號都是「順序重要」</strong>。把每個位置想成一個箱子，每個箱子放一個字母。</li>
+<li><strong>函數 <span class="arithmatex">\(f:A\to B\)</span> 就是球放箱子</strong>：<span class="arithmatex">\(A\)</span> 的元素是不同的球，<span class="arithmatex">\(B\)</span> 的元素是不同的箱子；onto 就是每個箱子至少一顆。</li>
+<li><strong>不確定用哪個公式時，把題目的數字改小</strong>（例如改成 2 顆球、2 個箱子），自己列出來數，再看哪個公式算得出一樣的答案。這招考試時也能用。</li>
+</ul>
+</div>
+<h4 id="_5">換你試試（答案就在下面，先遮住）</h4>
+<p><strong>T-1.</strong> 4 個人裡選 2 個當正、副班長，有幾種？選 2 個當代表（沒有職位）呢？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>正副班長有順序：<span class="arithmatex">\(4\times3=12\)</span>。代表沒順序：<span class="arithmatex">\(12\div2!=6=\binom42\)</span>。</p>
+</details>
+<p><strong>T-2.</strong> 買 3 杯飲料，店裡有紅茶、綠茶兩種（可以重複），有幾種買法？用星星與隔板畫出來。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>3 顆星、1 根隔板，4 個位置選 1 個放隔板：<span class="arithmatex">\(\binom41=4\)</span>。★★★｜（3 紅）、★★｜★、★｜★★、｜★★★（3 綠）。</p>
+</details>
+<p><strong>T-3.</strong> 「把 5 本不同的書分給 2 個人，每人至少一本」和「把 5 本不同的書分成 2 堆」差在哪？答案各是多少？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>分給 2 個人：人有名字，箱子不同 → onto：<span class="arithmatex">\(2^5-2=30\)</span>。分成 2 堆：堆沒有名字，箱子相同 → <span class="arithmatex">\(30\div2!=15=S(5,2)\)</span>。</p>
+</details>
+<h3 id="u1-1">1.1 公式整理：四個基本模型</h3>
 <p>從 <span class="arithmatex">\(n\)</span> 種東西裡選 <span class="arithmatex">\(r\)</span> 個：</p>
 <table>
 <thead>

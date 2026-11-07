@@ -178,6 +178,13 @@ window.EXAMS.push({
      "link": "notes/ds.html#u1-1"
     }
    ],
+   "review": [
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "id": "d03"
   },
   {
@@ -207,6 +214,28 @@ window.EXAMS.push({
      "read": "教材 1.1",
      "practice": "例題 112 Q5a、115 Q2、114 Q6b",
      "link": "notes/os.html#u1-1"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈計數：四個基本模型、球放箱子〉的小考（昨天學的）",
+     "link": "notes/discrete.html#u1-1"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈效能：CPU time 與加權 CPI〉的小考（昨天學的）",
+     "link": "notes/arch.html#u1-1"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈C 程式：運算子優先順序與位元運算〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u1-1"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "id": "d04"
@@ -240,6 +269,31 @@ window.EXAMS.push({
      "link": "notes/ds.html#u1-2"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈計數：四個基本模型、球放箱子〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u1-1"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈效能：CPU time 與加權 CPI〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u1-1"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈C 程式：運算子優先順序與位元運算〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u1-1"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d05"
   },
   {
@@ -271,6 +325,31 @@ window.EXAMS.push({
      "link": "notes/os.html#u1-2"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈計數：插空法與不相鄰〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u1-3"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈效能：Amdahl 定律〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u1-2"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈行程、PCB、IPC〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u1-1"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d06"
   },
   {
@@ -281,7 +360,7 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "離散：本輪錯題重做＋小考錯題",
-     "read": "只看題目重做，用「1–3–7」節奏",
+     "read": "只看題目重做，做錯題本上今天到期的題目",
      "practice": "他校同主題考古題 10 題，限時",
      "link": "notes/method.html#quiz"
     },
@@ -302,7 +381,12 @@ window.EXAMS.push({
      "link": "notes/method.html#quiz"
     }
    ],
-   "note": "複習日不學新東西，目標是把這輪的錯題清掉。",
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
+   "note": "複習日不學新東西，目標是把這輪的錯題清掉。這一天重做的是約 1 週前學的單元，正好是第二次間隔複習。",
    "tag": "週考",
    "id": "d07"
   },
@@ -333,6 +417,31 @@ window.EXAMS.push({
      "read": "教材 1.3–1.4",
      "practice": "例題 115 Q5b、114 Q1；做單元 1 小考",
      "link": "notes/ds.html#u1-3"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈計數：多項式係數、字串、回文〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u1-4"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈效能：時脈的限制、make the common case fast〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u1-3"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈C 程式：指標與遞迴追蹤〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u1-2"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
     }
    ],
    "id": "d08"
@@ -366,6 +475,31 @@ window.EXAMS.push({
      "link": "notes/os.html#u2"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈排容：公式與倍數問題〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u2-1"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈Cache：位址切割〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u2-1"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈CPU 排程計算〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u1-2"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d09"
   },
   {
@@ -395,6 +529,31 @@ window.EXAMS.push({
      "read": "教材 2.1–2.2：背複雜度表",
      "practice": "例題 115 Q9、113 Q3、112 Q2",
      "link": "notes/ds.html#u2-1"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈排容：上限整數解、錯排〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u2-3"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈Cache：總位元數〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u2-2"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈C 程式：static 與迴圈〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u1-3"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
     }
    ],
    "id": "d10"
@@ -428,6 +587,31 @@ window.EXAMS.push({
      "link": "notes/os.html#u3"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈生成函數：OGF 建模與卷積〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u3-1"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈Cache：hit／miss 追蹤〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u2-3"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈同步〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u2"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d11"
   },
   {
@@ -438,7 +622,7 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "離散：本輪錯題重做＋小考錯題",
-     "read": "只看題目重做，用「1–3–7」節奏",
+     "read": "只看題目重做，做錯題本上今天到期的題目",
      "practice": "他校同主題考古題 10 題，限時",
      "link": "notes/method.html#quiz"
     },
@@ -459,7 +643,12 @@ window.EXAMS.push({
      "link": "notes/method.html#quiz"
     }
    ],
-   "note": "複習日不學新東西，目標是把這輪的錯題清掉。",
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
+   "note": "複習日不學新東西，目標是把這輪的錯題清掉。這一天重做的是約 1 週前學的單元，正好是第二次間隔複習。",
    "tag": "週考",
    "id": "d12"
   },
@@ -490,6 +679,31 @@ window.EXAMS.push({
      "read": "教材 2.3–2.4",
      "practice": "例題 111 Q4、114 Q2；做單元 2 小考",
      "link": "notes/ds.html#u2-3"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈生成函數：EGF 與奇偶限制〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u3-2"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈Cache：AMAT 與記憶體停頓〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u2-4"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈排序：比較表與逆序數〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u2-1"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
     }
    ],
    "id": "d13"
@@ -523,6 +737,31 @@ window.EXAMS.push({
      "link": "notes/os.html#u4-1"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈生成函數：解遞迴〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u3-3"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈Cache：觀念題與逆向工程〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u2-5"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈死結〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u3"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d14"
   },
   {
@@ -552,6 +791,31 @@ window.EXAMS.push({
      "read": "教材 3.1–3.2",
      "practice": "例題 115 Q6、111 Q3",
      "link": "notes/ds.html#u3-1"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈生成函數：OGF／EGF 混合練習〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u3"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈虛擬記憶體：位元切割、page table 大小〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u3-1"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈heap sort 與 radix sort〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u2-3"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
     }
    ],
    "id": "d15"
@@ -585,6 +849,31 @@ window.EXAMS.push({
      "link": "notes/os.html#u4-2"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈遞迴：最後一步分類法〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u4-1"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈TLB 與 page table 模擬〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u3-2"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈位址繫結與 TLB〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u4-1"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d16"
   },
   {
@@ -595,7 +884,7 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "離散：本輪錯題重做＋小考錯題",
-     "read": "只看題目重做，用「1–3–7」節奏",
+     "read": "只看題目重做，做錯題本上今天到期的題目",
      "practice": "他校同主題考古題 10 題，限時",
      "link": "notes/method.html#quiz"
     },
@@ -616,7 +905,12 @@ window.EXAMS.push({
      "link": "notes/method.html#quiz"
     }
    ],
-   "note": "複習日不學新東西，目標是把這輪的錯題清掉。",
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
+   "note": "複習日不學新東西，目標是把這輪的錯題清掉。這一天重做的是約 1 週前學的單元，正好是第二次間隔複習。",
    "tag": "週考",
    "id": "d17"
   },
@@ -647,6 +941,31 @@ window.EXAMS.push({
      "read": "教材 3.3：四種旋轉",
      "practice": "例題 114 Q3；自己插入 10 個數練旋轉",
      "link": "notes/ds.html#u3-3"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈遞迴：特徵方程（相異、重根、複數根）〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u4-2"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈Pipeline：時間計算〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u4-1"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈樹：走訪重建與 BST〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u3-1"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
     }
    ],
    "id": "d18"
@@ -680,6 +999,31 @@ window.EXAMS.push({
      "link": "notes/os.html#u4-3"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈遞迴：非齊次與換元〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u4-3"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈Pipeline：hazard 與 forwarding〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u4-2"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈記憶體計算模板〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u4-2"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d19"
   },
   {
@@ -709,6 +1053,31 @@ window.EXAMS.push({
      "read": "教材 3.4",
      "practice": "例題 112 Q3；做單元 3 小考",
      "link": "notes/ds.html#u3-4"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈遞迴：混合練習〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u4"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈Pipeline：forwarding 值不值得〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u4-2"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈AVL tree〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u3-3"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
     }
    ],
    "id": "d20"
@@ -742,6 +1111,31 @@ window.EXAMS.push({
      "link": "notes/os.html#u5-1"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈數論：gcd 與線性組合〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u5-1"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈分支：penalty 與額外 CPI〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u5-1"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈置換、thrashing、copy-on-write〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u4-3"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d21"
   },
   {
@@ -752,7 +1146,7 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "離散：本輪錯題重做＋小考錯題",
-     "read": "只看題目重做，用「1–3–7」節奏",
+     "read": "只看題目重做，做錯題本上今天到期的題目",
      "practice": "他校同主題考古題 10 題，限時",
      "link": "notes/method.html#quiz"
     },
@@ -773,7 +1167,12 @@ window.EXAMS.push({
      "link": "notes/method.html#quiz"
     }
    ],
-   "note": "複習日不學新東西，目標是把這輪的錯題清掉。",
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
+   "note": "複習日不學新東西，目標是把這輪的錯題清掉。這一天重做的是約 1 週前學的單元，正好是第二次間隔複習。",
    "tag": "週考",
    "id": "d22"
   },
@@ -804,6 +1203,31 @@ window.EXAMS.push({
      "read": "教材單元 4",
      "practice": "例題 115 Q7；做單元 4 小考",
      "link": "notes/ds.html#u4"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈數論：歐幾里得演算法與模反元素〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u5-2"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈分支：深 pipeline、dual-path、2-bit〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u5"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈Optimal BST（DP）〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u3-4"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
     }
    ],
    "id": "d23"
@@ -837,6 +1261,31 @@ window.EXAMS.push({
      "link": "notes/os.html#u5-2"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈數論：質數、同餘、Fermat〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u5-3"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈多執行緒：fixed 與 data-dependent 切換〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u6-1"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈檔案系統〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u5-1"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d24"
   },
   {
@@ -866,6 +1315,31 @@ window.EXAMS.push({
      "read": "教材單元 5",
      "practice": "例題 115 Q8；做單元 5 小考",
      "link": "notes/ds.html#u5"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈鴿籠與 Erdős–Szekeres〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u6-1"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈多執行緒：linked list 題〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u6"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈雜湊〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u4"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
     }
    ],
    "id": "d25"
@@ -899,6 +1373,31 @@ window.EXAMS.push({
      "link": "notes/os.html#u6"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈Ramsey：R(3,3)=6〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u6-3"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈DRAM refresh〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u7-1"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈磁碟與 I/O〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u5-2"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d26"
   },
   {
@@ -909,7 +1408,7 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "離散：本輪錯題重做＋小考錯題",
-     "read": "只看題目重做，用「1–3–7」節奏",
+     "read": "只看題目重做，做錯題本上今天到期的題目",
      "practice": "他校同主題考古題 10 題，限時",
      "link": "notes/method.html#quiz"
     },
@@ -930,7 +1429,12 @@ window.EXAMS.push({
      "link": "notes/method.html#quiz"
     }
    ],
-   "note": "複習日不學新東西，目標是把這輪的錯題清掉。",
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
+   "note": "複習日不學新東西，目標是把這輪的錯題清掉。這一天重做的是約 1 週前學的單元，正好是第二次間隔複習。",
    "tag": "週考",
    "id": "d27"
   },
@@ -961,6 +1465,31 @@ window.EXAMS.push({
      "read": "教材 6.1",
      "practice": "例題 114 Q4、111 Q2",
      "link": "notes/ds.html#u6-1"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈關係的計數〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u7-1"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈資料重用與迴圈順序〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u7-2"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈圖：MST〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u5"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
     }
    ],
    "id": "d28"
@@ -994,6 +1523,31 @@ window.EXAMS.push({
      "link": "notes/os.html#u7"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈函數、二元運算、邏輯與證明〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u7-2"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈GPU、VLIW、superscalar、array processor〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u8-1"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈保護、安全與其他〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u6"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d29"
   },
   {
@@ -1023,6 +1577,31 @@ window.EXAMS.push({
      "read": "教材 6.2",
      "practice": "例題 112 Q4、113 Q4、Q2；做單元 6 小考",
      "link": "notes/ds.html#u6-2"
+    }
+   ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈有限狀態機〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u8"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈記憶體一致性（SC）〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u8-3"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈Catalan 數〉的重點，寫不出來就重看",
+     "link": "notes/ds.html#u6-1"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
     }
    ],
    "id": "d30"
@@ -1056,6 +1635,31 @@ window.EXAMS.push({
      "link": "notes/os.html#mix"
     }
    ],
+   "review": [
+    {
+     "subject": "dm",
+     "text": "不看答案重做〈機率與期望值〉的小考（約 3 天前學的）",
+     "link": "notes/discrete.html#u9"
+    },
+    {
+     "subject": "ca",
+     "text": "不看答案重做〈ISA 與算術〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u9"
+    },
+    {
+     "subject": "osds",
+     "text": "回想〈名詞填空總表（第一輪）〉的重點，寫不出來就重看",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    },
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
    "id": "d31"
   },
   {
@@ -1066,7 +1670,7 @@ window.EXAMS.push({
      "subject": "dm",
      "time": "上午",
      "title": "離散：本輪錯題重做＋小考錯題",
-     "read": "只看題目重做，用「1–3–7」節奏",
+     "read": "只看題目重做，做錯題本上今天到期的題目",
      "practice": "他校同主題考古題 10 題，限時",
      "link": "notes/method.html#quiz"
     },
@@ -1087,7 +1691,12 @@ window.EXAMS.push({
      "link": "notes/method.html#quiz"
     }
    ],
-   "note": "複習日不學新東西，目標是把這輪的錯題清掉。",
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    }
+   ],
+   "note": "複習日不學新東西，目標是把這輪的錯題清掉。這一天重做的是約 1 週前學的單元，正好是第二次間隔複習。",
    "tag": "週考",
    "id": "d32"
   },
@@ -1115,6 +1724,16 @@ window.EXAMS.push({
      "title": "作業系統與資料結構 107 年",
      "read": "計時作答，然後立刻訂正",
      "practice": "OS 名詞不會的加進閃卡"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "note": "如果網站上沒有這一年，改做他校同科考古題。",
@@ -1147,6 +1766,16 @@ window.EXAMS.push({
      "practice": "OS 名詞不會的加進閃卡"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "note": "如果網站上沒有這一年，改做他校同科考古題。",
    "tag": "考古題",
    "id": "d34"
@@ -1175,6 +1804,16 @@ window.EXAMS.push({
      "title": "作業系統與資料結構 105 年",
      "read": "計時作答，然後立刻訂正",
      "practice": "OS 名詞不會的加進閃卡"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "note": "如果網站上沒有這一年，改做他校同科考古題。",
@@ -1210,6 +1849,16 @@ window.EXAMS.push({
      "link": "notes/os.html#u7"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "tag": "補強",
    "id": "d36"
   },
@@ -1237,6 +1886,16 @@ window.EXAMS.push({
      "title": "作業系統與資料結構 104 年",
      "read": "計時作答，然後立刻訂正",
      "practice": "OS 名詞不會的加進閃卡"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "note": "如果網站上沒有這一年，改做他校同科考古題。",
@@ -1269,6 +1928,16 @@ window.EXAMS.push({
      "practice": "OS 名詞不會的加進閃卡"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "note": "如果網站上沒有這一年，改做他校同科考古題。",
    "tag": "考古題",
    "id": "d38"
@@ -1297,6 +1966,16 @@ window.EXAMS.push({
      "title": "作業系統與資料結構 102 年",
      "read": "計時作答，然後立刻訂正",
      "practice": "OS 名詞不會的加進閃卡"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "note": "如果網站上沒有這一年，改做他校同科考古題。",
@@ -1332,6 +2011,16 @@ window.EXAMS.push({
      "link": "notes/os.html#u7"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "tag": "補強",
    "id": "d40"
   },
@@ -1359,6 +2048,16 @@ window.EXAMS.push({
      "title": "作業系統與資料結構 101 年",
      "read": "計時作答，然後立刻訂正",
      "practice": "OS 名詞不會的加進閃卡"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "note": "如果網站上沒有這一年，改做他校同科考古題。",
@@ -1391,6 +2090,16 @@ window.EXAMS.push({
      "practice": "OS 名詞不會的加進閃卡"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "note": "如果網站上沒有這一年，改做他校同科考古題。",
    "tag": "考古題",
    "id": "d42"
@@ -1419,6 +2128,16 @@ window.EXAMS.push({
      "title": "他校 OS＋資結一份（計時）",
      "read": "同上",
      "practice": "訂正並記入錯題本"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "optional": true,
@@ -1454,6 +2173,16 @@ window.EXAMS.push({
      "link": "notes/os.html#u7"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "tag": "補強",
    "id": "d44"
   },
@@ -1484,6 +2213,16 @@ window.EXAMS.push({
      "read": "同上",
      "practice": "同上",
      "link": "notes/os.html#u0"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "note": "隔了 5 週以上再做，是在練間隔複習：寫得出來才是真的會。",
@@ -1519,6 +2258,16 @@ window.EXAMS.push({
      "link": "notes/os.html#u0"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "note": "隔了 5 週以上再做，是在練間隔複習：寫得出來才是真的會。",
    "tag": "重做",
    "id": "d46"
@@ -1550,6 +2299,16 @@ window.EXAMS.push({
      "read": "同上",
      "practice": "同上",
      "link": "notes/os.html#u0"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "note": "隔了 5 週以上再做，是在練間隔複習：寫得出來才是真的會。",
@@ -1585,6 +2344,16 @@ window.EXAMS.push({
      "link": "notes/os.html#u0"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "note": "隔了 5 週以上再做，是在練間隔複習：寫得出來才是真的會。",
    "tag": "重做",
    "id": "d48"
@@ -1613,6 +2382,16 @@ window.EXAMS.push({
      "title": "OS／資結錯題全部重做",
      "read": "只看題目重做",
      "practice": "還是錯的標 ★★"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "tag": "複習",
@@ -1647,6 +2426,16 @@ window.EXAMS.push({
      "link": "notes/ds.html#u2-1"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "tag": "複習",
    "id": "d50"
   },
@@ -1674,6 +2463,16 @@ window.EXAMS.push({
      "title": "作業系統與資料結構 109 年",
      "read": "同上",
      "practice": "記錄每科分數"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "note": "模考日就是考試日的預演，連午餐和休息時間都照考試那天安排。",
@@ -1706,6 +2505,16 @@ window.EXAMS.push({
      "practice": "同主題補 5 題"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "tag": "檢討",
    "id": "d52"
   },
@@ -1733,6 +2542,16 @@ window.EXAMS.push({
      "title": "作業系統與資料結構 108 年",
      "read": "同上",
      "practice": "記錄每科分數"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "note": "模考日就是考試日的預演，連午餐和休息時間都照考試那天安排。",
@@ -1765,6 +2584,16 @@ window.EXAMS.push({
      "practice": "同主題補 5 題"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "tag": "檢討",
    "id": "d54"
   },
@@ -1793,6 +2622,16 @@ window.EXAMS.push({
      "title": "他校 OS＋資結一份（計時）",
      "read": "選沒做過的一份",
      "practice": "訂正"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "optional": true,
@@ -1828,6 +2667,16 @@ window.EXAMS.push({
      "link": "notes/os.html#u7"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "tag": "衝刺",
    "id": "d56"
   },
@@ -1855,6 +2704,16 @@ window.EXAMS.push({
      "title": "作業系統與資料結構 115 年",
      "read": "同上",
      "practice": "記錄每科分數"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "note": "115 年是新格式（離散改成簡答＋計算、計結按章節出題），116 年很可能沿用。這份讀教材時看過，現在整份限時重考，練的是格式和速度。",
@@ -1887,6 +2746,16 @@ window.EXAMS.push({
      "practice": "同主題補 5 題"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "tag": "檢討",
    "id": "d58"
   },
@@ -1914,6 +2783,16 @@ window.EXAMS.push({
      "title": "OS／資結 ★★ 題目",
      "read": "只做標 ★★ 的",
      "practice": "仍然錯的抄到「考前小卡」"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "tag": "複習",
@@ -1948,6 +2827,16 @@ window.EXAMS.push({
      "link": "notes/os.html#u7"
     }
    ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
+    }
+   ],
    "tag": "衝刺",
    "id": "d60"
   },
@@ -1975,6 +2864,16 @@ window.EXAMS.push({
      "title": "OS／資結 10 題限時",
      "read": "同上",
      "practice": "檢討"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "optional": true,
@@ -2005,6 +2904,16 @@ window.EXAMS.push({
      "title": "考前小卡：OS／資結",
      "read": "整理成 1–2 頁",
      "practice": "準備准考證、身分證、文具"
+    }
+   ],
+   "review": [
+    {
+     "text": "錯題本：重做右上角日期是今天的題目"
+    },
+    {
+     "subject": "osds",
+     "text": "OS 名詞閃卡 10 分鐘",
+     "link": "notes/os.html#u7"
     }
    ],
    "tag": "衝刺",
@@ -2141,7 +3050,7 @@ window.EXAMS.push({
   },
   {
    "title": "主動回想＋間隔複習，不要重讀",
-   "body": "研究評價最高的讀書方法是練習測驗和分散練習，重讀和畫重點效果最差。所以每個單元都先做小考再看答案、錯題用 1–3–7 天節奏重做、每 5 天一次週考。",
+   "body": "研究評價最高的讀書方法是練習測驗和分散練習，重讀和畫重點效果最差。所以每個單元都先做小考再看答案、錯題在 3、7、14 天後各重做一次、每 5 天一次週考。",
    "src": [
     9
    ]

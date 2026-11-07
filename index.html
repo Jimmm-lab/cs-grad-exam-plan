@@ -167,6 +167,20 @@ section.view { display: grid; gap: 28px; }
 .day.exam { background: var(--accent); color: var(--card); }
 .day.exam .dt small { color: var(--card); opacity: .8; }
 
+/* review */
+.review { padding: 14px 20px; border-top: 1px solid var(--line); }
+.review ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.review li { display: grid; grid-template-columns: 84px 1fr; gap: 8px; font-size: 14px; align-items: start; }
+.review li .subj { justify-self: start; }
+.review li span:last-child { min-width: 0; }
+.review a { color: inherit; text-underline-offset: 3px; text-decoration-color: var(--line); }
+.review a:hover { color: var(--accent); }
+.flow { margin: 0; padding: 12px 20px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.flow b { color: var(--ink); }
+.flow a { margin-left: 4px; }
+.rv-line { font-size: 12px; color: var(--muted); }
+@media (max-width: 560px) { .review li { grid-template-columns: 1fr; gap: 2px; } }
+
 /* notes */
 .ncards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
 .ncard { display: grid; gap: 6px; align-content: start; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; text-decoration: none; color: var(--ink); min-width: 0; }
@@ -368,6 +382,13 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
         (b.read ? "<dt>讀</dt><dd>" + esc(b.read) + "</dd>" : "") + (b.practice ? "<dt>練</dt><dd>" + esc(b.practice) + "</dd>" : "") + "</dl>" + (b.link ? '<a class="nlink" href="' + esc(b.link) + '">開教材 →</a>' : "") + "</div></div>";
     }).join("") + "</div>";
   }
+  function renderReview(t) {
+    if (!t.review || !t.review.length) return "";
+    return '<div class="review"><div class="eyebrow">間隔複習・睡前 30 分鐘</div><ul>' + t.review.map(function (r) {
+      var tx = r.link ? '<a href="' + esc(r.link) + '">' + esc(r.text) + "</a>" : esc(r.text);
+      return "<li>" + (r.subject ? subjChip(r.subject) : '<span class="subj" data-s="method">錯題</span>') + "<span>" + tx + "</span></li>";
+    }).join("") + "</ul></div>";
+  }
   function renderToday() {
     var el = document.getElementById("v-today");
     var st = stats();
@@ -394,7 +415,8 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
     } else {
       var t = slot.task, isDone = !!state.done[t.id];
       html += '<div class="today-card"><div class="today-head"><div><div class="date">' + label + "・" + iso(slot.date).replace(/-/g, "/") + "（" + WD[slot.date.getDay()] + "）・" + esc(phaseOf(t.phase).name) + "期</div><h3>" + esc(t.title) + '</h3></div><button class="done-btn" id="today-done" aria-pressed="' + isDone + '">' + (isDone ? "✓ 今天完成了" : "標記今天完成") + "</button></div>" +
-        renderBlocks(t) + (t.note ? '<p class="note">' + esc(t.note) + "</p>" : "") + '<p class="note" style="background:transparent">睡前 15 分鐘：翻錯題本，把今天的錯題補進去。</p></div>';
+        renderBlocks(t) + (t.note ? '<p class="note">' + esc(t.note) + "</p>" : "") + renderReview(t) +
+        '<p class="flow">每個區塊的流程：<b>10 分鐘</b>白紙回想昨天 → <b>讀</b>觀念課與例題 → <b>練</b>小考與考古題（限時） → <b>訂正</b>寫錯因進錯題本。<a href="notes/method.html#daily">為什麼這樣排</a></p></div>';
     }
 
     // milestones
@@ -471,7 +493,8 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
           html += '<div class="day' + (d ? " done" : "") + isToday + '" id="day-' + k + '"><input type="checkbox" class="chk" id="c-' + esc(t.id) + '" data-id="' + esc(t.id) + '"' + (d ? " checked" : "") + ' aria-label="' + md(s.date) + ' 完成">' + dt +
             '<div class="main"><div class="t">' + esc(t.title) + (t.tag ? ' <span class="tag">' + esc(t.tag) + "</span>" : "") + (t.optional ? ' <span class="tag opt">選做</span>' : "") + msTags + '</div><div class="items">' +
             t.blocks.map(function (b) { var tt = b.link ? '<a href="' + esc(b.link) + '">' + esc(b.title) + "</a>" : esc(b.title); return "<div>" + subjChip(b.subject) + "<span>" + tt + (b.practice ? "・" + esc(b.practice) : "") + "</span></div>"; }).join("") +
-            "</div>" + (t.note ? '<div style="font-size:13px;color:var(--muted)">' + esc(t.note) + "</div>" : "") + "</div></div>";
+            "</div>" + (t.note ? '<div style="font-size:13px;color:var(--muted)">' + esc(t.note) + "</div>" : "") +
+            (t.review && t.review.length ? '<div class="rv-line">複習：' + t.review.map(function (r) { return esc(r.text.replace(/（.*?）/g, "")); }).join("；") + "</div>" : "") + "</div></div>";
         }
       });
       html += "</div></div>";

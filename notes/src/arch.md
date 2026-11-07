@@ -8,6 +8,11 @@
 !!! key "一句話重點"
     計結考的是**會不會算**加上**能不能講出取捨**。每一題的背後只有幾條公式：CPU time、Amdahl、AMAT、位址切割、pipeline 的 stall／penalty。把公式和「為什麼」都講清楚，就能拿到大部分分數。
 
+!!! key "看不懂的時候"
+    1. 先讀單元開頭的「觀念課」：用小例子把每種情況列出來，再推出公式。目前有觀念課的是離散單元 1、計結單元 2。
+    2. 還是不懂：照[學習方法頁的範本](method.html#ai)問 Gemini 這類 AI 家教，或看[中文開放式課程影片](method.html#videos)。
+    3. 懂了以後回來做該單元的小考，確認自己真的會寫。
+
 ## 0. 中山計結怎麼考 {#u0}
 
 | 主題 | 111 | 112 | 113 | 114 | 115 | 重要度 |
@@ -98,7 +103,99 @@ $$\text{Speedup}=\frac{1}{(1-f)+\dfrac{f}{s}}\qquad\text{上限}=\frac{1}{1-f}$$
 !!! key "一句話重點"
     位址切成 **tag | index | offset** 三段。offset 由 block 大小決定，index 由「有幾個 set」決定，剩下的都是 tag。會切位址，cache 題就會一半。
 
-### 2.1 位址切割三步驟 {#u2-1}
+### 2.0 觀念課：cache 到底在做什麼 {#u2-0}
+
+#### 一個比喻
+
+主記憶體像**圖書館**：很大，但每次去都要走很久（約 100 個 cycle）。cache 像你的**書桌**：很小，但伸手就拿得到（約 1 個 cycle）。
+
+CPU 要一筆資料時，先看書桌：
+
+- 書桌上有 → **hit**，馬上拿到。
+- 書桌上沒有 → **miss**，跑一趟圖書館拿回來，順便放在書桌上，下次就有了。
+
+#### 為什麼一次搬一整塊（block）
+
+你去圖書館拿一本書時，很可能等一下也會用到**旁邊那幾本**（程式讀陣列時，讀完 `a[0]` 接著就讀 `a[1]`）。所以乾脆一次把一整排搬回來，這一整排就叫 **block**。這叫利用**空間區域性**。
+
+剛用過的書很可能等一下又要用（迴圈一直用同一個變數），所以放在書桌上不急著收，這叫**時間區域性**。cache 就是靠這兩種區域性才有用。
+
+#### 最關鍵的問題：某個 block 在 cache 裡要放哪一格？
+
+| 規則 | 比喻 | 名稱 |
+|---|---|---|
+| 每個 block 只能放固定的一格 | 對號入座 | direct-mapped（1-way） |
+| 每個 block 只能放某一區，但區裡哪格都可以 | 分區自由座 | $n$-way set-associative |
+| 每個 block 哪一格都可以放 | 全部自由座 | fully associative |
+
+「區」就叫 **set**。direct-mapped 是每個 set 只有 1 格；fully associative 是整個 cache 只有 1 個 set。
+
+#### 位址怎麼決定放哪裡：一個 8 位元的小例子
+
+假設：位址 8 位元、block 4 bytes、cache 有 4 個 set、direct-mapped。
+
+**第一步：offset**。一個 block 有 4 個 byte，要分出「這是 block 裡的第幾個 byte」需要 2 位元（00、01、10、11）。所以**最右邊 2 位元是 offset**。
+
+**第二步：index**。有 4 個 set，要 2 位元決定「放第幾格」。所以**再往左 2 位元是 index**。
+
+**第三步：tag**。剩下的 4 位元。很多不同的 block 都會被分到同一格，tag 用來記「現在這格放的是哪一個 block」。
+
+例子：位址 45 ＝ `0010 1101`
+
+| tag | index | offset |
+|---|---|---|
+| `0010` | `11` | `01` |
+
+讀法：去 3 號格（index `11`），看那格存的 tag 是不是 `0010`。是 → hit，取那個 block 的第 1 個 byte（offset `01`）；不是或那格是空的 → miss。
+
+再看位址 109 ＝ `0110 1101`：index 也是 `11`，但 tag 是 `0110`。所以 45 和 109 **搶同一格**。
+
+依序讀 45、109、45：
+
+1. 45：3 號格是空的 → miss，放入 tag `0010`
+2. 109：3 號格是 `0010` 不是 `0110` → miss，把 45 的 block 踢掉，換成 `0110`
+3. 45：3 號格是 `0110` → 又 miss
+
+其他三格明明都空著，卻一直 miss，這叫 **conflict miss**。改成 2-way（每個 set 有 2 格），45 和 109 就能同時放在同一個 set 裡，第三次就 hit 了。
+
+!!! key "為什麼 offset 在最右邊、index 在中間"
+    相鄰的 byte（例如 44、45、46、47）只差最右邊兩位，所以在**同一個 block**。相鄰的 block（例如 44 和 48）只差 index，所以會放到**不同格**，不會互相搶位置。這樣排，讀陣列時就不會一直 conflict。
+
+#### 三種 miss（3C）
+
+| 種類 | 原因 | 怎麼減少 |
+|---|---|---|
+| compulsory | 第一次用到，cache 裡本來就沒有 | 加大 block（一次多搬一點） |
+| capacity | cache 整個太小，裝不下正在用的資料 | 加大 cache |
+| conflict | cache 還有空位，卻因為搶同一個 set 被踢掉 | 提高 associativity |
+
+#### AMAT 的直覺
+
+平均拿一筆資料要等多久？每次都一定要先看書桌（hit time），如果沒找到，還要再加上跑圖書館的時間（miss penalty），而沒找到的機率是 miss rate：
+
+$$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
+
+hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles。miss rate 只有 5%，平均時間卻是 hit 的 6 倍，所以降低 miss rate 這麼重要。
+
+#### 換你試試
+
+**T-1.** 8 位元位址、block 2 bytes、8 個 set、direct-mapped。offset、index、tag 各幾位元？位址 90 的 tag、index、offset 是多少？
+
+??? quiz "看答案"
+    offset 1、index 3、tag 4。90 ＝ `0101 1010` → tag `0101`、index `101`（5 號格）、offset `0`。
+
+**T-2.** 同一個 cache，依序讀 90、91、26。哪幾次 hit？
+
+??? quiz "看答案"
+    91 ＝ `0101 1011`，和 90 同 tag、同 index，只差 offset → 同一個 block，**hit**。26 ＝ `0001 1010` → index `101` 一樣、tag `0001` 不同 → miss，把 90 那塊踢掉。結果 M、H、M。
+
+**T-3.** 為什麼 fully associative 沒有 index？
+
+??? quiz "看答案"
+    整個 cache 只有 1 個 set，不用選「放哪一區」，所以 index 是 0 位元，除了 offset 以外全部都是 tag。代價是查詢時要跟每一格的 tag 比較。
+
+
+### 2.1 公式整理：位址切割三步驟 {#u2-1}
 
 1. **offset 位元** $=\log_2(\text{block 大小，byte})$
 2. **set 數** $=\dfrac{\text{cache 容量}}{\text{block 大小}\times\text{associativity}}$，**index 位元** $=\log_2(\text{set 數})$
