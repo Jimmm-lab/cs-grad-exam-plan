@@ -75,6 +75,10 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
 
 同一個 process 裡的 threads **共用**程式碼、全域資料、開啟的檔案，但各自有自己的 **program counter、暫存器、stack**。像同一個廚房裡的幾個廚師，共用冰箱和爐子，但各自做到不同步驟。
 
+!!! read "還不懂？看別人怎麼講"
+    - **影片與講義**：[清大周志遠・作業系統（YouTube 播放清單）](https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ)，[講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999)的 Ch3 Processes、Ch4 Threads、Ch5 CPU Scheduling。
+    - **中文筆記**：[清大 OCW 作業系統筆記](https://hackmd.io/@ZYuC2002/OSnote_OCW)（看周志遠課程整理的）；[作業系統及系統類型](https://saberliou.github.io/PrepareCSEMaster/OperatingSystem/Chapter01.html)（multiprogramming、time-sharing 等名詞，資工所考生整理）。
+
 #### 換你試試
 
 **T-1.** P1、P2、P3 同時到達，執行時間 3、6、1，SJF 的平均等待時間？
@@ -201,6 +205,10 @@ semaphore 是一個整數，像停車場門口的「剩餘車位」看板：
 
 **生產者－消費者**用三個 semaphore：`empty`（空格數，初始 $n$）、`full`（有資料的格數，初始 0）、`mutex`（保護 buffer，初始 1）。生產者先 `wait(empty)` 再放資料再 `signal(full)`，消費者反過來。
 
+!!! read "還不懂？看別人怎麼講"
+    - **講義**：[周志遠講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999)的 Ch6 Process Synchronization。裡面的 producer／consumer 例子，counter 最後可能是 4、5 或 6（正確應該是 5），跟這節 `counter++` 的交錯是同一件事。
+    - **影片**：[周志遠・作業系統播放清單](https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ)的 Process Synchronization 單元。
+
 #### 換你試試
 
 **T-1.** counter ＝ 0，兩個 thread 各做一次 `counter++`，沒有 lock，最後可能是多少？
@@ -276,6 +284,10 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 可用 $10-4-2=4$。P2 還需要 3 ≤ 4 → P2 可以做完，還回 2 份 → 可用 6。P1 還需要 4 ≤ 6 → 也能做完。存在順序 P2 → P1，所以是 **safe**。
 
 判斷方法就是：**反覆找一個「還需要 ≤ 目前可用」的行程，讓它做完、把它持有的加回可用**。全部都能做完就是 safe。
+
+!!! read "還不懂？看別人怎麼講"
+    - **講義**：[周志遠講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999)的 Ch7 Deadlocks。考試也可能出多種資源的矩陣版 Banker's algorithm，步驟跟這節一樣：反覆找「還需要 ≤ 可用」的行程。
+    - **影片**：[周志遠・作業系統播放清單](https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ)的 Deadlocks 單元。
 
 #### 換你試試
 
@@ -368,6 +380,11 @@ $$0.999\times100+0.001\times10^7\approx10100\text{ ns}$$
 #### thrashing
 
 行程太多、每個人分到的 frame 太少，每個行程都在不斷 page fault、等磁碟，CPU 使用率反而掉下來。作業系統看到 CPU 閒著，又加更多行程進來，情況更糟。解法是用 working set 估計每個行程需要多少 frame，不夠時**減少**同時執行的行程數。
+
+!!! read "還不懂？看別人怎麼講"
+    - **講義**：[周志遠講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999)的 Ch8 Memory Management、Ch9 Virtual Memory。
+    - **延伸練習**：恐龍書的經典參考字串 7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1（3 個 frame），自己算完對答案：FIFO 15 次、LRU 12 次、OPT 9 次。再試 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5 用 FIFO：3 個 frame 是 9 次、4 個 frame 反而 10 次，這就是 **Belady's anomaly**。
+    - **中文文章**：iThome 鐵人賽[談 FIFO、LRU、OPT 的文章](https://ithelp.ithome.com.tw/articles/10373783)。
 
 #### 換你試試
 
@@ -496,6 +513,11 @@ i-node 像一本書的**目錄頁**：前面幾格直接寫「第 1 章在第幾
 
 **XOR 為什麼能救回資料**：資料 1100 和 1010，parity ＝ 1100 XOR 1010 ＝ 0110。第二顆壞了，把剩下的 XOR 起來：1100 XOR 0110 ＝ 1010，就是原本的資料。RAID 6 再多一份不同算法的校驗（P＋Q），可以同時壞兩顆。
 
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記（資工所考生整理）**：[I/O 運作方式、Interrupt 與 DMA](https://saberliou.github.io/PrepareCSEMaster/OperatingSystem/Chapter02.html)：polling、interrupt、DMA 的比較，對應 5.3 的 I/O 名詞。
+    - **講義**：[周志遠講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999)的檔案系統與 secondary-storage 章節。
+    - **練習（英文）**：恐龍書官網的 [Mass-Storage 習題](https://www.os-book.com/OS10/regular-exercises/PDF-regular-exer-dir/11.pdf)。
+
 #### 換你試試
 
 **T-1.** 10000 RPM 的硬碟，平均 rotational latency？
@@ -612,6 +634,9 @@ i-node 像一本書的**目錄頁**：前面幾格直接寫「第 1 章在第幾
 | stealth virus | 修改系統中可能偵測到它的部分，躲避防毒 |
 
 這一單元的分數幾乎都在**名詞填空**，看懂意思後，把英文名詞做成閃卡背起來。
+
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記**：〈[OS 筆記 Chapter 14: Protection](https://hackmd.io/izkd4JwXRwub_ZmhSMTlNw)〉：保護的原則、存取矩陣、ACL 與 capability 的實作、權限撤銷，就是這節表格的完整版。
 
 #### 換你試試
 

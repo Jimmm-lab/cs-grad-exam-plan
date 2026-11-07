@@ -84,6 +84,11 @@ $$\text{新時間}=(1-f)+\frac fs,\qquad\text{Speedup}=\frac{1}{(1-f)+\frac fs}$
 
 這就是「make the common case fast」：佔比大的部分（$f$ 大）才值得加速。
 
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記（資工所考生整理）**：[了解與評估計算機的效能](https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter03.html)：CPU time 三因子、用 MIPS 評估效能的謬誤、Amdahl's Law、make the common case fast，順序跟這節一樣，還多了效能平均（算數、幾何平均）的整理。
+    - **中文筆記**：〈[Ch1 Computer Abstraction and Technology](https://hackmd.io/@Toast1001/BJJ9X2GAyl)〉的 1-6 Performance。
+    - **影片**：[清大黃婷婷・計算機結構](https://ocw.nthu.edu.tw/courses/13)（課程前段講效能）。
+
 #### 換你試試
 
 **T-1.** 100 條指令：70 條 ALU（CPI 1）、30 條 load（CPI 4），平均 CPI？
@@ -239,6 +244,10 @@ CPU 要一筆資料時，先看書桌：
 $$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
 
 hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles。miss rate 只有 5%，平均時間卻是 hit 的 6 倍，所以降低 miss rate 這麼重要。
+
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記（資工所考生整理）**：[容量大且速度快的記憶體](https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter06.html)：區域性、direct-mapped、**快取位元計算**（valid ＋ tag ＋ data，跟 2.2 一樣）、寫入策略、快取效能。
+    - **影片**：[清大黃婷婷・計算機結構](https://ocw.nthu.edu.tw/courses/13) 第 7 週 Large and fast: exploiting memory hierarchy。
 
 #### 換你試試
 
@@ -431,6 +440,10 @@ page table 要替**每一個虛擬頁**留一格。32 位元位址、4 KB page�
 
 page table 放在記憶體裡，所以每次存取資料都要**先讀一次記憶體查表**，等於慢一倍。解法是把最近用過的幾筆對照放進 CPU 裡一個很小、很快的表，叫 **TLB**。它就是 page table 的 cache，所以 cache 學到的 hit、miss、associativity 全部適用。
 
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記**：中大計組 [Ch5 筆記的 Virtual Memory 部分](https://hackmd.io/@jcxyisncu1092/co5c)：page table、page fault、TLB hit／miss 的處理和 TLB 與 cache 的互動。
+    - **作業系統角度**：[清大周志遠・作業系統講義](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999) Ch8 Memory Management、Ch9 Virtual Memory。這一單元和 OS 的記憶體單元可以一起讀。
+
 #### 換你試試
 
 用上面的 page table（VPN 0→2、VPN 5→0）。
@@ -569,6 +582,11 @@ add 在第 3 個 cycle 結束時其實已經算出 x1 了，只是還沒寫回�
 
 **load 不一樣**：load 的資料要到 MEM（第 4 個 cycle）結束才從記憶體拿到。下一條指令在第 4 個 cycle 就要用，資料還沒出來，forwarding 也來不及，**一定要停 1 個 cycle**（插入一個 bubble）。這就是 load-use hazard。
 
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記**：〈[pipeline data hazard](https://hackmd.io/@fu_myN6KTla21R5GiHie3w/SJd7n-Rkc)〉：forwarding unit 的判斷條件（EX/MEM、MEM/WB 的 Rd 等於下一條的 Rs／Rt 時就 forward），配 COD 的 datapath 圖。
+    - **中文筆記（資工所考生整理）**：[處理器：資料路徑與控制單元](https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter04.html)：先看懂單週期 datapath 的元件，pipeline 圖會好讀很多。
+    - **影片**：[清大黃婷婷・計算機結構](https://ocw.nthu.edu.tw/courses/13) 第 6 週 Enhancing performance with pipelining。
+
 #### 換你試試
 
 **T-1.** 10 條指令、5 級 pipeline、每級 200 ps。pipeline 和非 pipeline（每條 1000 ps）各要多久？
@@ -676,6 +694,10 @@ $$\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty
 
 - **1-bit**（記住上一次的結果）：離開時猜錯一次；下次重新進迴圈時，它記得「上次沒跳」，又猜錯一次。第一輪錯 1 次，之後每輪錯 2 次，共 **5 次**。
 - **2-bit**（要連錯兩次才改變預測）：離開時猜錯一次，但只從「強烈跳」退到「有點想跳」，下次進迴圈還是猜跳。每輪只錯 1 次，共 **3 次**。
+
+!!! read "還不懂？看別人怎麼講"
+    - **影片**：[清大黃婷婷・計算機結構](https://ocw.nthu.edu.tw/courses/13) 第 6 週 pipelining 單元（對應 COD 第 4 章，control hazard 和分支預測在同一章）。
+    - **英文**：[ETH Digital Design & Computer Architecture 2025](https://safari.ethz.ch/ddca/spring2025/doku.php?id=start) 的 superscalar 與 branch prediction 講次。114 Q3（dual-path、confidence estimator）就是這門課的題型。
 
 #### 換你試試
 
@@ -795,6 +817,10 @@ ADD 和 LD 相鄰（距離 1 條指令），相隔 $N$ 個 cycle，必須 $\ge4$
 
 switch-on-stall 需要的 thread 比較少，因為不會讓「其實可以繼續跑」的 thread 被迫讓位。
 
+!!! read "還不懂？看別人怎麼講"
+    - **英文講義**：Onur Mutlu〈[Fine-Grained Multithreading](https://safari.ethz.ch/architecture/fall2020/lib/exe/fetch.php?media=onur-comparch-fall2020-lecture28-fgmt-afterlecture.pdf)〉（ETH 計算機結構第 28 講）。112、114 年的多執行緒題就是這門課的風格。
+    - **練習**：[MIT 6.823 Problem Set 10](https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf)（[解答](https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf)）有跟 112 Q3、114 Q5 一樣的 fixed／data-dependent switching 題目。
+
 #### 換你試試
 
 同樣的迴圈，LD 改成 6 個 cycle。
@@ -890,6 +916,10 @@ for i in 0..2:
 
 **迴圈順序決定誰的 RI 小**。考題要你選迴圈順序、分配 SRAM，原則是：RI 小於 SRAM 容量的資料才留得住，留得住的資料就不用一直回 DRAM 讀。
 
+!!! read "還不懂？看別人怎麼講"
+    - **英文**：〈[Retrospective: RAIDR](https://arxiv.org/abs/2306.16024)〉（Mutlu 團隊）：114 Q1.2「70% 的列可以 256 ms 才 refresh」就是 RAIDR 的想法：把列依保存時間分組，各組用不同的 refresh 頻率。
+    - **練習**：[ETH 計算機結構考古題（附詳解）](https://safari.ethz.ch/architecture/fall2022/doku.php?id=exams)，可以找 DRAM refresh 相關的題目練習。
+
 #### 換你試試
 
 **T-1.** 4 個 bank × 1024 列，每次 refresh 佔 bus 5 ns，64 ms 一輪，使用率？
@@ -982,6 +1012,10 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
 #### 頻寬撐不撐得住
 
 運算再快，資料送不進來也沒用。需要的頻寬 ＝ 每秒運算次數 × 每次運算要從記憶體讀幾個 byte。這個值超過記憶體頻寬，運算單元就會空等。
+
+!!! read "還不懂？看別人怎麼講"
+    - **英文影片與講義**：[ETH Digital Design & Computer Architecture 2025](https://safari.ethz.ch/ddca/spring2025/doku.php?id=start) 的 VLIW、SIMD（vector／array processor）兩講，114 Q6 的比較題就出自這裡。
+    - **英文文章**：Russ Cox〈[Hardware Memory Models](https://research.swtch.com/hwmm)〉用 litmus test（就是這節 P1、P2 那種小程式）解釋 sequential consistency，例子寫得非常清楚。
 
 #### 換你試試
 
@@ -1076,6 +1110,11 @@ $$(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\tex
 
 - **RISC**：每條指令都簡單、一樣長，像標準化的零件，流水線每一站的工作量平均，容易 pipeline。
 - **PC-relative**：「往後跳 3 條」而不是「跳到 1000 號」。整個程式搬到別的位址，「往後 3 條」還是對的；而且 3 這個數字很小，用很少位元就能寫進指令裡。
+
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記（資工所考生整理）**：[指令：計算機的語言](https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter01.html)：ISA、MIPS 暫存器與記憶體、程式的轉譯（組譯、連結、載入）。
+    - **中文筆記**：〈[浮點數運算和定點數操作](https://hackmd.io/Z-6yRXzrSp6z6TtH8QH-rw)〉的「浮點數表示法」一節，再往後是 NaN、無限大這些特殊值。
+    - **英文**：〈[IEEE 754 conversions](https://teaching.idallen.com/cst8214/08w/notes/ieee754_conversions.txt)〉一步一步手算十進位和 IEEE 754 互換，適合練習。
 
 #### 換你試試
 

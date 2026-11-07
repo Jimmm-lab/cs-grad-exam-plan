@@ -82,6 +82,9 @@ article th { background: var(--code); font-weight: 700; white-space: nowrap; }
 .admonition.key .admonition-title { color: var(--key); }
 .admonition.trap { border-left: 4px solid var(--trap); background: var(--trap-soft); }
 .admonition.trap .admonition-title { color: var(--trap); }
+.admonition.read { border-left: 4px solid var(--muted); }
+.admonition.read .admonition-title { color: var(--muted); }
+.admonition.read ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 details.quiz { border-style: dashed; }
 details.quiz > summary { cursor: pointer; color: var(--accent); margin: 0; list-style: revert; }
 details.quiz[open] > summary { margin-bottom: 8px; }
@@ -313,6 +316,14 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 f(2): 回來，印 2</code></pre>
 <p>輸出 <code>2 1 1 2</code>。<strong>每一層呼叫都有自己的 n</strong>，回來之後 n 還是原本的值。</p>
 <p><strong>static 變數</strong>不一樣：整個程式只有一份，每次呼叫都看到同一個，而且只在第一次初始化。一般的區域變數每次呼叫都重新建立。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>完整的優先順序表</strong>：cppreference〈<a href="https://zh.cppreference.com/w/c/language/operator_precedence">C 運算子優先順序</a>〉（中文）。</li>
+<li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10369199">講指標算術的文章</a>：用指標加減存取陣列元素。</li>
+<li><strong>自己驗證</strong>：把考古題的程式打進電腦跑一次，是最快抓到「自以為懂」的方法。</li>
+</ul>
+</div>
 <h4 id="_5">換你試試</h4>
 <p><strong>T-1.</strong> <code>6 &amp; 3</code>、<code>6 | 3</code>、<code>6 ^ 3</code>、<code>6 &lt;&lt; 1</code> 各是多少？</p>
 <details class="quiz">
@@ -670,6 +681,12 @@ f(2): 回來，印 2</code></pre>
 <h4 id="_6">穩定性為什麼重要</h4>
 <p><strong>穩定（stable）</strong>：值相同的元素，排序後保持原本的先後順序。</p>
 <p>例如先依姓名排好，再依成績排序。如果用穩定的排序，同分的人還會維持姓名順序；不穩定的排序可能把同分的人打亂。radix sort 從個位數排到最高位，每一輪都<strong>必須穩定</strong>，前一輪排好的順序才不會被破壞。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>動畫</strong>：<a href="https://visualgo.net/zh/sorting">VisuAlgo 排序（中文）</a>：選一種排序、輸入考古題的數字，一步一步看每次比較和交換。insertion、quick、merge、radix 都有。</li>
+</ul>
+</div>
 <h4 id="_7">換你試試</h4>
 <p><strong>T-1.</strong> 2, 4, 1, 3 用 insertion sort 要 swap 幾次？</p>
 <details class="quiz">
@@ -875,6 +892,13 @@ f(2): 回來，印 2</code></pre>
 1</code></pre>
 <p>3 的左邊高 2、右邊高 0，不平衡；新節點在「左子樹的左邊」→ LL 情況 → 對 3 右旋。旋轉後中間值 2 變成根，<strong>inorder 仍然是 1, 2, 3</strong>，旋轉不會破壞 BST 的順序。</p>
 <p>如果插入順序是 1、3、2，新節點在「右子樹的左邊」（RL），要轉兩次，結果一樣是 2 當根、1 和 3 在兩邊。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>動畫</strong>：<a href="https://visualgo.net/en/bst">VisuAlgo BST／AVL</a>：可以切換成 AVL tree，插入數字時會標出哪個節點不平衡、做了哪種旋轉。</li>
+<li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/@erictsai1224tw/AVL_tree">AVL Tree library</a>〉分別寫出 LL、RR、LR、RL 四種情況的旋轉程式碼。</li>
+</ul>
+</div>
 <h4 id="_10">換你試試</h4>
 <p><strong>T-1.</strong> 樹：A 的左子 B、右子 C；B 的左子 D、右子 E。寫出 preorder、inorder、postorder。</p>
 <details class="quiz">
@@ -1029,6 +1053,12 @@ f(2): 回來，印 2</code></pre>
 <p>碰撞時不是固定走 1 格，而是走 <span class="arithmatex">\(h_2(k)\)</span> 格：第 <span class="arithmatex">\(i\)</span> 次探測位置是 <span class="arithmatex">\((h_1(k)+i\cdot h_2(k))\bmod M\)</span>。不同的 key 就算第一次撞在同一格，之後走的路線也不同，不會擠成一團。</p>
 <p><span class="arithmatex">\(h_2\)</span> 不能是 0（不然永遠原地踏步），而且最好和 <span class="arithmatex">\(M\)</span> 互質，<span class="arithmatex">\(M\)</span> 取質數最簡單。</p>
 <p><strong>load factor</strong> <span class="arithmatex">\(\alpha=\frac{\text{放了幾個}}{M}\)</span>。<span class="arithmatex">\(\alpha\)</span> 越接近 1，碰撞越多、越慢。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>動畫</strong>：<a href="https://visualgo.net/en/hashtable">VisuAlgo Hash Table</a>：linear probing、quadratic probing、double hashing 都能自己輸入 key 看探測路線，可以直接拿 115 Q7 的數字試。</li>
+</ul>
+</div>
 <h4 id="_12">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7，各放在哪裡？</p>
 <details class="quiz">
@@ -1176,6 +1206,12 @@ f(2): 回來，印 2</code></pre>
 </ul>
 <h4 id="dijkstra">最短路徑：Dijkstra</h4>
 <p>從起點出發，每次挑「目前離起點最近、還沒確定」的點，確定它的距離，再用它更新鄰居的距離。前提是<strong>邊的權重不能是負的</strong>，不然「已經確定的最短距離」可能被後來的負邊推翻。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>動畫</strong>：<a href="https://visualgo.net/zh/mst">VisuAlgo 最小生成樹（中文）</a>：Kruskal 和 Prim 一步一步加邊，還有 Kruskal 為什麼正確的說明；<a href="https://visualgo.net/en/sssp">VisuAlgo 最短路徑</a>：Dijkstra 的過程。</li>
+</ul>
+</div>
 <h4 id="_14">換你試試</h4>
 <p>圖：A–B 4、A–C 1、B–C 2、B–D 5、C–D 8。</p>
 <p><strong>T-1.</strong> 從 A 開始用 Prim，依序加入哪些邊？總權重？</p>
@@ -1323,6 +1359,13 @@ f(2): 回來，印 2</code></pre>
 <p>看<strong>第一個左括號跟哪個右括號配對</strong>：它們中間有 <span class="arithmatex">\(k\)</span> 對，右邊還有 <span class="arithmatex">\(n-1-k\)</span> 對，兩邊各自任意合法排列。</p>
 <div class="arithmatex">\[C_n=\sum_{k=0}^{n-1}C_kC_{n-1-k}\]</div>
 <p><span class="arithmatex">\(C_3=C_0C_2+C_1C_1+C_2C_0=2+1+2=5\)</span> ✓。同樣的拆法也適用在「<span class="arithmatex">\(n\)</span> 個節點的二元樹有幾種形狀」（根的左子樹有 <span class="arithmatex">\(k\)</span> 個節點）和 stack 的輸出順序。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文投影片</strong>：台大資訊之芽〈<a href="https://www.csie.ntu.edu.tw/~sprout/algo2019/ppt_pdf/week07/dynamic_programming_1.pdf">動態規劃</a>〉從鋪骨牌推出費氏數列，跟這節 T-3 是同一題；台大演算法設計與分析（陳縕儂）的 <a href="https://www.csie.ntu.edu.tw/~yvchen/f111-ada/doc/220929_Dynamic-Programming-1.pdf">DP 投影片</a>。</li>
+<li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10221988">談硬幣問題的文章</a>（面額 1、2、5 湊 11 元）。注意它算的是「最少幾枚硬幣」，這節和 112 Q4 算的是「有幾種組合」，遞迴式不一樣，可以兩個對照著看。</li>
+</ul>
+</div>
 <h4 id="_16">換你試試</h4>
 <p><strong>T-1.</strong> 用 1、2、3 元湊 4 元（不計順序），有幾種？</p>
 <details class="quiz">

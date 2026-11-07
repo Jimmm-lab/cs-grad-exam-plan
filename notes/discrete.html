@@ -82,6 +82,9 @@ article th { background: var(--code); font-weight: 700; white-space: nowrap; }
 .admonition.key .admonition-title { color: var(--key); }
 .admonition.trap { border-left: 4px solid var(--trap); background: var(--trap-soft); }
 .admonition.trap .admonition-title { color: var(--trap); }
+.admonition.read { border-left: 4px solid var(--muted); }
+.admonition.read .admonition-title { color: var(--muted); }
+.admonition.read ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 details.quiz { border-style: dashed; }
 details.quiz > summary { cursor: pointer; color: var(--accent); margin: 0; list-style: revert; }
 details.quiz[open] > summary { margin-bottom: 8px; }
@@ -453,6 +456,13 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <li><strong>不確定用哪個公式時，把題目的數字改小</strong>（例如改成 2 顆球、2 個箱子），自己列出來數，再看哪個公式算得出一樣的答案。這招考試時也能用。</li>
 </ul>
 </div>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文筆記（資工所考生整理）</strong>：<a href="https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter03/01.html">基本計數原理</a>、<a href="https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter03/02.html">排列</a>、<a href="https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter03/03.html">組合與二項式定理</a>：公式與定理整理，適合讀完觀念課後對照。</li>
+<li><strong>中文文章</strong>：數學傳播〈<a href="https://web.math.sinica.edu.tw/media/pdf/d291/29104.pdf">一個題目多種解法：談排列組合的教學</a>〉，跟這節一樣用小數量的例子帶你判斷該用哪種算法，並比較排容和分類兩種解法。</li>
+</ul>
+</div>
 <h4 id="_5">換你試試（答案就在下面，先遮住）</h4>
 <p><strong>T-1.</strong> 4 個人裡選 2 個當正、副班長，有幾種？選 2 個當代表（沒有職位）呢？</p>
 <details class="quiz">
@@ -749,6 +759,13 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <li>「被 4 或 6 整除」的交集是被 <strong>12</strong>（最小公倍數）整除，不是 24。</li>
 </ul>
 </div>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文筆記（資工所考生整理）</strong>：<a href="https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter03/04.html">排容原理</a>，後半整理了 onto 個數和 Stirling 數 <span class="arithmatex">\(S(m,n)=\text{onto}(m,n)/n!\)</span>，跟單元 1 觀念課的推法一樣；<a href="https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter03/05.html">亂序（錯排）及禁位問題</a>。</li>
+<li><strong>中文文章</strong>：數學傳播〈<a href="https://web.math.sinica.edu.tw/media/pdf/d333/33304.pdf">排容原理</a>〉（張福春、洪偉誠），從來源講到各種應用。</li>
+</ul>
+</div>
 <h4 id="_9">換你試試</h4>
 <p><strong>T-1.</strong> 1 到 20 中能被 2 或 5 整除的有幾個？</p>
 <details class="quiz">
@@ -942,6 +959,14 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p>最後展開成 <span class="arithmatex">\(e^{ax}\)</span> 的和，因為 <span class="arithmatex">\(e^{ax}=\sum a^n\frac{x^n}{n!}\)</span>，所以 <span class="arithmatex">\(\frac{x^n}{n!}\)</span> 的係數就是 <span class="arithmatex">\(a^n\)</span>。</p>
 <p><strong>驗證一個小例子</strong>：長度 3 的二進位字串，1 出現偶數次：</p>
 <p><span class="arithmatex">\(\cosh x\cdot e^x=\frac{e^{2x}+1}{2}\)</span> → 長度 <span class="arithmatex">\(n\ge1\)</span> 時個數 <span class="arithmatex">\(\frac{2^n}{2}=2^{n-1}\)</span>，<span class="arithmatex">\(n=3\)</span> 是 4。列出來：000、011、101、110 ✓。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文筆記（資工所考生整理）</strong>：<a href="https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter04/01.html">一般生成函數</a>：展開式表和廣義二項式係數。</li>
+<li><strong>中文文章</strong>：數學傳播〈<a href="https://web.math.sinica.edu.tw/media/pdf/d323/32302.pdf">一般生成函數之應用</a>〉講計數、整數分割、解遞迴；〈<a href="https://www.math.sinica.edu.tw/media/pdf/d282/28205.pdf">生成函數與投信問題的解</a>〉有一個「從 ENGINE 取 4 個字母排列」的指數生成函數例題，跟 115 A1（ENGINEERING）一樣是有重複字母的排列。</li>
+<li><strong>影片</strong>：<a href="https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288">清大趙啟超・離散數學</a> 第 14R–17R 講 Generating Functions。</li>
+</ul>
+</div>
 <h4 id="_12">換你試試</h4>
 <p><strong>T-1.</strong> 兩種糖，每種最多拿 2 顆，總共拿 2 顆有幾種？寫出生成函數，看 <span class="arithmatex">\(x^2\)</span> 的係數。</p>
 <details class="quiz">
@@ -1174,6 +1199,13 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <li>求出公式後，一定要代 <span class="arithmatex">\(n=2\)</span> 或 3，跟遞迴直接算的數字比對。</li>
 </ul>
 </div>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文文章</strong>：數學傳播〈<a href="https://web.math.sinica.edu.tw/media/pdf/d334/33404.pdf">線性遞迴關係之求解（上）</a>〉講怎麼建立遞迴；〈<a href="https://web.math.sinica.edu.tw/media/pdf/d341/34104.pdf">（下）</a>〉講特徵方程、重根和常見的非齊次情況，跟這節的步驟一樣。</li>
+<li><strong>影片</strong>：<a href="https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288">清大趙啟超・離散數學</a> 第 12R–13R 講 Recurrence Relations。</li>
+</ul>
+</div>
 <h4 id="_16">換你試試</h4>
 <p><strong>T-1.</strong> 每次可以走 1、2 或 3 階，寫出遞迴與 <span class="arithmatex">\(a_1,a_2,a_3\)</span>，再算 <span class="arithmatex">\(a_4\)</span>。</p>
 <details class="quiz">
@@ -1367,6 +1399,13 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </ul>
 <p><strong>次方會循環</strong>：3 的次方 mod 7 依序是 3、2、6、4、5、1，然後重複。週期 6 剛好是 <span class="arithmatex">\(7-1\)</span>，這就是 Fermat 小定理：<span class="arithmatex">\(p\)</span> 是質數、<span class="arithmatex">\(p\nmid a\)</span> 時，<span class="arithmatex">\(a^{p-1}\equiv1\pmod p\)</span>。</p>
 <p>所以 <span class="arithmatex">\(3^{100}\bmod7\)</span>：<span class="arithmatex">\(100=6\times16+4\)</span>，<span class="arithmatex">\(3^{100}\equiv3^4\equiv4\)</span>。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文簡報</strong>：成大 ACM <a href="https://hackmd.io/@nckuacm/rJhRPee2U">第 14 週數論簡報</a>（同餘、gcd、擴展歐幾里得）。它用<strong>往前填表</strong>的方式求 <span class="arithmatex">\(ax+by=\gcd\)</span>（以 786 和 186 為例），跟這節「往回代」是同一件事的另一種寫法，兩種挑一種順手的練熟。</li>
+<li><strong>中文筆記</strong>：<a href="https://hackmd.io/@LeeShoWhaodian/2024-number-theory">數論（模逆元、費馬小定理、歐幾里得、裴蜀定理）</a>，偏程式競賽，證明寫得完整；<a href="https://hackmd.io/@NTNUCSIE112/DM109-2_3">歐幾里得演算法為什麼正確</a>（師大離散筆記）。</li>
+</ul>
+</div>
 <h4 id="_20">換你試試</h4>
 <p><strong>T-1.</strong> 用歐幾里得演算法算 <span class="arithmatex">\(\gcd(84,36)\)</span>。</p>
 <details class="quiz">
@@ -1524,6 +1563,15 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 </table>
 <p><strong>標籤一定兩兩不同</strong>：前面的數比後面小，後面的遞增長度至少多 1；前面比後面大，後面的遞減長度至少多 1。</p>
 <p>如果兩種長度都不超過 2，標籤只有 <span class="arithmatex">\(2\times2=4\)</span> 種（籠子），所以第 5 個數一定會讓某個長度變成 3。一般化：<span class="arithmatex">\(n^2+1\)</span> 個數一定有長度 <span class="arithmatex">\(n+1\)</span> 的單調子序列。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文筆記（資工所考生整理）</strong>：<a href="https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter02/06.html">鴿籠原理</a>。</li>
+<li><strong>中文文章</strong>：台大數學系〈<a href="https://episte.math.ntu.edu.tw/articles/mm/mm_02_4_07/index.html">鴿籠原理</a>〉，很多「籠子要自己設計」的例子。</li>
+<li><strong>英文</strong>：cut-the-knot〈<a href="https://www.cut-the-knot.org/pigeonhole/seq.shtml">Increasing or decreasing subsequence</a>〉用跟這節一樣的「標籤」證明 Erdős–Szekeres。</li>
+<li><strong>影片</strong>：<a href="https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288">清大趙啟超・離散數學</a> 第 5R 講 Pigeonhole Principle。</li>
+</ul>
+</div>
 <h4 id="_23">換你試試</h4>
 <p><strong>T-1.</strong> 至少要幾個人，才保證有 2 人同一天生日（一年以 366 天計）？</p>
 <details class="quiz">
@@ -1635,6 +1683,13 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p>判斷「不成立」只要<strong>舉一個反例</strong>；判斷「成立」要<strong>代數展開</strong>證明。先試小的數（0、1、2）找反例最快。</p>
 <h4 id="_28">良序原理和「最小反例」</h4>
 <p>良序原理：任何非空的正整數集合都有最小元素。證明題常用：假設有反例，取<strong>最小的反例</strong> <span class="arithmatex">\(m\)</span>，再證明比 <span class="arithmatex">\(m\)</span> 小的某個數也是反例，矛盾。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>影片</strong>：<a href="https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288">清大趙啟超・離散數學</a> 第 6R–8R 講 Relations。</li>
+<li><strong>中文筆記</strong>：師大離散〈<a href="https://hackmd.io/@NTNUCSIE112/DM109-2_3">遞迴與數學歸納法</a>〉，弱歸納、強歸納的寫法，可以配 114 Q2「用良序原理證明歸納法」一起看。</li>
+</ul>
+</div>
 <h4 id="_29">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\(A=\{1,2,3\}\)</span> 上的對稱關係有幾個？反身關係呢？</p>
 <details class="quiz">
@@ -1907,6 +1962,13 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <li>題目的語言先<strong>用中文翻譯一遍</strong>（例如「結尾是 11 或 01」＝「長度至少 2 且最後是 1」），常常會發現比看起來簡單。</li>
 </ul>
 </div>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文投影片</strong>：中山資工編譯器課程的 <a href="https://db.cse.nsysu.edu.tw/~changyi/slides/compiler-en/teacher/FSM.pdf">FSM 投影片</a>。它用「接受狀態」（雙圈）表示字串被接受，Grimaldi 和中山考題則用「輸出 1」表示，寫法不同，但<strong>狀態要記住什麼</strong>的設計方法完全一樣。</li>
+<li><strong>中文筆記</strong>：〈<a href="https://shihlonchen.gitbooks.io/automata/content/dfa.html">DFA 確定有限自動機</a>〉：轉移表的寫法。</li>
+</ul>
+</div>
 <h4 id="_31">換你試試</h4>
 <p><strong>T-1.</strong> 畫出辨識「以 11 結尾」的 FSM（輸入、輸出都是 {0,1}）。</p>
 <details class="quiz">
@@ -2034,6 +2096,13 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>小例子</strong>：兩人各 1 元（<span class="arithmatex">\(N=2\)</span>）：<span class="arithmatex">\(E_1=1+\frac12\times0+\frac12\times0=1\)</span>，一局就結束 ✓。</p>
 <p>你 1 元、對方 2 元（<span class="arithmatex">\(N=3\)</span>）：<span class="arithmatex">\(E_1=1+\frac12E_2\)</span>、<span class="arithmatex">\(E_2=1+\frac12E_1\)</span>，解得 <span class="arithmatex">\(E_1=2=1\times2\)</span>。</p>
 <p>一般解是 <span class="arithmatex">\(E_k=k(N-k)\)</span>，也就是<strong>兩人錢數相乘</strong>。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文文章</strong>：中研院數學媒體<a href="https://www.math.sinica.edu.tw/mathmedia/journals/4363">談賭徒輸光問題的文章</a>，把它看成有兩道吸收牆的隨機漫步；科學教育月刊〈<a href="https://www.sec.ntnu.edu.tw/uploads/asset/data/6256414d381784d09345be0d/42%E8%B7%8C%E8%B7%8C%E6%92%9E%E6%92%9E%E7%9A%84%E6%A9%9F%E7%8E%87.pdf">跌跌撞撞的機率</a>〉用「下一步走到哪」建立遞迴，跟這節推 <span class="arithmatex">\(E_k\)</span> 的方法一樣。</li>
+<li><strong>英文課本</strong>：<a href="https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-spring-2015/">MIT 6.042J</a> 的機率章節（免費 PDF）。</li>
+</ul>
+</div>
 <h4 id="_35">換你試試</h4>
 <p><strong>T-1.</strong> 擲兩顆骰子，總和是 8 的機率？</p>
 <details class="quiz">

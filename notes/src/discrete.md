@@ -132,6 +132,10 @@ $$k^n-\binom k1(k-1)^n+\binom k2(k-2)^n-\cdots$$
     - **函數 $f:A\to B$ 就是球放箱子**：$A$ 的元素是不同的球，$B$ 的元素是不同的箱子；onto 就是每個箱子至少一顆。
     - **不確定用哪個公式時，把題目的數字改小**（例如改成 2 顆球、2 個箱子），自己列出來數，再看哪個公式算得出一樣的答案。這招考試時也能用。
 
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記（資工所考生整理）**：[基本計數原理](https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter03/01.html)、[排列](https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter03/02.html)、[組合與二項式定理](https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter03/03.html)：公式與定理整理，適合讀完觀念課後對照。
+    - **中文文章**：數學傳播〈[一個題目多種解法：談排列組合的教學](https://web.math.sinica.edu.tw/media/pdf/d291/29104.pdf)〉，跟這節一樣用小數量的例子帶你判斷該用哪種算法，並比較排容和分類兩種解法。
+
 #### 換你試試（答案就在下面，先遮住）
 
 **T-1.** 4 個人裡選 2 個當正、副班長，有幾種？選 2 個當代表（沒有職位）呢？
@@ -364,6 +368,10 @@ $$|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|A\cap C|-|B\cap C|+|A\cap B\cap C|$$
     - 兩個以上的條件**同時**違反時要加回來。大部分考題這一項是 0（像上面的例子），但一定要檢查，不能省略。
     - 「被 4 或 6 整除」的交集是被 **12**（最小公倍數）整除，不是 24。
 
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記（資工所考生整理）**：[排容原理](https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter03/04.html)，後半整理了 onto 個數和 Stirling 數 $S(m,n)=\text{onto}(m,n)/n!$，跟單元 1 觀念課的推法一樣；[亂序（錯排）及禁位問題](https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter03/05.html)。
+    - **中文文章**：數學傳播〈[排容原理](https://web.math.sinica.edu.tw/media/pdf/d333/33304.pdf)〉（張福春、洪偉誠），從來源講到各種應用。
+
 #### 換你試試
 
 **T-1.** 1 到 20 中能被 2 或 5 整除的有幾個？
@@ -517,6 +525,11 @@ $e^{-x}=1-x+\frac{x^2}{2!}-\frac{x^3}{3!}+\cdots$，奇數次方變成負號。
 **驗證一個小例子**：長度 3 的二進位字串，1 出現偶數次：
 
 $\cosh x\cdot e^x=\frac{e^{2x}+1}{2}$ → 長度 $n\ge1$ 時個數 $\frac{2^n}{2}=2^{n-1}$，$n=3$ 是 4。列出來：000、011、101、110 ✓。
+
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記（資工所考生整理）**：[一般生成函數](https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter04/01.html)：展開式表和廣義二項式係數。
+    - **中文文章**：數學傳播〈[一般生成函數之應用](https://web.math.sinica.edu.tw/media/pdf/d323/32302.pdf)〉講計數、整數分割、解遞迴；〈[生成函數與投信問題的解](https://www.math.sinica.edu.tw/media/pdf/d282/28205.pdf)〉有一個「從 ENGINE 取 4 個字母排列」的指數生成函數例題，跟 115 A1（ENGINEERING）一樣是有重複字母的排列。
+    - **影片**：[清大趙啟超・離散數學](https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288) 第 14R–17R 講 Generating Functions。
 
 #### 換你試試
 
@@ -703,6 +716,10 @@ $a_n=2a_{n-1}+1$，$a_0=0$（$n$ 個盤子的河內塔步數）。
     - 初始值要從**題目定義**算，不要硬記。$a_0$ 常常是 1（空的情況算一種）。
     - 求出公式後，一定要代 $n=2$ 或 3，跟遞迴直接算的數字比對。
 
+!!! read "還不懂？看別人怎麼講"
+    - **中文文章**：數學傳播〈[線性遞迴關係之求解（上）](https://web.math.sinica.edu.tw/media/pdf/d334/33404.pdf)〉講怎麼建立遞迴；〈[（下）](https://web.math.sinica.edu.tw/media/pdf/d341/34104.pdf)〉講特徵方程、重根和常見的非齊次情況，跟這節的步驟一樣。
+    - **影片**：[清大趙啟超・離散數學](https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288) 第 12R–13R 講 Recurrence Relations。
+
 #### 換你試試
 
 **T-1.** 每次可以走 1、2 或 3 階，寫出遞迴與 $a_1,a_2,a_3$，再算 $a_4$。
@@ -880,6 +897,10 @@ $a\equiv b\pmod n$ 就是「$a$ 和 $b$ 除以 $n$ 餘數一樣」，像時鐘�
 
 所以 $3^{100}\bmod7$：$100=6\times16+4$，$3^{100}\equiv3^4\equiv4$。
 
+!!! read "還不懂？看別人怎麼講"
+    - **中文簡報**：成大 ACM [第 14 週數論簡報](https://hackmd.io/@nckuacm/rJhRPee2U)（同餘、gcd、擴展歐幾里得）。它用**往前填表**的方式求 $ax+by=\gcd$（以 786 和 186 為例），跟這節「往回代」是同一件事的另一種寫法，兩種挑一種順手的練熟。
+    - **中文筆記**：[數論（模逆元、費馬小定理、歐幾里得、裴蜀定理）](https://hackmd.io/@LeeShoWhaodian/2024-number-theory)，偏程式競賽，證明寫得完整；[歐幾里得演算法為什麼正確](https://hackmd.io/@NTNUCSIE112/DM109-2_3)（師大離散筆記）。
+
 #### 換你試試
 
 **T-1.** 用歐幾里得演算法算 $\gcd(84,36)$。
@@ -1010,6 +1031,12 @@ $\gcd(a,b)=\gcd(b,a\bmod b)$，一直做到餘數為 0。
 
 如果兩種長度都不超過 2，標籤只有 $2\times2=4$ 種（籠子），所以第 5 個數一定會讓某個長度變成 3。一般化：$n^2+1$ 個數一定有長度 $n+1$ 的單調子序列。
 
+!!! read "還不懂？看別人怎麼講"
+    - **中文筆記（資工所考生整理）**：[鴿籠原理](https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter02/06.html)。
+    - **中文文章**：台大數學系〈[鴿籠原理](https://episte.math.ntu.edu.tw/articles/mm/mm_02_4_07/index.html)〉，很多「籠子要自己設計」的例子。
+    - **英文**：cut-the-knot〈[Increasing or decreasing subsequence](https://www.cut-the-knot.org/pigeonhole/seq.shtml)〉用跟這節一樣的「標籤」證明 Erdős–Szekeres。
+    - **影片**：[清大趙啟超・離散數學](https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288) 第 5R 講 Pigeonhole Principle。
+
 #### 換你試試
 
 **T-1.** 至少要幾個人，才保證有 2 人同一天生日（一年以 366 天計）？
@@ -1118,6 +1145,10 @@ $f^{-1}(S)$ 讀作「**哪些元素被送進 $S$**」，不是反函數。題目
 #### 良序原理和「最小反例」
 
 良序原理：任何非空的正整數集合都有最小元素。證明題常用：假設有反例，取**最小的反例** $m$，再證明比 $m$ 小的某個數也是反例，矛盾。
+
+!!! read "還不懂？看別人怎麼講"
+    - **影片**：[清大趙啟超・離散數學](https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288) 第 6R–8R 講 Relations。
+    - **中文筆記**：師大離散〈[遞迴與數學歸納法](https://hackmd.io/@NTNUCSIE112/DM109-2_3)〉，弱歸納、強歸納的寫法，可以配 114 Q2「用良序原理證明歸納法」一起看。
 
 #### 換你試試
 
@@ -1263,6 +1294,10 @@ $|A|=n$，關係是 $n\times n$ 矩陣的子集。
     - 狀態數不是越多越好。先問「需要記住什麼」，記憶相同的情況就是同一個狀態。
     - 題目的語言先**用中文翻譯一遍**（例如「結尾是 11 或 01」＝「長度至少 2 且最後是 1」），常常會發現比看起來簡單。
 
+!!! read "還不懂？看別人怎麼講"
+    - **中文投影片**：中山資工編譯器課程的 [FSM 投影片](https://db.cse.nsysu.edu.tw/~changyi/slides/compiler-en/teacher/FSM.pdf)。它用「接受狀態」（雙圈）表示字串被接受，Grimaldi 和中山考題則用「輸出 1」表示，寫法不同，但**狀態要記住什麼**的設計方法完全一樣。
+    - **中文筆記**：〈[DFA 確定有限自動機](https://shihlonchen.gitbooks.io/automata/content/dfa.html)〉：轉移表的寫法。
+
 #### 換你試試
 
 **T-1.** 畫出辨識「以 11 結尾」的 FSM（輸入、輸出都是 {0,1}）。
@@ -1353,6 +1388,10 @@ $$E_k=1+\frac12E_{k-1}+\frac12E_{k+1},\quad E_0=E_N=0$$
 你 1 元、對方 2 元（$N=3$）：$E_1=1+\frac12E_2$、$E_2=1+\frac12E_1$，解得 $E_1=2=1\times2$。
 
 一般解是 $E_k=k(N-k)$，也就是**兩人錢數相乘**。
+
+!!! read "還不懂？看別人怎麼講"
+    - **中文文章**：中研院數學媒體[談賭徒輸光問題的文章](https://www.math.sinica.edu.tw/mathmedia/journals/4363)，把它看成有兩道吸收牆的隨機漫步；科學教育月刊〈[跌跌撞撞的機率](https://www.sec.ntnu.edu.tw/uploads/asset/data/6256414d381784d09345be0d/42%E8%B7%8C%E8%B7%8C%E6%92%9E%E6%92%9E%E7%9A%84%E6%A9%9F%E7%8E%87.pdf)〉用「下一步走到哪」建立遞迴，跟這節推 $E_k$ 的方法一樣。
+    - **英文課本**：[MIT 6.042J](https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-spring-2015/) 的機率章節（免費 PDF）。
 
 #### 換你試試
 

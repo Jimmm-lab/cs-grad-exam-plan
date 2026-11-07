@@ -86,6 +86,11 @@ f(2): 回來，印 2
 
 **static 變數**不一樣：整個程式只有一份，每次呼叫都看到同一個，而且只在第一次初始化。一般的區域變數每次呼叫都重新建立。
 
+!!! read "還不懂？看別人怎麼講"
+    - **完整的優先順序表**：cppreference〈[C 運算子優先順序](https://zh.cppreference.com/w/c/language/operator_precedence)〉（中文）。
+    - **中文文章**：iThome 鐵人賽[講指標算術的文章](https://ithelp.ithome.com.tw/articles/10369199)：用指標加減存取陣列元素。
+    - **自己驗證**：把考古題的程式打進電腦跑一次，是最快抓到「自以為懂」的方法。
+
 #### 換你試試
 
 **T-1.** `6 & 3`、`6 | 3`、`6 ^ 3`、`6 << 1` 各是多少？
@@ -291,6 +296,9 @@ max heap 的規則：**每個節點都比它的子節點大**，所以最大的�
 
 例如先依姓名排好，再依成績排序。如果用穩定的排序，同分的人還會維持姓名順序；不穩定的排序可能把同分的人打亂。radix sort 從個位數排到最高位，每一輪都**必須穩定**，前一輪排好的順序才不會被破壞。
 
+!!! read "還不懂？看別人怎麼講"
+    - **動畫**：[VisuAlgo 排序（中文）](https://visualgo.net/zh/sorting)：選一種排序、輸入考古題的數字，一步一步看每次比較和交換。insertion、quick、merge、radix 都有。
+
 #### 換你試試
 
 **T-1.** 2, 4, 1, 3 用 insertion sort 要 swap 幾次？
@@ -443,6 +451,10 @@ LSD radix sort：從個位數開始，每一輪依該位數**穩定地**分到 0
 
 如果插入順序是 1、3、2，新節點在「右子樹的左邊」（RL），要轉兩次，結果一樣是 2 當根、1 和 3 在兩邊。
 
+!!! read "還不懂？看別人怎麼講"
+    - **動畫**：[VisuAlgo BST／AVL](https://visualgo.net/en/bst)：可以切換成 AVL tree，插入數字時會標出哪個節點不平衡、做了哪種旋轉。
+    - **中文筆記**：〈[AVL Tree library](https://hackmd.io/@erictsai1224tw/AVL_tree)〉分別寫出 LL、RR、LR、RL 四種情況的旋轉程式碼。
+
 #### 換你試試
 
 **T-1.** 樹：A 的左子 B、右子 C；B 的左子 D、右子 E。寫出 preorder、inorder、postorder。
@@ -571,6 +583,9 @@ $h_2$ 不能是 0（不然永遠原地踏步），而且最好和 $M$ 互質，$
 
 **load factor** $\alpha=\frac{\text{放了幾個}}{M}$。$\alpha$ 越接近 1，碰撞越多、越慢。
 
+!!! read "還不懂？看別人怎麼講"
+    - **動畫**：[VisuAlgo Hash Table](https://visualgo.net/en/hashtable)：linear probing、quadratic probing、double hashing 都能自己輸入 key 看探測路線，可以直接拿 115 Q7 的數字試。
+
 #### 換你試試
 
 **T-1.** $M=7$、linear probing、$h(k)=k\bmod7$，依序插入 14、21、7，各放在哪裡？
@@ -649,6 +664,9 @@ $h_2$ 不能是 0（不然永遠原地踏步），而且最好和 $M$ 互質，$
 #### 最短路徑：Dijkstra
 
 從起點出發，每次挑「目前離起點最近、還沒確定」的點，確定它的距離，再用它更新鄰居的距離。前提是**邊的權重不能是負的**，不然「已經確定的最短距離」可能被後來的負邊推翻。
+
+!!! read "還不懂？看別人怎麼講"
+    - **動畫**：[VisuAlgo 最小生成樹（中文）](https://visualgo.net/zh/mst)：Kruskal 和 Prim 一步一步加邊，還有 Kruskal 為什麼正確的說明；[VisuAlgo 最短路徑](https://visualgo.net/en/sssp)：Dijkstra 的過程。
 
 #### 換你試試
 
@@ -736,6 +754,10 @@ $g(i,j)=g(i-1,j)+g(i,j-c_i)$：不用第 $i$ 種，或至少用一個第 $i$ 種
 $$C_n=\sum_{k=0}^{n-1}C_kC_{n-1-k}$$
 
 $C_3=C_0C_2+C_1C_1+C_2C_0=2+1+2=5$ ✓。同樣的拆法也適用在「$n$ 個節點的二元樹有幾種形狀」（根的左子樹有 $k$ 個節點）和 stack 的輸出順序。
+
+!!! read "還不懂？看別人怎麼講"
+    - **中文投影片**：台大資訊之芽〈[動態規劃](https://www.csie.ntu.edu.tw/~sprout/algo2019/ppt_pdf/week07/dynamic_programming_1.pdf)〉從鋪骨牌推出費氏數列，跟這節 T-3 是同一題；台大演算法設計與分析（陳縕儂）的 [DP 投影片](https://www.csie.ntu.edu.tw/~yvchen/f111-ada/doc/220929_Dynamic-Programming-1.pdf)。
+    - **中文文章**：iThome 鐵人賽[談硬幣問題的文章](https://ithelp.ithome.com.tw/articles/10221988)（面額 1、2、5 湊 11 元）。注意它算的是「最少幾枚硬幣」，這節和 112 Q4 算的是「有幾種組合」，遞迴式不一樣，可以兩個對照著看。
 
 #### 換你試試
 

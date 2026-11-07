@@ -82,6 +82,9 @@ article th { background: var(--code); font-weight: 700; white-space: nowrap; }
 .admonition.key .admonition-title { color: var(--key); }
 .admonition.trap { border-left: 4px solid var(--trap); background: var(--trap-soft); }
 .admonition.trap .admonition-title { color: var(--trap); }
+.admonition.read { border-left: 4px solid var(--muted); }
+.admonition.read .admonition-title { color: var(--muted); }
+.admonition.read ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 details.quiz { border-style: dashed; }
 details.quiz > summary { cursor: pointer; color: var(--accent); margin: 0; list-style: revert; }
 details.quiz[open] > summary { margin-bottom: 8px; }
@@ -344,6 +347,14 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p><strong>不能加速的那 20% 決定了上限。</strong> 寫成公式（<span class="arithmatex">\(f\)</span>＝可加速比例、<span class="arithmatex">\(s\)</span>＝加速倍數）：</p>
 <div class="arithmatex">\[\text{新時間}=(1-f)+\frac fs,\qquad\text{Speedup}=\frac{1}{(1-f)+\frac fs}\]</div>
 <p>這就是「make the common case fast」：佔比大的部分（<span class="arithmatex">\(f\)</span> 大）才值得加速。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文筆記（資工所考生整理）</strong>：<a href="https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter03.html">了解與評估計算機的效能</a>：CPU time 三因子、用 MIPS 評估效能的謬誤、Amdahl's Law、make the common case fast，順序跟這節一樣，還多了效能平均（算數、幾何平均）的整理。</li>
+<li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/@Toast1001/BJJ9X2GAyl">Ch1 Computer Abstraction and Technology</a>〉的 1-6 Performance。</li>
+<li><strong>影片</strong>：<a href="https://ocw.nthu.edu.tw/courses/13">清大黃婷婷・計算機結構</a>（課程前段講效能）。</li>
+</ul>
+</div>
 <h4 id="_4">換你試試</h4>
 <p><strong>T-1.</strong> 100 條指令：70 條 ALU（CPI 1）、30 條 load（CPI 4），平均 CPI？</p>
 <details class="quiz">
@@ -523,6 +534,13 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <p>平均拿一筆資料要等多久？每次都一定要先看書桌（hit time），如果沒找到，還要再加上跑圖書館的時間（miss penalty），而沒找到的機率是 miss rate：</p>
 <div class="arithmatex">\[\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}\]</div>
 <p>hit time 1、miss rate 5%、miss penalty 100：平均 <span class="arithmatex">\(1+0.05\times100=6\)</span> cycles。miss rate 只有 5%，平均時間卻是 hit 的 6 倍，所以降低 miss rate 這麼重要。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文筆記（資工所考生整理）</strong>：<a href="https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter06.html">容量大且速度快的記憶體</a>：區域性、direct-mapped、<strong>快取位元計算</strong>（valid ＋ tag ＋ data，跟 2.2 一樣）、寫入策略、快取效能。</li>
+<li><strong>影片</strong>：<a href="https://ocw.nthu.edu.tw/courses/13">清大黃婷婷・計算機結構</a> 第 7 週 Large and fast: exploiting memory hierarchy。</li>
+</ul>
+</div>
 <h4 id="_6">換你試試</h4>
 <p><strong>T-1.</strong> 8 位元位址、block 2 bytes、8 個 set、direct-mapped。offset、index、tag 各幾位元？位址 90 的 tag、index、offset 是多少？</p>
 <details class="quiz">
@@ -830,6 +848,13 @@ FA：0 M、8 M、0 H、6 M、8 H → 3 次 miss。</p>
 <p>page table 要替<strong>每一個虛擬頁</strong>留一格。32 位元位址、4 KB page：offset 12 位元、VPN 20 位元 → <span class="arithmatex">\(2^{20}\)</span> 格，每格 4 bytes 就是 4 MB，而且<strong>每個程式都要一張</strong>。這就是考題愛問「page table 多大」的原因，也是為什麼有多層 page table。</p>
 <h4 id="tlb-cache">TLB：對照表的 cache</h4>
 <p>page table 放在記憶體裡，所以每次存取資料都要<strong>先讀一次記憶體查表</strong>，等於慢一倍。解法是把最近用過的幾筆對照放進 CPU 裡一個很小、很快的表，叫 <strong>TLB</strong>。它就是 page table 的 cache，所以 cache 學到的 hit、miss、associativity 全部適用。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文筆記</strong>：中大計組 <a href="https://hackmd.io/@jcxyisncu1092/co5c">Ch5 筆記的 Virtual Memory 部分</a>：page table、page fault、TLB hit／miss 的處理和 TLB 與 cache 的互動。</li>
+<li><strong>作業系統角度</strong>：<a href="https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&amp;cid=141&amp;id=999">清大周志遠・作業系統講義</a> Ch8 Memory Management、Ch9 Virtual Memory。這一單元和 OS 的記憶體單元可以一起讀。</li>
+</ul>
+</div>
 <h4 id="_8">換你試試</h4>
 <p>用上面的 page table（VPN 0→2、VPN 5→0）。</p>
 <p><strong>T-1.</strong> 虛擬位址 0x07 的實體位址？</p>
@@ -1086,6 +1111,14 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 </table>
 <p>add 在第 3 個 cycle 結束時其實已經算出 x1 了，只是還沒寫回。<strong>forwarding</strong> 就是拉一條線，把 EX 算好的結果直接送給下一條指令的 EX，不用等 WB，所以不用停。</p>
 <p><strong>load 不一樣</strong>：load 的資料要到 MEM（第 4 個 cycle）結束才從記憶體拿到。下一條指令在第 4 個 cycle 就要用，資料還沒出來，forwarding 也來不及，<strong>一定要停 1 個 cycle</strong>（插入一個 bubble）。這就是 load-use hazard。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/@fu_myN6KTla21R5GiHie3w/SJd7n-Rkc">pipeline data hazard</a>〉：forwarding unit 的判斷條件（EX/MEM、MEM/WB 的 Rd 等於下一條的 Rs／Rt 時就 forward），配 COD 的 datapath 圖。</li>
+<li><strong>中文筆記（資工所考生整理）</strong>：<a href="https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter04.html">處理器：資料路徑與控制單元</a>：先看懂單週期 datapath 的元件，pipeline 圖會好讀很多。</li>
+<li><strong>影片</strong>：<a href="https://ocw.nthu.edu.tw/courses/13">清大黃婷婷・計算機結構</a> 第 6 週 Enhancing performance with pipelining。</li>
+</ul>
+</div>
 <h4 id="_11">換你試試</h4>
 <p><strong>T-1.</strong> 10 條指令、5 級 pipeline、每級 200 ps。pipeline 和非 pipeline（每條 1000 ps）各要多久？</p>
 <details class="quiz">
@@ -1247,6 +1280,13 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>1-bit</strong>（記住上一次的結果）：離開時猜錯一次；下次重新進迴圈時，它記得「上次沒跳」，又猜錯一次。第一輪錯 1 次，之後每輪錯 2 次，共 <strong>5 次</strong>。</li>
 <li><strong>2-bit</strong>（要連錯兩次才改變預測）：離開時猜錯一次，但只從「強烈跳」退到「有點想跳」，下次進迴圈還是猜跳。每輪只錯 1 次，共 <strong>3 次</strong>。</li>
 </ul>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>影片</strong>：<a href="https://ocw.nthu.edu.tw/courses/13">清大黃婷婷・計算機結構</a> 第 6 週 pipelining 單元（對應 COD 第 4 章，control hazard 和分支預測在同一章）。</li>
+<li><strong>英文</strong>：<a href="https://safari.ethz.ch/ddca/spring2025/doku.php?id=start">ETH Digital Design &amp; Computer Architecture 2025</a> 的 superscalar 與 branch prediction 講次。114 Q3（dual-path、confidence estimator）就是這門課的題型。</li>
+</ul>
+</div>
 <h4 id="_14">換你試試</h4>
 <p><strong>T-1.</strong> 30% 是 branch、準確率 80%、penalty 3，CPI？</p>
 <details class="quiz">
@@ -1398,6 +1438,13 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>switch-on-stall 需要的 thread 比較少，因為不會讓「其實可以繼續跑」的 thread 被迫讓位。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>英文講義</strong>：Onur Mutlu〈<a href="https://safari.ethz.ch/architecture/fall2020/lib/exe/fetch.php?media=onur-comparch-fall2020-lecture28-fgmt-afterlecture.pdf">Fine-Grained Multithreading</a>〉（ETH 計算機結構第 28 講）。112、114 年的多執行緒題就是這門課的風格。</li>
+<li><strong>練習</strong>：<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf">MIT 6.823 Problem Set 10</a>（<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf">解答</a>）有跟 112 Q3、114 Q5 一樣的 fixed／data-dependent switching 題目。</li>
+</ul>
+</div>
 <h4 id="_15">換你試試</h4>
 <p>同樣的迴圈，LD 改成 6 個 cycle。</p>
 <p><strong>T-1.</strong> 固定輪流需要幾個 thread？</p>
@@ -1471,6 +1518,13 @@ BNE  ...</code></pre>
 <li>B[j] 每 3 次才輪回同一個 → <strong>RI ＝ 3</strong>，要留住全部 3 個 B 才有重用</li>
 </ul>
 <p><strong>迴圈順序決定誰的 RI 小</strong>。考題要你選迴圈順序、分配 SRAM，原則是：RI 小於 SRAM 容量的資料才留得住，留得住的資料就不用一直回 DRAM 讀。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>英文</strong>：〈<a href="https://arxiv.org/abs/2306.16024">Retrospective: RAIDR</a>〉（Mutlu 團隊）：114 Q1.2「70% 的列可以 256 ms 才 refresh」就是 RAIDR 的想法：把列依保存時間分組，各組用不同的 refresh 頻率。</li>
+<li><strong>練習</strong>：<a href="https://safari.ethz.ch/architecture/fall2022/doku.php?id=exams">ETH 計算機結構考古題（附詳解）</a>，可以找 DRAM refresh 相關的題目練習。</li>
+</ul>
+</div>
 <h4 id="_18">換你試試</h4>
 <p><strong>T-1.</strong> 4 個 bank × 1024 列，每次 refresh 佔 bus 5 ns，64 ms 一輪，使用率？</p>
 <details class="quiz">
@@ -1615,6 +1669,13 @@ BNE  ...</code></pre>
 <p>112 Q5 的三個處理器版本，用的就是同一個推理：把「讀到 0」換成「某個讀取在某個寫入之前」，看會不會繞成一個圈。</p>
 <h4 id="_22">頻寬撐不撐得住</h4>
 <p>運算再快，資料送不進來也沒用。需要的頻寬 ＝ 每秒運算次數 × 每次運算要從記憶體讀幾個 byte。這個值超過記憶體頻寬，運算單元就會空等。</p>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>英文影片與講義</strong>：<a href="https://safari.ethz.ch/ddca/spring2025/doku.php?id=start">ETH Digital Design &amp; Computer Architecture 2025</a> 的 VLIW、SIMD（vector／array processor）兩講，114 Q6 的比較題就出自這裡。</li>
+<li><strong>英文文章</strong>：Russ Cox〈<a href="https://research.swtch.com/hwmm">Hardware Memory Models</a>〉用 litmus test（就是這節 P1、P2 那種小程式）解釋 sequential consistency，例子寫得非常清楚。</li>
+</ul>
+</div>
 <h4 id="_23">換你試試</h4>
 <p><strong>T-1.</strong> 95% 可平行，處理器無限多，speedup 上限？</p>
 <details class="quiz">
@@ -1740,6 +1801,14 @@ BNE  ...</code></pre>
 <li><strong>RISC</strong>：每條指令都簡單、一樣長，像標準化的零件，流水線每一站的工作量平均，容易 pipeline。</li>
 <li><strong>PC-relative</strong>：「往後跳 3 條」而不是「跳到 1000 號」。整個程式搬到別的位址，「往後 3 條」還是對的；而且 3 這個數字很小，用很少位元就能寫進指令裡。</li>
 </ul>
+<div class="admonition read">
+<p class="admonition-title">還不懂？看別人怎麼講</p>
+<ul>
+<li><strong>中文筆記（資工所考生整理）</strong>：<a href="https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter01.html">指令：計算機的語言</a>：ISA、MIPS 暫存器與記憶體、程式的轉譯（組譯、連結、載入）。</li>
+<li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/Z-6yRXzrSp6z6TtH8QH-rw">浮點數運算和定點數操作</a>〉的「浮點數表示法」一節，再往後是 NaN、無限大這些特殊值。</li>
+<li><strong>英文</strong>：〈<a href="https://teaching.idallen.com/cst8214/08w/notes/ieee754_conversions.txt">IEEE 754 conversions</a>〉一步一步手算十進位和 IEEE 754 互換，適合練習。</li>
+</ul>
+</div>
 <h4 id="_25">換你試試</h4>
 <p><strong>T-1.</strong> 用 4 位元二補數算 <span class="arithmatex">\(6+3\)</span>，結果是什麼？有沒有溢位？</p>
 <details class="quiz">

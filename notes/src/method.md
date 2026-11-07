@@ -113,7 +113,7 @@ Dunlosky 等人在 2013 年整理了十種常見讀書方法的研究證據。�
     2. **聽完要自己講一遍**。讀 AI 的解釋跟重讀課本一樣是被動的。看完把視窗關掉，用三句話把觀念寫在錯題本上，寫不出來就再問一次。
     3. **讓它出題考你**。範本第 4 步最重要：自己作答再批改，才是主動回想。
 
-**也可以看影片**：每份教材最後的「資源」都有列中文開放式課程，適合第一次接觸、需要有人從頭講的單元。
+**也可以看別人的講法**：每個觀念課在「換你試試」前面都有一個「還不懂？看別人怎麼講」框，列出講同一個觀念的中文筆記、文章或影片。
 
 ## 小考制度 {#quiz}
 
@@ -163,7 +163,8 @@ Dunlosky 等人在 2013 年整理了十種常見讀書方法的研究證據。�
 | 離散數學 | 生成函數、遞迴的中文文章 | 數學傳播：[〈一般生成函數之應用〉](https://web.math.sinica.edu.tw/media/pdf/d323/32302.pdf)、[〈遞迴關係〉](https://www.math.sinica.edu.tw/mathmedia/journals/4174) |
 | 計算機結構 | 中文從頭講 | [清大 OCW 黃婷婷：計算機結構](https://ocw.nthu.edu.tw/courses/13) |
 | 計算機結構 | 112、114 年那種 Mutlu 風格的題目（英文） | [Onur Mutlu DDCA 2020 講課影片](https://www.youtube.com/playlist?list=PL5Q2soXY2Zi_FRrloMa2fUYWPGiZUBQo2) |
-| 作業系統 | 中文、照恐龍書的順序講 | [清大周志遠：作業系統（均一整理的清大 OCW）](https://www.junyiacademy.org/engineering-nthu-ocw) |
+| 作業系統 | 中文、照恐龍書的順序講 | [清大周志遠：作業系統（YouTube 播放清單）](https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ)、[講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999) |
+| 全部 | 資工所考生整理的中文筆記（離散、計組、部分 OS） | [PrepareCSEMaster](https://saberliou.github.io/PrepareCSEMaster/) |
 
 **看影片的方法**：用 1.25–1.5 倍速，只看你卡住的那一段；看完一定要做教材那個單元的小考，不要只看不做。
 

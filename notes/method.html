@@ -82,6 +82,9 @@ article th { background: var(--code); font-weight: 700; white-space: nowrap; }
 .admonition.key .admonition-title { color: var(--key); }
 .admonition.trap { border-left: 4px solid var(--trap); background: var(--trap-soft); }
 .admonition.trap .admonition-title { color: var(--trap); }
+.admonition.read { border-left: 4px solid var(--muted); }
+.admonition.read .admonition-title { color: var(--muted); }
+.admonition.read ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 details.quiz { border-style: dashed; }
 details.quiz > summary { cursor: pointer; color: var(--accent); margin: 0; list-style: revert; }
 details.quiz[open] > summary { margin-bottom: 8px; }
@@ -288,7 +291,7 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <li><strong>讓它出題考你</strong>。範本第 4 步最重要：自己作答再批改，才是主動回想。</li>
 </ol>
 </div>
-<p><strong>也可以看影片</strong>：每份教材最後的「資源」都有列中文開放式課程，適合第一次接觸、需要有人從頭講的單元。</p>
+<p><strong>也可以看別人的講法</strong>：每個觀念課在「換你試試」前面都有一個「還不懂？看別人怎麼講」框，列出講同一個觀念的中文筆記、文章或影片。</p>
 <h2 id="quiz">小考制度</h2>
 <ol>
 <li><strong>觀念課的「換你試試」</strong>：讀完觀念課馬上做，2–3 題，確認觀念懂了才往下讀考古題。</li>
@@ -396,7 +399,12 @@ window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\
 <tr>
 <td>作業系統</td>
 <td>中文、照恐龍書的順序講</td>
-<td><a href="https://www.junyiacademy.org/engineering-nthu-ocw">清大周志遠：作業系統（均一整理的清大 OCW）</a></td>
+<td><a href="https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ">清大周志遠：作業系統（YouTube 播放清單）</a>、<a href="https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&amp;cid=141&amp;id=999">講義下載頁</a></td>
+</tr>
+<tr>
+<td>全部</td>
+<td>資工所考生整理的中文筆記（離散、計組、部分 OS）</td>
+<td><a href="https://saberliou.github.io/PrepareCSEMaster/">PrepareCSEMaster</a></td>
 </tr>
 </tbody>
 </table>
