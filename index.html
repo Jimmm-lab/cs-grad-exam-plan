@@ -167,6 +167,19 @@ section.view { display: grid; gap: 28px; }
 .day.exam { background: var(--accent); color: var(--card); }
 .day.exam .dt small { color: var(--card); opacity: .8; }
 
+/* notes */
+.ncards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.ncard { display: grid; gap: 6px; align-content: start; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; text-decoration: none; color: var(--ink); min-width: 0; }
+.ncard:hover { border-color: var(--muted); }
+.ncard h3 { font: 700 18px/1.4 var(--font-display); }
+.ncard p { margin: 0; color: var(--muted); font-size: 14px; }
+.ncard .subj { justify-self: start; }
+.nprog { font-size: 12px; color: var(--accent); }
+.subj[data-s="method"] { color: var(--accent); background: var(--accent-soft); }
+.nlink { display: inline-block; margin-top: 6px; font-weight: 700; font-size: 14px; }
+.day .items a { color: inherit; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.day .items a:hover { color: var(--accent); }
+
 /* papers */
 .sheet-wrap { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--r); }
 table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
@@ -227,6 +240,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
     </div>
     <nav class="tabs" aria-label="頁面">
       <a href="#today">今日</a>
+      <a href="#notes">教材</a>
       <a href="#plan">每日行程</a>
       <a href="#papers">考古題進度</a>
       <a href="#strategy">上榜策略</a>
@@ -237,6 +251,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
 
 <main class="wrap">
   <section class="view" id="v-today"></section>
+  <section class="view" id="v-notes" hidden></section>
   <section class="view" id="v-plan" hidden></section>
   <section class="view" id="v-papers" hidden></section>
   <section class="view" id="v-strategy" hidden></section>
@@ -251,7 +266,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
   "use strict";
   var EXAMS = window.EXAMS || [];
   var WD = ["日", "一", "二", "三", "四", "五", "六"];
-  var VIEWS = ["today", "plan", "papers", "strategy", "resources"];
+  var VIEWS = ["today", "notes", "plan", "papers", "strategy", "resources"];
 
   /* ---------- storage (per-browser convenience; safe if blocked) ---------- */
   function load(key, fallback) {
@@ -350,7 +365,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
   function renderBlocks(task) {
     return '<div class="blocks">' + task.blocks.map(function (b) {
       return '<div class="block"><div class="when"><span>' + esc(b.time) + "</span>" + subjChip(b.subject, true) + '</div><div class="what"><h4>' + esc(b.title) + "</h4><dl>" +
-        (b.read ? "<dt>讀</dt><dd>" + esc(b.read) + "</dd>" : "") + (b.practice ? "<dt>練</dt><dd>" + esc(b.practice) + "</dd>" : "") + "</dl></div></div>";
+        (b.read ? "<dt>讀</dt><dd>" + esc(b.read) + "</dd>" : "") + (b.practice ? "<dt>練</dt><dd>" + esc(b.practice) + "</dd>" : "") + "</dl>" + (b.link ? '<a class="nlink" href="' + esc(b.link) + '">開教材 →</a>' : "") + "</div></div>";
     }).join("") + "</div>";
   }
   function renderToday() {
@@ -407,6 +422,21 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
     save(K + "done", state.done);
   }
 
+  /* ---------- NOTES ---------- */
+  function renderNotes() {
+    var el = document.getElementById("v-notes"), list = exam.notes || [];
+    if (!list.length) { el.innerHTML = "<p>這個考試還沒有教材。</p>"; return; }
+    var html = '<div><h2>教材</h2><p class="lede">從 111–115 年考古題逐題拆出來的教材。每個單元有一句話重點、考古題詳解和小考；小考的對錯會記在這台裝置的瀏覽器裡，下面顯示進度。建議先讀「學習方法」。</p></div><div class="ncards">';
+    list.forEach(function (n) {
+      var rec = load("cgep:quiz:" + n.slug, {}), done = 0, wrong = 0;
+      Object.keys(rec).forEach(function (k) { done++; if (rec[k] === 0) wrong++; });
+      html += '<a class="ncard" href="' + esc(n.url) + '">' + (n.subject ? subjChip(n.subject, true) : '<span class="subj" data-s="method">方法</span>') +
+        "<h3>" + esc(n.title) + "</h3><p>" + esc(n.desc) + '</p><span class="nprog mono">' + (done ? "小考已作答 " + done + " 題・答錯 " + wrong + " 題" : "還沒開始") + "</span></a>";
+    });
+    html += "</div>";
+    el.innerHTML = html;
+  }
+
   /* ---------- PLAN ---------- */
   function renderPlan() {
     var el = document.getElementById("v-plan");
@@ -440,7 +470,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
           var t = s.task, d = !!state.done[t.id];
           html += '<div class="day' + (d ? " done" : "") + isToday + '" id="day-' + k + '"><input type="checkbox" class="chk" id="c-' + esc(t.id) + '" data-id="' + esc(t.id) + '"' + (d ? " checked" : "") + ' aria-label="' + md(s.date) + ' 完成">' + dt +
             '<div class="main"><div class="t">' + esc(t.title) + (t.tag ? ' <span class="tag">' + esc(t.tag) + "</span>" : "") + (t.optional ? ' <span class="tag opt">選做</span>' : "") + msTags + '</div><div class="items">' +
-            t.blocks.map(function (b) { return "<div>" + subjChip(b.subject) + "<span>" + esc(b.title) + (b.practice ? "・" + esc(b.practice) : "") + "</span></div>"; }).join("") +
+            t.blocks.map(function (b) { var tt = b.link ? '<a href="' + esc(b.link) + '">' + esc(b.title) + "</a>" : esc(b.title); return "<div>" + subjChip(b.subject) + "<span>" + tt + (b.practice ? "・" + esc(b.practice) : "") + "</span></div>"; }).join("") +
             "</div>" + (t.note ? '<div style="font-size:13px;color:var(--muted)">' + esc(t.note) + "</div>" : "") + "</div></div>";
         }
       });
@@ -483,7 +513,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
             return '<td><button class="bubble" data-k="' + esc(k) + '" data-st="' + v + '" aria-label="' + y + " 年 " + esc(s.name) + "：" + ST[v] + '"></button></td>';
           }).join("") + "</tr>";
       }).join("") + "</tbody></table></div>";
-    if (exam.links && exam.links.length) html += '<div><h3>官方連結</h3><ul class="src-list">' + exam.links.map(function (l) { return '<li><a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + "</a></li>"; }).join("") + "</ul></div>";
+    if (exam.links && exam.links.length) html += '<div><h3>考古題與官方連結</h3><ul class="src-list">' + exam.links.map(function (l) { return '<li><a href="' + esc(l.url) + '" target="_blank" rel="noopener">' + esc(l.label) + "</a></li>"; }).join("") + "</ul></div>";
     el.innerHTML = html;
     el.querySelectorAll(".sheet .bubble").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -524,7 +554,7 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
     VIEWS.forEach(function (n) { document.getElementById("v-" + n).hidden = n !== v; });
     document.querySelectorAll("nav.tabs a").forEach(function (a) { if (a.getAttribute("href") === "#" + v) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
   }
-  renderToday(); renderPlan(); renderPapers(); renderStrategy(); renderResources();
+  renderToday(); renderNotes(); renderPlan(); renderPapers(); renderStrategy(); renderResources();
   window.addEventListener("hashchange", function () { route(); window.scrollTo(0, 0); });
   route();
 })();

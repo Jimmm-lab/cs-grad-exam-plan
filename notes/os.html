@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>作業系統：從中山考古題學</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: textbook pages — sticky nav across the 5 notes, a table of contents beside one reading column; example / key / trap boxes and quiz answers set off by subject-neutral tints. */
+:root {
+  --paper: #f5f6f9; --card: #ffffff; --ink: #1a2130; --muted: #5a6376; --line: #dde1e9;
+  --accent: #c42f3d; --accent-soft: #fbe8ea;
+  --ex: #4450b5; --ex-soft: #eceefb;
+  --key: #0d7a74; --key-soft: #e3f4f2;
+  --trap: #a86300; --trap-soft: #fbf1e1;
+  --ok: #2f7d3b; --ok-soft: #e4f3e6;
+  --code: #eef0f5;
+  --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11141a; --card: #191d25; --ink: #e5e8ef; --muted: #98a0b0; --line: #2a303b;
+    --accent: #ff6d7a; --accent-soft: #3a1d23; --ex: #9aa2ff; --ex-soft: #20233f;
+    --key: #4fc6be; --key-soft: #13302e; --trap: #f0aa47; --trap-soft: #35270f;
+    --ok: #6fcf7d; --ok-soft: #173320; --code: #222733; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11141a; --card: #191d25; --ink: #e5e8ef; --muted: #98a0b0; --line: #2a303b;
+  --accent: #ff6d7a; --accent-soft: #3a1d23; --ex: #9aa2ff; --ex-soft: #20233f;
+  --key: #4fc6be; --key-soft: #13302e; --trap: #f0aa47; --trap-soft: #35270f;
+  --ok: #6fcf7d; --ok-soft: #173320; --code: #222733; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.8 var(--font-body); }
+a { color: var(--accent); }
+header.top { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top-row { display: flex; gap: 16px; align-items: center; padding-block: 10px; flex-wrap: wrap; }
+.home { font: 700 14px/1 var(--font-mono); color: var(--accent); text-decoration: none; white-space: nowrap; }
+nav.notes { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+nav.notes a { text-decoration: none; color: var(--muted); padding: 6px 10px; font-size: 14px; font-weight: 500; white-space: nowrap; border-bottom: 2px solid transparent; }
+nav.notes a[aria-current="page"] { color: var(--ink); border-color: var(--accent); }
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; padding-block: 28px 80px; }
+aside.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 13px; }
+aside.toc .eyebrow { font: 700 11px/1 var(--font-mono); letter-spacing: .12em; color: var(--muted); margin-bottom: 8px; }
+aside.toc ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+aside.toc a { color: var(--muted); text-decoration: none; display: block; padding: 3px 0; line-height: 1.5; }
+aside.toc a:hover { color: var(--ink); }
+.quizbar { margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.quizbar b { font: 700 18px/1.3 var(--font-mono); display: block; }
+.quizbar .wrong-list { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.quizbar .wrong-list a { font: 500 12px/1.6 var(--font-mono); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 0 6px; text-decoration: none; }
+.quizbar button { margin-top: 8px; font: 500 12px/1 var(--font-body); background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 6px 8px; cursor: pointer; }
+article { min-width: 0; max-width: 760px; }
+article h1 { font: 900 30px/1.3 var(--font-display); margin: 0 0 8px; text-wrap: balance; }
+article h2 { font: 700 24px/1.4 var(--font-display); margin: 56px 0 12px; padding-top: 16px; border-top: 2px solid var(--ink); text-wrap: balance; scroll-margin-top: 70px; }
+article h3 { font: 700 18px/1.5 var(--font-body); margin: 32px 0 8px; scroll-margin-top: 70px; }
+article h4 { font: 700 16px/1.5 var(--font-body); margin: 20px 0 6px; }
+article p, article li { max-width: 68ch; }
+article ul, article ol { padding-left: 1.4em; }
+article li { margin: 2px 0; }
+article strong { color: var(--ink); }
+code { font: 500 0.9em/1.5 var(--font-mono); font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.55; }
+pre code { background: none; padding: 0; }
+.table-wrap, article table { display: block; overflow-x: auto; max-width: 100%; }
+article table { border-collapse: collapse; font-size: 14px; margin: 12px 0; }
+article th, article td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+article th { background: var(--code); font-weight: 700; white-space: nowrap; }
+.admonition, details { border-radius: 8px; padding: 12px 16px; margin: 16px 0; border: 1px solid var(--line); background: var(--card); }
+.admonition > :last-child, details > :last-child { margin-bottom: 0; }
+.admonition-title, details > summary { font-weight: 700; margin: 0 0 6px; }
+.admonition.example { border-left: 4px solid var(--ex); background: var(--ex-soft); }
+.admonition.example .admonition-title { color: var(--ex); }
+.admonition.key { border-left: 4px solid var(--key); background: var(--key-soft); }
+.admonition.key .admonition-title { color: var(--key); }
+.admonition.trap { border-left: 4px solid var(--trap); background: var(--trap-soft); }
+.admonition.trap .admonition-title { color: var(--trap); }
+details.quiz { border-style: dashed; }
+details.quiz > summary { cursor: pointer; color: var(--accent); margin: 0; list-style: revert; }
+details.quiz[open] > summary { margin-bottom: 8px; }
+.judge { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.judge button { font: 700 13px/1 var(--font-body); padding: 7px 12px; border-radius: 6px; cursor: pointer; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); }
+.judge button[aria-pressed="true"][data-v="1"] { background: var(--ok); border-color: var(--ok); color: var(--card); }
+.judge button[aria-pressed="true"][data-v="0"] { background: var(--accent); border-color: var(--accent); color: var(--card); }
+.arithmatex { overflow-x: auto; max-width: 100%; }
+div.arithmatex { padding: 4px 0; }
+mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; gap: 16px; }
+  aside.toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--card); }
+  aside.toc ul { grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  article h1 { font-size: 25px; }
+}
+@media (max-width: 600px) {
+  span.arithmatex { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
+}
+</style>
+<script>
+window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+  options: { processHtmlClass: "arithmatex", ignoreHtmlClass: ".*" }, svg: { fontCache: "global" } };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap top-row">
+  <a class="home" href="../index.html">← 備考計畫</a>
+  <nav class="notes" aria-label="教材"><a href="method.html">學習方法</a><a href="discrete.html">離散數學</a><a href="arch.html">計算機結構</a><a href="os.html" aria-current="page">作業系統</a><a href="ds.html">資料結構</a></nav>
+</div></header>
+<div class="wrap layout">
+  <aside class="toc">
+    <div class="eyebrow">目錄</div>
+    <div class="toc">
+<ul>
+<li><a href="#u0">0. 中山 OS 怎麼考</a></li>
+<li><a href="#u1">單元 1：行程、執行緒與 CPU 排程</a></li>
+<li><a href="#u2">單元 2：同步</a></li>
+<li><a href="#u3">單元 3：死結</a></li>
+<li><a href="#u4">單元 4：記憶體管理與虛擬記憶體</a></li>
+<li><a href="#u5">單元 5：儲存、檔案與 I/O</a></li>
+<li><a href="#u6">單元 6：保護、安全與其他</a></li>
+<li><a href="#u7">單元 7：名詞填空總表</a></li>
+<li><a href="#mix">綜合小考</a></li>
+<li><a href="#res">資源</a></li>
+</ul>
+</div>
+
+    <div class="quizbar" id="quizbar" hidden>
+      <div class="eyebrow">本頁小考</div>
+      <b id="qb-num">0 / 0</b>
+      <span id="qb-txt" style="color:var(--muted)">已作答</span>
+      <div class="wrong-list" id="qb-wrong"></div>
+      <button type="button" id="qb-reset">清除本頁紀錄</button>
+    </div>
+  </aside>
+  <article>
+<h1 id="_1">作業系統：從中山考古題學</h1>
+<p>「作業系統與資料結構」這科，OS 大約佔一半分數。這份教材把 111–115 年的 OS 題目全部拆進各單元；資料結構的部分在另一份教材。</p>
+<h2 id="u0">0. 中山 OS 怎麼考</h2>
+<table>
+<thead>
+<tr>
+<th>題型</th>
+<th>111</th>
+<th>112</th>
+<th>113</th>
+<th>114</th>
+<th>115</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>名詞填空</strong>（10 格 × 2 分 ＝ 20%）</td>
+<td>—</td>
+<td>—</td>
+<td>Q8</td>
+<td>Q8</td>
+<td>Q1</td>
+</tr>
+<tr>
+<td>觀念解釋</td>
+<td>—</td>
+<td>Q5–Q9（50%）</td>
+<td>Q5, Q7</td>
+<td>Q5–Q7</td>
+<td>Q2–Q4</td>
+</tr>
+<tr>
+<td>計算</td>
+<td>Q5–Q9（50%）</td>
+<td>—</td>
+<td>Q6</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>中山 OS 的題目<strong>幾乎都是恐龍書（Silberschatz《Operating System Concepts》）的原文名詞和段落</strong>。113–115 年每年都有 20% 的名詞填空，觀念題的答案也都是課本上條列的那幾點。準備方式是<strong>背名詞與條列重點</strong>，再練幾個計算模板（排程、EAT、page table、磁碟）。</p>
+</div>
+<div class="admonition trap">
+<p class="admonition-title">注意</p>
+<ul>
+<li>題目是英文，填空要填英文名詞。背的時候就背英文。</li>
+<li>111 年 OS 計算題出自 Tanenbaum《Modern Operating Systems》的習題，計算模板一樣，不用另外買書。</li>
+</ul>
+</div>
+<p><strong>建議讀的順序</strong>：單元 1 行程與排程 → 2 同步 → 3 死結 → 4 記憶體 → 5 儲存與檔案 → 6 保護、安全與其他 → 7 名詞總表。</p>
+<h2 id="u1">單元 1：行程、執行緒與 CPU 排程</h2>
+<h3 id="u1-1">1.1 行程</h3>
+<ul>
+<li><strong>記憶體配置</strong>：text（程式碼）、data（全域變數）、<strong>heap</strong>（動態配置）、stack（函式呼叫）。（114 Q8b 填空）</li>
+<li><strong>PCB 的七個欄位</strong>（112 Q5a）：process state、program counter、CPU registers、CPU-scheduling information、memory-management information、accounting information、I/O status information。</li>
+<li><strong>degree of multiprogramming</strong>：目前在記憶體中的 process 數量。（115 Q1a）</li>
+<li><strong>dispatcher</strong>：把 CPU 控制權交給排程器選中的 process 的模組，負責 context switch、切換到 user mode、跳到正確位置。（115 Q1c）</li>
+<li>每個 thread 有自己的 <strong>program counter</strong>，記錄下一條要執行的指令。（113 Q8a）</li>
+<li><strong>Pthreads</strong> 是 <strong>POSIX</strong> 標準定義的 thread API。（114 Q8i）</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">115 Q2a（6%）：process 在什麼情況下會交出 CPU？之後會放到哪個 queue？</p>
+<ol>
+<li>發出 I/O 請求 → 放進 <strong>I/O wait queue</strong></li>
+<li>建立子行程並等待它結束 → 放進 <strong>wait queue</strong></li>
+<li>被中斷強制移走，或 time slice 用完 → 放回 <strong>ready queue</strong></li>
+</ol>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 Q2b（4%）：從 processor affinity 的角度解釋 warm cache</p>
+<p>process 在某個 core 上跑一段時間後，它的資料已經在那個 core 的 cache 裡（cache 是「熱」的）。如果把它移到別的 core，舊 cache 要作廢、新 cache 要重新載入，成本很高。所以排程器盡量讓 process 留在同一個 core，這就是 <strong>processor affinity</strong>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">114 Q6b（4%）：兩種 IPC 模型</p>
+<ul>
+<li><strong>shared memory</strong>：建立一塊共享記憶體，process 直接讀寫，快，但要自己做同步。</li>
+<li><strong>message passing</strong>：透過 kernel 的 send／receive 傳訊息，較慢（每次都要 system call），但不用處理衝突，也適合分散式系統。</li>
+</ul>
+</div>
+<h3 id="u1-2">1.2 CPU 排程計算</h3>
+<p><strong>名詞</strong>：</p>
+<ul>
+<li><strong>turnaround time</strong>：從提交到完成的時間。（112 Q9d、114 Q8h）</li>
+<li><strong>waiting time</strong>：在 ready queue 等待的總時間 ＝ turnaround <span class="arithmatex">\(-\)</span> burst。</li>
+<li><strong>response time</strong>：從提交到第一次被執行的時間。</li>
+</ul>
+<p><strong>做法</strong>：畫 Gantt chart，算每個 process 的完成時間，等待時間 ＝ 完成時間 <span class="arithmatex">\(-\)</span> 到達時間 <span class="arithmatex">\(-\)</span> burst time。</p>
+<div class="admonition example">
+<p class="admonition-title">113 Q6a（6%）：五個 process 都在時間 0 到達，burst 10、1、2、1、5，priority 3、1、3、4、2（數字小優先）</p>
+<p><strong>SJF</strong>：P2(1)、P4(1)、P3(2)、P5(5)、P1(10)</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>P2</th>
+<th>P4</th>
+<th>P3</th>
+<th>P5</th>
+<th>P1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>開始</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<p>平均等待 <span class="arithmatex">\(=\frac{0+1+2+4+9}{5}=3.2\)</span>。</p>
+<p><strong>Non-preemptive priority</strong>：P2(1)、P5(2)、P1(3)、P3(3)、P4(4)，開始時間 0、1、6、16、18，平均 <span class="arithmatex">\(\frac{41}{5}=8.2\)</span>。</p>
+<p><strong>RR（q＝1，佇列初始順序 P1–P5）</strong>：完成時間 P1＝19、P2＝2、P3＝7、P4＝4、P5＝14。等待 ＝ 完成 <span class="arithmatex">\(-\)</span> burst：<span class="arithmatex">\(9,1,5,3,9\)</span>，平均 <span class="arithmatex">\(\frac{27}{5}=5.4\)</span>。</p>
+<p>RR 的 Gantt chart 最容易算錯，畫的時候把每一輪寫成一列：
+<code>P1 P2 P3 P4 P5 | P1 P3 P5 | P1 P5 | P1 P5 | P1 P5 | P1 P1 P1 P1 P1</code></p>
+</div>
+<h3 id="u1-quiz">單元 1 小考</h3>
+<p><strong>1-1.</strong> 三個 process 在時間 0 依序到達，burst 6、3、1，FCFS 和 SJF 的平均等待時間？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>FCFS：<span class="arithmatex">\(\frac{0+6+9}{3}=5\)</span>。SJF（1、3、6）：<span class="arithmatex">\(\frac{0+1+4}{3}=\frac53\approx1.67\)</span>。</p>
+</details>
+<p><strong>1-2.</strong> PCB 的七個欄位？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>process state、program counter、CPU registers、CPU-scheduling info、memory-management info、accounting info、I/O status info。</p>
+</details>
+<h2 id="u2">單元 2：同步</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>多個 process 同時存取共享資料、結果又跟執行順序有關，就是 <strong>race condition</strong>。解法是讓<strong>臨界區（critical section）</strong>一次只有一個人進去。</p>
+</div>
+<ul>
+<li><strong>race condition</strong>：多個 process 並行存取同一份資料，結果取決於存取的順序。（112 Q9e、114 Q8c）</li>
+<li>critical-section 問題的解法必須滿足三個條件：<strong>mutual exclusion</strong>、<strong>progress</strong>、<strong>bounded waiting</strong>。（113 Q8b、115 Q1d）</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">114 Q6a（6%）：解決 critical-section 問題的三種硬體支援</p>
+<ol>
+<li><strong>memory barriers（memory fences）</strong>：強制之前的記憶體操作都完成、讓其他處理器看得到，才往下執行。</li>
+<li><strong>hardware instructions</strong>：<code>test_and_set()</code>、<code>compare_and_swap()</code> 這類<strong>不可分割（atomic）</strong>的指令，可以用來實作 lock。</li>
+<li><strong>atomic variables</strong>：對整數、布林值提供不可分割的更新操作（例如 atomic increment）。</li>
+</ol>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q5b（3%）：mutex、semaphore、condition variable 的用途</p>
+<ul>
+<li><strong>mutex lock</strong>：保護 critical section，<code>acquire()</code> 進去、<code>release()</code> 出來，一次只有一個人持有。</li>
+<li><strong>semaphore</strong>：一個整數計數器，<code>wait()</code> 減 1（不夠就等）、<code>signal()</code> 加 1。binary semaphore 可當 lock 用；counting semaphore 可以管理 <span class="arithmatex">\(n\)</span> 份資源或用來做先後順序。</li>
+<li><strong>condition variable</strong>：在 monitor（或搭配 mutex）中，讓 thread 等待某個<strong>條件</strong>成立（<code>wait()</code>），條件改變時由別人 <code>signal()</code> 叫醒。</li>
+</ul>
+</div>
+<h3 id="u2-quiz">單元 2 小考</h3>
+<p><strong>2-1.</strong> critical-section 解法的三個條件分別是什麼意思？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>mutual exclusion：一次最多一個在裡面。progress：沒人在裡面時，想進去的人之間要能在有限時間內決定誰進去，不在乎的人不能干擾。bounded waiting：一個 process 提出請求後，其他人插隊進去的次數有上限，不會餓死。</p>
+</details>
+<h2 id="u3">單元 3：死結</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>死結要<strong>四個條件同時成立</strong>：mutual exclusion、hold and wait、no preemption、circular wait。破壞其中一個就不會死結。</p>
+</div>
+<ul>
+<li>四個必要條件。（114 Q8d 填 hold and wait）</li>
+<li><strong>circular wait 蘊含 hold and wait</strong>：形成循環的每個 process 都正在持有資源又在等別的資源。（115 Q1g）</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">115 Q3a（6%）：處理死結的三種方法</p>
+<ol>
+<li><strong>預防或避免（prevention／avoidance）</strong>：保證系統永遠不會進入死結狀態。</li>
+<li><strong>偵測與復原（detection and recovery）</strong>：允許死結發生，偵測到之後終止 process 或搶回資源。</li>
+<li><strong>忽略（ignore）</strong>：假裝死結不會發生，Linux、Windows 等大多數 OS 採用這個做法，由開發者自行處理。</li>
+</ol>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q8a（4%）：deadlock prevention 怎麼運作</p>
+<p>確保四個必要條件中<strong>至少一個不可能成立</strong>：</p>
+<ul>
+<li>mutual exclusion：盡量讓資源可共享（例如唯讀檔案）。</li>
+<li>hold and wait：要求 process 一開始就申請所有資源，或申請新資源前先釋放手上的。</li>
+<li>no preemption：申請不到時，強制釋放已持有的資源。</li>
+<li>circular wait：所有資源類型編號，只能<strong>依遞增順序</strong>申請。</li>
+</ul>
+</div>
+<h3 id="u3-quiz">單元 3 小考</h3>
+<p><strong>3-1.</strong> 為什麼「依編號遞增順序申請資源」能防止死結？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>假設有循環 <span class="arithmatex">\(P_0\to P_1\to\cdots\to P_0\)</span>，<span class="arithmatex">\(P_i\)</span> 持有 <span class="arithmatex">\(R_i\)</span> 在等 <span class="arithmatex">\(R_{i+1}\)</span>，就得到 <span class="arithmatex">\(R_0&lt;R_1&lt;\cdots&lt;R_0\)</span>，矛盾。所以不可能有 circular wait。</p>
+</details>
+<h2 id="u4">單元 4：記憶體管理與虛擬記憶體</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>邏輯位址要轉成實體位址。<strong>什麼時候轉</strong>（binding）、<strong>怎麼轉</strong>（paging、TLB）、<strong>記憶體不夠時怎麼辦</strong>（demand paging、置換、thrashing）是這個單元的三條主線。</p>
+</div>
+<h3 id="u4-1">4.1 位址繫結與轉換</h3>
+<div class="admonition example">
+<p class="admonition-title">112 Q6a（6%）：compile time、load time、execution time 的位址繫結差別</p>
+<ul>
+<li><strong>compile time</strong>：編譯時就知道程式會放在哪，產生<strong>絕對位址</strong>。位置改了就要重新編譯。</li>
+<li><strong>load time</strong>：編譯產生<strong>可重定位</strong>的位址，載入時才決定實際位址。載入後就不能再移動。</li>
+<li><strong>execution time</strong>：執行時才轉換，process 在執行中可以被搬動。需要硬體（MMU）支援，現代 OS 都用這種。</li>
+</ul>
+</div>
+<ul>
+<li><strong>MMU（memory-management unit）</strong>：把邏輯 page 對應到實體 frame 的硬體。（113 Q8d）</li>
+<li><strong>TLB（translation look-aside buffer）</strong>：page table 的 cache。（113 Q8c）</li>
+<li><strong>inverted page table</strong> 每個 entry 要存 <strong>address-space identifier（ASID）</strong>，因為整個系統只有一張表。（114 Q8f）</li>
+<li><strong>reentrant code（pure code）</strong>：不會修改自己的程式碼，可以讓多個 process 共用。（114 Q8e）</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">114 Q7（10%）：TLB 運作的五個步驟</p>
+<ol>
+<li>CPU 產生邏輯位址，取出 page number。</li>
+<li>把 page number 送到 TLB 比對。</li>
+<li>TLB hit：直接取得 frame number，組成實體位址存取記憶體。</li>
+<li>TLB miss：到記憶體裡的 page table 查 frame number。</li>
+<li>把這組 (page number, frame number) 放進 TLB（滿了就依策略置換一個），再存取記憶體。</li>
+</ol>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q5a（6%）：real-time system 的三種位址轉換方法</p>
+<ol>
+<li><strong>real-addressing mode</strong>：程式直接使用實體位址，不轉換，最快、最可預測。</li>
+<li><strong>relocation register mode</strong>：用一個 relocation register，實體位址 ＝ 暫存器值 ＋ 邏輯位址。</li>
+<li><strong>full virtual memory</strong>：完整的 page table 與 TLB，彈性最大，但轉換時間不確定，對即時系統不利。</li>
+</ol>
+</div>
+<h3 id="u4-2">4.2 計算模板</h3>
+<table>
+<thead>
+<tr>
+<th>題目</th>
+<th>公式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>page table 有幾個 entry</td>
+<td><span class="arithmatex">\(2^{\text{虛擬位址位元}-\text{offset 位元}}\)</span></td>
+</tr>
+<tr>
+<td>bitmap 大小</td>
+<td>記憶體 ÷ 配置單位 ＝ 位元數</td>
+</tr>
+<tr>
+<td>有 TLB 的有效存取時間</td>
+<td><span class="arithmatex">\(h\times t_{\text{TLB hit}}+(1-h)\times t_{\text{miss}}\)</span></td>
+</tr>
+<tr>
+<td>demand paging 的 EAT</td>
+<td><span class="arithmatex">\((1-p)\times t_{\text{mem}}+p\times t_{\text{fault}}\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition example">
+<p class="admonition-title">111 Q9（10%）：48-bit 虛擬位址、32-bit 實體位址、4 KB page，page table 有幾個 entry</p>
+<p><span class="arithmatex">\(2^{48}/2^{12}=2^{36}\)</span> 個（每個 process 一張單層 page table 時）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 Q8（10%）：8 GB RAM 以 4 KB 為單位配置，用 bitmap 記錄空閒記憶體要幾 KB</p>
+<p>單位數 <span class="arithmatex">\(=2^{33}/2^{12}=2^{21}\)</span>，每單位 1 位元 → <span class="arithmatex">\(2^{21}\)</span> 位元 <span class="arithmatex">\(=2^{18}\)</span> bytes <span class="arithmatex">\(=256\)</span> KB。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 Q6（10%）：讀 page table 500 ns、TLB 查詢 50 ns，miss 時才查 page table。平均開銷 ≤ 100 ns 需要多少 hit rate</p>
+<p>開銷 <span class="arithmatex">\(=50+(1-h)\times500\le100\)</span> → <span class="arithmatex">\(1-h\le0.1\)</span> → <strong><span class="arithmatex">\(h\ge0.9\)</span></strong>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q6b（4%）：記憶體存取 150 ns、page fault 處理 60000 ns，EAT &lt; 175 ns 時 page fault rate 上限</p>
+<p><span class="arithmatex">\((1-p)\times150+p\times60000&lt;175\)</span> → <span class="arithmatex">\(59850p&lt;25\)</span> → <span class="arithmatex">\(p&lt;\frac{25}{59850}\approx4.18\times10^{-4}\)</span>。</p>
+<p>也就是大約每 2400 次存取才能有 1 次 page fault。</p>
+</div>
+<h3 id="u4-3">4.3 置換與 thrashing</h3>
+<ul>
+<li><strong>dirty bit（modify bit）</strong>：page 內容被改過就設為 1，被置換時才需要寫回磁碟。（115 Q1b）</li>
+<li><strong>thrashing</strong>：process 花在 paging 的時間比執行還多。（113 Q8e）</li>
+<li><strong>copy-on-write</strong>（115 Q3b）：<code>fork()</code> 後父子行程先<strong>共用</strong>相同的 page，標記為 copy-on-write；任何一方要<strong>寫入</strong>某個 page 時，才複製那一頁。省下複製整個位址空間的時間和記憶體（尤其子行程馬上 <code>exec()</code> 時）。</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">112 Q6b（4%）：用 working-set model 解決 thrashing</p>
+<p>定義 working-set window <span class="arithmatex">\(\Delta\)</span>（最近 <span class="arithmatex">\(\Delta\)</span> 次存取），process <span class="arithmatex">\(i\)</span> 在這段時間用到的 page 集合大小是 <span class="arithmatex">\(WSS_i\)</span>。</p>
+<p>總需求 <span class="arithmatex">\(D=\sum WSS_i\)</span>。如果 <span class="arithmatex">\(D\)</span> 大於可用的 frame 數 <span class="arithmatex">\(m\)</span>，就會 thrashing，OS <strong>暫停（swap out）某個 process</strong>，把它的 frame 分給其他人；<span class="arithmatex">\(D\)</span> 夠小時再載入新的 process。這樣既能避免 thrashing，又能維持最高的 multiprogramming 程度。</p>
+</div>
+<h3 id="u4-quiz">單元 4 小考</h3>
+<p><strong>4-1.</strong> 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(2^{32-13}\times4=2^{21}\)</span> B ＝ 2 MB。</p>
+</details>
+<p><strong>4-2.</strong> TLB hit rate 80%，TLB 20 ns、記憶體 100 ns（單層 page table），有效存取時間？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>hit：<span class="arithmatex">\(20+100=120\)</span>；miss：<span class="arithmatex">\(20+100+100=220\)</span>。EAT <span class="arithmatex">\(=0.8\times120+0.2\times220=140\)</span> ns。</p>
+</details>
+<p><strong>4-3.</strong> copy-on-write 在什麼情況下最省？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><code>fork()</code> 之後子行程馬上呼叫 <code>exec()</code> 載入新程式時：父行程的 page 幾乎都不會被寫入，完全不用複製。</p>
+</details>
+<h2 id="u5">單元 5：儲存、檔案與 I/O</h2>
+<h3 id="u5-1">5.1 檔案系統</h3>
+<ul>
+<li>檔案是記錄在次要儲存裝置上、<strong>有名字（named）</strong>的相關資訊集合。（115 Q1h）</li>
+<li>任何包含檔案系統的個體叫做 <strong>volume</strong>。（113 Q8f）</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">114 Q5a（6%）：除了名字之外，檔案的六種屬性</p>
+<p>identifier（系統內部的唯一編號）、type、location（在裝置上的位置）、size、protection（存取權限）、timestamps and user identification（建立、修改、使用時間與擁有者）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q7（10%）：(a) 三種存取方式 (b) consistency semantics</p>
+<p>(a) <strong>sequential</strong>：照順序一筆一筆讀寫（read next、write next），像磁帶。<strong>direct</strong>：用相對區塊編號隨意讀寫任一區塊，適合資料庫。<strong>indexed</strong>：另外建一份索引，先查索引找到指標，再直接存取該區塊。</p>
+<p>(b) <strong>consistency semantics</strong> 規定多個使用者同時存取同一個檔案時，一個人的修改<strong>什麼時候對其他人可見</strong>。例如 UNIX semantics（寫入立刻可見）、session semantics（關檔之後，新開的 session 才看得到，AFS 用）、immutable-shared-files semantics（共享檔案不能修改）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 Q5（10%）：i-node 有 10 個直接區塊、三層間接區塊，指標 8 B、區塊 8 KB</p>
+<p>每個區塊可放 <span class="arithmatex">\(8\text{ KB}/8\text{ B}=1024=2^{10}\)</span> 個指標。</p>
+<p>(a) 最小的檔案（非空）需要 <strong>1 個</strong>資料區塊。</p>
+<p>(b) 最大的檔案可以有 <span class="arithmatex">\(10+2^{10}+2^{20}+2^{30}\)</span> 個<strong>資料區塊</strong>。如果題目要算進索引區塊，再加上 single 1 個、double <span class="arithmatex">\(1+2^{10}\)</span> 個、triple <span class="arithmatex">\(1+2^{10}+2^{20}\)</span> 個。作答時寫清楚你算的是哪一種。</p>
+</div>
+<h3 id="u5-2">5.2 磁碟</h3>
+<ul>
+<li>HDD 隨機存取時間 ＝ <strong>seek time</strong> ＋ <strong>rotational latency</strong>。（114 Q8g）</li>
+<li>次要儲存裝置主要是 HDD 和 <strong>nonvolatile memory（NVM）</strong> 裝置。（115 Q1e）</li>
+<li>swap space 可以建在 <strong>raw partition</strong>，不放檔案系統。（114 Q8j）</li>
+<li><strong>RAID 6</strong> 使用 <strong>P + Q redundancy</strong>，可以承受兩顆磁碟同時故障。（113 Q8g）</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">111 Q7（10%）：讀 100 個區塊的檔案，未聚集時平均 seek 5 ms、聚集後 0.5 ms，rotational latency 10 ms、每區塊傳輸 20 μs</p>
+<ul>
+<li>未聚集：<span class="arithmatex">\(100\times(5+10+0.02)=1502\)</span> ms</li>
+<li>聚集：<span class="arithmatex">\(100\times(0.5+10+0.02)=1052\)</span> ms</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 Q4（10%）：sector sparing 的步驟</p>
+<ol>
+<li>OS 嘗試讀取 logical block 87。</li>
+<li>controller 計算 ECC，發現這個 sector 壞了。</li>
+<li>controller 把這個結果當成 I/O error 回報給 OS。</li>
+<li>controller 用一個<strong>備用 sector（spare）</strong>取代壞掉的 sector。</li>
+<li>之後系統每次要讀 logical block 87，controller 都會把請求<strong>轉到備用 sector 的位址</strong>。</li>
+</ol>
+</div>
+<h3 id="u5-3">5.3 I/O</h3>
+<ul>
+<li><strong>daisy chain</strong>：A 接 B、B 接 C、C 接電腦的串接方式。（114 Q8a）</li>
+<li>kernel 用 <strong>device-driver</strong> 模組把各種裝置的細節包起來。（115 Q1f）</li>
+<li><strong>vectored I/O（scatter-gather）</strong>：一個 system call 完成多個緩衝區的讀寫，減少 context switch 和系統呼叫開銷。（112 Q9a）</li>
+<li><strong>maskable vs non-maskable interrupt</strong>（113 Q5b）：maskable 可以在 CPU 執行不能被打斷的程式段時暫時關掉；non-maskable 不能關，保留給無法恢復的記憶體錯誤這類嚴重事件。</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">114 Q5b（4%）：interrupt chaining 怎麼運作</p>
+<p>中斷向量表的每一格指向一串<strong>中斷處理程式的串列</strong>。中斷發生時，依序呼叫串列中的處理程式，直到找到能處理這個中斷的那一個。這是「每個裝置都有自己的向量格（表太大）」和「全部共用一個處理程式（要一個個問）」之間的折衷。</p>
+</div>
+<h3 id="u5-quiz">單元 5 小考</h3>
+<p><strong>5-1.</strong> i-node 有 12 個直接區塊和 single、double indirect，區塊 4 KB、指標 4 B，最大檔案幾個資料區塊？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>每區塊 1024 個指標：<span class="arithmatex">\(12+1024+1024^2=1049612\)</span> 個。</p>
+</details>
+<p><strong>5-2.</strong> RAID 5 和 RAID 6 的差別？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>RAID 5 用分散的單一 parity，可承受 1 顆故障；RAID 6 多一份 Q（另一種錯誤更正碼），可承受 2 顆同時故障。</p>
+</details>
+<h2 id="u6">單元 6：保護、安全與其他</h2>
+<ul>
+<li><strong>need-to-know principle</strong>：process 任何時候只能存取完成工作<strong>目前需要</strong>的資源。（115 Q1i）</li>
+<li><strong>role-based access control</strong> 中，<strong>privilege</strong> 是執行某個 system call 或使用其選項的權利。（113 Q8h）</li>
+<li>違反 <strong>confidentiality</strong> ＝ 未經授權讀取資料。（115 Q1j）</li>
+<li><strong>AES</strong> 金鑰長度 128、<strong>192</strong>、256 位元，區塊 128 位元。（113 Q8i）</li>
+<li><strong>stealth virus</strong>：修改系統中可能偵測到它的部分來躲避偵測。（113 Q8j）</li>
+<li><strong>logic bomb</strong>：藏在程式裡、只有在特定條件（日期、事件）成立時才啟動的惡意程式碼。（112 Q9c）</li>
+<li><strong>safety-critical system</strong>：失敗會造成人命或重大損失的即時系統，例如醫療、武器、飛航控制。（112 Q9b）</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">112 Q8b–c（6%）：即時系統的三種延遲、分散式檔案系統不用 cache 的理由</p>
+<p>(b) <strong>event latency</strong>：事件發生到被服務的總時間；其中包含 <strong>interrupt latency</strong>（中斷發生到開始執行 ISR）和 <strong>dispatch latency</strong>（排程器停掉一個 process、啟動另一個的時間）。</p>
+<p>(c) 不用 cache 的理由：(1) <strong>寫入頻繁</strong>時，維持 cache 一致性的成本很高；(2) 資料<strong>很少被重複存取</strong>，cache 沒有幫助；(3) 用戶端是<strong>無磁碟或記憶體很小</strong>的機器；(4) 多人<strong>同時寫入共享檔案</strong>，需要嚴格一致性時，直接遠端存取（remote service）比較簡單。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q7（10%）：timestamp-ordering protocol 怎麼檢查</p>
+<p><strong><span class="arithmatex">\(T_i\)</span> 發出 read(Q)</strong>：</p>
+<ul>
+<li>若 <span class="arithmatex">\(TS(T_i)&lt;\text{W-timestamp}(Q)\)</span>：<span class="arithmatex">\(T_i\)</span> 要讀的值已經被較新的交易覆蓋，<strong>拒絕並 rollback <span class="arithmatex">\(T_i\)</span></strong>。</li>
+<li>否則執行，並設 <span class="arithmatex">\(\text{R-timestamp}(Q)=\max(\text{R-timestamp}(Q),TS(T_i))\)</span>。</li>
+</ul>
+<p><strong><span class="arithmatex">\(T_i\)</span> 發出 write(Q)</strong>：</p>
+<ul>
+<li>若 <span class="arithmatex">\(TS(T_i)&lt;\text{R-timestamp}(Q)\)</span>：較新的交易已經讀過舊值，<strong>rollback <span class="arithmatex">\(T_i\)</span></strong>。</li>
+<li>若 <span class="arithmatex">\(TS(T_i)&lt;\text{W-timestamp}(Q)\)</span>：<span class="arithmatex">\(T_i\)</span> 寫的是過時的值，<strong>rollback <span class="arithmatex">\(T_i\)</span></strong>。</li>
+<li>否則執行，設 <span class="arithmatex">\(\text{W-timestamp}(Q)=TS(T_i)\)</span>。</li>
+</ul>
+<p>這樣保證所有衝突操作都依 timestamp 順序執行，所以排程是 conflict serializable。</p>
+</div>
+<h2 id="u7">單元 7：名詞填空總表</h2>
+<p>113–115 年的填空全部在這裡。把<strong>中文意思</strong>遮起來，看英文名詞自己講出意思；再把英文遮起來，看意思回想英文。</p>
+<table>
+<thead>
+<tr>
+<th>年份</th>
+<th>題目重點</th>
+<th>答案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>113 a</td>
+<td>每個 thread 記錄下一條指令位址的暫存器</td>
+<td>program counter</td>
+</tr>
+<tr>
+<td>113 b</td>
+<td>critical-section 的第三個條件</td>
+<td>bounded waiting</td>
+</tr>
+<tr>
+<td>113 c</td>
+<td>page table 的 cache</td>
+<td>translation look-aside (TLB)</td>
+</tr>
+<tr>
+<td>113 d</td>
+<td>把邏輯 page 對應到實體 frame 的單元</td>
+<td>memory-management unit (MMU)</td>
+</tr>
+<tr>
+<td>113 e</td>
+<td>花在 paging 比執行還多</td>
+<td>thrashing</td>
+</tr>
+<tr>
+<td>113 f</td>
+<td>包含檔案系統的個體</td>
+<td>volume</td>
+</tr>
+<tr>
+<td>113 g</td>
+<td>RAID 6 的冗餘方式</td>
+<td>P + Q</td>
+</tr>
+<tr>
+<td>113 h</td>
+<td>RBAC 中執行 system call 的權利</td>
+<td>privilege</td>
+</tr>
+<tr>
+<td>113 i</td>
+<td>AES 金鑰長度 128、＿、256</td>
+<td>192</td>
+</tr>
+<tr>
+<td>113 j</td>
+<td>修改系統來躲避偵測的病毒</td>
+<td>stealth</td>
+</tr>
+<tr>
+<td>114 a</td>
+<td>A 接 B 接 C 接電腦</td>
+<td>daisy (chain)</td>
+</tr>
+<tr>
+<td>114 b</td>
+<td>process 記憶體：text、data、＿、stack</td>
+<td>heap</td>
+</tr>
+<tr>
+<td>114 c</td>
+<td>結果取決於存取順序</td>
+<td>race (condition)</td>
+</tr>
+<tr>
+<td>114 d</td>
+<td>死結四條件之二</td>
+<td>hold and wait</td>
+</tr>
+<tr>
+<td>114 e</td>
+<td>不會修改自己的程式碼</td>
+<td>reentrant (pure)</td>
+</tr>
+<tr>
+<td>114 f</td>
+<td>inverted page table 每個 entry 要存的識別碼</td>
+<td>address-space identifier</td>
+</tr>
+<tr>
+<td>114 g</td>
+<td>HDD 隨機存取 ＝ seek ＋ ＿</td>
+<td>rotational latency</td>
+</tr>
+<tr>
+<td>114 h</td>
+<td>從提交到完成的時間</td>
+<td>turnaround</td>
+</tr>
+<tr>
+<td>114 i</td>
+<td>Pthreads 是哪個標準</td>
+<td>POSIX</td>
+</tr>
+<tr>
+<td>114 j</td>
+<td>swap space 可建在什麼分割區</td>
+<td>raw</td>
+</tr>
+<tr>
+<td>115 a</td>
+<td>記憶體中的 process 數</td>
+<td>(degree of) multiprogramming</td>
+</tr>
+<tr>
+<td>115 b</td>
+<td>modify bit 的別名</td>
+<td>dirty</td>
+</tr>
+<tr>
+<td>115 c</td>
+<td>把 CPU 交給選中 process 的模組</td>
+<td>dispatcher</td>
+</tr>
+<tr>
+<td>115 d</td>
+<td>必須滿足三條件的問題</td>
+<td>critical-section</td>
+</tr>
+<tr>
+<td>115 e</td>
+<td>HDD 和 ＿ memory 裝置</td>
+<td>nonvolatile (NVM)</td>
+</tr>
+<tr>
+<td>115 f</td>
+<td>包裝裝置細節的模組</td>
+<td>device-driver</td>
+</tr>
+<tr>
+<td>115 g</td>
+<td>蘊含 hold and wait 的條件</td>
+<td>circular wait</td>
+</tr>
+<tr>
+<td>115 h</td>
+<td>檔案是有＿的相關資訊集合</td>
+<td>named</td>
+</tr>
+<tr>
+<td>115 i</td>
+<td>只能存取目前需要的資源</td>
+<td>need-to-know</td>
+</tr>
+<tr>
+<td>115 j</td>
+<td>未經授權讀取資料</td>
+<td>confidentiality</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition key">
+<p class="admonition-title">怎麼準備明年的填空</p>
+<p>填空都是從恐龍書內文抽的，而且每年<strong>幾乎不重複</strong>。最有效的方法是把恐龍書每章最後的 <strong>Chapter Summary 和粗體名詞</strong>做成閃卡（Anki 或紙卡），每天 15 分鐘，用間隔複習。</p>
+</div>
+<h2 id="mix">綜合小考</h2>
+<p><strong>M-1.</strong> 填空：A process that is spending more time paging than executing is said to be ＿＿.</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>thrashing</p>
+</details>
+<p><strong>M-2.</strong> 填空：The ＿＿ bit indicates whether a page has been modified.</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>dirty（modify）</p>
+</details>
+<p><strong>M-3.</strong> 解釋 starvation 和 aging。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>starvation：低優先權的 process 一直等不到 CPU。aging：隨著等待時間增加，逐漸提高它的優先權，最終一定會被執行。</p>
+</details>
+<p><strong>M-4.</strong> 為什麼 RR 的 time quantum 不能太小也不能太大？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>太小：context switch 太頻繁，開銷佔比太高。太大：退化成 FCFS，回應時間變差。經驗法則是 80% 的 CPU burst 要比 quantum 短。</p>
+</details>
+<h2 id="res">資源</h2>
+<ul>
+<li><strong>Silberschatz《Operating System Concepts》（恐龍書，第 10 版）</strong>：中山的填空和觀念題幾乎都出自這本。每章最後的 summary 和 practice exercises 一定要做。</li>
+<li><strong>Tanenbaum《Modern Operating Systems》</strong>：111 年計算題的來源，不用整本讀，練它第 3、4、5 章的計算習題即可。</li>
+</ul>
+  </article>
+</div>
+<script>
+(function () {
+  var KEY = "cgep:quiz:os";
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+  var rec = load();
+  var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
+  quizzes.forEach(function (d, i) {
+    var label = "Q" + (i + 1);
+    var prev = d.previousElementSibling;
+    if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
+    var id = "quiz-" + (i + 1);
+    d.id = id; d.dataset.label = label;
+    var bar = document.createElement("div");
+    bar.className = "judge";
+    bar.innerHTML = '<span>自己對答案：</span><button type="button" data-v="1">答對了</button><button type="button" data-v="0">答錯了，記錯題</button>';
+    d.appendChild(bar);
+    bar.querySelectorAll("button").forEach(function (b) {
+      b.addEventListener("click", function () { rec[id] = +b.dataset.v; save(rec); paint(); });
+    });
+  });
+  function paint() {
+    var done = 0, wrong = [];
+    quizzes.forEach(function (d) {
+      var v = rec[d.id];
+      d.querySelectorAll(".judge button").forEach(function (b) { b.setAttribute("aria-pressed", String(v !== undefined && +b.dataset.v === v)); });
+      if (v !== undefined) done++;
+      if (v === 0) wrong.push(d);
+    });
+    var bar = document.getElementById("quizbar");
+    if (!quizzes.length) return;
+    bar.hidden = false;
+    document.getElementById("qb-num").textContent = done + " / " + quizzes.length;
+    document.getElementById("qb-txt").textContent = "已作答，答錯 " + wrong.length + " 題";
+    document.getElementById("qb-wrong").innerHTML = wrong.map(function (d) { return '<a href="#' + d.id + '">' + d.dataset.label + "</a>"; }).join("");
+  }
+  document.getElementById("qb-reset").addEventListener("click", function () { rec = {}; save(rec); paint(); });
+  paint();
+})();
+</script>
+</body>
+</html>

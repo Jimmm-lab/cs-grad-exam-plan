@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{TITLE}}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: textbook pages — sticky nav across the 5 notes, a table of contents beside one reading column; example / key / trap boxes and quiz answers set off by subject-neutral tints. */
+:root {
+  --paper: #f5f6f9; --card: #ffffff; --ink: #1a2130; --muted: #5a6376; --line: #dde1e9;
+  --accent: #c42f3d; --accent-soft: #fbe8ea;
+  --ex: #4450b5; --ex-soft: #eceefb;
+  --key: #0d7a74; --key-soft: #e3f4f2;
+  --trap: #a86300; --trap-soft: #fbf1e1;
+  --ok: #2f7d3b; --ok-soft: #e4f3e6;
+  --code: #eef0f5;
+  --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11141a; --card: #191d25; --ink: #e5e8ef; --muted: #98a0b0; --line: #2a303b;
+    --accent: #ff6d7a; --accent-soft: #3a1d23; --ex: #9aa2ff; --ex-soft: #20233f;
+    --key: #4fc6be; --key-soft: #13302e; --trap: #f0aa47; --trap-soft: #35270f;
+    --ok: #6fcf7d; --ok-soft: #173320; --code: #222733; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11141a; --card: #191d25; --ink: #e5e8ef; --muted: #98a0b0; --line: #2a303b;
+  --accent: #ff6d7a; --accent-soft: #3a1d23; --ex: #9aa2ff; --ex-soft: #20233f;
+  --key: #4fc6be; --key-soft: #13302e; --trap: #f0aa47; --trap-soft: #35270f;
+  --ok: #6fcf7d; --ok-soft: #173320; --code: #222733; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.8 var(--font-body); }
+a { color: var(--accent); }
+header.top { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top-row { display: flex; gap: 16px; align-items: center; padding-block: 10px; flex-wrap: wrap; }
+.home { font: 700 14px/1 var(--font-mono); color: var(--accent); text-decoration: none; white-space: nowrap; }
+nav.notes { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+nav.notes a { text-decoration: none; color: var(--muted); padding: 6px 10px; font-size: 14px; font-weight: 500; white-space: nowrap; border-bottom: 2px solid transparent; }
+nav.notes a[aria-current="page"] { color: var(--ink); border-color: var(--accent); }
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; padding-block: 28px 80px; }
+aside.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 13px; }
+aside.toc .eyebrow { font: 700 11px/1 var(--font-mono); letter-spacing: .12em; color: var(--muted); margin-bottom: 8px; }
+aside.toc ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+aside.toc a { color: var(--muted); text-decoration: none; display: block; padding: 3px 0; line-height: 1.5; }
+aside.toc a:hover { color: var(--ink); }
+.quizbar { margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.quizbar b { font: 700 18px/1.3 var(--font-mono); display: block; }
+.quizbar .wrong-list { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.quizbar .wrong-list a { font: 500 12px/1.6 var(--font-mono); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 0 6px; text-decoration: none; }
+.quizbar button { margin-top: 8px; font: 500 12px/1 var(--font-body); background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 6px 8px; cursor: pointer; }
+article { min-width: 0; max-width: 760px; }
+article h1 { font: 900 30px/1.3 var(--font-display); margin: 0 0 8px; text-wrap: balance; }
+article h2 { font: 700 24px/1.4 var(--font-display); margin: 56px 0 12px; padding-top: 16px; border-top: 2px solid var(--ink); text-wrap: balance; scroll-margin-top: 70px; }
+article h3 { font: 700 18px/1.5 var(--font-body); margin: 32px 0 8px; scroll-margin-top: 70px; }
+article h4 { font: 700 16px/1.5 var(--font-body); margin: 20px 0 6px; }
+article p, article li { max-width: 68ch; }
+article ul, article ol { padding-left: 1.4em; }
+article li { margin: 2px 0; }
+article strong { color: var(--ink); }
+code { font: 500 0.9em/1.5 var(--font-mono); font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.55; }
+pre code { background: none; padding: 0; }
+.table-wrap, article table { display: block; overflow-x: auto; max-width: 100%; }
+article table { border-collapse: collapse; font-size: 14px; margin: 12px 0; }
+article th, article td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+article th { background: var(--code); font-weight: 700; white-space: nowrap; }
+.admonition, details { border-radius: 8px; padding: 12px 16px; margin: 16px 0; border: 1px solid var(--line); background: var(--card); }
+.admonition > :last-child, details > :last-child { margin-bottom: 0; }
+.admonition-title, details > summary { font-weight: 700; margin: 0 0 6px; }
+.admonition.example { border-left: 4px solid var(--ex); background: var(--ex-soft); }
+.admonition.example .admonition-title { color: var(--ex); }
+.admonition.key { border-left: 4px solid var(--key); background: var(--key-soft); }
+.admonition.key .admonition-title { color: var(--key); }
+.admonition.trap { border-left: 4px solid var(--trap); background: var(--trap-soft); }
+.admonition.trap .admonition-title { color: var(--trap); }
+details.quiz { border-style: dashed; }
+details.quiz > summary { cursor: pointer; color: var(--accent); margin: 0; list-style: revert; }
+details.quiz[open] > summary { margin-bottom: 8px; }
+.judge { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.judge button { font: 700 13px/1 var(--font-body); padding: 7px 12px; border-radius: 6px; cursor: pointer; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); }
+.judge button[aria-pressed="true"][data-v="1"] { background: var(--ok); border-color: var(--ok); color: var(--card); }
+.judge button[aria-pressed="true"][data-v="0"] { background: var(--accent); border-color: var(--accent); color: var(--card); }
+.arithmatex { overflow-x: auto; max-width: 100%; }
+div.arithmatex { padding: 4px 0; }
+mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; gap: 16px; }
+  aside.toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--card); }
+  aside.toc ul { grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  article h1 { font-size: 25px; }
+}
+@media (max-width: 600px) {
+  span.arithmatex { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
+}
+</style>
+<script>
+window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+  options: { processHtmlClass: "arithmatex", ignoreHtmlClass: ".*" }, svg: { fontCache: "global" } };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap top-row">
+  <a class="home" href="../index.html">← 備考計畫</a>
+  <nav class="notes" aria-label="教材">{{NAV}}</nav>
+</div></header>
+<div class="wrap layout">
+  <aside class="toc">
+    <div class="eyebrow">目錄</div>
+    {{TOC}}
+    <div class="quizbar" id="quizbar" hidden>
+      <div class="eyebrow">本頁小考</div>
+      <b id="qb-num">0 / 0</b>
+      <span id="qb-txt" style="color:var(--muted)">已作答</span>
+      <div class="wrong-list" id="qb-wrong"></div>
+      <button type="button" id="qb-reset">清除本頁紀錄</button>
+    </div>
+  </aside>
+  <article>
+{{BODY}}
+  </article>
+</div>
+<script>
+(function () {
+  var KEY = "cgep:quiz:{{SLUG}}";
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+  var rec = load();
+  var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
+  quizzes.forEach(function (d, i) {
+    var label = "Q" + (i + 1);
+    var prev = d.previousElementSibling;
+    if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
+    var id = "quiz-" + (i + 1);
+    d.id = id; d.dataset.label = label;
+    var bar = document.createElement("div");
+    bar.className = "judge";
+    bar.innerHTML = '<span>自己對答案：</span><button type="button" data-v="1">答對了</button><button type="button" data-v="0">答錯了，記錯題</button>';
+    d.appendChild(bar);
+    bar.querySelectorAll("button").forEach(function (b) {
+      b.addEventListener("click", function () { rec[id] = +b.dataset.v; save(rec); paint(); });
+    });
+  });
+  function paint() {
+    var done = 0, wrong = [];
+    quizzes.forEach(function (d) {
+      var v = rec[d.id];
+      d.querySelectorAll(".judge button").forEach(function (b) { b.setAttribute("aria-pressed", String(v !== undefined && +b.dataset.v === v)); });
+      if (v !== undefined) done++;
+      if (v === 0) wrong.push(d);
+    });
+    var bar = document.getElementById("quizbar");
+    if (!quizzes.length) return;
+    bar.hidden = false;
+    document.getElementById("qb-num").textContent = done + " / " + quizzes.length;
+    document.getElementById("qb-txt").textContent = "已作答，答錯 " + wrong.length + " 題";
+    document.getElementById("qb-wrong").innerHTML = wrong.map(function (d) { return '<a href="#' + d.id + '">' + d.dataset.label + "</a>"; }).join("");
+  }
+  document.getElementById("qb-reset").addEventListener("click", function () { rec = {}; save(rec); paint(); });
+  paint();
+})();
+</script>
+</body>
+</html>

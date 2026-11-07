@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>計算機結構：從中山考古題學</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: textbook pages — sticky nav across the 5 notes, a table of contents beside one reading column; example / key / trap boxes and quiz answers set off by subject-neutral tints. */
+:root {
+  --paper: #f5f6f9; --card: #ffffff; --ink: #1a2130; --muted: #5a6376; --line: #dde1e9;
+  --accent: #c42f3d; --accent-soft: #fbe8ea;
+  --ex: #4450b5; --ex-soft: #eceefb;
+  --key: #0d7a74; --key-soft: #e3f4f2;
+  --trap: #a86300; --trap-soft: #fbf1e1;
+  --ok: #2f7d3b; --ok-soft: #e4f3e6;
+  --code: #eef0f5;
+  --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11141a; --card: #191d25; --ink: #e5e8ef; --muted: #98a0b0; --line: #2a303b;
+    --accent: #ff6d7a; --accent-soft: #3a1d23; --ex: #9aa2ff; --ex-soft: #20233f;
+    --key: #4fc6be; --key-soft: #13302e; --trap: #f0aa47; --trap-soft: #35270f;
+    --ok: #6fcf7d; --ok-soft: #173320; --code: #222733; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11141a; --card: #191d25; --ink: #e5e8ef; --muted: #98a0b0; --line: #2a303b;
+  --accent: #ff6d7a; --accent-soft: #3a1d23; --ex: #9aa2ff; --ex-soft: #20233f;
+  --key: #4fc6be; --key-soft: #13302e; --trap: #f0aa47; --trap-soft: #35270f;
+  --ok: #6fcf7d; --ok-soft: #173320; --code: #222733; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.8 var(--font-body); }
+a { color: var(--accent); }
+header.top { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top-row { display: flex; gap: 16px; align-items: center; padding-block: 10px; flex-wrap: wrap; }
+.home { font: 700 14px/1 var(--font-mono); color: var(--accent); text-decoration: none; white-space: nowrap; }
+nav.notes { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+nav.notes a { text-decoration: none; color: var(--muted); padding: 6px 10px; font-size: 14px; font-weight: 500; white-space: nowrap; border-bottom: 2px solid transparent; }
+nav.notes a[aria-current="page"] { color: var(--ink); border-color: var(--accent); }
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; padding-block: 28px 80px; }
+aside.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 13px; }
+aside.toc .eyebrow { font: 700 11px/1 var(--font-mono); letter-spacing: .12em; color: var(--muted); margin-bottom: 8px; }
+aside.toc ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+aside.toc a { color: var(--muted); text-decoration: none; display: block; padding: 3px 0; line-height: 1.5; }
+aside.toc a:hover { color: var(--ink); }
+.quizbar { margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.quizbar b { font: 700 18px/1.3 var(--font-mono); display: block; }
+.quizbar .wrong-list { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.quizbar .wrong-list a { font: 500 12px/1.6 var(--font-mono); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 0 6px; text-decoration: none; }
+.quizbar button { margin-top: 8px; font: 500 12px/1 var(--font-body); background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 6px 8px; cursor: pointer; }
+article { min-width: 0; max-width: 760px; }
+article h1 { font: 900 30px/1.3 var(--font-display); margin: 0 0 8px; text-wrap: balance; }
+article h2 { font: 700 24px/1.4 var(--font-display); margin: 56px 0 12px; padding-top: 16px; border-top: 2px solid var(--ink); text-wrap: balance; scroll-margin-top: 70px; }
+article h3 { font: 700 18px/1.5 var(--font-body); margin: 32px 0 8px; scroll-margin-top: 70px; }
+article h4 { font: 700 16px/1.5 var(--font-body); margin: 20px 0 6px; }
+article p, article li { max-width: 68ch; }
+article ul, article ol { padding-left: 1.4em; }
+article li { margin: 2px 0; }
+article strong { color: var(--ink); }
+code { font: 500 0.9em/1.5 var(--font-mono); font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.55; }
+pre code { background: none; padding: 0; }
+.table-wrap, article table { display: block; overflow-x: auto; max-width: 100%; }
+article table { border-collapse: collapse; font-size: 14px; margin: 12px 0; }
+article th, article td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+article th { background: var(--code); font-weight: 700; white-space: nowrap; }
+.admonition, details { border-radius: 8px; padding: 12px 16px; margin: 16px 0; border: 1px solid var(--line); background: var(--card); }
+.admonition > :last-child, details > :last-child { margin-bottom: 0; }
+.admonition-title, details > summary { font-weight: 700; margin: 0 0 6px; }
+.admonition.example { border-left: 4px solid var(--ex); background: var(--ex-soft); }
+.admonition.example .admonition-title { color: var(--ex); }
+.admonition.key { border-left: 4px solid var(--key); background: var(--key-soft); }
+.admonition.key .admonition-title { color: var(--key); }
+.admonition.trap { border-left: 4px solid var(--trap); background: var(--trap-soft); }
+.admonition.trap .admonition-title { color: var(--trap); }
+details.quiz { border-style: dashed; }
+details.quiz > summary { cursor: pointer; color: var(--accent); margin: 0; list-style: revert; }
+details.quiz[open] > summary { margin-bottom: 8px; }
+.judge { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.judge button { font: 700 13px/1 var(--font-body); padding: 7px 12px; border-radius: 6px; cursor: pointer; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); }
+.judge button[aria-pressed="true"][data-v="1"] { background: var(--ok); border-color: var(--ok); color: var(--card); }
+.judge button[aria-pressed="true"][data-v="0"] { background: var(--accent); border-color: var(--accent); color: var(--card); }
+.arithmatex { overflow-x: auto; max-width: 100%; }
+div.arithmatex { padding: 4px 0; }
+mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; gap: 16px; }
+  aside.toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--card); }
+  aside.toc ul { grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  article h1 { font-size: 25px; }
+}
+@media (max-width: 600px) {
+  span.arithmatex { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
+}
+</style>
+<script>
+window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+  options: { processHtmlClass: "arithmatex", ignoreHtmlClass: ".*" }, svg: { fontCache: "global" } };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap top-row">
+  <a class="home" href="../index.html">← 備考計畫</a>
+  <nav class="notes" aria-label="教材"><a href="method.html">學習方法</a><a href="discrete.html">離散數學</a><a href="arch.html" aria-current="page">計算機結構</a><a href="os.html">作業系統</a><a href="ds.html">資料結構</a></nav>
+</div></header>
+<div class="wrap layout">
+  <aside class="toc">
+    <div class="eyebrow">目錄</div>
+    <div class="toc">
+<ul>
+<li><a href="#u0">0. 中山計結怎麼考</a></li>
+<li><a href="#u1">單元 1：效能</a></li>
+<li><a href="#u2">單元 2：Cache</a></li>
+<li><a href="#u3">單元 3：虛擬記憶體與 TLB</a></li>
+<li><a href="#u4">單元 4：Pipeline 與 hazard</a></li>
+<li><a href="#u5">單元 5：分支預測</a></li>
+<li><a href="#u6">單元 6：多執行緒</a></li>
+<li><a href="#u7">單元 7：DRAM 與資料重用</a></li>
+<li><a href="#u8">單元 8：平行與微架構</a></li>
+<li><a href="#u9">單元 9：ISA 與算術</a></li>
+<li><a href="#mix">綜合小考</a></li>
+<li><a href="#res">資源</a></li>
+</ul>
+</div>
+
+    <div class="quizbar" id="quizbar" hidden>
+      <div class="eyebrow">本頁小考</div>
+      <b id="qb-num">0 / 0</b>
+      <span id="qb-txt" style="color:var(--muted)">已作答</span>
+      <div class="wrong-list" id="qb-wrong"></div>
+      <button type="button" id="qb-reset">清除本頁紀錄</button>
+    </div>
+  </aside>
+  <article>
+<h1 id="_1">計算機結構：從中山考古題學</h1>
+<p>這份教材從中山資工碩甲組 111–115 年的「計算機結構」考古題整理而來，五年共 <strong>30 大題</strong>全部拆進各單元。中山這科的題目有兩個明顯來源：</p>
+<ul>
+<li><strong>Patterson &amp; Hennessy《Computer Organization and Design》（COD）課本習題</strong>：113 年幾乎整份都是，數字都很像。</li>
+<li><strong>Onur Mutlu（ETH Zürich／CMU）計算機結構課的考題</strong>：112、114 年的 DRAM refresh、多執行緒切換、dual-path execution、VLIW 對比 superscalar 對比 array processor 都是他課上的經典題型。</li>
+</ul>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>計結考的是<strong>會不會算</strong>加上<strong>能不能講出取捨</strong>。每一題的背後只有幾條公式：CPU time、Amdahl、AMAT、位址切割、pipeline 的 stall／penalty。把公式和「為什麼」都講清楚，就能拿到大部分分數。</p>
+</div>
+<h2 id="u0">0. 中山計結怎麼考</h2>
+<table>
+<thead>
+<tr>
+<th>主題</th>
+<th>111</th>
+<th>112</th>
+<th>113</th>
+<th>114</th>
+<th>115</th>
+<th>重要度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>效能：CPI、CPU time、Amdahl</td>
+<td>P4</td>
+<td>Q1</td>
+<td>Q1</td>
+<td>—</td>
+<td>Q1, Q2</td>
+<td>★★★</td>
+</tr>
+<tr>
+<td>Cache：位址切割、總位元數、hit/miss、AMAT</td>
+<td>P1, P3, P4</td>
+<td>Q1, Q6</td>
+<td>Q5, Q6</td>
+<td>—</td>
+<td>Q6</td>
+<td>★★★</td>
+</tr>
+<tr>
+<td>虛擬記憶體、TLB、page table</td>
+<td>P1, P2, P3</td>
+<td>—</td>
+<td>Q7</td>
+<td>Q2</td>
+<td>—</td>
+<td>★★★</td>
+</tr>
+<tr>
+<td>Pipeline、hazard、forwarding</td>
+<td>P5</td>
+<td>—</td>
+<td>Q3</td>
+<td>Q4</td>
+<td>Q5</td>
+<td>★★★</td>
+</tr>
+<tr>
+<td>分支預測與 misprediction penalty</td>
+<td>—</td>
+<td>Q1</td>
+<td>Q4</td>
+<td>Q3</td>
+<td>Q5</td>
+<td>★★★</td>
+</tr>
+<tr>
+<td>多執行緒（fine-grained、switch-on-stall）</td>
+<td>—</td>
+<td>Q3</td>
+<td>—</td>
+<td>Q5</td>
+<td>—</td>
+<td>★★</td>
+</tr>
+<tr>
+<td>DRAM refresh、資料重用</td>
+<td>—</td>
+<td>Q2, Q4</td>
+<td>—</td>
+<td>Q1</td>
+<td>—</td>
+<td>★★</td>
+</tr>
+<tr>
+<td>平行、GPU、VLIW／superscalar／array、記憶體一致性</td>
+<td>—</td>
+<td>Q5</td>
+<td>Q1, Q2</td>
+<td>Q6</td>
+<td>Q1</td>
+<td>★★</td>
+</tr>
+<tr>
+<td>ISA 與算術（RISC、PC-relative、二補數、浮點）</td>
+<td>P5</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>Q3, Q4</td>
+<td>★</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建議讀的順序</strong>：單元 1 效能 → 2 cache → 3 虛擬記憶體 → 4 pipeline → 5 分支 → 6 多執行緒 → 7 DRAM → 8 平行 → 9 ISA 與算術。前五個單元是每年必考的核心。</p>
+<div class="admonition trap">
+<p class="admonition-title">作答習慣</p>
+<ul>
+<li>中山計結題目常寫「不清楚的地方請先寫出假設」。PTE 幾 byte、branch 在哪一級決定、register file 能不能同一 cycle 先寫後讀，<strong>這些假設寫清楚，答案不一樣也能拿分</strong>。</li>
+<li>不能用計算機。單位換算（ns／ps、KiB／MiB、<span class="arithmatex">\(2^{10}\approx10^3\)</span>）一定要熟。</li>
+</ul>
+</div>
+<h2 id="u1">單元 1：效能</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>執行時間 ＝ 指令數 × 每指令週期數 × 每週期時間。所有效能題都是在改這三個數字的其中一個。</p>
+</div>
+<h3 id="u1-1">1.1 CPU time 與加權 CPI</h3>
+<div class="arithmatex">\[\text{CPU time}=\text{IC}\times\text{CPI}\times T_{\text{clock}}=\frac{\text{IC}\times\text{CPI}}{f}\]</div>
+<div class="arithmatex">\[\text{CPI}_{\text{avg}}=\sum_i(\text{指令類別 } i \text{ 的比例})\times\text{CPI}_i\]</div>
+<div class="admonition example">
+<p class="admonition-title">115 Q1.2（7 分）：<span class="arithmatex">\(2\times10^9\)</span> 條指令，50% CPI 1、30% CPI 5、20% CPI 2，2 GHz；記憶體指令 CPI 從 5 降到 2</p>
+<p><span class="arithmatex">\(\text{CPI}=0.5\times1+0.3\times5+0.2\times2=2.4\)</span>，時間 <span class="arithmatex">\(=\frac{2\times10^9\times2.4}{2\times10^9}=2.4\)</span> 秒。</p>
+<p>改善後 <span class="arithmatex">\(\text{CPI}=0.5+0.6+0.4=1.5\)</span>，時間 1.5 秒，speedup <span class="arithmatex">\(=\frac{2.4}{1.5}=1.6\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 Q2.1（10 分）：35% CPI 1、45% CPI 3、20% CPI 2，週期 0.4 ns，<span class="arithmatex">\(10^9\)</span> 條指令</p>
+<p><span class="arithmatex">\(\text{CPI}=0.35+1.35+0.4=2.1\)</span>，時間 <span class="arithmatex">\(=10^9\times2.1\times0.4\text{ ns}=0.84\)</span> 秒。</p>
+</div>
+<h3 id="u1-2">1.2 Amdahl 定律</h3>
+<p>只有比例 <span class="arithmatex">\(f\)</span> 的部分加速 <span class="arithmatex">\(s\)</span> 倍：</p>
+<div class="arithmatex">\[\text{Speedup}=\frac{1}{(1-f)+\dfrac{f}{s}}\qquad\text{上限}=\frac{1}{1-f}\]</div>
+<p><strong>make the common case fast</strong>（115 Q1.3）就是 Amdahl 的白話版：佔比大的部分加速才有用；把佔 1% 的情況加速 100 倍，整體幾乎不變，如果因此拖慢了常見情況，整體反而變慢。</p>
+<div class="admonition example">
+<p class="admonition-title">115 Q2.2（10 分）：浮點指令佔 30% 時間，加速 5 倍，整體最多快幾倍</p>
+<p><span class="arithmatex">\(\frac{1}{0.7+0.3/5}=\frac{1}{0.76}\approx1.32\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 P4.2（10%）：程式 40% 可平行，要幾個核心才能效能加倍</p>
+<p><span class="arithmatex">\(\frac{1}{0.6+0.4/n}=2\)</span> → <span class="arithmatex">\(0.6+\frac{0.4}{n}=0.5\)</span> → <span class="arithmatex">\(\frac{0.4}{n}=-0.1\)</span>，<strong>無解</strong>。</p>
+<p>上限是 <span class="arithmatex">\(\frac{1}{0.6}\approx1.67\)</span> 倍，<strong>再多核心都不可能加倍</strong>。這題考的就是你敢不敢寫「不可能」，並用 Amdahl 的上限說明。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q1（8%）：80% 可平行，(1) 8 核 speedup (2) 每次核心數加倍，通訊開銷增加原時間的 0.5%</p>
+<p>(1) <span class="arithmatex">\(\frac{1}{0.2+0.8/8}=\frac{1}{0.3}\approx3.33\)</span>。</p>
+<p>(2) 1→2→4→8 加倍了 3 次，開銷 <span class="arithmatex">\(3\times0.5\%=1.5\%\)</span>：<span class="arithmatex">\(\frac{1}{0.2+0.1+0.015}=\frac1{0.315}\approx3.17\)</span>。</p>
+</div>
+<h3 id="u1-3">1.3 時脈為什麼不能一直加</h3>
+<p>115 Q1.1（7 分）要你講兩個限制：</p>
+<ol>
+<li><strong>功耗牆（power wall）</strong>：動態功耗 <span class="arithmatex">\(\propto C V^2 f\)</span>。時脈上去，功耗和散熱一起上去，晶片撐不住。→ 改用<strong>多核、平行</strong>，用更多較慢的核心換效能。</li>
+<li><strong>記憶體牆（memory wall）</strong>：DRAM 延遲沒有跟著 CPU 變快，時脈再高也只是多等幾個週期。→ 發展<strong>記憶體階層</strong>（多層 cache）來隱藏延遲。</li>
+<li>（可再補）<strong>pipeline 越切越細的極限</strong>：每級都有 pipeline 暫存器的固定延遲，切到最後收益變小，而 branch misprediction penalty 越來越大。→ 需要更好的<strong>分支預測</strong>與推測執行。</li>
+</ol>
+<h3 id="u1-quiz">單元 1 小考</h3>
+<p><strong>1-1.</strong> 40% ALU（CPI 1）、30% load（CPI 4）、20% store（CPI 3）、10% branch（CPI 2），1 GHz，<span class="arithmatex">\(10^9\)</span> 條指令，CPU time？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(\text{CPI}=0.4+1.2+0.6+0.2=2.4\)</span>，時間 <span class="arithmatex">\(=10^9\times2.4\times1\text{ ns}=2.4\)</span> 秒。</p>
+</details>
+<p><strong>1-2.</strong> 佔 80% 時間的部分要加速幾倍，整體才會快 2 倍？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(0.2+\frac{0.8}{s}=0.5\)</span> → <span class="arithmatex">\(s=\frac{8}{3}\approx2.67\)</span> 倍。</p>
+</details>
+<p><strong>1-3.</strong> 90% 可平行，10 個核心的 speedup？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(\frac{1}{0.1+0.09}=\frac1{0.19}\approx5.26\)</span>。</p>
+</details>
+<h2 id="u2">單元 2：Cache</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>位址切成 <strong>tag | index | offset</strong> 三段。offset 由 block 大小決定，index 由「有幾個 set」決定，剩下的都是 tag。會切位址，cache 題就會一半。</p>
+</div>
+<h3 id="u2-1">2.1 位址切割三步驟</h3>
+<ol>
+<li><strong>offset 位元</strong> <span class="arithmatex">\(=\log_2(\text{block 大小，byte})\)</span></li>
+<li><strong>set 數</strong> <span class="arithmatex">\(=\dfrac{\text{cache 容量}}{\text{block 大小}\times\text{associativity}}\)</span>，<strong>index 位元</strong> <span class="arithmatex">\(=\log_2(\text{set 數})\)</span></li>
+<li><strong>tag 位元</strong> <span class="arithmatex">\(=\text{位址位元}-\text{index}-\text{offset}\)</span></li>
+</ol>
+<p>fully associative 沒有 index（只有 1 個 set）；direct-mapped 是 1-way。</p>
+<h3 id="u2-2">2.2 Cache 總位元數</h3>
+<p>每個 block 需要：<strong>data + tag + valid</strong>，write-back 再加 <strong>dirty</strong>，set-associative 用 LRU 再加 <strong>LRU 位元</strong>（2-way 每個 set 1 個位元）。</p>
+<div class="arithmatex">\[\text{總位元數}=\text{block 數}\times(\text{data}+\text{tag}+\text{valid}+\text{dirty})+\text{LRU 位元}\]</div>
+<div class="admonition example">
+<p class="admonition-title">111 P3（25%）：32-bit 位址、16 KB data、write-back、LRU</p>
+<p>16 KB ＝ 4K words。每個 block 加 valid 和 dirty 各 1 位元。</p>
+<table>
+<thead>
+<tr>
+<th>設計</th>
+<th>block 數</th>
+<th>offset</th>
+<th>index</th>
+<th>tag</th>
+<th>每個 block 位元</th>
+<th>總位元數</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(1) DM、1-word block</td>
+<td>4096</td>
+<td>2</td>
+<td>12</td>
+<td>18</td>
+<td>32+18+2=52</td>
+<td><span class="arithmatex">\(4096\times52=212992\)</span></td>
+</tr>
+<tr>
+<td>(2) DM、4-word block</td>
+<td>1024</td>
+<td>4</td>
+<td>10</td>
+<td>18</td>
+<td>128+18+2=148</td>
+<td><span class="arithmatex">\(1024\times148=151552\)</span></td>
+</tr>
+<tr>
+<td>(3) 2-way、4-word block</td>
+<td>1024（512 sets）</td>
+<td>4</td>
+<td>9</td>
+<td>19</td>
+<td>128+19+2=149</td>
+<td><span class="arithmatex">\(1024\times149+512=153088\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>(3) 最後的 512 是每個 set 1 個 LRU 位元。direct-mapped 不需要 LRU。</p>
+<p>(4) TLB 10 entries、4 KB page：fully associative，每個 entry 存 VPN（tag）20 位元 ＋ PPN 20 位元（假設實體位址也是 32 位元）＋ valid、dirty、ref 位元，約 <span class="arithmatex">\(10\times43=430\)</span> 位元。</p>
+<p>(5) page table：<span class="arithmatex">\(2^{32}/2^{12}=2^{20}\)</span> 個 entry，每個存 PPN 20 位元＋狀態位元，約 <span class="arithmatex">\(2^{20}\times4\text{ B}=4\text{ MB}\)</span>（假設 PTE 4 bytes）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q5.2（6%）：32 KiB data、8-word block、32-bit 位址的 direct-mapped cache 總位元數</p>
+<p>block 32 B → offset 5；block 數 <span class="arithmatex">\(2^{15}/2^5=1024\)</span> → index 10；tag <span class="arithmatex">\(=32-10-5=17\)</span>。</p>
+<p><span class="arithmatex">\(1024\times(256+17+1)=1024\times274=280576\)</span> 位元（write-through，沒有 dirty）。</p>
+</div>
+<h3 id="u2-3">2.3 Hit／miss 追蹤</h3>
+<div class="admonition example">
+<p class="admonition-title">113 Q5.1（9%）：word address 序列、direct-mapped、2-word block、8 個 block</p>
+<p><strong>block 位址</strong> <span class="arithmatex">\(=\lfloor\text{word address}/2\rfloor\)</span>，<strong>index</strong> <span class="arithmatex">\(=\text{block 位址}\bmod8\)</span>，<strong>tag</strong> <span class="arithmatex">\(=\lfloor\text{block 位址}/8\rfloor\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th>word address</th>
+<th>二進位</th>
+<th>tag</th>
+<th>index</th>
+<th>H/M</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td>0000 0011</td>
+<td>0</td>
+<td>1</td>
+<td>M</td>
+</tr>
+<tr>
+<td>180</td>
+<td>1011 0100</td>
+<td>11</td>
+<td>2</td>
+<td>M</td>
+</tr>
+<tr>
+<td>43</td>
+<td>0010 1011</td>
+<td>2</td>
+<td>5</td>
+<td>M</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0000 0010</td>
+<td>0</td>
+<td>1</td>
+<td><strong>H</strong>（和 3 同一個 block）</td>
+</tr>
+<tr>
+<td>191</td>
+<td>1011 1111</td>
+<td>11</td>
+<td>7</td>
+<td>M</td>
+</tr>
+<tr>
+<td>88</td>
+<td>0101 1000</td>
+<td>5</td>
+<td>4</td>
+<td>M</td>
+</tr>
+<tr>
+<td>190</td>
+<td>1011 1110</td>
+<td>11</td>
+<td>7</td>
+<td><strong>H</strong></td>
+</tr>
+<tr>
+<td>14</td>
+<td>0000 1110</td>
+<td>0</td>
+<td>7</td>
+<td>M（踢掉 190 那塊）</td>
+</tr>
+<tr>
+<td>181</td>
+<td>1011 0101</td>
+<td>11</td>
+<td>2</td>
+<td><strong>H</strong></td>
+</tr>
+<tr>
+<td>44</td>
+<td>0010 1100</td>
+<td>2</td>
+<td>6</td>
+<td>M</td>
+</tr>
+<tr>
+<td>186</td>
+<td>1011 1010</td>
+<td>11</td>
+<td>5</td>
+<td>M（踢掉 43 那塊）</td>
+</tr>
+<tr>
+<td>253</td>
+<td>1111 1101</td>
+<td>15</td>
+<td>6</td>
+<td>M</td>
+</tr>
+</tbody>
+</table>
+<p><strong>注意</strong>：題目表格的示範列寫「3 → tag 0, index 3」，那是 1-word block 的切法（COD 原題的上一小題）。2-word block 時最低位元是 offset，index 是位元 [3:1]，所以 3 的 index 是 1。考試遇到這種情況，<strong>寫出你的切法並說明</strong>。</p>
+</div>
+<h3 id="u2-4">2.4 AMAT 與含記憶體停頓的 CPU time</h3>
+<div class="arithmatex">\[\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}\]</div>
+<p>多層：<span class="arithmatex">\(\text{AMAT}=t_{L1}+m_{L1}\times(t_{L2}+m_{L2}\times t_{mem})\)</span>，<span class="arithmatex">\(m_{L2}\)</span> 是 L2 的 local miss rate。</p>
+<div class="admonition example">
+<p class="admonition-title">112 Q1.1–1.2（10%）：miss latency 10；direct-mapped hit 2 cycle、miss rate 15%；set-associative hit 3 cycle</p>
+<p>DM：<span class="arithmatex">\(2+0.15\times10=3.5\)</span>。</p>
+<p>SA 要更快：<span class="arithmatex">\(3+m\times10&lt;3.5\)</span> → <span class="arithmatex">\(m&lt;5\%\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q6（16%）：CPI 2.0、1 ns、每指令 1.5 次記憶體存取、miss penalty 80 ns；DM miss rate 1.5%、2-way miss rate 1.1% 但時脈要拉長 1.3 倍</p>
+<p><strong>AMAT</strong>（hit time 1 個週期）：</p>
+<ul>
+<li>DM：<span class="arithmatex">\(1.0+0.015\times80=2.2\)</span> ns</li>
+<li>2-way：<span class="arithmatex">\(1.3+0.011\times80=2.18\)</span> ns</li>
+</ul>
+<p><strong>CPU time / IC</strong>（penalty 是固定的 80 ns，不隨時脈變）：</p>
+<ul>
+<li>DM：<span class="arithmatex">\(2.0\times1.0+1.5\times0.015\times80=2.0+1.8=3.8\)</span> ns</li>
+<li>2-way：<span class="arithmatex">\(2.0\times1.3+1.5\times0.011\times80=2.6+1.32=3.92\)</span> ns</li>
+</ul>
+<p><strong>結論</strong>：2-way 的 AMAT 略好，但每條指令都被拉長的時脈拖累，整體 CPU time 反而 DM 較快。這正是 115 Q6.2 要你講的道理。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 Q6（15 分）：(1) hit 1 cycle、miss rate 2%、penalty 100 cycle 的 AMAT (2) 為什麼 associativity 太高反而變慢</p>
+<p>(1) <span class="arithmatex">\(1+0.02\times100=3\)</span> cycles。</p>
+<p>(2) associativity 增加只減少 <strong>conflict miss</strong>，但：比較器變多、要多一層 mux 選出命中的 way → <strong>hit time 變長</strong>（甚至拖慢整顆 CPU 的時脈）；面積和功耗增加；而且 8-way 以上 miss rate 幾乎不再下降（剩下的是 compulsory、capacity miss）。hit time 的成本最後超過 miss rate 的收益。</p>
+</div>
+<h3 id="u2-5">2.5 觀念題</h3>
+<div class="admonition example">
+<p class="admonition-title">111 P1（10%）：五個觀念題</p>
+<ul>
+<li><strong>多層 cache 寫入策略</strong>：L1 常用 write-through（簡單、L2 隨時有最新資料，方便維持一致性），L2／L3 用 write-back（減少寫入主記憶體的流量）。寫入時用 write buffer 避免停頓。</li>
+<li><strong>multi-word block 與 set-associative 的差別</strong>：multi-word block 利用<strong>空間區域性</strong>（一次搬進相鄰資料），代價是 block 變大時 miss penalty 變大、block 數變少；set-associative 減少<strong>衝突 miss</strong>，代價是 hit time 和硬體成本。</li>
+<li><strong>nonblocking cache</strong>：miss 處理期間仍可服務其他存取（hit under miss、miss under miss），所以 cache 在 miss 時不會整個停住，<strong>同時有多個請求在處理</strong>，有效頻寬變高。</li>
+<li><strong>TLB 放大後還用 fully associative 嗎</strong>：不一定。entry 多時，全部平行比較的硬體太大、太慢、太耗電，所以大 TLB 通常改用 set-associative（或兩層 TLB：小的 fully associative L1 TLB＋大的 set-associative L2 TLB）。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q6（20%）：只知道三組位址序列的 hit rate，反推 cache 參數</p>
+<p>已知 hit rate 依序是 1/2、5/8、1/3，選項是 block 8–128 B、1/2/4/8-way、4 或 8 KB、LRU 或 FIFO。</p>
+<p><strong>思路</strong>：</p>
+<ol>
+<li><strong>block 大小</strong>：序列 1 的 0、4、8、16 若在同一個 block 就會命中。0 之後 4、8 命中，16 也命中，就有 3 次命中＝1/2 → block 至少 32 B；如果 64 命中，block 就要 128 B，hit rate 會超過 1/2。所以 block 是 32 或 64 B，再用序列 2 的 31 與 63 區分：只有 64 B 才會讓 31、63 落在同一個 block。</li>
+<li><strong>associativity 與大小</strong>：序列 2 中 0、4096、8192、16384 這些相隔 4 KB 的倍數會搶同一個 set；看它們能同時留住幾個，就推得出 way 數與容量。</li>
+<li><strong>LRU 或 FIFO</strong>：序列 3 的 0 是否被保留，取決於序列 2 末段有沒有「再用到」某個 block 而改變它的順序。</li>
+</ol>
+<p>把每組參數都模擬一遍，唯一符合三個 hit rate 的是 <strong>64 B block、4-way、8 KB、LRU</strong>。考試時要把模擬的 cache 狀態畫出來當理由。</p>
+</div>
+<h3 id="u2-quiz">單元 2 小考</h3>
+<p><strong>2-1.</strong> 32-bit 位址、64 KB direct-mapped、16 B block、write-through：offset、index、tag 各幾位元？總位元數？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>offset 4、block 數 4096 → index 12、tag 16。總位元數 <span class="arithmatex">\(4096\times(128+16+1)=593920\)</span>。</p>
+</details>
+<p><strong>2-2.</strong> 同上但改成 4-way，index 和 tag？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>set 數 <span class="arithmatex">\(4096/4=1024\)</span> → index 10、tag 18。</p>
+</details>
+<p><strong>2-3.</strong> 4 個 block 的 direct-mapped cache（1-word block），word address 序列 0、8、0、6、8，幾次 miss？改成 fully associative LRU 呢？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>DM：0、8、0、8 都映到 index 0 互踢，6 映到 index 2 → 5 次全 miss。
+FA：0 M、8 M、0 H、6 M、8 H → 3 次 miss。</p>
+</details>
+<p><strong>2-4.</strong> L1 hit 1 cycle、miss rate 5%；L2 hit 10 cycle、local miss rate 20%；主記憶體 100 cycle。AMAT？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(1+0.05\times(10+0.2\times100)=1+0.05\times30=2.5\)</span> cycles。</p>
+</details>
+<h2 id="u3">單元 3：虛擬記憶體與 TLB</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>虛擬位址 ＝ <strong>VPN | page offset</strong>。page offset 由 page 大小決定，直接搬到實體位址；VPN 查 TLB 或 page table 換成 PPN。</p>
+</div>
+<h3 id="u3-1">3.1 位元切割與 page table 大小</h3>
+<ul>
+<li>page offset <span class="arithmatex">\(=\log_2(\text{page 大小})\)</span></li>
+<li>VPN <span class="arithmatex">\(=\)</span> 虛擬位址位元 <span class="arithmatex">\(-\)</span> offset，<strong>page table entry 數 <span class="arithmatex">\(=2^{\text{VPN}}\)</span></strong></li>
+<li>PPN <span class="arithmatex">\(=\)</span> 實體位址位元 <span class="arithmatex">\(-\)</span> offset</li>
+<li>page table 大小 <span class="arithmatex">\(=2^{\text{VPN}}\times\)</span> PTE 大小</li>
+<li>TLB 若是 set-associative：TLB index <span class="arithmatex">\(=\log_2(\text{TLB set 數})\)</span>，TLB tag <span class="arithmatex">\(=\)</span> VPN <span class="arithmatex">\(-\)</span> TLB index</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">114 Q2（14%）：256 MiB 實體、4 GiB 虛擬、1 KiB page、TLB 4 sets × 8-way</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>計算</th>
+<th>位元數</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>page offset</td>
+<td><span class="arithmatex">\(\log_2 1024\)</span></td>
+<td>10</td>
+</tr>
+<tr>
+<td>VPN</td>
+<td><span class="arithmatex">\(32-10\)</span></td>
+<td>22</td>
+</tr>
+<tr>
+<td>PPN</td>
+<td><span class="arithmatex">\(28-10\)</span></td>
+<td>18</td>
+</tr>
+<tr>
+<td>TLB index</td>
+<td><span class="arithmatex">\(\log_2 4\)</span></td>
+<td>2</td>
+</tr>
+<tr>
+<td>TLB tag</td>
+<td><span class="arithmatex">\(22-2\)</span></td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<p>page table 有 <span class="arithmatex">\(2^{22}\)</span> 個 entry。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q7.1（8%）：42-bit 虛擬位址、16 GiB DRAM、4 KiB page、PTE 4 B</p>
+<p>VPN <span class="arithmatex">\(=42-12=30\)</span> → <span class="arithmatex">\(2^{30}\)</span> 個 PTE，page table <span class="arithmatex">\(=2^{30}\times4\text{ B}=4\text{ GiB}\)</span>。</p>
+<p>（這比實體記憶體 16 GiB 的四分之一還大，這就是為什麼需要多層 page table。）</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 P2（30%）：程式需要 4 GB、只分到 2 GB DRAM、page 4 KB、write-back、LRU</p>
+<p>(1) page table 至少：<span class="arithmatex">\(4\text{ GB}/4\text{ KB}=2^{20}\)</span> 個 entry。每個 entry 至少要 PPN（2 GB／4 KB ＝ <span class="arithmatex">\(2^{19}\)</span> 個 frame → 19 位元）＋ valid ＋ dirty（write-back 需要）＝ 21 位元，約 <span class="arithmatex">\(2^{20}\times21\)</span> 位元 ≈ 2.6 MB；以 4 B 對齊則是 4 MB。</p>
+<p>(2) 隨機存取、沒有區域性：任一時刻只有一半的 page 在記憶體裡，<strong>page fault rate ≈ 50%</strong>。</p>
+<p>(3) TLB miss rate 75% → hit rate 25%。隨機存取下 hit rate ≈ TLB entry 數 / 總 page 數，所以 TLB 至少 <span class="arithmatex">\(0.25\times2^{20}=2^{18}\)</span> 個 entry。</p>
+</div>
+<h3 id="u3-2">3.2 TLB 與 page table 模擬</h3>
+<p>每個位址的處理順序：</p>
+<ol>
+<li>切出 VPN 和 offset。</li>
+<li>查 TLB：hit → 直接得 PPN（更新 LRU）。</li>
+<li>TLB miss → 查 page table：valid → 得 PPN，放進 TLB。</li>
+<li>page table 也 invalid → <strong>page fault</strong>，從磁碟載入，分配新的 PPN，更新 page table 和 TLB。</li>
+</ol>
+<div class="admonition example">
+<p class="admonition-title">113 Q7.2（12%）：4 KiB page、4-entry fully associative TLB、LRU，位址 4669、13916</p>
+<table>
+<thead>
+<tr>
+<th>位址</th>
+<th>VPN（<span class="arithmatex">\(\lfloor a/4096\rfloor\)</span>）</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4669</td>
+<td>1</td>
+<td>TLB miss；page table 第 1 列是 Disk → <strong>page fault</strong>。新 PPN ＝ 目前最大的 12 加 1 ＝ 13。更新 page table[1] ＝ (1, 13)；TLB 用掉 invalid 的那格 → (1, tag 1, PPN 13)</td>
+</tr>
+<tr>
+<td>13916</td>
+<td>3</td>
+<td><strong>TLB hit</strong>（tag 3 → PPN 6），更新 LRU</td>
+</tr>
+</tbody>
+</table>
+<p>最後 TLB：(1,11,12)、(1,7,4)、(1,3,6)、(1,1,13)。</p>
+<p>這題是 COD 第 5 章 TLB 習題的改編，原題的位址串更長，練習時可以找原題做完整版本。</p>
+</div>
+<h3 id="u3-quiz">單元 3 小考</h3>
+<p><strong>3-1.</strong> 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>offset 13、VPN 19 → <span class="arithmatex">\(2^{19}\times4=2\text{ MB}\)</span>。</p>
+</details>
+<p><strong>3-2.</strong> VPN 19 位元，TLB 16 entries、4-way，TLB index 和 tag 幾位元？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>set 數 4 → index 2、tag 17。</p>
+</details>
+<p><strong>3-3.</strong> 為什麼 page offset 不用轉換？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>虛擬 page 和實體 frame 一樣大，page 內的相對位置不變，只有「第幾頁」需要對應。</p>
+</details>
+<h2 id="u4">單元 4：Pipeline 與 hazard</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>pipeline 讓<strong>吞吐量</strong>變高，但單一指令的<strong>延遲</strong>不會變短。週期時間由最慢的那一級決定。</p>
+</div>
+<h3 id="u4-1">4.1 pipeline 的時間計算</h3>
+<ul>
+<li>single-cycle：週期 <span class="arithmatex">\(=\)</span> 各級延遲總和</li>
+<li>pipelined：週期 <span class="arithmatex">\(=\)</span> 最慢一級；<span class="arithmatex">\(n\)</span> 條指令、<span class="arithmatex">\(k\)</span> 級的總時間 <span class="arithmatex">\(=(k+n-1)\times T\)</span></li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">113 Q3（18%）：IF 250、ID 150、EX 350、MEM 300、WB 200 ps；alu 45%、beq 10%、lw 25%、sw 20%</p>
+<table>
+<thead>
+<tr>
+<th>小題</th>
+<th>非 pipeline</th>
+<th>pipeline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1 週期時間</td>
+<td><span class="arithmatex">\(250+150+350+300+200=1250\)</span> ps</td>
+<td>350 ps</td>
+</tr>
+<tr>
+<td>3.2 lw、beq 的延遲</td>
+<td>1250 ps</td>
+<td><span class="arithmatex">\(5\times350=1750\)</span> ps</td>
+</tr>
+<tr>
+<td>3.3 lw、sw、add、beq 四條總時間</td>
+<td><span class="arithmatex">\(4\times1250=5000\)</span> ps</td>
+<td><span class="arithmatex">\((5+3)\times350=2800\)</span> ps</td>
+</tr>
+</tbody>
+</table>
+<p>3.4 使用率：data memory 只有 lw、sw 用到 → <span class="arithmatex">\(25\%+20\%=45\%\)</span>；register 寫入埠只有 alu、lw 用到 → <span class="arithmatex">\(45\%+25\%=70\%\)</span>。</p>
+</div>
+<h3 id="u4-2">4.2 三種 hazard</h3>
+<table>
+<thead>
+<tr>
+<th>種類</th>
+<th>原因</th>
+<th>解法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>structural</td>
+<td>兩條指令同時要用同一個硬體</td>
+<td>複製硬體（例如分開的 I-cache、D-cache）</td>
+</tr>
+<tr>
+<td>data</td>
+<td>後面的指令要用前面還沒寫回的結果</td>
+<td>forwarding；load-use 還是要 stall 1 cycle</td>
+</tr>
+<tr>
+<td>control</td>
+<td>branch 結果還沒出來就要 fetch 下一條</td>
+<td>預測、提早在 ID 決定、delayed branch</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition example">
+<p class="admonition-title">115 Q5.1（8 分）：lw R1, 0(R2) 後面緊接 add R3, R1, R4</p>
+<p>(1) <strong>為什麼有 hazard</strong>：add 在 EX 需要 R1，但 lw 要到 MEM 結束才從記憶體拿到資料。</p>
+<p>(2) <strong>為什麼 forwarding 不夠</strong>：forwarding 只能把資料往<strong>後面的時間</strong>送。lw 的資料在第 4 個 cycle 結束才有，add 的 EX 在第 4 個 cycle 開始就要用，資料不能回到過去。</p>
+<p>(3) <strong>最少 stall 1 個 cycle</strong>，之後從 MEM/WB 暫存器 forward 給 add 的 EX。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 P5（15%）：沒有 forwarding 的 5 級 MIPS，執行 sub $2 → and、or、add、sw 都用 $2</p>
+<p>(1) sub 在第 5 個 cycle 寫回。假設 register file <strong>前半週期寫、後半週期讀</strong>，and 的 ID 最早要在第 5 個 cycle，原本在第 3 個 → <strong>stall 2 個 cycle</strong>。之後 or、add、sw 的 ID 都在第 5 個 cycle 以後，不用再停。（若 register file 不能同週期先寫後讀，就是 3 個 cycle。）</p>
+<p>(2) 最小 ALU：這段程式只用到 sub、and、or、add（sw 的位址計算也是 add）。一個 32 位元 ALU 只要 AND、OR、加法器，減法用「加法器 + 第二運算元取反 + 進位輸入 1」（二補數），再用 mux 依 ALU control 選輸出。</p>
+<p>(3) branch 目標加法器<strong>可以</strong>移到 ID：它只需要 PC+4 和 sign-extend 後的立即值，兩者在 ID 都已經有了。好處是提早算出目標位址，搭配在 ID 做相等比較，misprediction penalty 從 2 降到 1。代價是比較器要的暫存器值可能還沒寫回，需要額外的 forwarding 或 stall。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">114 Q4（14%）：forwarding 值不值得？原本需要 0.4n 個 NOP、週期 250 ps；加 forwarding 後 0.05n 個 NOP、週期 300 ps</p>
+<p>4.1：沒 forwarding <span class="arithmatex">\(1.4n\times250=350n\)</span>；有 forwarding <span class="arithmatex">\(1.05n\times300=315n\)</span>。speedup <span class="arithmatex">\(=\frac{350}{315}\approx1.11\)</span>。</p>
+<p>4.2：沒 forwarding 只需 0.075n 個 NOP 的程式：<span class="arithmatex">\(1.075n\times250=268.75n\)</span>。有 forwarding 最好的情況也要 <span class="arithmatex">\(n\times300=300n\)</span>，<strong>不可能更快</strong>。</p>
+<p>4.3：設沒 forwarding 時的 NOP 比例為 <span class="arithmatex">\(x\)</span>，要 <span class="arithmatex">\((1+x)\times250&gt;300\)</span>（forwarding 最好情況 0 個 NOP），得 <span class="arithmatex">\(x&gt;0.2\)</span>，<strong>至少 20%</strong>。</p>
+<p>這題是 COD 第 4 章的習題原題。</p>
+</div>
+<h3 id="u4-quiz">單元 4 小考</h3>
+<p><strong>4-1.</strong> 各級 200、100、250、200、150 ps。single-cycle 和 pipeline 的週期？1000 條指令時 pipeline 的總時間和 speedup？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>single-cycle 900 ps、pipeline 250 ps。pipeline 總時間 <span class="arithmatex">\((5+999)\times250=251000\)</span> ps；single-cycle <span class="arithmatex">\(900\times1000=900000\)</span> ps；speedup ≈ 3.59。</p>
+</details>
+<p><strong>4-2.</strong> <code>lw x1, 0(x2)</code> 接 <code>add x3, x1, x4</code>：有 forwarding 時 stall 幾個？沒 forwarding（但 register file 前寫後讀）時呢？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>有 forwarding：1 個。沒有：2 個（add 的 ID 要等到 lw 的 WB）。</p>
+</details>
+<h2 id="u5">單元 5：分支預測</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>猜錯一次要丟掉「branch 決定之前已經進來的指令」。penalty 由<strong>在第幾級決定</strong>決定，pipeline 越深 penalty 越大。</p>
+</div>
+<h3 id="u5-1">5.1 公式</h3>
+<ul>
+<li><strong>misprediction penalty</strong> ＝ 決定 branch 的那一級 <span class="arithmatex">\(-1\)</span>（在第 <span class="arithmatex">\(k\)</span> 級<strong>結束時</strong>決定，就丟掉前面 <span class="arithmatex">\(k-1\)</span> 級的指令）</li>
+<li><strong>額外 CPI</strong> <span class="arithmatex">\(=\)</span> branch 比例 <span class="arithmatex">\(\times\)</span> 預測錯誤率 <span class="arithmatex">\(\times\)</span> penalty</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">113 Q4（15%）：R 40%、BEQ 20%、JMP 5%、LW 25%、SW 10%；always-taken 準確率 40%、always-not-taken 60%、2-bit 80%；branch 在 EX 決定</p>
+<p>假設 EX 結束時決定、IF 和 ID 的兩條要丟掉，penalty <span class="arithmatex">\(=2\)</span>（如果你假設 PC 在 MEM 才更新，就用 3，寫清楚即可）。</p>
+<p>4.1 always-taken：<span class="arithmatex">\(0.2\times(1-0.4)\times2=0.24\)</span>。</p>
+<p>4.2 2-bit：<span class="arithmatex">\(0.2\times0.2\times2=0.08\)</span>。</p>
+<p>4.3 一半 branch 換成 ALU 指令（指令數不變）：branch 剩 10%，<span class="arithmatex">\(\text{CPI}=1+0.1\times0.6\times2=1.12\)</span>；原本 <span class="arithmatex">\(1.24\)</span>。speedup <span class="arithmatex">\(=\frac{1.24}{1.12}\approx1.11\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q1.3–1.4（10%）：30% branch、準確率 2/3、penalty 3 cycle；加深 pipeline、時脈加倍</p>
+<p>1.3：<span class="arithmatex">\(\text{CPI}=1+0.3\times\frac13\times3=1.3\)</span>。</p>
+<p>1.4：深 pipeline 的 penalty 為 <span class="arithmatex">\(P\)</span>，時脈加倍 → 週期減半。深的較快的條件：</p>
+<div class="arithmatex">\[\frac{1+0.3\times\frac13\times P}{2}&lt;1.3\ \Rightarrow\ 1+0.1P&lt;2.6\ \Rightarrow\ P&lt;16\]</div>
+<p>misprediction penalty 小於 16 個週期時，深 pipeline 才划算。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 Q5.2（7 分）：branch 在最後一級決定，準確率 90%，pipeline 深 5、10、20</p>
+<table>
+<thead>
+<tr>
+<th>深度</th>
+<th>penalty</th>
+<th>每個 branch 平均成本</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5</td>
+<td>4</td>
+<td><span class="arithmatex">\(0.1\times4=0.4\)</span></td>
+</tr>
+<tr>
+<td>10</td>
+<td>9</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td>20</td>
+<td>19</td>
+<td>1.9</td>
+</tr>
+</tbody>
+</table>
+<p>準確率不變，但每次猜錯丟掉的指令跟深度成正比。所以 pipeline 越深，預測準確率每提升 1% 的價值就越高。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">114 Q3（18%）：7 級 pipeline、branch 在第 6 級決定、20% 是 branch</p>
+<p>3.1：每次猜錯浪費 <strong>5 條</strong>指令（第 1–5 級的）。</p>
+<p>3.2：<span class="arithmatex">\(N\)</span> 條正確路徑的指令、準確率 <span class="arithmatex">\(A\)</span>：</p>
+<div class="arithmatex">\[\text{fetch 總數}=N+0.2N(1-A)\times5=N(2-A)\]</div>
+<p>3.3：dual-path（兩條路徑各 fetch 一樣多）：每個 branch 都有 5 個 slot 花在錯的那條路徑上 → <span class="arithmatex">\(N+0.2N\times5=2N\)</span>。</p>
+<p>3.4：比例 <span class="arithmatex">\(C\)</span> 的 branch 是高信心（用預測，猜錯機率 <span class="arithmatex">\(M\)</span>），其餘 <span class="arithmatex">\(1-C\)</span> 用 dual-path：</p>
+<div class="arithmatex">\[N+0.2N\times5\times[CM+(1-C)]=N(2-C+CM)\]</div>
+<p>這題是 CMU 18-447（Onur Mutlu）2013 年期中考的原題型。</p>
+</div>
+<h3 id="u5-2">5.2 2-bit 預測器</h3>
+<p>四個狀態：強不跳（00）、弱不跳（01）、弱跳（10）、強跳（11）。狀態 ≥10 就預測跳。實際跳了往上加 1，沒跳往下減 1（到頭就停）。好處是迴圈最後一次不跳，只會讓狀態從「強跳」掉到「弱跳」，下次進迴圈仍然預測跳。</p>
+<h3 id="u5-quiz">單元 5 小考</h3>
+<p><strong>5-1.</strong> 25% branch、penalty 3、準確率 90%，CPI（理想 1）？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(1+0.25\times0.1\times3=1.075\)</span>。</p>
+</details>
+<p><strong>5-2.</strong> 2-bit 預測器從 00 開始，實際結果依序 T、T、N、T，預測錯幾次？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>00 預測 N（錯）→01；預測 N（錯）→10；預測 T（錯，實際 N）→01；預測 N（錯）→10。4 次全錯。這說明 2-bit 在剛開始和模式交替時表現不好。</p>
+</details>
+<h2 id="u6">單元 6：多執行緒</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>多執行緒用「別的 thread 的指令」填滿某個 thread 等待的空檔。要算的是：<strong>需要幾個 thread，才能每個 cycle 都有指令可發</strong>。</p>
+</div>
+<h3 id="u6-1">6.1 兩種切換方式</h3>
+<ul>
+<li><strong>Fixed switching（fine-grained，round-robin）</strong>：每個 cycle 換下一個 thread，<span class="arithmatex">\(N\)</span> 個 thread 時每個 thread 每 <span class="arithmatex">\(N\)</span> 個 cycle 發一條。相依距離為 <span class="arithmatex">\(d\)</span> 條指令的兩條指令，時間間隔是 <span class="arithmatex">\(dN\)</span>，必須 <span class="arithmatex">\(\ge\)</span> 前一條的延遲。<strong><span class="arithmatex">\(N=\max\lceil\text{延遲}/d\rceil\)</span></strong>。</li>
+<li><strong>Data-dependent switching（switch-on-stall）</strong>：一個 thread 一直跑到要 stall 才換。先算一個 thread 每輪「週期長度」與「發出的指令數」，<strong><span class="arithmatex">\(N=\lceil\text{週期長度}/\text{每輪指令數}\rceil\)</span></strong>。</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">114 Q5（18%）：LD 13 cycle、整數加 1、FADD 6、branch 1；迴圈 LD f2 / ADDI x1 / FADD f3,f3,f2 / BNE f2,f4</p>
+<p><strong>5.1 Fixed</strong>：</p>
+<ul>
+<li>FADD 用到 LD 的 f2，距離 2：<span class="arithmatex">\(2N\ge13\)</span> → <span class="arithmatex">\(N\ge7\)</span></li>
+<li>BNE 用到 f2，距離 3：<span class="arithmatex">\(3N\ge13\)</span> → <span class="arithmatex">\(N\ge5\)</span></li>
+<li>下一輪 FADD 用到這輪的 f3，距離 4：<span class="arithmatex">\(4N\ge6\)</span> → <span class="arithmatex">\(N\ge2\)</span></li>
+</ul>
+<p>取最大，<strong>7 個 thread</strong>。</p>
+<p><strong>5.1 Data-dependent</strong>：一個 thread 的一輪是 LD（第 0 cycle）、ADDI（1）、FADD 要等到 13、BNE（14）、下一輪 LD（15）。週期 15 個 cycle、發 4 條指令 → <span class="arithmatex">\(\lceil15/4\rceil=\)</span> <strong>4 個 thread</strong>。</p>
+<p><strong>5.2 LD 改成 1 cycle</strong>：Fixed 只剩 FADD 對 FADD：<span class="arithmatex">\(4N\ge6\)</span> → <strong>2 個</strong>。Data-dependent：每輪受 FADD 間隔 6 cycle 限制，6 cycle 發 4 條 → <span class="arithmatex">\(\lceil6/4\rceil=\)</span> <strong>2 個</strong>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q3（15%）：linked list 走訪，LW 50 cycle、沒有 cache、load/store 非阻塞</p>
+<p>程式：LW x3,0(x1) / LW x4,4(x1) / SEQ x3,x3,x2 / BNEZ x3,end / ADD x1,x0,x4 / BNEZ x4,loop</p>
+<p>3.1 單 thread 一輪：LW（1）、LW（2）、SEQ 要等 x3 到第 51、BNEZ 52、ADD 53、BNEZ 54，下一輪 LW 在 55 → <strong>每輪 54 cycle</strong>。</p>
+<p>3.2 Fixed：SEQ 距離第一個 LW 2 條，<span class="arithmatex">\(2N\ge50\)</span> → <strong>25 個 thread</strong>。（ADD 距第二個 LW 3 條，<span class="arithmatex">\(3N\ge50\)</span> → 17，較小。）</p>
+<p>3.3 Data-dependent：每輪 54 cycle、發 6 條指令 → <span class="arithmatex">\(\lceil54/6\rceil=\)</span> <strong>9 個 thread</strong>。</p>
+<p>MIT 6.823 的 Problem Set 10 有一模一樣的題目，可以拿來練（連結在最後）。</p>
+</div>
+<h3 id="u6-quiz">單元 6 小考</h3>
+<p><strong>6-1.</strong> 迴圈只有兩條相依指令：LD（延遲 20）、緊接著用它的 ADD，再加一條 BNE。Fixed switching 需要幾個 thread？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>ADD 距 LD 1 條：<span class="arithmatex">\(N\ge20\)</span>。</p>
+</details>
+<h2 id="u7">單元 7：DRAM 與資料重用</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>DRAM 的電容會漏電，每一列都要在 retention time 內 refresh 一次。refresh 會佔用 command bus 和 bank，這就是它的效能成本。</p>
+</div>
+<h3 id="u7-1">7.1 Refresh 使用率</h3>
+<div class="arithmatex">\[\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用時間}}{\text{期間長度}}\]</div>
+<div class="admonition example">
+<p class="admonition-title">114 Q1（18%）：8 banks × <span class="arithmatex">\(2^{16}\)</span> 列，每次 refresh 佔 command bus 5 ns</p>
+<p>1.1 64 ms 內要 refresh <span class="arithmatex">\(8\times2^{16}=2^{19}\)</span> 次：</p>
+<div class="arithmatex">\[\frac{2^{19}\times5\text{ ns}}{64\text{ ms}}=\frac{2^{19}\times5}{2^6\times10^6}=\frac{2^{13}\times5}{10^6}=4.096\%\]</div>
+<p>1.2 70% 的列只要 256 ms 一次：新的使用率 <span class="arithmatex">\(=4.096\%\times(0.3+0.7\times\frac{64}{256})=4.096\%\times0.475\)</span>，<strong>減少 <span class="arithmatex">\(1-0.475=52.5\%\)</span></strong>。</p>
+<p>這就是 Mutlu 團隊的 RAIDR 想法：依各列的保存時間分組 refresh。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q2（15%）：4 channel × 2 rank × 8 bank × 32K 列，64 ms，command bus 5 ns、bank 40 ns，期間 1.024 秒</p>
+<p>2.1 總列數 <span class="arithmatex">\(2^2\times2\times2^3\times2^{15}=2^{21}\)</span>；1.024 秒有 <span class="arithmatex">\(1.024/0.064=16\)</span> 個 64 ms → refresh 共 <span class="arithmatex">\(2^{21}\times16=2^{25}\)</span> 次。</p>
+<p>2.2 每個 channel 有自己的 command bus，負擔 <span class="arithmatex">\(2^{25}/4=2^{23}\)</span> 次：<span class="arithmatex">\(\frac{2^{23}\times5\text{ ns}}{1.024\text{ s}}=\frac{2^{23}\times5}{2^{10}\times10^6}=4.096\%\)</span>。</p>
+<p>2.3 每個 bank <span class="arithmatex">\(2^{15}\times16=2^{19}\)</span> 次 × 40 ns：<span class="arithmatex">\(\frac{2^{19}\times40}{2^{10}\times10^6}=2.048\%\)</span>。</p>
+</div>
+<h3 id="u7-2">7.2 資料重用與迴圈順序</h3>
+<div class="admonition example">
+<p class="admonition-title">112 Q4（15%）：矩陣乘法 <span class="arithmatex">\(Z[m,n] \mathrel{+}= A[m,k]\times B[k,n]\)</span> 的 reuse interval（RI）</p>
+<p>RI ＝ 同一個元素兩次被用到之間，用過多少個不同的該矩陣元素（題目的例子：每次都用同一個 → RI 1）。</p>
+<table>
+<thead>
+<tr>
+<th>迴圈順序（外到內）</th>
+<th>RI of A</th>
+<th>RI of B</th>
+<th>RI of Z</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4.1 m, n, k</td>
+<td><span class="arithmatex">\(K\)</span></td>
+<td><span class="arithmatex">\(NK\)</span></td>
+<td>1</td>
+</tr>
+<tr>
+<td>4.2 k, m, n</td>
+<td>1</td>
+<td><span class="arithmatex">\(N\)</span></td>
+<td><span class="arithmatex">\(MN\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>4.3（<span class="arithmatex">\(M=500\)</span>、<span class="arithmatex">\(N=1000\)</span>、<span class="arithmatex">\(K=30\)</span>，MAC 單元＋32 個元素的 SRAM）：選 <strong>m, n, k</strong>。Z 的 RI 是 1，放在 MAC 輸出的 flip-flop；A 的 RI 是 <span class="arithmatex">\(K=30\)</span>，<strong>一整列 A（30 個）剛好放進 SRAM</strong>，每列只從 DRAM 讀一次；B 的 RI 是 <span class="arithmatex">\(NK=30000\)</span>，放不下，只能串流讀取。這樣每次 MAC 大約只需讀一次 DRAM（讀 B），Z 每個元素只寫一次，A 幾乎不用重讀。k, m, n 順序下 B 和 Z 的 RI 都遠大於 32，沒辦法用 SRAM 保住。</p>
+</div>
+<h3 id="u7-quiz">單元 7 小考</h3>
+<p><strong>7-1.</strong> 4 banks × <span class="arithmatex">\(2^{14}\)</span> 列，refresh 間隔 32 ms，每次 refresh 佔 command bus 4 ns，使用率？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(\frac{2^{16}\times4\text{ ns}}{32\text{ ms}}=\frac{262144}{32\times10^6}=0.8192\%\)</span>。</p>
+</details>
+<h2 id="u8">單元 8：平行與微架構</h2>
+<h3 id="u8-1">8.1 GPU 峰值與記憶體頻寬</h3>
+<div class="admonition example">
+<p class="admonition-title">113 Q2（8%）：2 GHz、16 個 SIMD processor、各 16 個單精度 FPU、600 GB/s</p>
+<p>2.1 峰值：<span class="arithmatex">\(2\times10^9\times16\times16=512\)</span> GFLOPS（假設每個 FPU 每 cycle 1 個 flop；若算 FMA 為 2 個 flop 則 1024）。</p>
+<p>2.2 撐不住：如果每個 flop 都要從記憶體讀一個 4 B 的運算元，需要 <span class="arithmatex">\(512\times4=2048\)</span> GB/s，遠超過 600 GB/s。只有每個 byte 被重用約 <span class="arithmatex">\(512/600\approx0.85\)</span> 個 flop 以上（運算強度夠高，roofline 模型）時，才能接近峰值。</p>
+</div>
+<h3 id="u8-2">8.2 VLIW、superscalar、array processor</h3>
+<div class="admonition example">
+<p class="admonition-title">114 Q6（18%）：比較三種微架構</p>
+<ul>
+<li><strong>共同點</strong>：每個 cycle 執行多個運算，利用平行性提高吞吐量。</li>
+<li><strong>VLIW 比同寬度的 superscalar 簡單</strong>：(1) 由<strong>編譯器</strong>決定哪些指令一起發，硬體不用做相依性檢查；(2) 不需要動態排程和複雜的 issue 邏輯。</li>
+<li><strong>superscalar 可能更快</strong>：硬體在執行時能根據實際情況（cache miss、branch 結果）動態排程，編譯器在編譯時看不到這些；而且不需要塞 NOP，程式碼較小。</li>
+<li><strong>VLIW 比 array processor 彈性</strong>：VLIW 每個 slot 可以做<strong>不同的運算</strong>；array processor 所有單元做<strong>同一個運算</strong>（SIMD）。</li>
+<li><strong>array processor 比同寬度的 VLIW 簡單</strong>：只需要一份指令、一個控制單元廣播給所有運算單元，指令頻寬和解碼成本都小。</li>
+</ul>
+</div>
+<h3 id="u8-3">8.3 記憶體一致性：sequential consistency</h3>
+<div class="admonition example">
+<p class="admonition-title">112 Q5（15%）：P1：ST A←1; LD RC←C；P2：ST B←1; LD RA←A；P3：ST C←1; LD RB←B</p>
+<p>SC 的意思是：所有指令排成<strong>一個</strong>全域順序，且每個處理器自己的指令保持程式順序。</p>
+<table>
+<thead>
+<tr>
+<th>{RA, RB, RC}</th>
+<th>可能的順序</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{0,0,0}</td>
+<td><strong>X</strong>。RA＝0 要 P2.2 在 P1.1 前，RC＝0 要 P1.2 在 P3.1 前，RB＝0 要 P3.2 在 P2.1 前，再加上各自的程式順序，會形成 P1.1 &lt; P1.2 &lt; P3.1 &lt; P3.2 &lt; P2.1 &lt; P2.2 &lt; P1.1 的循環</td>
+</tr>
+<tr>
+<td>{0,1,0}</td>
+<td>P2.1 → P2.2 → P1.1 → P1.2 → P3.1 → P3.2</td>
+</tr>
+<tr>
+<td>{1,0,0}</td>
+<td>P1.1 → P1.2 → P3.1 → P3.2 → P2.1 → P2.2</td>
+</tr>
+<tr>
+<td>{0,0,1}</td>
+<td>P3.1 → P3.2 → P2.1 → P2.2 → P1.1 → P1.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="u8-quiz">單元 8 小考</h3>
+<p><strong>8-1.</strong> 為什麼 superscalar 需要 reorder buffer，而 VLIW 不需要？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>superscalar 會動態亂序執行，需要 ROB 讓結果依程式順序 commit，才能做到精確例外和推測失敗時回復；VLIW 的順序由編譯器排好、照順序執行，不需要。</p>
+</details>
+<h2 id="u9">單元 9：ISA 與算術</h2>
+<div class="admonition example">
+<p class="admonition-title">115 Q3（15 分）：RISC 與 PC-relative addressing</p>
+<p><strong>Q3.1 為什麼現代 ISA 偏好 RISC</strong>：指令簡單、長度固定 → 解碼快、容易 pipeline、每級時間平均；複雜指令的延遲不一，會拉長週期或需要微碼。指令數變多的代價，由更高的時脈和更低的 CPI 補回來（CPU time ＝ IC × CPI × T，三者要一起看）。另外編譯器實際上很少用到複雜指令。</p>
+<p><strong>Q3.2(a) 系統層</strong>：(1) <strong>位置無關</strong>：程式被載入到不同位址（動態連結、共享函式庫、ASLR）時，相對位移不變，不用重新定位；(2) branch 目標通常很近，offset 用少少幾個位元就夠，<strong>指令較短、程式密度高</strong>，對 I-cache 有利。</p>
+<p><strong>Q3.2(b) 微架構層</strong>：目標位址 ＝ PC ＋ 立即值，在 ID（甚至 IF）就能算出來，<strong>不用讀暫存器</strong>，所以可以提早算出目標、減少 control hazard 的 penalty。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 Q4（15 分）：二補數與浮點</p>
+<p><strong>Q4.1</strong>：8 位元二補數範圍 <span class="arithmatex">\(-128\)</span> 到 <span class="arithmatex">\(127\)</span>。不對稱是因為 0 佔用了符號位元為 0 的一個 pattern：符號位元 0 有 128 個 pattern（0 到 127），符號位元 1 也有 128 個（<span class="arithmatex">\(-1\)</span> 到 <span class="arithmatex">\(-128\)</span>）。多出來的是 <strong>1000 0000 ＝ <span class="arithmatex">\(-128\)</span></strong>，它沒有對應的正數，取負（反相加 1）還是自己，會溢位。</p>
+<p><strong>Q4.2</strong>：(a) 浮點數只有固定位數的 mantissa，<strong>每次運算都會捨入</strong>，所以加法<strong>不滿足結合律</strong>：<span class="arithmatex">\((a+b)+c\ne a+(b+c)\)</span>；而且大數加小數時，小數的低位元在對齊指數時被移出（被「吃掉」）。(b) <strong>由小到大加比較準</strong>：小的數先累加成較大的部分和，再跟大數相加，被捨掉的誤差較少。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 P1.1（2%）：為什麼需要虛擬記憶體，優缺點</p>
+<p><strong>好處</strong>：程式可以用比實體記憶體更大的位址空間；每個 process 有獨立位址空間，彼此保護；方便共享（共享函式庫）和重新定位。<strong>壞處</strong>：位址轉換的時間與硬體成本（需要 TLB）、page table 佔記憶體、page fault 時要存取磁碟非常慢。</p>
+</div>
+<h3 id="u9-quiz">單元 9 小考</h3>
+<p><strong>9-1.</strong> <span class="arithmatex">\(-5\)</span> 的 8 位元二補數？<span class="arithmatex">\(100+50\)</span> 在 8 位元有號運算會怎樣？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(5=0000\,0101\)</span>，反相 <span class="arithmatex">\(1111\,1010\)</span>，加 1 得 <span class="arithmatex">\(1111\,1011\)</span>。<span class="arithmatex">\(150&gt;127\)</span>，<strong>溢位</strong>，結果會變成負數（<span class="arithmatex">\(1001\,0110=-106\)</span>）。</p>
+</details>
+<h2 id="mix">綜合小考</h2>
+<p><strong>M-1.</strong> CPI 1.5 的處理器，每條指令 0.3 次資料存取，I-cache miss rate 2%、D-cache miss rate 5%，miss penalty 50 cycle。實際 CPI？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(1.5+1\times0.02\times50+0.3\times0.05\times50=1.5+1+0.75=3.25\)</span>。</p>
+</details>
+<p><strong>M-2.</strong> 48-bit 虛擬位址、32-bit 實體位址、4 KB page，page table 有幾個 entry？（111 年 OS 也考過這題）</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(2^{48-12}=2^{36}\)</span> 個。</p>
+</details>
+<p><strong>M-3.</strong> 6 級 pipeline，branch 在第 4 級結束時決定，branch 佔 20%、預測準確率 85%，CPI？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>penalty 3：<span class="arithmatex">\(1+0.2\times0.15\times3=1.09\)</span>。</p>
+</details>
+<h2 id="res">資源</h2>
+<ul>
+<li><strong>Patterson &amp; Hennessy《Computer Organization and Design》（RISC-V 版）</strong>：第 1 章（效能）、第 4 章（pipeline）、第 5 章（記憶體階層）的習題，中山 113 年幾乎全出自這裡。</li>
+<li><strong><a href="https://safari.ethz.ch/architecture/fall2022/doku.php?id=exams">Onur Mutlu 計算機結構考古題（附詳解）</a></strong>、<strong><a href="https://safari.ethz.ch/digitaltechnik/spring2020/doku.php?id=exams">Digital Design &amp; Computer Architecture 考古題</a></strong>：112、114 年的 DRAM refresh、多執行緒、分支題都是這個風格。</li>
+<li><strong><a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf">MIT 6.823 Problem Set 10：多執行緒</a></strong>（<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf">詳解</a>）：和 112 Q3、114 Q5 同一個題型。</li>
+<li><strong><a href="https://ocw.nthu.edu.tw/courses/13">清大 OCW 黃婷婷：計算機結構</a></strong>：中文講解，觀念不懂時看。</li>
+</ul>
+  </article>
+</div>
+<script>
+(function () {
+  var KEY = "cgep:quiz:arch";
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+  var rec = load();
+  var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
+  quizzes.forEach(function (d, i) {
+    var label = "Q" + (i + 1);
+    var prev = d.previousElementSibling;
+    if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
+    var id = "quiz-" + (i + 1);
+    d.id = id; d.dataset.label = label;
+    var bar = document.createElement("div");
+    bar.className = "judge";
+    bar.innerHTML = '<span>自己對答案：</span><button type="button" data-v="1">答對了</button><button type="button" data-v="0">答錯了，記錯題</button>';
+    d.appendChild(bar);
+    bar.querySelectorAll("button").forEach(function (b) {
+      b.addEventListener("click", function () { rec[id] = +b.dataset.v; save(rec); paint(); });
+    });
+  });
+  function paint() {
+    var done = 0, wrong = [];
+    quizzes.forEach(function (d) {
+      var v = rec[d.id];
+      d.querySelectorAll(".judge button").forEach(function (b) { b.setAttribute("aria-pressed", String(v !== undefined && +b.dataset.v === v)); });
+      if (v !== undefined) done++;
+      if (v === 0) wrong.push(d);
+    });
+    var bar = document.getElementById("quizbar");
+    if (!quizzes.length) return;
+    bar.hidden = false;
+    document.getElementById("qb-num").textContent = done + " / " + quizzes.length;
+    document.getElementById("qb-txt").textContent = "已作答，答錯 " + wrong.length + " 題";
+    document.getElementById("qb-wrong").innerHTML = wrong.map(function (d) { return '<a href="#' + d.id + '">' + d.dataset.label + "</a>"; }).join("");
+  }
+  document.getElementById("qb-reset").addEventListener("click", function () { rec = {}; save(rec); paint(); });
+  paint();
+})();
+</script>
+</body>
+</html>

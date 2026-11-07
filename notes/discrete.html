@@ -1,0 +1,1407 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>離散數學：從中山考古題學</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: textbook pages — sticky nav across the 5 notes, a table of contents beside one reading column; example / key / trap boxes and quiz answers set off by subject-neutral tints. */
+:root {
+  --paper: #f5f6f9; --card: #ffffff; --ink: #1a2130; --muted: #5a6376; --line: #dde1e9;
+  --accent: #c42f3d; --accent-soft: #fbe8ea;
+  --ex: #4450b5; --ex-soft: #eceefb;
+  --key: #0d7a74; --key-soft: #e3f4f2;
+  --trap: #a86300; --trap-soft: #fbf1e1;
+  --ok: #2f7d3b; --ok-soft: #e4f3e6;
+  --code: #eef0f5;
+  --font-display: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11141a; --card: #191d25; --ink: #e5e8ef; --muted: #98a0b0; --line: #2a303b;
+    --accent: #ff6d7a; --accent-soft: #3a1d23; --ex: #9aa2ff; --ex-soft: #20233f;
+    --key: #4fc6be; --key-soft: #13302e; --trap: #f0aa47; --trap-soft: #35270f;
+    --ok: #6fcf7d; --ok-soft: #173320; --code: #222733; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11141a; --card: #191d25; --ink: #e5e8ef; --muted: #98a0b0; --line: #2a303b;
+  --accent: #ff6d7a; --accent-soft: #3a1d23; --ex: #9aa2ff; --ex-soft: #20233f;
+  --key: #4fc6be; --key-soft: #13302e; --trap: #f0aa47; --trap-soft: #35270f;
+  --ok: #6fcf7d; --ok-soft: #173320; --code: #222733; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.8 var(--font-body); }
+a { color: var(--accent); }
+header.top { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top-row { display: flex; gap: 16px; align-items: center; padding-block: 10px; flex-wrap: wrap; }
+.home { font: 700 14px/1 var(--font-mono); color: var(--accent); text-decoration: none; white-space: nowrap; }
+nav.notes { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+nav.notes a { text-decoration: none; color: var(--muted); padding: 6px 10px; font-size: 14px; font-weight: 500; white-space: nowrap; border-bottom: 2px solid transparent; }
+nav.notes a[aria-current="page"] { color: var(--ink); border-color: var(--accent); }
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; padding-block: 28px 80px; }
+aside.toc { position: sticky; top: 64px; align-self: start; max-height: calc(100vh - 80px); overflow-y: auto; font-size: 13px; }
+aside.toc .eyebrow { font: 700 11px/1 var(--font-mono); letter-spacing: .12em; color: var(--muted); margin-bottom: 8px; }
+aside.toc ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+aside.toc a { color: var(--muted); text-decoration: none; display: block; padding: 3px 0; line-height: 1.5; }
+aside.toc a:hover { color: var(--ink); }
+.quizbar { margin-top: 18px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); }
+.quizbar b { font: 700 18px/1.3 var(--font-mono); display: block; }
+.quizbar .wrong-list { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.quizbar .wrong-list a { font: 500 12px/1.6 var(--font-mono); border: 1px solid var(--accent); color: var(--accent); border-radius: 4px; padding: 0 6px; text-decoration: none; }
+.quizbar button { margin-top: 8px; font: 500 12px/1 var(--font-body); background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 6px; padding: 6px 8px; cursor: pointer; }
+article { min-width: 0; max-width: 760px; }
+article h1 { font: 900 30px/1.3 var(--font-display); margin: 0 0 8px; text-wrap: balance; }
+article h2 { font: 700 24px/1.4 var(--font-display); margin: 56px 0 12px; padding-top: 16px; border-top: 2px solid var(--ink); text-wrap: balance; scroll-margin-top: 70px; }
+article h3 { font: 700 18px/1.5 var(--font-body); margin: 32px 0 8px; scroll-margin-top: 70px; }
+article h4 { font: 700 16px/1.5 var(--font-body); margin: 20px 0 6px; }
+article p, article li { max-width: 68ch; }
+article ul, article ol { padding-left: 1.4em; }
+article li { margin: 2px 0; }
+article strong { color: var(--ink); }
+code { font: 500 0.9em/1.5 var(--font-mono); font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--code); padding: 12px 14px; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.55; }
+pre code { background: none; padding: 0; }
+.table-wrap, article table { display: block; overflow-x: auto; max-width: 100%; }
+article table { border-collapse: collapse; font-size: 14px; margin: 12px 0; }
+article th, article td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top; }
+article th { background: var(--code); font-weight: 700; white-space: nowrap; }
+.admonition, details { border-radius: 8px; padding: 12px 16px; margin: 16px 0; border: 1px solid var(--line); background: var(--card); }
+.admonition > :last-child, details > :last-child { margin-bottom: 0; }
+.admonition-title, details > summary { font-weight: 700; margin: 0 0 6px; }
+.admonition.example { border-left: 4px solid var(--ex); background: var(--ex-soft); }
+.admonition.example .admonition-title { color: var(--ex); }
+.admonition.key { border-left: 4px solid var(--key); background: var(--key-soft); }
+.admonition.key .admonition-title { color: var(--key); }
+.admonition.trap { border-left: 4px solid var(--trap); background: var(--trap-soft); }
+.admonition.trap .admonition-title { color: var(--trap); }
+details.quiz { border-style: dashed; }
+details.quiz > summary { cursor: pointer; color: var(--accent); margin: 0; list-style: revert; }
+details.quiz[open] > summary { margin-bottom: 8px; }
+.judge { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.judge button { font: 700 13px/1 var(--font-body); padding: 7px 12px; border-radius: 6px; cursor: pointer; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); }
+.judge button[aria-pressed="true"][data-v="1"] { background: var(--ok); border-color: var(--ok); color: var(--card); }
+.judge button[aria-pressed="true"][data-v="0"] { background: var(--accent); border-color: var(--accent); color: var(--card); }
+.arithmatex { overflow-x: auto; max-width: 100%; }
+div.arithmatex { padding: 4px 0; }
+mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; gap: 16px; }
+  aside.toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: var(--card); }
+  aside.toc ul { grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  article h1 { font-size: 25px; }
+}
+@media (max-width: 600px) {
+  span.arithmatex { display: inline-block; max-width: 100%; overflow-x: auto; overflow-y: hidden; vertical-align: middle; }
+}
+</style>
+<script>
+window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+  options: { processHtmlClass: "arithmatex", ignoreHtmlClass: ".*" }, svg: { fontCache: "global" } };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg-full.js"></script>
+</head>
+<body>
+<header class="top"><div class="wrap top-row">
+  <a class="home" href="../index.html">← 備考計畫</a>
+  <nav class="notes" aria-label="教材"><a href="method.html">學習方法</a><a href="discrete.html" aria-current="page">離散數學</a><a href="arch.html">計算機結構</a><a href="os.html">作業系統</a><a href="ds.html">資料結構</a></nav>
+</div></header>
+<div class="wrap layout">
+  <aside class="toc">
+    <div class="eyebrow">目錄</div>
+    <div class="toc">
+<ul>
+<li><a href="#u0">0. 中山離散怎麼考</a></li>
+<li><a href="#u1">單元 1：計數基本功</a></li>
+<li><a href="#u2">單元 2：排容原理</a></li>
+<li><a href="#u3">單元 3：生成函數</a></li>
+<li><a href="#u4">單元 4：遞迴關係</a></li>
+<li><a href="#u5">單元 5：數論</a></li>
+<li><a href="#u6">單元 6：鴿籠原理與 Ramsey</a></li>
+<li><a href="#u7">單元 7：關係、函數、運算與邏輯</a></li>
+<li><a href="#u8">單元 8：有限狀態機</a></li>
+<li><a href="#u9">單元 9：機率與期望值</a></li>
+<li><a href="#mix">綜合小考：混合題型</a></li>
+<li><a href="#res">資源</a></li>
+</ul>
+</div>
+
+    <div class="quizbar" id="quizbar" hidden>
+      <div class="eyebrow">本頁小考</div>
+      <b id="qb-num">0 / 0</b>
+      <span id="qb-txt" style="color:var(--muted)">已作答</span>
+      <div class="wrong-list" id="qb-wrong"></div>
+      <button type="button" id="qb-reset">清除本頁紀錄</button>
+    </div>
+  </aside>
+  <article>
+<h1 id="_1">離散數學：從中山考古題學</h1>
+<p>這份教材從中山資工碩甲組 111–115 年的離散數學考古題整理而來，<strong>涵蓋這五年全部 48 題</strong>。每個單元的結構都一樣：</p>
+<ol>
+<li><strong>一句話重點</strong>：先抓住這個單元在幹嘛。</li>
+<li><strong>工具箱</strong>：要背的公式和判斷流程。</li>
+<li><strong>考古題例題</strong>：完整詳解，標註年份和題號。</li>
+<li><strong>小考</strong>：自己先寫，再打開答案、按「答對／答錯」。</li>
+</ol>
+<h2 id="u0">0. 中山離散怎麼考</h2>
+<table>
+<thead>
+<tr>
+<th>主題</th>
+<th>111</th>
+<th>112</th>
+<th>113</th>
+<th>114</th>
+<th>115</th>
+<th>5 年合計</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>計數（排列組合、分配、字串、函數）</td>
+<td>Q4, Q8</td>
+<td>Q1, Q4</td>
+<td>Q1, Q2, Q5</td>
+<td>Q1, Q3</td>
+<td>A1, A2, A6, A8, A9</td>
+<td><strong>14 題</strong></td>
+</tr>
+<tr>
+<td>生成函數（OGF／EGF）</td>
+<td>Q5</td>
+<td>Q5, Q6a</td>
+<td>Q1, Q10</td>
+<td>Q7, Q8</td>
+<td>A2, B1</td>
+<td><strong>10 題</strong></td>
+</tr>
+<tr>
+<td>遞迴關係（建立＋求解）</td>
+<td>Q6, Q7</td>
+<td>Q7</td>
+<td>Q9, Q10</td>
+<td>Q6, Q9</td>
+<td>—</td>
+<td><strong>7 題</strong></td>
+</tr>
+<tr>
+<td>排容原理</td>
+<td>—</td>
+<td>Q6b</td>
+<td>Q8</td>
+<td>—</td>
+<td>A3, A9, B1</td>
+<td><strong>5 題</strong></td>
+</tr>
+<tr>
+<td>數論（gcd、同餘、模反元素）</td>
+<td>—</td>
+<td>Q2, Q8</td>
+<td>Q3, Q4</td>
+<td>—</td>
+<td>A4, A7</td>
+<td><strong>6 題</strong></td>
+</tr>
+<tr>
+<td>鴿籠、Erdős–Szekeres、Ramsey</td>
+<td>Q1</td>
+<td>Q3</td>
+<td>—</td>
+<td>Q4</td>
+<td>B3</td>
+<td><strong>4 題</strong></td>
+</tr>
+<tr>
+<td>關係、函數、二元運算</td>
+<td>Q3</td>
+<td>—</td>
+<td>Q6, Q7</td>
+<td>Q3</td>
+<td>A8</td>
+<td><strong>5 題</strong></td>
+</tr>
+<tr>
+<td>有限狀態機</td>
+<td>Q2</td>
+<td>—</td>
+<td>—</td>
+<td>Q5</td>
+<td>—</td>
+<td><strong>2 題</strong></td>
+</tr>
+<tr>
+<td>邏輯、證明</td>
+<td>—</td>
+<td>—</td>
+<td>Q3</td>
+<td>Q2</td>
+<td>B2</td>
+<td><strong>3 題</strong></td>
+</tr>
+<tr>
+<td>機率、期望值</td>
+<td>Q5</td>
+<td>—</td>
+<td>—</td>
+<td>Q8</td>
+<td>A10, B1</td>
+<td><strong>4 題</strong></td>
+</tr>
+</tbody>
+</table>
+<p>（一題可能同時屬於兩個主題，所以合計會比總題數多。）</p>
+<div class="admonition key">
+<p class="admonition-title">讀這張表的方法</p>
+<ul>
+<li><strong>計數＋生成函數＋遞迴</strong>每年都佔一半以上的分數，這是你的第一優先。</li>
+<li><strong>圖論幾乎沒考</strong>（只有 115 年 Ramsey），群、格、偏序也沒出現。時間不夠時，這些先放掉。</li>
+<li>115 年格式大改：10 題簡答只寫答案（每題 7 分），3 題計算要寫過程。116 年很可能延續這個格式，所以<strong>答案正確、算得快</strong>變得更重要。</li>
+</ul>
+</div>
+<p><strong>建議讀的順序</strong>：單元 1 計數 → 2 排容 → 3 生成函數 → 4 遞迴 → 5 數論 → 6 鴿籠 → 7 關係與邏輯 → 8 有限狀態機 → 9 機率。前四個單元環環相扣，一定要照順序。</p>
+<h2 id="u1">單元 1：計數基本功</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>所有計數題都在問兩件事：<strong>東西有沒有區別</strong>、<strong>順序重不重要</strong>。先回答這兩個問題，就知道要用哪個公式。</p>
+</div>
+<h3 id="u1-1">1.1 四個基本模型</h3>
+<p>從 <span class="arithmatex">\(n\)</span> 種東西裡選 <span class="arithmatex">\(r\)</span> 個：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>不可重複</th>
+<th>可重複</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>有順序</strong>（排列）</td>
+<td><span class="arithmatex">\(P(n,r)=\dfrac{n!}{(n-r)!}\)</span></td>
+<td><span class="arithmatex">\(n^r\)</span></td>
+</tr>
+<tr>
+<td><strong>沒順序</strong>（組合）</td>
+<td><span class="arithmatex">\(\binom{n}{r}\)</span></td>
+<td><span class="arithmatex">\(\binom{n+r-1}{r}\)</span>（重複組合）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>有相同元素的排列</strong>：<span class="arithmatex">\(n\)</span> 個字母中有 <span class="arithmatex">\(n_1\)</span> 個一樣、<span class="arithmatex">\(n_2\)</span> 個一樣…… 排列數是 <span class="arithmatex">\(\dfrac{n!}{n_1!\,n_2!\cdots}\)</span>。</p>
+<h3 id="u1-2">1.2 球放進箱子：四種情況</h3>
+<p>這是中山最愛考的模型。<span class="arithmatex">\(n\)</span> 個球放進 <span class="arithmatex">\(k\)</span> 個箱子：</p>
+<table>
+<thead>
+<tr>
+<th>球</th>
+<th>箱子</th>
+<th>允許空箱</th>
+<th>每箱至少一個</th>
+<th>考古題</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不同</td>
+<td>不同</td>
+<td><span class="arithmatex">\(k^n\)</span></td>
+<td><span class="arithmatex">\(k!\,S(n,k)\)</span>（＝ onto 函數數）</td>
+<td>111 Q8、114 Q3</td>
+</tr>
+<tr>
+<td>相同</td>
+<td>不同</td>
+<td><span class="arithmatex">\(\binom{n+k-1}{k-1}\)</span></td>
+<td><span class="arithmatex">\(\binom{n-1}{k-1}\)</span></td>
+<td>113 Q1、115 A2</td>
+</tr>
+<tr>
+<td>不同</td>
+<td>相同</td>
+<td><span class="arithmatex">\(\sum_{i=1}^{k} S(n,i)\)</span></td>
+<td><span class="arithmatex">\(S(n,k)\)</span></td>
+<td>113 Q5</td>
+</tr>
+<tr>
+<td>相同</td>
+<td>相同</td>
+<td>整數分割</td>
+<td>整數分割</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><span class="arithmatex">\(S(n,k)\)</span> 是<strong>第二類 Stirling 數</strong>：把 <span class="arithmatex">\(n\)</span> 個不同的東西分成 <span class="arithmatex">\(k\)</span> 個<strong>沒有編號</strong>的非空群組。常用值：<span class="arithmatex">\(S(n,2)=2^{n-1}-1\)</span>、<span class="arithmatex">\(S(4,2)=7\)</span>、<span class="arithmatex">\(S(5,3)=25\)</span>、<span class="arithmatex">\(S(6,3)=90\)</span>。</p>
+<p>onto 函數數（<span class="arithmatex">\(|A|=n\)</span> 映到 <span class="arithmatex">\(|B|=k\)</span> 且每個 <span class="arithmatex">\(B\)</span> 元素都被用到）用排容算：</p>
+<div class="arithmatex">\[k!\,S(n,k)=\sum_{i=0}^{k}(-1)^i\binom{k}{i}(k-i)^n\]</div>
+<div class="admonition example">
+<p class="admonition-title">111 Q8（10%）：20 顆不同顏色的彈珠放進 6 個不同的罐子</p>
+<p><strong>判斷</strong>：球不同（顏色都不同）、箱子不同、可以空 → 每顆彈珠獨立選罐子。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(6^{20}\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q1（10%）：9 顆相同白球放進 3 個不同桶子，第 3 桶要偶數顆</p>
+<p><strong>判斷</strong>：球相同、箱子不同 → 重複組合。第 3 桶的限制用分情況處理。</p>
+<p>第 3 桶放 <span class="arithmatex">\(0,2,4,6,8\)</span> 顆時，剩下 <span class="arithmatex">\(9,7,5,3,1\)</span> 顆放進前兩桶，各有 <span class="arithmatex">\(m+1\)</span> 種：</p>
+<div class="arithmatex">\[10+8+6+4+2=30\]</div>
+<p>（單元 3 會教用生成函數一行算完：<span class="arithmatex">\(x^9\)</span> 在 <span class="arithmatex">\(\frac{1}{(1-x)^2}\cdot\frac{1}{1-x^2}\)</span> 的係數。）</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q5（10%）：389,298 分解成 3 個大於 1 的因數（不計順序）有幾種</p>
+<p><strong>第一步</strong>：質因數分解 <span class="arithmatex">\(389298=2\times3\times7\times13\times23\times31\)</span>，剛好 6 個<strong>不同</strong>質數。</p>
+<p><strong>判斷</strong>：每個質數是「不同的球」，3 個因數「沒有順序」→ 箱子相同；每個因數大於 1 → 不可空箱。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(S(6,3)=90\)</span>。</p>
+<p><span class="arithmatex">\(S(6,3)\)</span> 用遞迴 <span class="arithmatex">\(S(n,k)=S(n-1,k-1)+k\,S(n-1,k)\)</span> 算：<span class="arithmatex">\(S(5,2)=15\)</span>、<span class="arithmatex">\(S(5,3)=25\)</span>，所以 <span class="arithmatex">\(S(6,3)=15+3\times25=90\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">114 Q3（10%）：<span class="arithmatex">\(A=\{1,\dots,9\}\)</span>、<span class="arithmatex">\(B=\{a,\dots,h\}\)</span>，(a) <span class="arithmatex">\(f(A)=\{a,b,c\}\)</span> (b) <span class="arithmatex">\(|f(A)|=3\)</span> 的函數數</p>
+<p>(a) 9 個元素映到 <span class="arithmatex">\(\{a,b,c\}\)</span> 且三個都要用到 → onto：</p>
+<div class="arithmatex">\[3^9-\binom31 2^9+\binom32 1^9=19683-1536+3=18150\]</div>
+<p>(b) 先從 8 個裡選 3 個當像集，再 onto：<span class="arithmatex">\(\binom83\times18150=56\times18150=1016400\)</span>。</p>
+</div>
+<h3 id="u1-3">1.3 插空法與不相鄰</h3>
+<p><strong>要某些東西不相鄰</strong>：先排其他的，再把它們插進「空隙」。<span class="arithmatex">\(m\)</span> 個東西排好有 <span class="arithmatex">\(m+1\)</span> 個空隙。</p>
+<div class="admonition example">
+<p class="admonition-title">115 A1：ENGINEERING 的排列中，E 不相鄰的有幾種</p>
+<p>字母：E×3、N×3、G×2、I×2、R×1，共 11 個。</p>
+<ol>
+<li>先排 8 個非 E 字母：<span class="arithmatex">\(\dfrac{8!}{3!\,2!\,2!}=1680\)</span>。</li>
+<li>8 個字母有 9 個空隙，選 3 個放 E（E 都一樣，所以用組合）：<span class="arithmatex">\(\binom93=84\)</span>。</li>
+</ol>
+<p><strong>答案</strong>：<span class="arithmatex">\(1680\times84=141120\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 A6：<span class="arithmatex">\(\{1,\dots,9\}\)</span> 中沒有連續整數的 3 元子集有幾個</p>
+<p><strong>公式</strong>：從 <span class="arithmatex">\(\{1,\dots,n\}\)</span> 選 <span class="arithmatex">\(k\)</span> 個互不相鄰的數，共 <span class="arithmatex">\(\binom{n-k+1}{k}\)</span> 種。</p>
+<p><strong>原因</strong>：選出的 <span class="arithmatex">\(a_1&lt;a_2&lt;a_3\)</span> 令 <span class="arithmatex">\(b_i=a_i-(i-1)\)</span>，就變成從 <span class="arithmatex">\(\{1,\dots,n-k+1\}\)</span> 任選 <span class="arithmatex">\(k\)</span> 個。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(\binom{7}{3}=35\)</span>。</p>
+</div>
+<h3 id="u1-4">1.4 多項式係數</h3>
+<p><span class="arithmatex">\((x_1+\cdots+x_m)^n\)</span> 中 <span class="arithmatex">\(x_1^{k_1}\cdots x_m^{k_m}\)</span> 的係數是 <span class="arithmatex">\(\dfrac{n!}{k_1!\cdots k_m!}\)</span>。<strong>有係數的項要把係數的次方一起乘進去</strong>。</p>
+<div class="admonition example">
+<p class="admonition-title">112 Q1（10%）：<span class="arithmatex">\((3a-b+5c+3d-8)^{25}\)</span> 中 <span class="arithmatex">\(ab^6c^8d^5\)</span> 的係數</p>
+<p>次方加起來 <span class="arithmatex">\(1+6+8+5=20\)</span>，所以常數項 <span class="arithmatex">\(-8\)</span> 用了 <span class="arithmatex">\(25-20=5\)</span> 次。</p>
+<div class="arithmatex">\[\frac{25!}{1!\,6!\,8!\,5!\,5!}\cdot 3^1\cdot(-1)^6\cdot5^8\cdot3^5\cdot(-8)^5\]</div>
+<p>考試不能用計算機，<strong>寫到這一步就是答案</strong>。正負號要判斷：<span class="arithmatex">\((-8)^5&lt;0\)</span>，所以整體是負的。</p>
+</div>
+<div class="admonition trap">
+<p class="admonition-title">陷阱</p>
+<p>最常見的錯誤是忘了常數項也佔一個位置。看到 <span class="arithmatex">\((\cdots-8)^{25}\)</span>，先檢查次方加總是否等於 25。</p>
+</div>
+<h3 id="u1-5">1.5 字串、回文、迴圈計數</h3>
+<div class="admonition example">
+<p class="admonition-title">112 Q4（10%）：<span class="arithmatex">\(\Sigma=\{t,v,w,x,y,z\}\)</span>，長度 1 到 11 的字串中，以 <span class="arithmatex">\(xyz\)</span> 為 proper prefix 的有幾個</p>
+<p>proper prefix 代表字串比 <span class="arithmatex">\(xyz\)</span> 長，所以長度 <span class="arithmatex">\(n=4,\dots,11\)</span>，後面 <span class="arithmatex">\(n-3\)</span> 位任意：</p>
+<div class="arithmatex">\[\sum_{n=4}^{11}6^{n-3}=6+6^2+\cdots+6^8=\frac{6^9-6}{5}=2015538\]</div>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q2（10%）：200–999 中所有三位數回文的和（不能列舉）</p>
+<p>回文 <span class="arithmatex">\(\overline{aba}=101a+10b\)</span>，<span class="arithmatex">\(a\in\{2,\dots,9\}\)</span>（8 種）、<span class="arithmatex">\(b\in\{0,\dots,9\}\)</span>（10 種），共 80 個。</p>
+<ul>
+<li>每個 <span class="arithmatex">\(a\)</span> 出現 10 次：<span class="arithmatex">\(101\times10\times(2+\cdots+9)=101\times10\times44=44440\)</span></li>
+<li>每個 <span class="arithmatex">\(b\)</span> 出現 8 次：<span class="arithmatex">\(10\times8\times(0+\cdots+9)=3600\)</span></li>
+</ul>
+<p><strong>答案</strong>：<span class="arithmatex">\(48040\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 Q4（10%）：<span class="arithmatex">\(n\)</span> 的回文組合（palindromic composition）中以 <span class="arithmatex">\(t\)</span> 開頭的有幾個（<span class="arithmatex">\(1\le t\le\lfloor n/2\rfloor\)</span>）</p>
+<p><strong>組合（composition）</strong>：把 <span class="arithmatex">\(n\)</span> 寫成有順序的正整數和，例如 <span class="arithmatex">\(4=1+3=3+1=2+2=\cdots\)</span>。</p>
+<p>開頭是 <span class="arithmatex">\(t\)</span>、又是回文 → 結尾也是 <span class="arithmatex">\(t\)</span>。中間剩下 <span class="arithmatex">\(n-2t\)</span>，要是一個回文組合（或空的）。</p>
+<p><strong>引理</strong>：<span class="arithmatex">\(m\ge1\)</span> 的回文組合有 <span class="arithmatex">\(2^{\lfloor m/2\rfloor}\)</span> 個。</p>
+<p>理由（插棒法）：<span class="arithmatex">\(m\)</span> 個點排一列有 <span class="arithmatex">\(m-1\)</span> 個空隙，每個空隙放不放隔板決定一個組合。回文 ＝ 隔板位置左右對稱，所以空隙兩兩配對（第 <span class="arithmatex">\(i\)</span> 個和第 <span class="arithmatex">\(m-i\)</span> 個）。<span class="arithmatex">\(m\)</span> 是奇數時有 <span class="arithmatex">\(\frac{m-1}{2}\)</span> 對；<span class="arithmatex">\(m\)</span> 是偶數時有 <span class="arithmatex">\(\frac{m-2}{2}\)</span> 對再加正中間 1 個空隙。兩種情況可自由決定的都是 <span class="arithmatex">\(\lfloor m/2\rfloor\)</span> 個，所以有 <span class="arithmatex">\(2^{\lfloor m/2\rfloor}\)</span> 種。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(2^{\lfloor (n-2t)/2\rfloor}\)</span>。<span class="arithmatex">\(n=2t\)</span> 時只有 <span class="arithmatex">\(t+t\)</span> 一種，公式剛好也給 <span class="arithmatex">\(2^0=1\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">114 Q1（10%）：三層迴圈 <span class="arithmatex">\(i=1..12\)</span>、<span class="arithmatex">\(j=1..i\)</span>、<span class="arithmatex">\(k=1..j\)</span> 中每次 increment 加 1、sum 加 increment，最後 sum 是多少</p>
+<p><strong>先算迴圈總共跑幾次</strong>：<span class="arithmatex">\((i,j,k)\)</span> 滿足 <span class="arithmatex">\(1\le k\le j\le i\le12\)</span>，就是從 <span class="arithmatex">\(\{1,\dots,12\}\)</span> 中可重複選 3 個並排序：</p>
+<div class="arithmatex">\[\binom{12+3-1}{3}=\binom{14}{3}=364\]</div>
+<p>increment 依序是 <span class="arithmatex">\(1,2,\dots,364\)</span>，所以 <span class="arithmatex">\(\text{sum}=1+2+\cdots+364=\dfrac{364\times365}{2}=66430\)</span>。</p>
+</div>
+<h3 id="u1-quiz">單元 1 小考</h3>
+<p><strong>1-1.</strong> 12 顆相同的球放進 4 個不同的箱子，每箱至少一顆，有幾種放法？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>每箱先放一顆，剩 8 顆任意放：<span class="arithmatex">\(\binom{8+4-1}{3}=\binom{11}{3}=165\)</span>。</p>
+</details>
+<p><strong>1-2.</strong> 10 顆不同的球放進 3 個不同的箱子，每箱至少一顆？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>onto：<span class="arithmatex">\(3^{10}-3\cdot2^{10}+3=59049-3072+3=55980\)</span>。</p>
+</details>
+<p><strong>1-3.</strong> MISSISSIPPI 的排列中，4 個 S 互不相鄰的有幾種？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>非 S 的 7 個字母（M×1、I×4、P×2）：<span class="arithmatex">\(\frac{7!}{4!\,2!}=105\)</span>；8 個空隙選 4 個：<span class="arithmatex">\(\binom84=70\)</span>。答案 <span class="arithmatex">\(105\times70=7350\)</span>。</p>
+</details>
+<p><strong>1-4.</strong> <span class="arithmatex">\((x+2y-z)^8\)</span> 中 <span class="arithmatex">\(x^3y^2z^3\)</span> 的係數？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(\frac{8!}{3!\,2!\,3!}\cdot2^2\cdot(-1)^3=560\cdot4\cdot(-1)=-2240\)</span>。</p>
+</details>
+<p><strong>1-5.</strong> 從 <span class="arithmatex">\(\{1,\dots,12\}\)</span> 選 4 個互不相鄰的數有幾種？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(\binom{12-4+1}{4}=\binom94=126\)</span>。</p>
+</details>
+<p><strong>1-6.</strong> 字母集 <span class="arithmatex">\(\{a,b,c\}\)</span>，長度 1 到 6 的字串中以 <span class="arithmatex">\(ab\)</span> 開頭的有幾個？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>長度 2 到 6：<span class="arithmatex">\(3^0+3^1+3^2+3^3+3^4=121\)</span>（注意這裡沒說 proper，所以 <span class="arithmatex">\(ab\)</span> 本身也算）。</p>
+</details>
+<h2 id="u2">單元 2：排容原理</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>「至少一個」「或」「上限限制」這三種字眼，幾乎都是排容。算「不要的」比算「要的」簡單時，就用排容。</p>
+</div>
+<h3 id="u2-1">2.1 公式</h3>
+<div class="arithmatex">\[|A_1\cup\cdots\cup A_n|=\sum|A_i|-\sum|A_i\cap A_j|+\sum|A_i\cap A_j\cap A_k|-\cdots\]</div>
+<p>三個集合：<span class="arithmatex">\(|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|A\cap C|-|B\cap C|+|A\cap B\cap C|\)</span>。</p>
+<h3 id="u2-2">2.2 倍數問題</h3>
+<div class="admonition example">
+<p class="admonition-title">115 A3：100–999 中能被 3、5 或 7 整除的有幾個</p>
+<p>先算 1 到 <span class="arithmatex">\(N\)</span> 中 <span class="arithmatex">\(d\)</span> 的倍數有 <span class="arithmatex">\(\lfloor N/d\rfloor\)</span> 個，再用「1–999 減掉 1–99」。</p>
+<table>
+<thead>
+<tr>
+<th>除數</th>
+<th>1–999</th>
+<th>1–99</th>
+<th>100–999</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td>333</td>
+<td>33</td>
+<td>300</td>
+</tr>
+<tr>
+<td>5</td>
+<td>199</td>
+<td>19</td>
+<td>180</td>
+</tr>
+<tr>
+<td>7</td>
+<td>142</td>
+<td>14</td>
+<td>128</td>
+</tr>
+<tr>
+<td>15</td>
+<td>66</td>
+<td>6</td>
+<td>60</td>
+</tr>
+<tr>
+<td>21</td>
+<td>47</td>
+<td>4</td>
+<td>43</td>
+</tr>
+<tr>
+<td>35</td>
+<td>28</td>
+<td>2</td>
+<td>26</td>
+</tr>
+<tr>
+<td>105</td>
+<td>9</td>
+<td>0</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<p><span class="arithmatex">\(300+180+128-60-43-26+9=488\)</span>。</p>
+</div>
+<h3 id="u2-3">2.3 有上限的整數解</h3>
+<p><span class="arithmatex">\(x_1+\cdots+x_k=n\)</span>、<span class="arithmatex">\(0\le x_i\le u\)</span> 的解數：</p>
+<div class="arithmatex">\[\sum_{j\ge0}(-1)^j\binom{k}{j}\binom{n-j(u+1)+k-1}{k-1}\]</div>
+<p>做法：先算沒有上限的解數，再扣掉「某個 <span class="arithmatex">\(x_i\ge u+1\)</span>」的情況（令 <span class="arithmatex">\(x_i'=x_i-(u+1)\)</span>）。</p>
+<div class="admonition example">
+<p class="admonition-title">113 Q8（10%）：2800 本書以 50 本為一包，分給 5 組，每組 200–600 本</p>
+<p><strong>轉換</strong>：2800 本 ＝ 56 包，每組 4–12 包。令 <span class="arithmatex">\(y_i=x_i-4\)</span>，則 <span class="arithmatex">\(y_1+\cdots+y_5=36\)</span>、<span class="arithmatex">\(0\le y_i\le8\)</span>。</p>
+<p><strong>技巧</strong>：36 很接近上限總和 <span class="arithmatex">\(5\times8=40\)</span>，改用 <span class="arithmatex">\(z_i=8-y_i\)</span>：<span class="arithmatex">\(z_1+\cdots+z_5=4\)</span>、<span class="arithmatex">\(z_i\ge0\)</span>，上限自動滿足。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(\binom{4+4}{4}=70\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 A2：<span class="arithmatex">\(x+y+z=10\)</span>、<span class="arithmatex">\(x,y,z\in\{1,\dots,5\}\)</span> 的解數</p>
+<p>令 <span class="arithmatex">\(x'=x-1\)</span> 等，得 <span class="arithmatex">\(x'+y'+z'=7\)</span>、<span class="arithmatex">\(0\le x',y',z'\le4\)</span>。</p>
+<div class="arithmatex">\[\binom{9}{2}-\binom31\binom{4}{2}=36-18=18\]</div>
+<p>（扣掉某個變數 <span class="arithmatex">\(\ge5\)</span> 的情況：剩下 2 分給 3 個變數，<span class="arithmatex">\(\binom42=6\)</span>；兩個變數同時 <span class="arithmatex">\(\ge5\)</span> 不可能。）</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q6(b)（10%）：4 色旗各 15 面，挑 15 面排成信號，「白旗至少 5 面」或「沒有藍旗」</p>
+<p>旗子有順序（排成信號），每色最多 15 面而總共只排 15 面，所以等於長度 15、4 種字母的字串。</p>
+<ul>
+<li><span class="arithmatex">\(A\)</span>：白 <span class="arithmatex">\(\ge5\)</span> ＝ 全部 <span class="arithmatex">\(-\)</span> 白 <span class="arithmatex">\(\le4\)</span> <span class="arithmatex">\(=4^{15}-\sum_{k=0}^{4}\binom{15}{k}3^{15-k}\)</span></li>
+<li><span class="arithmatex">\(B\)</span>：沒有藍 <span class="arithmatex">\(=3^{15}\)</span></li>
+<li><span class="arithmatex">\(A\cap B\)</span>：沒有藍且白 <span class="arithmatex">\(\ge5\)</span> <span class="arithmatex">\(=3^{15}-\sum_{k=0}^{4}\binom{15}{k}2^{15-k}\)</span></li>
+</ul>
+<p><strong>答案</strong>：<span class="arithmatex">\(|A|+|B|-|A\cap B|\)</span>，寫成這個式子即可（數值是 342431045）。</p>
+</div>
+<h3 id="u2-4">2.4 錯排</h3>
+<p><span class="arithmatex">\(n\)</span> 個東西都不在原位：<span class="arithmatex">\(D_n=n!\left(1-\frac1{1!}+\frac1{2!}-\cdots+\frac{(-1)^n}{n!}\right)\)</span>。前幾項：<span class="arithmatex">\(D_1=0\)</span>、<span class="arithmatex">\(D_2=1\)</span>、<span class="arithmatex">\(D_3=2\)</span>、<span class="arithmatex">\(D_4=9\)</span>、<span class="arithmatex">\(D_5=44\)</span>。遞迴：<span class="arithmatex">\(D_n=(n-1)(D_{n-1}+D_{n-2})\)</span>。</p>
+<h3 id="u2-quiz">單元 2 小考</h3>
+<p><strong>2-1.</strong> <span class="arithmatex">\(x_1+x_2+x_3+x_4=20\)</span>，<span class="arithmatex">\(0\le x_i\le7\)</span> 的整數解數？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(\binom{23}{3}-\binom41\binom{15}{3}+\binom42\binom{7}{3}=1771-1820+210=161\)</span>。</p>
+</details>
+<p><strong>2-2.</strong> 1 到 1000 中不能被 2、3、5 任何一個整除的有幾個？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(1000-(500+333+200)+(166+100+66)-33=266\)</span>。</p>
+</details>
+<p><strong>2-3.</strong> 5 封信放進 5 個信封，全部放錯的方法數？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(D_5=44\)</span>。</p>
+</details>
+<p><strong>2-4.</strong> 1 到 100 中能被 4 或 6 整除的有幾個？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(25+16-8=33\)</span>（4 和 6 的公倍數是 12 的倍數，不是 24）。</p>
+</details>
+<h2 id="u3">單元 3：生成函數</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>生成函數把「每個變數可以取哪些值」寫成一個多項式，<strong>相乘之後某一項的係數就是答案</strong>。沒有順序用一般生成函數（OGF），有順序（排列、字串）用指數生成函數（EGF）。</p>
+</div>
+<h3 id="u3-1">3.1 一般生成函數 OGF</h3>
+<p>數列 <span class="arithmatex">\(a_0,a_1,\dots\)</span> 的 OGF 是 <span class="arithmatex">\(A(x)=\sum a_nx^n\)</span>。</p>
+<p><strong>必背展開</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>函數</th>
+<th>展開</th>
+<th>係數 <span class="arithmatex">\([x^n]\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\frac1{1-x}\)</span></td>
+<td><span class="arithmatex">\(1+x+x^2+\cdots\)</span></td>
+<td>1</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\frac1{1-ax}\)</span></td>
+<td><span class="arithmatex">\(\sum a^nx^n\)</span></td>
+<td><span class="arithmatex">\(a^n\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\frac1{(1-x)^k}\)</span></td>
+<td></td>
+<td><span class="arithmatex">\(\binom{n+k-1}{n}\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\frac1{1-x^2}\)</span></td>
+<td><span class="arithmatex">\(1+x^2+x^4+\cdots\)</span></td>
+<td><span class="arithmatex">\(n\)</span> 偶數為 1</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\frac{1-x^{m+1}}{1-x}\)</span></td>
+<td><span class="arithmatex">\(1+x+\cdots+x^m\)</span></td>
+<td>有上限 <span class="arithmatex">\(m\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\frac{x}{(1-x)^2}\)</span></td>
+<td><span class="arithmatex">\(\sum nx^n\)</span></td>
+<td><span class="arithmatex">\(n\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>建模流程</strong>：每個變數寫一個因子，例如「偶數個」寫 <span class="arithmatex">\(1+x^2+x^4+\cdots=\frac1{1-x^2}\)</span>，「0 到 3 個」寫 <span class="arithmatex">\(1+x+x^2+x^3\)</span>，然後全部相乘取係數。</p>
+<div class="admonition example">
+<p class="admonition-title">114 Q7（10%）：買 <span class="arithmatex">\(n\)</span> 盒肉（豬、雞、牛），牛肉必須偶數盒</p>
+<div class="arithmatex">\[A(x)=\frac1{1-x}\cdot\frac1{1-x}\cdot\frac1{1-x^2}\]</div>
+<p>要求 <span class="arithmatex">\([x^n]\)</span>。直接數比較快：牛肉 <span class="arithmatex">\(2k\)</span> 盒，剩下 <span class="arithmatex">\(n-2k\)</span> 盒分給豬和雞有 <span class="arithmatex">\(n-2k+1\)</span> 種。</p>
+<ul>
+<li><span class="arithmatex">\(n\)</span> 偶數：<span class="arithmatex">\(\sum_{k=0}^{n/2}(n-2k+1)=\left(\frac n2+1\right)^2\)</span></li>
+<li><span class="arithmatex">\(n\)</span> 奇數：<span class="arithmatex">\(\frac{(n+1)(n+3)}{4}\)</span></li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q5（10%）：<span class="arithmatex">\(a_n=(-1)^n\)</span>、<span class="arithmatex">\(b_n=(-1)^n\)</span>、<span class="arithmatex">\(c_n=1\)</span> 的 convolution</p>
+<p><strong>卷積對應生成函數相乘</strong>：<span class="arithmatex">\(a*b*c\)</span> 的生成函數是 <span class="arithmatex">\(A(x)B(x)C(x)\)</span>。</p>
+<div class="arithmatex">\[\frac1{1+x}\cdot\frac1{1+x}\cdot\frac1{1-x}\]</div>
+<p>先算 <span class="arithmatex">\(\frac1{(1+x)^2}=\sum(n+1)(-1)^nx^n\)</span>，再乘 <span class="arithmatex">\(\frac1{1-x}\)</span>（就是取前綴和）：</p>
+<div class="arithmatex">\[d_n=\sum_{k=0}^{n}(k+1)(-1)^k=\begin{cases}\frac{n}{2}+1 &amp; n\text{ 偶}\\ -\frac{n+1}{2} &amp; n\text{ 奇}\end{cases}\]</div>
+<p>驗算：<span class="arithmatex">\(d_0=1, d_1=-1, d_2=2, d_3=-2\)</span>。</p>
+</div>
+<h3 id="u3-2">3.2 指數生成函數 EGF：處理「有順序」和奇偶限制</h3>
+<p>字串、排列這類<strong>有順序</strong>的問題，要用 EGF：<span class="arithmatex">\(\sum a_n\frac{x^n}{n!}\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th>某個字母出現</th>
+<th>EGF 因子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任意次</td>
+<td><span class="arithmatex">\(e^x\)</span></td>
+</tr>
+<tr>
+<td>偶數次</td>
+<td><span class="arithmatex">\(\cosh x=\frac{e^x+e^{-x}}2\)</span></td>
+</tr>
+<tr>
+<td>奇數次</td>
+<td><span class="arithmatex">\(\sinh x=\frac{e^x-e^{-x}}2\)</span></td>
+</tr>
+<tr>
+<td>至少一次</td>
+<td><span class="arithmatex">\(e^x-1\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>相乘後展開成 <span class="arithmatex">\(e^{ax}\)</span> 的和，<span class="arithmatex">\(e^{ax}\)</span> 對 <span class="arithmatex">\(\frac{x^n}{n!}\)</span> 的係數是 <span class="arithmatex">\(a^n\)</span>。</p>
+<div class="admonition example">
+<p class="admonition-title">114 Q8（10%）：隨機 28 位八進位數字串，3 和 7 都出現偶數次的機率</p>
+<p>3 和 7 各用 <span class="arithmatex">\(\cosh x\)</span>，其他 6 個數字用 <span class="arithmatex">\(e^x\)</span>：</p>
+<div class="arithmatex">\[\left(\frac{e^x+e^{-x}}2\right)^2e^{6x}=\frac{e^{8x}+2e^{6x}+e^{4x}}{4}\]</div>
+<p>長度 <span class="arithmatex">\(n\)</span> 的個數 <span class="arithmatex">\(=\frac{8^n+2\cdot6^n+4^n}{4}\)</span>，所以機率：</p>
+<div class="arithmatex">\[\frac{8^{28}+2\cdot6^{28}+4^{28}}{4\cdot8^{28}}\]</div>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 Q5（20%）：26 位三進位序列 (a) 0 和 2 都偶數個 (b) 0 奇、1 奇、2 偶</p>
+<p>(a) <span class="arithmatex">\(\cosh^2x\cdot e^x=\frac{e^{3x}+2e^x+e^{-x}}{4}\)</span> → 個數 <span class="arithmatex">\(\frac{3^{26}+2+1}{4}\)</span>，機率 <span class="arithmatex">\(\frac{3^{26}+3}{4\cdot3^{26}}\)</span>。</p>
+<p>(b) <span class="arithmatex">\(\sinh^2x\cosh x=\frac{(e^{2x}-2+e^{-2x})(e^x+e^{-x})}{8}=\frac{e^{3x}-e^x-e^{-x}+e^{-3x}}{8}\)</span></p>
+<p>個數 <span class="arithmatex">\(\frac{3^{26}-1-1+3^{26}}{8}=\frac{3^{26}-1}{4}\)</span>，機率 <span class="arithmatex">\(\frac{3^{26}-1}{4\cdot3^{26}}\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q6(a)（10%）：15 面旗排成信號，黑旗奇數、紅旗偶數</p>
+<p><span class="arithmatex">\(\sinh x\cosh x\cdot e^{2x}=\frac{e^{2x}-e^{-2x}}{4}\cdot e^{2x}=\frac{e^{4x}-1}{4}\)</span></p>
+<p><span class="arithmatex">\(n=15\)</span>：<span class="arithmatex">\(\frac{4^{15}}{4}=4^{14}\)</span>。</p>
+</div>
+<div class="admonition trap">
+<p class="admonition-title">陷阱：OGF 還是 EGF？</p>
+<p>問自己：「兩個答案只差在順序，算不算不同？」算不同就用 EGF（字串、信號、排列），不算就用 OGF（買東西、分配相同的球、整數解）。113 Q1（相同的球）用 OGF，114 Q8（字串）用 EGF。</p>
+</div>
+<h3 id="u3-3">3.3 用生成函數解遞迴</h3>
+<div class="admonition example">
+<p class="admonition-title">113 Q10（10%）：用生成函數解 <span class="arithmatex">\(a_{n+2}-8a_{n+1}+15a_n=0\)</span>，<span class="arithmatex">\(a_0=1\)</span>、<span class="arithmatex">\(a_1=6\)</span></p>
+<p>設 <span class="arithmatex">\(A(x)=\sum a_nx^n\)</span>。遞迴式兩邊乘 <span class="arithmatex">\(x^{n+2}\)</span> 再對 <span class="arithmatex">\(n\ge0\)</span> 加總：</p>
+<div class="arithmatex">\[(A-a_0-a_1x)-8x(A-a_0)+15x^2A=0\]</div>
+<div class="arithmatex">\[A(1-8x+15x^2)=1+6x-8x=1-2x\]</div>
+<div class="arithmatex">\[A=\frac{1-2x}{(1-3x)(1-5x)}=\frac{-1/2}{1-3x}+\frac{3/2}{1-5x}\]</div>
+<p>部分分式的係數：令 <span class="arithmatex">\(1-2x=\alpha(1-5x)+\beta(1-3x)\)</span>，<span class="arithmatex">\(x=\frac13\)</span> 得 <span class="arithmatex">\(\alpha=-\frac12\)</span>，<span class="arithmatex">\(x=\frac15\)</span> 得 <span class="arithmatex">\(\beta=\frac32\)</span>。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(a_n=\frac{3\cdot5^n-3^n}{2}\)</span>。驗算 <span class="arithmatex">\(a_1=\frac{15-3}2=6\)</span> ✓。</p>
+</div>
+<h3 id="u3-quiz">單元 3 小考</h3>
+<p><strong>3-1.</strong> <span class="arithmatex">\(x_1+x_2+x_3=10\)</span>，<span class="arithmatex">\(x_1\)</span> 是偶數、<span class="arithmatex">\(0\le x_2\le3\)</span>、<span class="arithmatex">\(x_3\ge0\)</span>，用生成函數寫出式子並求解數。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\([x^{10}]\ \frac1{1-x^2}(1+x+x^2+x^3)\frac1{1-x}\)</span>。直接數：<span class="arithmatex">\(x_1=0,2,\dots,10\)</span>（6 種），每種 <span class="arithmatex">\(x_2\)</span> 有 <span class="arithmatex">\(\min(4,\ 10-x_1+1)\)</span> 種 → <span class="arithmatex">\(4+4+4+4+3+1=20\)</span>。</p>
+</details>
+<p><strong>3-2.</strong> 長度 <span class="arithmatex">\(n\)</span> 的四進位字串（0–3）中，0 出現偶數次且 1 出現奇數次的有幾個？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(\cosh x\sinh x\,e^{2x}=\frac{e^{4x}-1}{4}\)</span> → <span class="arithmatex">\(4^{n-1}\)</span>（<span class="arithmatex">\(n\ge1\)</span>）。</p>
+</details>
+<p><strong>3-3.</strong> <span class="arithmatex">\(\frac{1}{(1-x)^3}\)</span> 中 <span class="arithmatex">\(x^n\)</span> 的係數？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(\binom{n+2}{2}\)</span>。</p>
+</details>
+<p><strong>3-4.</strong> 用生成函數解 <span class="arithmatex">\(a_n=5a_{n-1}-6a_{n-2}\)</span>，<span class="arithmatex">\(a_0=1\)</span>、<span class="arithmatex">\(a_1=4\)</span>。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(A(x)=\frac{1-x}{(1-2x)(1-3x)}=\frac{-1}{1-2x}+\frac{2}{1-3x}\)</span>，所以 <span class="arithmatex">\(a_n=2\cdot3^n-2^n\)</span>。驗算 <span class="arithmatex">\(a_2=18-4=14=5\cdot4-6\)</span> ✓。</p>
+</details>
+<h2 id="u4">單元 4：遞迴關係</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p><strong>建立遞迴</strong>：看「最後一步」有幾種可能。<strong>解遞迴</strong>：特徵方程求根，再用初始值解係數。</p>
+</div>
+<h3 id="u4-1">4.1 建立遞迴：最後一步分類法</h3>
+<p>問自己「長度 <span class="arithmatex">\(n\)</span> 的東西，最後一塊是什麼？」，每種可能對應一個較短的子問題。</p>
+<div class="admonition example">
+<p class="admonition-title">112 Q7（20%）：<span class="arithmatex">\(n\)</span> 格停車位，機車佔 1 格、汽車佔 3 格 (b) 汽車有 4 種顏色</p>
+<p>最後一台是機車 → 前面 <span class="arithmatex">\(n-1\)</span> 格任意；最後一台是汽車 → 前面 <span class="arithmatex">\(n-3\)</span> 格任意。</p>
+<p>(a) <span class="arithmatex">\(a_n=a_{n-1}+a_{n-3}\)</span>，<span class="arithmatex">\(a_0=a_1=a_2=1\)</span>。特徵方程 <span class="arithmatex">\(r^3-r^2-1=0\)</span> 沒有好看的根，考試寫出遞迴式、初始值和特徵方程，說明 <span class="arithmatex">\(a_n=c_1r_1^n+c_2r_2^n+c_3r_3^n\)</span> 即可。</p>
+<p>(b) 汽車有 4 色 → <span class="arithmatex">\(b_n=b_{n-1}+4b_{n-3}\)</span>，<span class="arithmatex">\(b_0=b_1=b_2=1\)</span>。</p>
+<p>特徵方程 <span class="arithmatex">\(r^3-r^2-4=0\)</span>，試 <span class="arithmatex">\(r=2\)</span>：<span class="arithmatex">\(8-4-4=0\)</span> ✓。因式分解 <span class="arithmatex">\((r-2)(r^2+r+2)=0\)</span>，另外兩根 <span class="arithmatex">\(\frac{-1\pm\sqrt7 i}{2}\)</span>。</p>
+<p><span class="arithmatex">\(b_n=c_1 2^n+c_2\left(\tfrac{-1+\sqrt7i}2\right)^n+c_3\left(\tfrac{-1-\sqrt7i}2\right)^n\)</span>，再代 <span class="arithmatex">\(b_0,b_1,b_2\)</span> 解係數。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">114 Q6（20%）：程式 P1 每次 1 秒、P2 每次 4 秒，填滿 <span class="arithmatex">\(n\)</span> 秒的方法 (b) P2 有 4 種不同任務</p>
+<p>和 112 Q7 一模一樣，只是 3 換成 4：</p>
+<p>(a) <span class="arithmatex">\(a_n=a_{n-1}+a_{n-4}\)</span>，<span class="arithmatex">\(a_0=a_1=a_2=a_3=1\)</span>。</p>
+<p>(b) <span class="arithmatex">\(a_n=a_{n-1}+4a_{n-4}\)</span>，<span class="arithmatex">\(a_0=a_1=a_2=a_3=1\)</span>。</p>
+<p><strong>連續兩年考同一個模型</strong>，116 年很可能換成「1 格與 2 格」或「三種長度」，一定要練熟。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 Q6（20%）：(a) 長度 <span class="arithmatex">\(n\)</span> 沒有連續 0 的二進位字串 (b) 沒有連續 1 且最後一位是 0</p>
+<p>(a) 最後一位是 1 → 前面 <span class="arithmatex">\(n-1\)</span> 位任意合法；最後一位是 0 → 倒數第二位必須是 1，前面 <span class="arithmatex">\(n-2\)</span> 位任意合法。</p>
+<p><span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}\)</span>，<span class="arithmatex">\(a_1=2\)</span>、<span class="arithmatex">\(a_2=3\)</span>。這是費氏數列：<span class="arithmatex">\(a_n=F_{n+2}\)</span>。</p>
+<p>求解：特徵根 <span class="arithmatex">\(\frac{1\pm\sqrt5}{2}\)</span>，<span class="arithmatex">\(a_n=\frac{1}{\sqrt5}\left[\left(\frac{1+\sqrt5}{2}\right)^{n+2}-\left(\frac{1-\sqrt5}{2}\right)^{n+2}\right]\)</span>。</p>
+<p>(b) 最後一位固定是 0，前 <span class="arithmatex">\(n-1\)</span> 位只要沒有連續 1：<span class="arithmatex">\(b_n=(\text{長度 } n-1 \text{ 沒有連續 1 的字串數})=F_{n+1}\)</span>，遞迴 <span class="arithmatex">\(b_n=b_{n-1}+b_{n-2}\)</span>，<span class="arithmatex">\(b_1=1\)</span>、<span class="arithmatex">\(b_2=2\)</span>。</p>
+</div>
+<h3 id="u4-2">4.2 解線性齊次遞迴</h3>
+<p><span class="arithmatex">\(a_n=c_1a_{n-1}+c_2a_{n-2}\)</span> → 特徵方程 <span class="arithmatex">\(r^2-c_1r-c_2=0\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th>根的情況</th>
+<th>通解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>相異實根 <span class="arithmatex">\(r_1\ne r_2\)</span></td>
+<td><span class="arithmatex">\(A r_1^n+B r_2^n\)</span></td>
+</tr>
+<tr>
+<td>重根 <span class="arithmatex">\(r\)</span></td>
+<td><span class="arithmatex">\((A+Bn)r^n\)</span></td>
+</tr>
+<tr>
+<td>共軛複數根 <span class="arithmatex">\(\rho e^{\pm i\theta}\)</span></td>
+<td><span class="arithmatex">\(\rho^n(A\cos n\theta+B\sin n\theta)\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition example">
+<p class="admonition-title">113 Q9（10%）：<span class="arithmatex">\(a_{n+2}+a_n=0\)</span>，<span class="arithmatex">\(a_0=1\)</span>、<span class="arithmatex">\(a_1=5\)</span></p>
+<p>特徵方程 <span class="arithmatex">\(r^2+1=0\)</span>，<span class="arithmatex">\(r=\pm i=e^{\pm i\pi/2}\)</span>，<span class="arithmatex">\(\rho=1\)</span>、<span class="arithmatex">\(\theta=\frac\pi2\)</span>。</p>
+<p><span class="arithmatex">\(a_n=A\cos\frac{n\pi}2+B\sin\frac{n\pi}2\)</span>，<span class="arithmatex">\(a_0=A=1\)</span>、<span class="arithmatex">\(a_1=B=5\)</span>。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(a_n=\cos\frac{n\pi}{2}+5\sin\frac{n\pi}{2}\)</span>，數列是 <span class="arithmatex">\(1,5,-1,-5,1,5,\dots\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 Q7（10%）：<span class="arithmatex">\(p_n=p_{n-1}-0.3p_{n-2}\)</span>，<span class="arithmatex">\(p_0=0\)</span>、<span class="arithmatex">\(p_1=1\)</span>，從 2019/12/27 起第幾週機率首次低於 0.01</p>
+<p>特徵根 <span class="arithmatex">\(\frac{1\pm\sqrt{1-1.2}}{2}=\frac{1\pm i\sqrt{0.2}}{2}\)</span>，是複數根，<span class="arithmatex">\(|r|=\sqrt{0.3}\)</span>。</p>
+<p><strong>考試時直接遞推比解公式快</strong>：
+<span class="arithmatex">\(p_2=1\)</span>、<span class="arithmatex">\(p_3=0.7\)</span>、<span class="arithmatex">\(p_4=0.4\)</span>、<span class="arithmatex">\(p_5=0.19\)</span>、<span class="arithmatex">\(p_6=0.07\)</span>、<span class="arithmatex">\(p_7=0.013\)</span>、<span class="arithmatex">\(p_8=-0.008\)</span>。</p>
+<p>第 8 週首次 <span class="arithmatex">\(&lt;0.01\)</span>，日期 2019/12/27 加 8 週＝<strong>2020/2/21</strong>。</p>
+<p>（數值變成負的，代表這個模型只是近似。解題時寫出你的判斷即可。）</p>
+</div>
+<h3 id="u4-3">4.3 非齊次遞迴</h3>
+<p><span class="arithmatex">\(a_n=c_1a_{n-1}+c_2a_{n-2}+f(n)\)</span> → 通解 ＝ 齊次解 ＋ 一個特解。</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(f(n)\)</span></th>
+<th>特解猜</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>常數 <span class="arithmatex">\(c\)</span></td>
+<td><span class="arithmatex">\(A\)</span></td>
+<td>若 1 是特徵根，改猜 <span class="arithmatex">\(An\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(n\)</span></td>
+<td><span class="arithmatex">\(An+B\)</span></td>
+<td>若 1 是特徵根，乘上 <span class="arithmatex">\(n\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(k^n\)</span></td>
+<td><span class="arithmatex">\(A k^n\)</span></td>
+<td>若 <span class="arithmatex">\(k\)</span> 是特徵根，改猜 <span class="arithmatex">\(Ank^n\)</span></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition example">
+<p class="admonition-title">114 Q9（10%）：<span class="arithmatex">\(a_{n+2}^2-7a_{n+1}^2+12a_n^2=9n\)</span>，<span class="arithmatex">\(a_0=a_1=1\)</span></p>
+<p><strong>換元</strong>：令 <span class="arithmatex">\(b_n=a_n^2\)</span>，變成線性：<span class="arithmatex">\(b_{n+2}-7b_{n+1}+12b_n=9n\)</span>。</p>
+<p>齊次：<span class="arithmatex">\(r^2-7r+12=0\)</span>，<span class="arithmatex">\(r=3,4\)</span>。</p>
+<p>特解猜 <span class="arithmatex">\(An+B\)</span>，代入：<span class="arithmatex">\(6An+(-5A+6B)=9n\)</span>，得 <span class="arithmatex">\(A=\frac32\)</span>、<span class="arithmatex">\(B=\frac54\)</span>。</p>
+<p><span class="arithmatex">\(b_n=c_13^n+c_24^n+\frac32n+\frac54\)</span>，代 <span class="arithmatex">\(b_0=b_1=1\)</span>：<span class="arithmatex">\(c_1=\frac34\)</span>、<span class="arithmatex">\(c_2=-1\)</span>。</p>
+<div class="arithmatex">\[b_n=\frac{3^{n+1}-4^{n+1}+6n+5}{4}\]</div>
+<p><strong>注意</strong>：<span class="arithmatex">\(b_2=\frac{27-64+12+5}{4}=-5&lt;0\)</span>，<span class="arithmatex">\(a_2^2\)</span> 不可能是負數，所以這題在實數範圍其實無解。考試時寫出 <span class="arithmatex">\(b_n\)</span> 的公式，並註明 <span class="arithmatex">\(a_n=\pm\sqrt{b_n}\)</span> 只在 <span class="arithmatex">\(b_n\ge0\)</span> 時有意義，就能拿到換元與求解的分數。</p>
+</div>
+<h3 id="u4-quiz">單元 4 小考</h3>
+<p><strong>4-1.</strong> 長度 <span class="arithmatex">\(n\)</span> 的三進位字串（0、1、2）中沒有連續兩個 0 的個數，寫出遞迴與初始值。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>最後一位是 1 或 2 → <span class="arithmatex">\(2a_{n-1}\)</span>；最後是 0 → 倒數第二位是 1 或 2 → <span class="arithmatex">\(2a_{n-2}\)</span>。<span class="arithmatex">\(a_n=2a_{n-1}+2a_{n-2}\)</span>，<span class="arithmatex">\(a_1=3\)</span>、<span class="arithmatex">\(a_2=8\)</span>。</p>
+</details>
+<p><strong>4-2.</strong> 用 <span class="arithmatex">\(1\times1\)</span> 磁磚和 <span class="arithmatex">\(1\times2\)</span> 磁磚鋪 <span class="arithmatex">\(1\times n\)</span> 的走道，<span class="arithmatex">\(1\times2\)</span> 磁磚有 2 種顏色。寫出遞迴並求解。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(a_n=a_{n-1}+2a_{n-2}\)</span>，<span class="arithmatex">\(a_1=1\)</span>、<span class="arithmatex">\(a_2=3\)</span>。特徵根 <span class="arithmatex">\(2,-1\)</span>，<span class="arithmatex">\(a_n=\frac{2^{n+1}+(-1)^n}{3}\)</span>。</p>
+</details>
+<p><strong>4-3.</strong> 解 <span class="arithmatex">\(a_n=4a_{n-1}-4a_{n-2}\)</span>，<span class="arithmatex">\(a_0=1\)</span>、<span class="arithmatex">\(a_1=6\)</span>。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>重根 2：<span class="arithmatex">\(a_n=(A+Bn)2^n\)</span>，<span class="arithmatex">\(A=1\)</span>，<span class="arithmatex">\(2(1+B)=6\)</span> → <span class="arithmatex">\(B=2\)</span>。<span class="arithmatex">\(a_n=(1+2n)2^n\)</span>。</p>
+</details>
+<p><strong>4-4.</strong> 解 <span class="arithmatex">\(a_n=3a_{n-1}+2^n\)</span>，<span class="arithmatex">\(a_0=1\)</span>。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>特解 <span class="arithmatex">\(A2^n\)</span>：<span class="arithmatex">\(A=\frac32A+1\)</span> → <span class="arithmatex">\(A=-2\)</span>。<span class="arithmatex">\(a_n=c\,3^n-2^{n+1}\)</span>，<span class="arithmatex">\(c=3\)</span>。<span class="arithmatex">\(a_n=3^{n+1}-2^{n+1}\)</span>。</p>
+</details>
+<p><strong>4-5.</strong> 解 <span class="arithmatex">\(a_n=2a_{n-1}-2a_{n-2}\)</span>，<span class="arithmatex">\(a_0=a_1=1\)</span>。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>根 <span class="arithmatex">\(1\pm i=\sqrt2e^{\pm i\pi/4}\)</span>。<span class="arithmatex">\(a_n=(\sqrt2)^n(A\cos\frac{n\pi}4+B\sin\frac{n\pi}4)\)</span>，<span class="arithmatex">\(A=1\)</span>，<span class="arithmatex">\(a_1=1+B=1\)</span> → <span class="arithmatex">\(B=0\)</span>。<span class="arithmatex">\(a_n=(\sqrt2)^n\cos\frac{n\pi}{4}\)</span>。</p>
+</details>
+<h2 id="u5">單元 5：數論</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>數論題只用到三個工具：<strong>gcd 是線性組合</strong>、<strong>歐幾里得演算法</strong>、<strong>同餘可以加減乘</strong>。</p>
+</div>
+<h3 id="u5-1">5.1 gcd 與線性組合</h3>
+<p><strong>定理</strong>：<span class="arithmatex">\(\gcd(a,b)\)</span> 是 <span class="arithmatex">\(ax+by\)</span> 能表示的最小正整數。所以只要找到 <span class="arithmatex">\(ax+by=1\)</span>，就證明了 <span class="arithmatex">\(a,b\)</span> 互質。</p>
+<div class="admonition example">
+<p class="admonition-title">112 Q2（10%）：證明 <span class="arithmatex">\(12n+17\)</span> 與 <span class="arithmatex">\(8n+11\)</span> 互質</p>
+<p>想辦法消掉 <span class="arithmatex">\(n\)</span>：<span class="arithmatex">\(2(12n+17)-3(8n+11)=24n+34-24n-33=1\)</span>。</p>
+<p>設 <span class="arithmatex">\(d=\gcd(12n+17,8n+11)\)</span>，則 <span class="arithmatex">\(d\)</span> 整除兩者的任何線性組合，所以 <span class="arithmatex">\(d\mid1\)</span>，<span class="arithmatex">\(d=1\)</span>。∎</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q8（10%）：證明 <span class="arithmatex">\(a\equiv b\pmod n\Rightarrow\gcd(a,n)=\gcd(b,n)\)</span></p>
+<p><span class="arithmatex">\(a\equiv b\)</span> 代表 <span class="arithmatex">\(a=b+kn\)</span>。</p>
+<p>設 <span class="arithmatex">\(d=\gcd(b,n)\)</span>：<span class="arithmatex">\(d\mid b\)</span> 且 <span class="arithmatex">\(d\mid n\)</span> → <span class="arithmatex">\(d\mid b+kn=a\)</span>，所以 <span class="arithmatex">\(d\)</span> 是 <span class="arithmatex">\(a,n\)</span> 的公因數，<span class="arithmatex">\(d\le\gcd(a,n)\)</span>。</p>
+<p>同理（<span class="arithmatex">\(b=a-kn\)</span>）<span class="arithmatex">\(\gcd(a,n)\le\gcd(b,n)\)</span>。兩邊夾，相等。∎</p>
+</div>
+<h3 id="u5-2">5.2 歐幾里得演算法與模反元素</h3>
+<p><span class="arithmatex">\(\gcd(a,b)=\gcd(b,a\bmod b)\)</span>，一直做到餘數為 0。</p>
+<div class="admonition example">
+<p class="admonition-title">115 A4：<span class="arithmatex">\(\gcd(1066601,343033)\)</span></p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(a\)</span></th>
+<th><span class="arithmatex">\(b\)</span></th>
+<th><span class="arithmatex">\(a\bmod b\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1066601</td>
+<td>343033</td>
+<td>37502</td>
+</tr>
+<tr>
+<td>343033</td>
+<td>37502</td>
+<td>5515</td>
+</tr>
+<tr>
+<td>37502</td>
+<td>5515</td>
+<td>4412</td>
+</tr>
+<tr>
+<td>5515</td>
+<td>4412</td>
+<td>1103</td>
+</tr>
+<tr>
+<td>4412</td>
+<td>1103</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：1103。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q4（10%）：<span class="arithmatex">\(a,b\)</span> 互質時，怎麼用歐幾里得演算法求 <span class="arithmatex">\(a^{-1}\pmod b\)</span></p>
+<ol>
+<li>用歐幾里得演算法算 <span class="arithmatex">\(\gcd(a,b)=1\)</span>，記下每一步 <span class="arithmatex">\(r_{i}=r_{i-2}-q_ir_{i-1}\)</span>。</li>
+<li>從最後一步往回代，把 1 寫成 <span class="arithmatex">\(ax+by=1\)</span>（擴展歐幾里得）。</li>
+<li>兩邊 mod <span class="arithmatex">\(b\)</span>：<span class="arithmatex">\(ax\equiv1\)</span>，所以 <span class="arithmatex">\(a^{-1}\equiv x\pmod b\)</span>，若 <span class="arithmatex">\(x&lt;0\)</span> 加上 <span class="arithmatex">\(b\)</span>。</li>
+</ol>
+<p><strong>舉例</strong>：求 <span class="arithmatex">\(17^{-1}\bmod 43\)</span>。
+<span class="arithmatex">\(43=2\cdot17+9\)</span>、<span class="arithmatex">\(17=1\cdot9+8\)</span>、<span class="arithmatex">\(9=1\cdot8+1\)</span>。
+往回代：<span class="arithmatex">\(1=9-8=9-(17-9)=2\cdot9-17=2(43-2\cdot17)-17=2\cdot43-5\cdot17\)</span>。
+所以 <span class="arithmatex">\(17^{-1}\equiv-5\equiv38\pmod{43}\)</span>。驗算 <span class="arithmatex">\(17\times38=646=15\times43+1\)</span> ✓。</p>
+</div>
+<h3 id="u5-3">5.3 質數與同餘</h3>
+<div class="admonition example">
+<p class="admonition-title">113 Q3（10%）：證明質數有無限多個</p>
+<p>反證：假設質數只有 <span class="arithmatex">\(p_1,\dots,p_k\)</span>。令 <span class="arithmatex">\(N=p_1p_2\cdots p_k+1\)</span>。</p>
+<p><span class="arithmatex">\(N&gt;1\)</span>，所以 <span class="arithmatex">\(N\)</span> 有某個質因數 <span class="arithmatex">\(p\)</span>。<span class="arithmatex">\(p\)</span> 一定是某個 <span class="arithmatex">\(p_i\)</span>，但 <span class="arithmatex">\(N\)</span> 除以任何 <span class="arithmatex">\(p_i\)</span> 都餘 1，矛盾。∎</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 A7：最小的正整數 <span class="arithmatex">\(x\)</span> 使 <span class="arithmatex">\(2^x\equiv1\pmod{13}\)</span></p>
+<p>Fermat 小定理：<span class="arithmatex">\(2^{12}\equiv1\)</span>，所以答案（2 的「階」）一定整除 12，只要試 <span class="arithmatex">\(1,2,3,4,6,12\)</span>：</p>
+<p><span class="arithmatex">\(2^1=2\)</span>、<span class="arithmatex">\(2^2=4\)</span>、<span class="arithmatex">\(2^3=8\)</span>、<span class="arithmatex">\(2^4=16\equiv3\)</span>、<span class="arithmatex">\(2^6=64\equiv12\)</span>，都不是 1。<strong>答案 12。</strong></p>
+</div>
+<h3 id="u5-quiz">單元 5 小考</h3>
+<p><strong>5-1.</strong> <span class="arithmatex">\(\gcd(1071,462)\)</span>？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(1071=2\cdot462+147\)</span>、<span class="arithmatex">\(462=3\cdot147+21\)</span>、<span class="arithmatex">\(147=7\cdot21\)</span>。答案 21。</p>
+</details>
+<p><strong>5-2.</strong> 證明對所有正整數 <span class="arithmatex">\(n\)</span>，<span class="arithmatex">\(3n+2\)</span> 和 <span class="arithmatex">\(5n+3\)</span> 互質。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(5(3n+2)-3(5n+3)=1\)</span>，所以公因數整除 1。</p>
+</details>
+<p><strong>5-3.</strong> <span class="arithmatex">\(3^x\equiv1\pmod7\)</span> 的最小正整數 <span class="arithmatex">\(x\)</span>？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>試 6 的因數：<span class="arithmatex">\(3^1=3\)</span>、<span class="arithmatex">\(3^2=2\)</span>、<span class="arithmatex">\(3^3=6\)</span>，都不是 1，答案 6。</p>
+</details>
+<p><strong>5-4.</strong> <span class="arithmatex">\(2^{100}\bmod7\)</span>？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(2^3=8\equiv1\)</span>，<span class="arithmatex">\(2^{100}=2^{99}\cdot2=(2^3)^{33}\cdot2\equiv2\)</span>。</p>
+</details>
+<h2 id="u6">單元 6：鴿籠原理與 Ramsey</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>證明「一定存在」的題目，先想：<strong>鴿子是什麼？籠子是什麼？</strong> 鴿子比籠子多，就有兩隻擠在一起。</p>
+</div>
+<h3 id="u6-1">6.1 基本鴿籠</h3>
+<p><span class="arithmatex">\(n+1\)</span> 隻鴿子放進 <span class="arithmatex">\(n\)</span> 個籠子，至少一個籠子有 2 隻。推廣：<span class="arithmatex">\(kn+1\)</span> 隻 → 至少一個籠子有 <span class="arithmatex">\(k+1\)</span> 隻。</p>
+<div class="admonition example">
+<p class="admonition-title">111 Q1（10%）：7 個正整數、最大不超過 21，證明所有非空子集的和不可能全部相異</p>
+<ul>
+<li><strong>鴿子</strong>：非空子集，共 <span class="arithmatex">\(2^7-1=127\)</span> 個。</li>
+<li><strong>籠子</strong>：可能的和。最小是 1，最大不超過 <span class="arithmatex">\(21+20+\cdots+15=126\)</span>（7 個相異數最大的和）。所以和只有 126 種可能。</li>
+</ul>
+<p>127 個子集、126 種和 → 一定有兩個子集的和相同。∎</p>
+</div>
+<h3 id="u6-2">6.2 Erdős–Szekeres 定理</h3>
+<p><strong>任何 <span class="arithmatex">\(n^2+1\)</span> 個相異實數組成的序列，都含有長度 <span class="arithmatex">\(n+1\)</span> 的遞增或遞減子序列。</strong> 而且 <span class="arithmatex">\(n^2\)</span> 個是「剛好做不到」的界線。</p>
+<div class="admonition example">
+<p class="admonition-title">114 Q4（10%）：找 10 個相異實數，沒有長度 3 的遞增或遞減子序列</p>
+<p><strong>陷阱題</strong>：<span class="arithmatex">\(n=2\)</span> 時，任何 <span class="arithmatex">\(2^2+1=5\)</span> 個相異數就一定有長度 3 的單調子序列。10 個更不可能，<strong>答案是不存在</strong>，要寫出證明。</p>
+<p><strong>證明</strong>：對每個位置 <span class="arithmatex">\(i\)</span> 記 <span class="arithmatex">\((x_i,y_i)\)</span>＝以它結尾的最長遞增、最長遞減子序列長度。若都 <span class="arithmatex">\(\le2\)</span>，只有 <span class="arithmatex">\(2\times2=4\)</span> 種組合，5 個以上的位置必有 <span class="arithmatex">\(i&lt;j\)</span> 的組合相同。但若 <span class="arithmatex">\(a_i&lt;a_j\)</span>，則 <span class="arithmatex">\(x_j\ge x_i+1\)</span>；若 <span class="arithmatex">\(a_i&gt;a_j\)</span>，則 <span class="arithmatex">\(y_j\ge y_i+1\)</span>，矛盾。∎</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">112 Q3（10%）：25 個大小都不同的倉庫，至少能找到幾個形成「前一個比後一個大」的連續收集點</p>
+<p>題意是保證存在的單調子序列長度。<span class="arithmatex">\(25\ge4^2+1=17\)</span>，所以一定有長度 5 的遞增或遞減子序列；但 <span class="arithmatex">\(25&lt;5^2+1=26\)</span>，不保證長度 6。</p>
+<p>路線可以反著走（遞增反過來就是遞減），所以<strong>答案是 5</strong>。寫答案時要說明這個詮釋。</p>
+</div>
+<h3 id="u6-3">6.3 Ramsey：R(3,3)=6</h3>
+<div class="admonition example">
+<p class="admonition-title">115 B3（10 分）：6 個人中，一定有 3 人互相認識或 3 人互不認識</p>
+<p>任取一人 A，其他 5 人跟 A 的關係只有「認識」和「不認識」兩種。由鴿籠，至少 3 人跟 A 同一種關係，假設是認識（不認識的情況對稱），叫他們 B、C、D。</p>
+<ul>
+<li>如果 B、C、D 中有任兩人認識，這兩人加上 A 就是互相認識的三人組。</li>
+<li>如果 B、C、D 兩兩都不認識，他們就是互不認識的三人組。∎</li>
+</ul>
+</div>
+<h3 id="u6-quiz">單元 6 小考</h3>
+<p><strong>6-1.</strong> 至少要幾個相異實數，才保證有長度 4 的遞增或遞減子序列？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(3^2+1=10\)</span>。</p>
+</details>
+<p><strong>6-2.</strong> 構造 9 個相異數，沒有長度 4 的單調子序列。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(3,2,1,6,5,4,9,8,7\)</span>：分成 3 段遞減，段與段之間遞增。最長遞增 3、最長遞減 3。</p>
+</details>
+<p><strong>6-3.</strong> 證明：從 <span class="arithmatex">\(\{1,\dots,20\}\)</span> 任選 11 個數，一定有一個整除另一個。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>每個數寫成 <span class="arithmatex">\(2^k\cdot m\)</span>，<span class="arithmatex">\(m\)</span> 是奇數。1 到 20 的奇數部分 <span class="arithmatex">\(m\)</span> 只有 10 種（1,3,…,19）。11 個數 → 兩個數 <span class="arithmatex">\(m\)</span> 相同，較小的整除較大的。</p>
+</details>
+<h2 id="u7">單元 7：關係、函數、運算與邏輯</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>關係計數題就是在數「矩陣裡哪些格子可以自由選」。</p>
+</div>
+<h3 id="u7-1">7.1 關係的計數公式</h3>
+<p><span class="arithmatex">\(|A|=n\)</span>，關係是 <span class="arithmatex">\(n\times n\)</span> 矩陣的子集。</p>
+<table>
+<thead>
+<tr>
+<th>性質</th>
+<th>個數</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任意關係</td>
+<td><span class="arithmatex">\(2^{n^2}\)</span></td>
+<td>每格自由</td>
+</tr>
+<tr>
+<td>反身</td>
+<td><span class="arithmatex">\(2^{n^2-n}\)</span></td>
+<td>對角線固定為 1</td>
+</tr>
+<tr>
+<td>對稱</td>
+<td><span class="arithmatex">\(2^{n(n+1)/2}\)</span></td>
+<td>對角線 <span class="arithmatex">\(n\)</span> 格＋上三角 <span class="arithmatex">\(\binom n2\)</span> 格自由</td>
+</tr>
+<tr>
+<td>反身且對稱</td>
+<td><span class="arithmatex">\(2^{\binom n2}\)</span></td>
+<td>只剩上三角</td>
+</tr>
+<tr>
+<td>反對稱</td>
+<td><span class="arithmatex">\(2^n\cdot3^{\binom n2}\)</span></td>
+<td>每對 <span class="arithmatex">\((i,j)\)</span> 只能選「都不要／只要 ij／只要 ji」</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition example">
+<p class="admonition-title">113 Q7（10%）：<span class="arithmatex">\(|A|=6\)</span>，恰好含 (a) 3 個 (b) 6 個有序對的對稱關係</p>
+<p>對角線上的 <span class="arithmatex">\((i,i)\)</span> 每個算 1 個有序對；非對角的 <span class="arithmatex">\(\{i,j\}\)</span> 要選就是 <span class="arithmatex">\((i,j),(j,i)\)</span> 兩個一起，算 2 個。對角線 6 格、非對角 15 對。</p>
+<p>(a) <span class="arithmatex">\(3=1+1+1\)</span> 或 <span class="arithmatex">\(1+2\)</span>：<span class="arithmatex">\(\binom63+\binom61\binom{15}1=20+90=110\)</span>。</p>
+<p>(b) <span class="arithmatex">\(6\)</span> 的拆法：6 個對角（<span class="arithmatex">\(\binom66\)</span>）、4 對角＋1 對（<span class="arithmatex">\(\binom64\binom{15}1\)</span>）、2 對角＋2 對（<span class="arithmatex">\(\binom62\binom{15}2\)</span>）、3 對（<span class="arithmatex">\(\binom{15}3\)</span>）。
+<span class="arithmatex">\(1+225+1575+455=2256\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">111 Q3（10%）：<span class="arithmatex">\(n=6680\)</span> 的正因數集合上，「<span class="arithmatex">\(x\)</span> 整除 <span class="arithmatex">\(y\)</span>」的有序對有幾個</p>
+<p><span class="arithmatex">\(6680=2^3\times5\times167\)</span>。<span class="arithmatex">\(x=2^{a}5^{b}167^{c}\)</span>、<span class="arithmatex">\(y=2^{a'}5^{b'}167^{c'}\)</span>，<span class="arithmatex">\(x\mid y\)</span> 等於每個質數的次方 <span class="arithmatex">\(a\le a'\)</span>。</p>
+<p>對指數 <span class="arithmatex">\(e\)</span> 的質數，<span class="arithmatex">\((a,a')\)</span> 滿足 <span class="arithmatex">\(0\le a\le a'\le e\)</span> 有 <span class="arithmatex">\(\binom{e+2}{2}\)</span> 種。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(\binom52\binom32\binom32=10\times3\times3=90\)</span>。</p>
+</div>
+<h3 id="u7-2">7.2 函數與二元運算</h3>
+<div class="admonition example">
+<p class="admonition-title">115 A8：<span class="arithmatex">\(A=\{1,\dots,9\}\)</span>，<span class="arithmatex">\(f:A\to A\)</span> 滿足 <span class="arithmatex">\(f^{-1}(\{1,3\})=\emptyset\)</span>、<span class="arithmatex">\(f^{-1}(\{4,6\})=\{1,3,7\}\)</span>、<span class="arithmatex">\(f^{-1}(\{7,9\})=\{8,9\}\)</span></p>
+<p>逆像的意思是「誰會被送到這裡」。</p>
+<ul>
+<li>1、3、7 只能送到 4 或 6：<span class="arithmatex">\(2^3\)</span></li>
+<li>8、9 只能送到 7 或 9：<span class="arithmatex">\(2^2\)</span></li>
+<li>剩下 2、4、5、6 不能送到 <span class="arithmatex">\(\{1,3,4,6,7,9\}\)</span>，只能送到 <span class="arithmatex">\(\{2,5,8\}\)</span>：<span class="arithmatex">\(3^4\)</span></li>
+</ul>
+<p><strong>答案</strong>：<span class="arithmatex">\(8\times4\times81=2592\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">113 Q6（10%）：判斷 <span class="arithmatex">\(f:\mathbb Z\times\mathbb Z\to\mathbb Z\)</span> 是否交換、結合</p>
+<p>(a) <span class="arithmatex">\(f(x,y)=7x+17y-119xy\)</span>：<span class="arithmatex">\(f(1,0)=7\)</span>、<span class="arithmatex">\(f(0,1)=17\)</span>，<strong>不交換</strong>。<span class="arithmatex">\(f(f(1,0),0)=f(7,0)=49\)</span>，但 <span class="arithmatex">\(f(1,f(0,0))=f(1,0)=7\)</span>，<strong>不結合</strong>。</p>
+<p>(b) <span class="arithmatex">\(f(x,y)=x^{3x+7}+y\)</span>：<span class="arithmatex">\(f(1,2)=3\)</span>、<span class="arithmatex">\(f(2,1)=2^{13}+1\)</span>，<strong>不交換</strong>。<span class="arithmatex">\(f(f(0,0),1)=f(0,1)=1\)</span>，<span class="arithmatex">\(f(0,f(0,1))=f(0,1)=1\)</span> 相等，要再試：<span class="arithmatex">\(f(f(1,0),0)=f(1,0)=1\)</span>；<span class="arithmatex">\(f(1,f(0,0))=f(1,0)=1\)</span>；<span class="arithmatex">\(f(f(1,1),0)=f(2,0)=2^{13}\)</span>，<span class="arithmatex">\(f(1,f(1,0))=f(1,1)=2\)</span>，<strong>不結合</strong>。</p>
+<p><strong>技巧</strong>：判斷「不成立」只要舉一個反例；判斷「成立」要展開證明。</p>
+</div>
+<h3 id="u7-3">7.3 邏輯與證明</h3>
+<div class="admonition example">
+<p class="admonition-title">115 B2：<span class="arithmatex">\(p\leftrightarrow[(q\wedge r)\to\neg(p\vee r)]\)</span> 的真值表</p>
+<p>先算中間欄，最後再做 <span class="arithmatex">\(\leftrightarrow\)</span>：</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(p\)</span></th>
+<th><span class="arithmatex">\(q\)</span></th>
+<th><span class="arithmatex">\(r\)</span></th>
+<th><span class="arithmatex">\(q\wedge r\)</span></th>
+<th><span class="arithmatex">\(\neg(p\vee r)\)</span></th>
+<th><span class="arithmatex">\([\cdots]\)</span></th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T</td>
+<td>T</td>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+</tr>
+<tr>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+</tr>
+<tr>
+<td>T</td>
+<td>F</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+</tr>
+<tr>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+</tr>
+<tr>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+</tr>
+<tr>
+<td>F</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+</tr>
+<tr>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>F</td>
+</tr>
+<tr>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">114 Q2（10%）：用良序原理證明數學歸納法</p>
+<p><strong>要證</strong>：若 <span class="arithmatex">\(P(1)\)</span> 成立，且 <span class="arithmatex">\(P(k)\Rightarrow P(k+1)\)</span>，則所有正整數 <span class="arithmatex">\(n\)</span> 都滿足 <span class="arithmatex">\(P(n)\)</span>。</p>
+<p><strong>證明</strong>：假設不是，令 <span class="arithmatex">\(S=\{n\in\mathbb Z^+ : P(n)\text{ 不成立}\}\ne\emptyset\)</span>。由良序原理，<span class="arithmatex">\(S\)</span> 有最小元素 <span class="arithmatex">\(m\)</span>。</p>
+<p><span class="arithmatex">\(P(1)\)</span> 成立，所以 <span class="arithmatex">\(m\ne1\)</span>，<span class="arithmatex">\(m-1\ge1\)</span>。<span class="arithmatex">\(m\)</span> 是最小的反例，所以 <span class="arithmatex">\(P(m-1)\)</span> 成立，再由歸納步驟 <span class="arithmatex">\(P(m)\)</span> 成立，矛盾。∎</p>
+</div>
+<h3 id="u7-quiz">單元 7 小考</h3>
+<p><strong>7-1.</strong> <span class="arithmatex">\(|A|=4\)</span>：反身關係、對稱關係、反身且對稱的關係各有幾個？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(2^{12}=4096\)</span>、<span class="arithmatex">\(2^{10}=1024\)</span>、<span class="arithmatex">\(2^{6}=64\)</span>。</p>
+</details>
+<p><strong>7-2.</strong> 360 的正因數集合上，整除關係有幾個有序對？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(360=2^3\cdot3^2\cdot5\)</span>：<span class="arithmatex">\(\binom52\binom42\binom32=10\cdot6\cdot3=180\)</span>。</p>
+</details>
+<p><strong>7-3.</strong> <span class="arithmatex">\(f(x,y)=x+y-xy\)</span> 在整數上是否交換、結合？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>交換顯然。<span class="arithmatex">\(f(f(x,y),z)=x+y+z-xy-yz-xz+xyz\)</span>，對 <span class="arithmatex">\(x,y,z\)</span> 對稱，所以 <span class="arithmatex">\(f(x,f(y,z))\)</span> 也是同一式，<strong>結合</strong>。</p>
+</details>
+<p><strong>7-4.</strong> <span class="arithmatex">\(|A|=5\)</span>、<span class="arithmatex">\(|B|=3\)</span>，onto 函數有幾個？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(3^5-3\cdot2^5+3=150\)</span>。</p>
+</details>
+<h2 id="u8">單元 8：有限狀態機</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>狀態代表「到目前為止，<strong>為了判斷未來還需要記住什麼</strong>」。辨識「以某字串結尾」的機器，狀態就是「目前末尾吻合了幾個字元」。</p>
+</div>
+<p>Grimaldi 的 FSM 是 Mealy 型：每條邊標「輸入／輸出」，輸出 1 代表<strong>讀完這個字元時，到目前為止的字串屬於該語言</strong>。</p>
+<div class="admonition example">
+<p class="admonition-title">111 Q2（10%）：<span class="arithmatex">\(I=O=\{0,1\}\)</span>，辨識 <span class="arithmatex">\(\{0,1\}^*\{11\}\cup\{0,1\}^*\{01\}\)</span></p>
+<p><strong>先化簡語言</strong>：結尾是 11 或 01 ＝ 長度至少 2 且最後一位是 1。</p>
+<p>需要記住的只有「是否已經讀過至少一個字元」。</p>
+<table>
+<thead>
+<tr>
+<th>狀態</th>
+<th>意義</th>
+<th>輸入 0</th>
+<th>輸入 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(s_0\)</span>（起始）</td>
+<td>還沒讀任何字元</td>
+<td>→ <span class="arithmatex">\(s_1\)</span> / 0</td>
+<td>→ <span class="arithmatex">\(s_1\)</span> / 0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_1\)</span></td>
+<td>讀過至少一個字元</td>
+<td>→ <span class="arithmatex">\(s_1\)</span> / 0</td>
+<td>→ <span class="arithmatex">\(s_1\)</span> / <strong>1</strong></td>
+</tr>
+</tbody>
+</table>
+<p>畫圖時就把這張表畫成兩個圓圈和四條邊。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">114 Q5（10%）：辨識 <span class="arithmatex">\(\{0,0\}^*\{1,0\}\cup\{0,1\}^*\{00\}\)</span></p>
+<p><strong>先讀懂語言</strong>：<span class="arithmatex">\(\{0,0\}\)</span> 這個集合其實只有一個元素 0，所以 <span class="arithmatex">\(\{0,0\}^*\{1,0\}\)</span> 是「若干個 0 再接一個 0 或 1」，也就是 <span class="arithmatex">\(0^k1\)</span> 或 <span class="arithmatex">\(0^{k+1}\)</span>。另一半是「以 00 結尾」。</p>
+<p>（如果你認為題目本意是 <span class="arithmatex">\(\{00\}^*\{10\}\)</span>，要在答案開頭寫出你的假設，題目允許這樣做。）</p>
+<p>依字面意思需要的狀態：<span class="arithmatex">\(s_0\)</span> 起始、<span class="arithmatex">\(s_A\)</span> 目前全是 0（長度 1）、<span class="arithmatex">\(s_B\)</span> 目前全是 0（長度 ≥2）、<span class="arithmatex">\(s_C\)</span> 剛好是 <span class="arithmatex">\(0^k1\)</span>、<span class="arithmatex">\(s_D\)</span> 已離開前綴、末尾是 0、<span class="arithmatex">\(s_E\)</span> 已離開前綴、末尾是 00、<span class="arithmatex">\(s_F\)</span> 已離開前綴、末尾是 1。每次轉移後輸出 1 的條件是：落在 <span class="arithmatex">\(s_A,s_B,s_C\)</span> 或 <span class="arithmatex">\(s_E\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th>狀態</th>
+<th>輸入 0</th>
+<th>輸入 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(s_0\)</span></td>
+<td><span class="arithmatex">\(s_A\)</span>/1</td>
+<td><span class="arithmatex">\(s_C\)</span>/1</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_A\)</span></td>
+<td><span class="arithmatex">\(s_B\)</span>/1</td>
+<td><span class="arithmatex">\(s_C\)</span>/1</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_B\)</span></td>
+<td><span class="arithmatex">\(s_B\)</span>/1</td>
+<td><span class="arithmatex">\(s_C\)</span>/1</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_C\)</span></td>
+<td><span class="arithmatex">\(s_D\)</span>/0</td>
+<td><span class="arithmatex">\(s_F\)</span>/0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_D\)</span></td>
+<td><span class="arithmatex">\(s_E\)</span>/1</td>
+<td><span class="arithmatex">\(s_F\)</span>/0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_E\)</span></td>
+<td><span class="arithmatex">\(s_E\)</span>/1</td>
+<td><span class="arithmatex">\(s_F\)</span>/0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_F\)</span></td>
+<td><span class="arithmatex">\(s_D\)</span>/0</td>
+<td><span class="arithmatex">\(s_F\)</span>/0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="u8-quiz">單元 8 小考</h3>
+<p><strong>8-1.</strong> 畫出辨識「以 00 結尾」字串的 FSM（<span class="arithmatex">\(I=O=\{0,1\}\)</span>）。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>3 個狀態：<span class="arithmatex">\(s_0\)</span>（末尾不是 0）、<span class="arithmatex">\(s_1\)</span>（末尾剛好一個 0）、<span class="arithmatex">\(s_2\)</span>（末尾至少 00）。
+<span class="arithmatex">\(s_0\)</span>：0→<span class="arithmatex">\(s_1\)</span>/0、1→<span class="arithmatex">\(s_0\)</span>/0；<span class="arithmatex">\(s_1\)</span>：0→<span class="arithmatex">\(s_2\)</span>/1、1→<span class="arithmatex">\(s_0\)</span>/0；<span class="arithmatex">\(s_2\)</span>：0→<span class="arithmatex">\(s_2\)</span>/1、1→<span class="arithmatex">\(s_0\)</span>/0。</p>
+</details>
+<h2 id="u9">單元 9：機率與期望值</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>離散的機率題就是「好的個數 ÷ 全部個數」，難的是分子，分子用前面的計數和生成函數算。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 B1（10 分）：公平骰子擲 5 次，總和為 15 的機率</p>
+<p><span class="arithmatex">\(x_1+\cdots+x_5=15\)</span>、<span class="arithmatex">\(1\le x_i\le6\)</span>。令 <span class="arithmatex">\(y_i=x_i-1\)</span>：<span class="arithmatex">\(y_1+\cdots+y_5=10\)</span>、<span class="arithmatex">\(0\le y_i\le5\)</span>。</p>
+<p>排容：<span class="arithmatex">\(\binom{14}{4}-\binom51\binom{8}{4}+\binom52\binom{2}{4}=1001-350+0=651\)</span>。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(\dfrac{651}{6^5}=\dfrac{651}{7776}\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">115 A10：兩人各有 5 元，每局公平賭 1 元，直到一人輸光，期望局數</p>
+<p>賭徒破產問題：兩人分別有 <span class="arithmatex">\(a\)</span>、<span class="arithmatex">\(b\)</span> 元，期望局數是 <span class="arithmatex">\(ab\)</span>。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(5\times5=25\)</span>。</p>
+<p>推導：令 <span class="arithmatex">\(E_k\)</span> 為一方有 <span class="arithmatex">\(k\)</span> 元時的期望局數，<span class="arithmatex">\(E_k=1+\frac12E_{k-1}+\frac12E_{k+1}\)</span>，<span class="arithmatex">\(E_0=E_{10}=0\)</span>，解得 <span class="arithmatex">\(E_k=k(10-k)\)</span>，<span class="arithmatex">\(E_5=25\)</span>。</p>
+</div>
+<h3 id="u9-quiz">單元 9 小考</h3>
+<p><strong>9-1.</strong> 擲 3 顆骰子，總和為 10 的機率？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(y_1+y_2+y_3=7\)</span>、<span class="arithmatex">\(0\le y_i\le5\)</span>：<span class="arithmatex">\(\binom92-3\binom32=36-9=27\)</span>。機率 <span class="arithmatex">\(\frac{27}{216}=\frac18\)</span>。</p>
+</details>
+<p><strong>9-2.</strong> 兩人分別有 3 元和 7 元，公平賭局直到一人輸光，期望局數？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(3\times7=21\)</span>。</p>
+</details>
+<h2 id="mix">綜合小考：混合題型</h2>
+<p>這一節故意把題型打散，練習「先判斷要用哪個工具」。建議在複習日限時 40 分鐘做完。</p>
+<p><strong>M-1.</strong> 8 個不同的人分成 3 組（組沒有名字），每組至少 1 人？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>不同球、相同箱、不空：<span class="arithmatex">\(S(8,3)=966\)</span>。（<span class="arithmatex">\(S(n,3)=\frac{3^n-3\cdot2^n+3}{6}\)</span>，<span class="arithmatex">\(n=8\)</span>：<span class="arithmatex">\(\frac{6561-768+3}{6}=966\)</span>。）</p>
+</details>
+<p><strong>M-2.</strong> 長度 10 的二進位字串中，1 出現偶數次的機率？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>EGF <span class="arithmatex">\(\cosh x\cdot e^x=\frac{e^{2x}+1}{2}\)</span> → 個數 <span class="arithmatex">\(\frac{2^{10}}{2}=512\)</span>，機率 <span class="arithmatex">\(\frac12\)</span>。</p>
+</details>
+<p><strong>M-3.</strong> 買 12 顆糖，口味有 4 種，每種至多 5 顆？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(\binom{15}{3}-4\binom{9}{3}+6\binom{3}{3}=455-336+6=125\)</span>。</p>
+</details>
+<p><strong>M-4.</strong> <span class="arithmatex">\(a_n=6a_{n-1}-9a_{n-2}\)</span>，<span class="arithmatex">\(a_0=2\)</span>、<span class="arithmatex">\(a_1=3\)</span>？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>重根 3：<span class="arithmatex">\(a_n=(A+Bn)3^n\)</span>，<span class="arithmatex">\(A=2\)</span>，<span class="arithmatex">\(3(2+B)=3\)</span> → <span class="arithmatex">\(B=-1\)</span>。<span class="arithmatex">\(a_n=(2-n)3^n\)</span>。</p>
+</details>
+<p><strong>M-5.</strong> 求 <span class="arithmatex">\(11^{-1}\bmod 26\)</span>。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(26=2\cdot11+4\)</span>、<span class="arithmatex">\(11=2\cdot4+3\)</span>、<span class="arithmatex">\(4=3+1\)</span>。<span class="arithmatex">\(1=4-3=4-(11-2\cdot4)=3\cdot4-11=3(26-2\cdot11)-11=3\cdot26-7\cdot11\)</span>。<span class="arithmatex">\(11^{-1}\equiv-7\equiv19\)</span>。驗算 <span class="arithmatex">\(11\times19=209=8\times26+1\)</span> ✓。</p>
+</details>
+<p><strong>M-6.</strong> 用 <span class="arithmatex">\(1\times1\)</span>、<span class="arithmatex">\(1\times3\)</span> 的磁磚鋪 <span class="arithmatex">\(1\times n\)</span>，寫出遞迴與初始值。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(a_n=a_{n-1}+a_{n-3}\)</span>，<span class="arithmatex">\(a_0=a_1=a_2=1\)</span>（<span class="arithmatex">\(a_3=2\)</span>）。</p>
+</details>
+<h2 id="res">資源</h2>
+<ul>
+<li><strong>Grimaldi《Discrete and Combinatorial Mathematics》</strong>：中山題目的風格最接近這本，第 1、5、8、9、10 章（計數、函數、排容、生成函數、遞迴）最重要。</li>
+<li><strong><a href="https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-spring-2015/">MIT 6.042J Mathematics for Computer Science</a></strong>：免費課本和影片，計數、生成函數、數論、機率講得很清楚，可以補觀念。</li>
+<li><strong>中山歷屆考古題</strong>：<a href="https://lis.nsysu.edu.tw/p/412-1001-6014.php?Lang=zh-tw">圖資處碩士班考古題頁</a>，資工系 PDF 檔名是 <code>infoe_年度.pdf</code>。</li>
+</ul>
+  </article>
+</div>
+<script>
+(function () {
+  var KEY = "cgep:quiz:discrete";
+  function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
+  function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+  var rec = load();
+  var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
+  quizzes.forEach(function (d, i) {
+    var label = "Q" + (i + 1);
+    var prev = d.previousElementSibling;
+    if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
+    var id = "quiz-" + (i + 1);
+    d.id = id; d.dataset.label = label;
+    var bar = document.createElement("div");
+    bar.className = "judge";
+    bar.innerHTML = '<span>自己對答案：</span><button type="button" data-v="1">答對了</button><button type="button" data-v="0">答錯了，記錯題</button>';
+    d.appendChild(bar);
+    bar.querySelectorAll("button").forEach(function (b) {
+      b.addEventListener("click", function () { rec[id] = +b.dataset.v; save(rec); paint(); });
+    });
+  });
+  function paint() {
+    var done = 0, wrong = [];
+    quizzes.forEach(function (d) {
+      var v = rec[d.id];
+      d.querySelectorAll(".judge button").forEach(function (b) { b.setAttribute("aria-pressed", String(v !== undefined && +b.dataset.v === v)); });
+      if (v !== undefined) done++;
+      if (v === 0) wrong.push(d);
+    });
+    var bar = document.getElementById("quizbar");
+    if (!quizzes.length) return;
+    bar.hidden = false;
+    document.getElementById("qb-num").textContent = done + " / " + quizzes.length;
+    document.getElementById("qb-txt").textContent = "已作答，答錯 " + wrong.length + " 題";
+    document.getElementById("qb-wrong").innerHTML = wrong.map(function (d) { return '<a href="#' + d.id + '">' + d.dataset.label + "</a>"; }).join("");
+  }
+  document.getElementById("qb-reset").addEventListener("click", function () { rec = {}; save(rec); paint(); });
+  paint();
+})();
+</script>
+</body>
+</html>
