@@ -28,6 +28,8 @@ create policy "ink_pads_update_own" on public.ink_pads
 create policy "ink_pads_delete_own" on public.ink_pads
   for delete to authenticated using ((select auth.uid()) = user_id);
 
+-- 建專案時沒勾「Automatically expose new tables」也能用：這裡自己開權限給登入的使用者
+grant usage on schema public to authenticated;
 grant select, insert, update, delete on public.ink_pads to authenticated;
 revoke all on public.ink_pads from anon;
 

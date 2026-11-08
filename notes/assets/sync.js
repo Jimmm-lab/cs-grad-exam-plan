@@ -104,6 +104,7 @@
     if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return "連不到 Supabase：檢查網路，或 Project URL 有沒有貼錯。";
     if (/Invalid API key|No API key/i.test(m)) return "API key 不對，請重新確認 publishable／anon key。";
     if (/relation .* does not exist|Could not find the table/i.test(m)) return "雲端還沒有 ink_pads 資料表：請先在 Supabase 的 SQL Editor 執行 supabase/schema.sql。";
+    if (/permission denied/i.test(m)) return "雲端資料表沒有開權限：請在 Supabase 的 SQL Editor 重新執行一次 supabase/schema.sql。";
     return "失敗：" + m;
   }
 
