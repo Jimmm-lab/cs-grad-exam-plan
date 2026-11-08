@@ -127,7 +127,7 @@ section.view { display: grid; gap: 28px; }
 /* phases bar */
 .phasebar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px; }
 .phasebar div { background: var(--line); position: relative; }
-.phasebar div.cur { background: var(--accent); }
+.phasebar div.cur { background: linear-gradient(90deg, var(--prog, #3b6ef5), var(--prog-2, #22b8e8)); }
 .phasebar div.past { background: var(--muted); opacity: .45; }
 .phase-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); margin-top: 8px; }
 .phase-legend b { color: var(--ink); }

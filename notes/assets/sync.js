@@ -153,9 +153,8 @@
     var h = '<div class="gate-card' + (signing ? " signing" : "") + '"><div class="gate-mark' + (stage !== "ready" && stage !== "cfg" ? " busy" : "") + '"><span class="gm-tile">' + I("pen") + "</span></div>" +
       '<h1 id="gate-title">資工所備考</h1>';
     if (signing) {
-      h += '<p class="gate-lead">' + (stage === "done" ? "登入完成！" : "登入中，請稍等一下") + "</p>" + steps(stage === "auth" ? 0 : stage === "load" ? 1 : 3);
+      h += steps(stage === "auth" ? 0 : stage === "load" ? 1 : 3);
     } else {
-      h += "<p>登入後才能使用。讀書進度、小考紀錄和手寫筆跡都存在你自己的帳號，跟其他人分開；換手機或電腦，登入同一個帳號就能接著讀。</p>";
       if (!c) {
         h += '<form class="sync-form" data-f="cfg">' +
           '<input name="url" type="url" placeholder="Supabase Project URL" autocomplete="off" required>' +
@@ -164,11 +163,9 @@
       } else if (stage === "connect") {
         h += '<div class="gate-btn ghost" aria-hidden="true"><span class="spin"></span><span>準備登入…</span></div>';
       } else if (stage === "go") {
-        h += '<button type="button" class="gate-btn going" disabled><span class="spin light"></span><span>正在前往 Google…</span></button>' +
-          '<p class="gate-note">馬上會跳到 Google 的登入頁面</p>';
+        h += '<button type="button" class="gate-btn going" disabled><span class="spin light"></span><span>正在前往 Google…</span></button>';
       } else {
-        h += '<button type="button" class="gate-btn" data-act="google">' + I("login") + "<span>使用 Google 登入</span></button>" +
-          '<p class="gate-note">任何 Google 帳號都能登入，第一次登入會自動建立你的帳號。</p>';
+        h += '<button type="button" class="gate-btn" data-act="google">' + I("login") + "<span>使用 Google 登入</span></button>";
       }
     }
     gate.innerHTML = h + '<p class="gate-msg" aria-live="polite">' + esc(gateText) + '</p><p class="gate-legal"><a href="' + PRIVACY + '">隱私權政策 Privacy Policy</a></p></div>';
