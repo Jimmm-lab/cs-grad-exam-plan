@@ -52,11 +52,11 @@
     } else if (!sb) {
       h += "<p>連線中…</p>";
     } else if (!user) {
-      h += "<p>登入後，手寫筆跡會自動同步到雲端，手機和電腦都能看到。第一次用請先按「註冊」。</p>" +
+      h += "<p>登入後，手寫筆跡會自動同步到雲端，手機和電腦都能看到。帳號在 Supabase 後台建立，這裡不開放註冊。</p>" +
         '<form class="sync-form" data-f="login">' +
         '<input name="email" type="email" placeholder="Email" autocomplete="username" required>' +
-        '<input name="pw" type="password" placeholder="密碼（至少 6 個字元）" autocomplete="current-password" minlength="6" required>' +
-        '<div class="inkbak-btns"><button type="submit" data-act="in">登入</button><button type="submit" data-act="up">註冊</button></div></form>' +
+        '<input name="pw" type="password" placeholder="密碼" autocomplete="current-password" required>' +
+        '<div class="inkbak-btns"><button type="submit" data-act="in">登入</button></div></form>' +
         (c.fixed ? "" : '<p><button type="button" class="linkish" data-act="forget">清除 Supabase 設定</button></p>');
     } else {
       h += "<p>已登入 <b>" + esc(user.email || "") + "</b></p>" +
@@ -77,15 +77,9 @@
       return;
     }
     if (kind === "login" && sb) {
-      var which = (e.submitter && e.submitter.dataset.act) || "in";
-      var email = f.email.value.trim(), pw = f.pw.value;
-      say(which === "up" ? "註冊中…" : "登入中…");
-      var job = which === "up"
-        ? sb.auth.signUp({ email: email, password: pw, options: { emailRedirectTo: location.origin + location.pathname } })
-        : sb.auth.signInWithPassword({ email: email, password: pw });
-      job.then(function (r) {
-        if (r.error) { say(errText(r.error)); return; }
-        if (which === "up" && !r.data.session) say("註冊好了。請到信箱點確認信，再回來按「登入」。");
+      say("登入中…");
+      sb.auth.signInWithPassword({ email: f.email.value.trim(), password: f.pw.value }).then(function (r) {
+        if (r.error) say(errText(r.error));
       });
     }
   });
@@ -98,11 +92,10 @@
   });
   function errText(err) {
     var m = (err && err.message) || String(err);
-    if (/Invalid login credentials/i.test(m)) return "Email 或密碼不對。還沒註冊的話先按「註冊」。";
+    if (/Invalid login credentials/i.test(m)) return "Email 或密碼不對。";
     if (/Email not confirmed/i.test(m)) return "還沒點信箱裡的確認信。點完再登入。";
-    if (/already registered|already been registered/i.test(m)) return "這個 Email 已經註冊過了，直接按「登入」。";
     if (/Password should be/i.test(m)) return "密碼至少要 6 個字元。";
-    if (/rate limit/i.test(m)) return "太頻繁了，等一下再試（Supabase 寄信有次數限制）。";
+    if (/rate limit|too many/i.test(m)) return "嘗試太多次了，等幾分鐘再試。";
     if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return "連不到 Supabase：檢查網路，或 Project URL 有沒有貼錯。";
     if (/Invalid API key|No API key/i.test(m)) return "API key 不對，請重新確認 publishable／anon key。";
     if (/relation .* does not exist|Could not find the table/i.test(m)) return "雲端還沒有 ink_pads 資料表：請先在 Supabase 的 SQL Editor 執行 supabase/schema.sql。";

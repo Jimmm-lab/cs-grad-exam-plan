@@ -495,17 +495,20 @@ window.MathJax = {
 <p><strong>用法建議</strong>：先在手寫板上寫完整的過程，再打開答案逐行對照，然後按「答對了／答錯了」。不要先看答案再抄，那樣沒有練到回想。</p>
 <h3 id="sync">雲端同步（Supabase）</h3>
 <p>登入後，手寫筆跡會自動同步到你自己的 Supabase 資料庫，手機、平板、電腦用同一組帳號登入就會看到同一份筆跡。沒網路時照樣寫，連上網路後會自動補傳。每一題以「最後修改的那一份」為準。</p>
-<p><strong>目前狀態</strong>：網站已經連到你的 Supabase 專案（資料表、權限、關閉確認信都設定好了），每台裝置只要：</p>
+<p><strong>目前狀態</strong>：網站已經連到你的 Supabase 專案。<strong>只有一組帳號</strong>，在 Supabase 後台建立，網站上不開放註冊，知道帳號密碼的人才能登入。每台裝置只要：</p>
 <ol>
 <li>打開教材任何一頁 → <strong>目錄</strong> → 最下面的「雲端同步」。</li>
-<li>第一次按「<strong>註冊</strong>」（Email + 至少 6 個字元的密碼），之後每台裝置都用同一組 Email、密碼按「<strong>登入</strong>」。</li>
+<li>輸入那組 Email、密碼，按「<strong>登入</strong>」。每台裝置登入一次就會一直記住，不用每次輸入。</li>
 </ol>
+<p>就算有人在網頁原始碼看到 Supabase 的網址和 key，也沒辦法註冊，更讀不到你的筆跡（資料表設定成每個帳號只能讀寫自己的資料）。</p>
 <details>
 <summary>當初的專案設定步驟（換專案或重建時才需要）</summary>
 <ol>
 <li><a href="https://supabase.com/">supabase.com</a> → <strong>New project</strong>。Region 選 Northeast Asia (Tokyo)；Security 保持 Enable Data API 勾選、Automatically expose new tables 不勾、Enable automatic RLS 勾選。</li>
 <li><strong>SQL Editor</strong> → New query，貼上 <a href="https://github.com/Jimmm-lab/cs-grad-exam-plan/blob/main/supabase/schema.sql"><code>supabase/schema.sql</code></a> 整段，按 <strong>Run</strong>。</li>
 <li><strong>Authentication</strong> → Sign In / Providers → <strong>Email</strong>，關掉 <strong>Confirm email</strong>。</li>
+<li><strong>Authentication</strong> → <strong>Users</strong> → <strong>Add user</strong> → Create new user，填 Email 和密碼，勾 <strong>Auto Confirm User</strong>。</li>
+<li><strong>Authentication</strong> → Sign In / Providers，關掉最上面的 <strong>Allow new users to sign up</strong>（之後就只剩後台建立的帳號能登入）。</li>
 <li>把 Project URL（<code>https://xxxx.supabase.co</code>，不用 <code>/rest/v1/</code>）和 publishable key 填進 <code>notes/assets/supabase-config.js</code>。這兩個值本來就是公開的，資料靠第 2 步的權限保護。<strong>service_role／secret key 絕對不要貼到任何地方。</strong></li>
 </ol>
 </details>
