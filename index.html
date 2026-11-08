@@ -162,6 +162,24 @@ section.view { display: grid; gap: 28px; }
 .tag.late { border-color: var(--accent); color: var(--accent); }
 .day.late { box-shadow: inset 3px 0 0 var(--accent); }
 
+/* 你的計畫 */
+.myplan { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 10px; }
+.mp-top { display: flex; gap: 12px 20px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.myplan h3 { margin: 4px 0 2px; font-size: 19px; }
+.mp-sub { margin: 0; font-size: 13px; color: var(--muted); }
+.mp-start { display: grid; gap: 4px; font-size: 12px; color: var(--muted); }
+.mp-start input { font: 500 15px/1.2 var(--font-mono); padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); min-height: 40px; }
+.mp-desc { margin: 0; font-size: 14px; line-height: 1.75; }
+.mp-adj summary { cursor: pointer; font-size: 13.5px; color: var(--muted); }
+.mp-adj ol { margin: 8px 0 0; padding-left: 1.4em; font-size: 13.5px; line-height: 1.7; }
+.mp-tracks { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+.mp-tracks li { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.mp-tracks li.cur { border-color: var(--accent); background: var(--accent-soft); }
+.mp-tracks b { margin-right: 8px; }
+.mp-tracks span { font: 500 12px/1 var(--font-mono); color: var(--muted); }
+.mp-tracks p { margin: 4px 0 0; font-size: 13px; line-height: 1.7; color: var(--muted); }
+.plan-link { color: inherit; text-decoration: none; border-bottom: 2px solid var(--accent-soft); }
+
 /* 補進度 */
 .catchup { background: var(--card); border: 1px solid var(--accent); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; }
 .catchup h3 { margin: 4px 0 0; font-size: 17px; }
@@ -353,42 +371,123 @@ main.wrap { padding-bottom: 140px; }
   var subjMap = {}; exam.subjects.forEach(function (s) { subjMap[s.key] = s; });
   var srcList = exam.sources || [];
 
-  var state = {
-    rest: load(K + "rest", exam.defaultRest),
-    done: load(K + "done", {}),
-    papers: load(K + "papers", {})
-  };
+  var state = {};
+  // 每個人自己的開始日期（第一次用網站那天）。沒存過時：已經有打勾紀錄的人從計畫原本的第一天算，
+  // 新的人從今天算。這個預設值只寫進這台裝置、不標修改時間，雲端如果已經有（別台裝置存的）就以雲端為準。
+  function loadState() {
+    state.rest = load(K + "rest", null);
+    state.done = load(K + "done", {});
+    state.papers = load(K + "papers", {});
+    state.start = load(K + "start", null);
+    if (!state.start || !/^\d{4}-\d{2}-\d{2}$/.test(state.start)) {
+      var any = Object.keys(state.done).length > 0;
+      state.start = any || todayDate() <= parse(exam.start) ? exam.start : iso(todayDate());
+      try { localStorage.setItem(K + "start", JSON.stringify(state.start)); } catch (e) {}
+    }
+  }
+  loadState();
 
-  /* ---------- schedule builder ---------- */
+  /* ---------- schedule builder：依開始日期選計畫，讀書天不夠就一層一層壓縮 ---------- */
+  var baseById = {}; exam.days.forEach(function (d) { baseById[d.id] = d; });
+  function trackFor(R) {
+    var ts = (exam.tracks || []).slice().sort(function (a, b) { return b.min - a.min; });
+    return ts.filter(function (t) { return R >= t.min; })[0] || null;
+  }
+  function partsOf(t) { return t.parts || [t.id]; }
+  // 速讀日的標題只列主題：「計數：A」→「計數」；「資結：C 程式：A」→「C 程式」
+  function topicOf(title) { var t = title.replace(/^(OS|資結)：/, ""), m = t.match(/^([^：]+)：/); return m ? m[1] : t; }
+  // 「計數：A」「計數：B」→「計數：A＋B」
+  function joinTitles(ts) {
+    var out = [], prev = null;
+    ts.forEach(function (t) {
+      var m = t.match(/^([^：]+)：(.+)$/);
+      if (m && prev === m[1]) out.push(m[2]); else out.push(t);
+      prev = m ? m[1] : null;
+    });
+    return out.join("＋");
+  }
+  function uniq(a) { return a.filter(function (x, i) { return a.indexOf(x) === i; }); }
+  // 幾天併成一天：每科的區塊合在一起。group（打底期）用「先做小考、錯了才讀」的讀法
+  function mergeTasks(list, opt) {
+    var order = [], by = {}, parts = [], n = 0;
+    list.forEach(function (t) {
+      parts = parts.concat(partsOf(t));
+      t.blocks.forEach(function (b) { if (!by[b.subject]) { by[b.subject] = []; order.push(b.subject); } by[b.subject].push(b); });
+    });
+    n = parts.length;
+    var blocks = order.map(function (sj) {
+      var bs = by[sj], b0 = bs[0], link = (bs.filter(function (b) { return b.link; })[0] || {}).link;
+      var reads = bs.map(function (b) { return b.read; }).filter(Boolean), pr = bs.map(function (b) { return b.practice; }).filter(Boolean);
+      if (!opt.group) return { subject: sj, time: b0.time, title: joinTitles(bs.map(function (b) { return b.title; })), read: reads.join("；"), practice: pr.join("；"), link: link };
+      if (n <= 2) return { subject: sj, time: b0.time, title: joinTitles(bs.map(function (b) { return b.title; })), read: "先做這 " + n + " 節的小考（限時），錯了才讀：" + reads.join("；"), practice: pr.join("；"), link: link };
+      var tp = uniq(bs.map(function (b) { return topicOf(b.title); }));
+      return { subject: sj, time: b0.time, title: (tp.length > 4 ? tp.slice(0, 4).join("、") + " 等 " + tp.length + " 個主題" : tp.join("、")) + "（速讀）", read: "只讀 ★★★ 主題：先做各小節的小考（限時），錯的才回去讀觀念課；★ 主題先跳過", practice: "每個小節的小考", link: link };
+    });
+    return {
+      id: "m-" + parts.join("-"), parts: parts, phase: list[0].phase,
+      title: opt.title || blocks.map(function (b) { return b.title; }).join("｜"),
+      tag: opt.tag || "併 " + n + " 天", blocks: blocks, review: list[0].review,
+      note: opt.group ? (n <= 2 ? "兩天的內容併成一天：先做小考，寫錯的小節才回去讀。" : n + " 天的內容併成一天：只讀 ★★★ 主題，其他的考古題期遇到再回頭看。") : ""
+    };
+  }
+  function applyLevel(tasks, L) {
+    var out = tasks.slice();
+    if (L.group) {
+      var set = {}; L.group.ids.forEach(function (id) { set[id] = 1; });
+      var base = L.group.ids.map(function (id) { return baseById[id]; }).filter(Boolean), groups = [];
+      for (var i = 0; i < base.length; i += L.group.size) groups.push(mergeTasks(base.slice(i, i + L.group.size), { group: true }));
+      var inF = function (t) { return partsOf(t).every(function (x) { return set[x]; }); };
+      var at = out.findIndex(inF);
+      if (at >= 0) { out = out.filter(function (t) { return !inF(t); }); Array.prototype.splice.apply(out, [at, 0].concat(groups)); }
+    }
+    (L.merge || []).forEach(function (m) {
+      var list = out.filter(function (t) { return m.ids.indexOf(t.id) >= 0; });
+      if (list.length < 2) return;
+      var at = out.indexOf(list[0]);
+      out = out.filter(function (t) { return m.ids.indexOf(t.id) < 0; });
+      out.splice(at, 0, mergeTasks(list, { title: m.title, tag: m.tag }));
+    });
+    // 拿掉：原本的那一天，或是全部由這些天併成的天
+    if (L.drop) out = out.filter(function (t) { return !partsOf(t).every(function (x) { return L.drop.indexOf(x) >= 0; }); });
+    return out;
+  }
+  function bufferDay(n) {
+    return { id: "buf" + n, phase: "sprint", title: "彈性日：補進度或錯題重做", tag: "彈性",
+      blocks: exam.subjects.map(function (s, j) { return { subject: s.key, time: ["上午", "下午", "晚上"][j] || "", title: s.short + "：補落後進度", read: "沒落後就重做錯題本 ★★ 題目", practice: "" }; }) };
+  }
+  // N 個讀書天：太多就照 exam.compress 一層一層壓縮；太少就在最後 3 天前補彈性日
+  function fitTasks(N) {
+    var levels = exam.compress || [{ label: "取消選做日", drop: exam.days.filter(function (d) { return d.optional; }).map(function (d) { return d.id; }) }];
+    var tasks = exam.days.slice(), applied = [], extra = 0;
+    levels.forEach(function (L) { if (tasks.length > N) { tasks = applyLevel(tasks, L); applied.push(L.label); } });
+    while (tasks.length < N) { extra++; tasks.splice(Math.max(0, tasks.length - 3), 0, bufferDay(extra)); }
+    return { tasks: tasks, applied: applied, extra: extra, overflow: Math.max(0, tasks.length - N) };
+  }
   function build() {
-    var start = parse(exam.start), examD = parse(exam.examDate);
+    var start = parse(state.start), examD = parse(exam.examDate);
+    var R = Math.max(0, diff(start, examD)), track = trackFor(R);
+    var rest = state.rest || (track && track.rest) || exam.defaultRest;
     var pinned = {}; (exam.pinned || []).forEach(function (p) { pinned[p.date] = p; });
     var slots = [];
     for (var d = new Date(start); d < examD; d = addDays(d, 1)) {
       var k = iso(d);
       if (pinned[k]) slots.push({ date: new Date(d), task: pinned[k] });
-      else if (state.rest.indexOf(d.getDay()) >= 0) slots.push({ date: new Date(d), rest: true });
+      else if (rest.indexOf(d.getDay()) >= 0) slots.push({ date: new Date(d), rest: true });
       else slots.push({ date: new Date(d), open: true });
     }
     var open = slots.filter(function (s) { return s.open; });
-    var tasks = exam.days.slice();
-    var dropped = 0, extra = 0;
-    // fewer slots than tasks: drop optional tasks from the end
-    for (var i = tasks.length - 1; tasks.length > open.length && i >= 0; i--) {
-      if (tasks[i].optional) { tasks.splice(i, 1); dropped++; }
-    }
-    // more slots than tasks: add buffer days before the last 3 tasks
-    while (tasks.length < open.length) {
-      extra++;
-      tasks.splice(Math.max(0, tasks.length - 3), 0, {
-        id: "buf" + extra, phase: "sprint", title: "彈性日：補進度或錯題重做", tag: "彈性",
-        blocks: exam.subjects.map(function (s, j) { return { subject: s.key, time: ["上午", "下午", "晚上"][j] || "", title: s.short + "：補落後進度", read: "沒落後就重做錯題本 ★★ 題目", practice: "" }; })
-      });
-    }
-    var overflow = Math.max(0, tasks.length - open.length);
-    open.forEach(function (s, j) { s.task = tasks[j]; delete s.open; });
+    var fit = fitTasks(open.length);
+    open.forEach(function (s, j) { s.task = fit.tasks[j]; delete s.open; });
+    slots = slots.filter(function (s) { return !s.open || s.task; });
     slots.push({ date: examD, exam: true });
-    return { slots: slots, dropped: dropped, extra: extra, overflow: overflow, tasks: tasks };
+    var byId = {}; slots.forEach(function (s) { if (s.task) byId[s.task.id] = s.task; });
+    return { slots: slots, R: R, track: track, rest: rest, applied: fit.applied, extra: fit.extra, overflow: fit.overflow, tasks: fit.tasks, byId: byId };
+  }
+  // 併起來的天：自己打勾，或原本的每一天都打過勾，都算完成（換開始日期、計畫重排後紀錄不會不見）
+  function isDone(t) { return !!state.done[t.id] || !!(t.parts && t.parts.every(function (x) { return state.done[x]; })); }
+  function setDone(t, on) {
+    [t.id].concat(t.parts || []).forEach(function (x) { if (on) state.done[x] = 1; else delete state.done[x]; });
+    save(K + "done", state.done);
   }
 
   var plan = build();
@@ -416,9 +515,9 @@ main.wrap { padding-bottom: 140px; }
   function stats() {
     var ts = taskSlots(), done = 0, due = 0, dueDone = 0;
     ts.forEach(function (s) {
-      var isDone = !!state.done[s.task.id];
-      if (isDone) done++;
-      if (s.date < T) { due++; if (isDone) dueDone++; }
+      var ok = isDone(s.task);
+      if (ok) done++;
+      if (s.date < T) { due++; if (ok) dueDone++; }
     });
     return { total: ts.length, done: done, behind: due - dueDone };
   }
@@ -443,7 +542,7 @@ main.wrap { padding-bottom: 140px; }
     var slot = plan.slots.filter(function (s) { return iso(s.date) === iso(T); })[0];
     var label = "今天";
     if (!slot) {
-      if (T < parse(exam.start)) { slot = plan.slots[0]; label = "第一天"; }
+      if (T < parse(state.start)) { slot = plan.slots[0]; label = "第一天"; }
       else slot = plan.slots[plan.slots.length - 1];
     }
     var html = "";
@@ -451,7 +550,7 @@ main.wrap { padding-bottom: 140px; }
     html += '<div class="facts">' +
       '<div class="fact"><div class="v">' + st.done + " / " + st.total + '</div><div class="k">已完成讀書天</div></div>' +
       '<div class="fact"><div class="v ' + (st.behind > 0 ? "behind" : "good") + '">' + (st.behind > 0 ? "落後 " + st.behind + " 天" : "進度正常") + '</div><div class="k">以今天之前的行程計算</div></div>' +
-      '<div class="fact"><div class="v">' + exam.subjects.length + ' 科等權</div><div class="k">' + esc(exam.weights.split("。")[0]) + "</div></div>" +
+      '<div class="fact"><div class="v"><a class="plan-link" href="#plan">' + esc(plan.track ? plan.track.name : "行程") + '</a></div><div class="k">從 ' + md(parse(state.start)) + " 開始・距離筆試 " + plan.R + " 天・每週休 " + plan.rest.length + " 天</div></div>" +
       "</div>";
 
     if (slot.exam) {
@@ -461,8 +560,8 @@ main.wrap { padding-bottom: 140px; }
       html += '<div class="rest-card"><div class="eyebrow">' + label + "・" + md(slot.date) + "（" + WD[slot.date.getDay()] + '）</div><h2 style="margin-top:8px">休息日</h2><p class="lede" style="margin:0">好好休息。睡前可以花 15 分鐘翻錯題本，其他時間不要讀書。' +
         (next ? "下一個讀書天是 " + md(next.date) + "（" + WD[next.date.getDay()] + "）：" + esc(next.task.title) + "。" : "") + "</p></div>";
     } else {
-      var t = slot.task, isDone = !!state.done[t.id];
-      html += '<div class="today-card"><div class="today-head"><div><div class="date">' + label + "・" + iso(slot.date).replace(/-/g, "/") + "（" + WD[slot.date.getDay()] + "）・" + esc(phaseOf(t.phase).name) + "期</div><h3>" + esc(t.title) + '</h3></div><button class="done-btn" id="today-done" aria-pressed="' + isDone + '">' + (isDone ? '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>今天完成了' : "標記今天完成") + "</button></div>" +
+      var t = slot.task, done = isDone(t);
+      html += '<div class="today-card"><div class="today-head"><div><div class="date">' + label + "・" + iso(slot.date).replace(/-/g, "/") + "（" + WD[slot.date.getDay()] + "）・" + esc(phaseOf(t.phase).name) + "期</div><h3>" + esc(t.title) + '</h3></div><button class="done-btn" id="today-done" aria-pressed="' + done + '">' + (done ? '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>今天完成了' : "標記今天完成") + "</button></div>" +
         renderBlocks(t) + (t.note ? '<p class="note">' + esc(t.note) + "</p>" : "") + renderReview(t) +
         '<p class="flow">每個區塊的流程：<b>10 分鐘</b>白紙回想昨天 → <b>讀</b>觀念課與例題 → <b>練</b>小考與考古題（限時） → <b>訂正</b>寫錯因進錯題本。<a href="notes/method.html#daily">為什麼這樣排</a></p></div>';
     }
@@ -487,20 +586,16 @@ main.wrap { padding-bottom: 140px; }
 
     el.innerHTML = html;
     var btn = document.getElementById("today-done");
-    if (btn) btn.addEventListener("click", function () { toggleDone(slot.task.id); renderToday(); renderPlan(); });
+    if (btn) btn.addEventListener("click", function () { setDone(slot.task, !isDone(slot.task)); renderToday(); renderPlan(); });
     el.querySelectorAll(".cu-chk").forEach(function (c) {
-      c.addEventListener("change", function () { toggleDone(c.dataset.id); renderToday(); renderPlan(); });
+      c.addEventListener("change", function () { var t = plan.byId[c.dataset.id]; if (t) setDone(t, c.checked); renderToday(); renderPlan(); });
     });
   }
 
-  function toggleDone(id) {
-    if (state.done[id]) delete state.done[id]; else state.done[id] = 1;
-    save(K + "done", state.done);
-  }
 
   /* ---------- 補進度 ---------- */
   // 今天以前還沒打勾的讀書天
-  function overdue() { return taskSlots().filter(function (s) { return s.date < T && !state.done[s.task.id]; }); }
+  function overdue() { return taskSlots().filter(function (s) { return s.date < T && !isDone(s.task); }); }
   // 補進度的時段：從今天起每週第一個休息日（另一個休息日照常休息），加上還沒做的選做日。
   // 一個時段補 2 天：用「先做題、錯了才讀」的方式，一天的量大約半天補得完。
   // 不把整個行程往後推：後面的考古題期和衝刺期不能被壓縮。
@@ -516,7 +611,7 @@ main.wrap { padding-bottom: 140px; }
         // 同一週後面還有休息日的話，告訴使用者那天照常休息
         var other = plan.slots.filter(function (x) { return x.rest && x.date > s.date && week(x.date) === wk; })[0];
         slots.push({ date: s.date, kind: "休息日" + (other ? "（" + md(other.date) + "照常休息）" : "") });
-      } else if (s.task && s.task.optional && !state.done[s.task.id] && iso(s.date) !== iso(T)) {
+      } else if (s.task && s.task.optional && !isDone(s.task) && iso(s.date) !== iso(T)) {
         slots.push({ date: s.date, kind: "選做日：原本的「" + s.task.title.split("｜")[0] + "」先不做" });
       }
     });
@@ -567,11 +662,20 @@ main.wrap { padding-bottom: 140px; }
   /* ---------- PLAN ---------- */
   function renderPlan() {
     var el = document.getElementById("v-plan");
-    var html = '<div><h2>每日行程</h2><p class="lede">每週休 ' + state.rest.length + " 天。換休息日時行程會自動往後排，打勾的進度不會不見。上午、下午、晚上各約 3、3、2.5 小時。</p></div>";
+    var tr = plan.track, studyDays = taskSlots().length;
+    var html = '<div><h2>每日行程</h2><p class="lede">行程從你的開始日期排到考前一天，剩下的天數決定用哪一種計畫。上午、下午、晚上各約 3、3、2.5 小時；換開始日期或休息日時會重新排，打勾的進度不會不見。</p></div>';
+    html += '<div class="myplan"><div class="mp-top"><div><div class="eyebrow">你的計畫</div><h3>' + esc(tr ? tr.name : "行程") + "</h3>" +
+      '<p class="mp-sub">從 ' + md(parse(state.start)) + "（" + WD[parse(state.start).getDay()] + "）開始・距離筆試 " + plan.R + " 天・讀書 " + studyDays + " 天・每週休 " + plan.rest.length + " 天</p></div>" +
+      '<label class="mp-start"><span>開始日期</span><input type="date" id="start-date" value="' + esc(state.start) + '" max="' + iso(addDays(parse(exam.examDate), -7)) + '"></label></div>' +
+      (tr ? '<p class="mp-desc">' + rich(tr.desc) + "</p>" : "") +
+      (plan.applied.length ? '<details class="mp-adj"><summary>這份計畫做了 ' + plan.applied.length + " 項調整</summary><ol>" + plan.applied.map(function (a) { return "<li>" + rich(a) + "</li>"; }).join("") + "</ol></details>" : "") +
+      '<details class="mp-adj"><summary>各階段的計畫（依剩下的天數）</summary><ul class="mp-tracks">' + (exam.tracks || []).map(function (x) {
+        return '<li class="' + (tr && x.id === tr.id ? "cur" : "") + '"><b>' + esc(x.name) + "</b><span>" + (x.min ? x.min + " 天以上" : "") + "</span><p>" + rich(x.desc) + "</p></li>";
+      }).join("") + "</ul></details></div>";
     html += '<div class="toolbar"><span class="lbl">休息日</span><div class="wd-pick" role="group" aria-label="選擇每週休息日">' +
-      WD.map(function (w, i) { return '<button type="button" data-wd="' + i + '" aria-pressed="' + (state.rest.indexOf(i) >= 0) + '" aria-label="星期' + w + '">' + w + "</button>"; }).join("") +
+      WD.map(function (w, i) { return '<button type="button" data-wd="' + i + '" aria-pressed="' + (plan.rest.indexOf(i) >= 0) + '" aria-label="星期' + w + '">' + w + "</button>"; }).join("") +
       '</div><button type="button" class="btn" id="jump-today">跳到今天</button>' +
-      '<span class="tb-msg">' + (plan.overflow ? "休息日太多，有 " + plan.overflow + " 天行程排不進去。" : plan.dropped ? "已省略 " + plan.dropped + " 天選做行程。" : plan.extra ? "多出 " + plan.extra + " 天彈性日。" : "") + "</span></div>";
+      '<span class="tb-msg">' + (plan.overflow ? "天數不夠，有 " + plan.overflow + " 天行程排不進去，建議減少休息日。" : plan.extra ? "多出 " + plan.extra + " 天彈性日。" : "") + "</span></div>";
 
     // group by week (Mon-start)
     var weeks = [], cur = null;
@@ -594,7 +698,7 @@ main.wrap { padding-bottom: 140px; }
         } else if (s.rest) {
           html += '<div class="day rest' + isToday + '" id="day-' + k + '"><span></span>' + dt + '<div class="main">休息' + (msTags ? " " + msTags : "") + "</div></div>";
         } else {
-          var t = s.task, d = !!state.done[t.id], late = !d && s.date < T;
+          var t = s.task, d = isDone(t), late = !d && s.date < T;
           html += '<div class="day' + (d ? " done" : "") + (late ? " late" : "") + isToday + '" id="day-' + k + '"><input type="checkbox" class="chk" id="c-' + esc(t.id) + '" data-id="' + esc(t.id) + '"' + (d ? " checked" : "") + ' aria-label="' + md(s.date) + ' 完成">' + dt +
             '<div class="main"><div class="t">' + esc(t.title) + (late ? ' <span class="tag late">落後</span>' : "") + (t.tag ? ' <span class="tag">' + esc(t.tag) + "</span>" : "") + (t.optional ? ' <span class="tag opt">選做</span>' : "") + msTags + '</div><div class="items">' +
             t.blocks.map(function (b) { var tt = b.link ? '<a href="' + esc(b.link) + '">' + esc(b.title) + "</a>" : esc(b.title); return "<div>" + subjChip(b.subject) + "<span>" + tt + (b.practice ? "・" + rich(b.practice) : "") + "</span></div>"; }).join("") +
@@ -608,6 +712,7 @@ main.wrap { padding-bottom: 140px; }
 
     el.querySelectorAll(".wd-pick button").forEach(function (b) {
       b.addEventListener("click", function () {
+        if (!state.rest) state.rest = plan.rest.slice();
         var i = +b.dataset.wd, at = state.rest.indexOf(i);
         if (at >= 0) state.rest.splice(at, 1); else state.rest.push(i);
         save(K + "rest", state.rest);
@@ -615,7 +720,13 @@ main.wrap { padding-bottom: 140px; }
       });
     });
     el.querySelectorAll(".chk").forEach(function (c) {
-      c.addEventListener("change", function () { toggleDone(c.dataset.id); c.closest(".day").classList.toggle("done", c.checked); renderToday(); });
+      c.addEventListener("change", function () { var t = plan.byId[c.dataset.id]; if (t) setDone(t, c.checked); c.closest(".day").classList.toggle("done", c.checked); c.closest(".day").classList.remove("late"); renderToday(); });
+    });
+    document.getElementById("start-date").addEventListener("change", function (e) {
+      var v = e.target.value;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || parse(v) >= addDays(parse(exam.examDate), -6)) { e.target.value = state.start; return; }
+      state.start = v; save(K + "start", v);
+      plan = build(); renderPlan(); renderToday();
     });
     document.getElementById("jump-today").addEventListener("click", function () {
       var t = document.getElementById("day-" + iso(T)) || document.querySelector(".day");
@@ -705,9 +816,7 @@ main.wrap { padding-bottom: 140px; }
   });
   // 雲端同步下來新的進度，或換了帳號：重新讀進度、重畫
   document.addEventListener("cgep:state-remote", function () {
-    state.rest = load(K + "rest", exam.defaultRest);
-    state.done = load(K + "done", {});
-    state.papers = load(K + "papers", {});
+    loadState();
     plan = build();
     renderToday(); renderNotes(); renderPlan(); renderPapers();
     fabSoon();
@@ -718,6 +827,7 @@ main.wrap { padding-bottom: 140px; }
 <script src="notes/assets/icons.js"></script>
 <script src="notes/assets/glide.js"></script>
 <script src="notes/assets/inkdb.js"></script>
+<script src="notes/assets/avatars.js"></script>
 <script src="notes/assets/supabase-config.js"></script>
 <script src="notes/assets/sync.js"></script>
 </body>

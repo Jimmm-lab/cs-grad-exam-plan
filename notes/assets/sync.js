@@ -1,12 +1,17 @@
 /* 帳號與雲端同步（Supabase），首頁和教材頁共用。
  *
- * 1. 一定要登入才能用網站：還沒登入時 <html class="gate">，頁面藏起來，只顯示「使用 Google 登入」。
+ * 1. 一定要登入才能用網站：還沒登入時 <html class="gate">，頁面藏起來，只顯示登入卡片。
  *    （<head> 裡有一小段程式先看有沒有登入紀錄，沒有就先加上 gate，頁面不會先閃一下。）
- * 2. 每個人的資料分開：讀書進度、休息日、考古題進度、小考紀錄（localStorage）和手寫筆跡（IndexedDB）
+ *    登入的每一步（前往 Google、確認帳號、載入進度）都有動畫，完成後卡片淡出。
+ * 2. 每個人的資料分開：讀書進度、開始日期、休息日、考古題進度、小考紀錄、頭像（localStorage）和手寫筆跡（IndexedDB）
  *    都存在自己帳號底下。這台裝置記得資料是誰的（cgep:owner），換別的帳號登入時，先清掉前一個人的資料，
  *    再從雲端抓新帳號的資料下來。
- * 3. 同步：每一項比較「最後修改時間」，比較新的那邊蓋掉另一邊。
- *    開頁面、登入、回到這個分頁、修改後幾秒、按「立即同步」時各同步一次。
+ * 3. 同步只在有變更時才做：
+ *    - 這台裝置改了東西（打勾、手寫、換頭像…）→ 幾秒後上傳；離開頁面前還沒傳的也會先傳。
+ *    - 打開頁面時安靜地檢查一次雲端有沒有比較新的（別台裝置改的），有才下載，畫面上不會一直跳「同步中」。
+ *    - 兩台裝置都改了同一項（例如兩邊都打了勾）：打勾、小考紀錄這種清單會合併，不會互相蓋掉。
+ *    - 「立即同步」按鈕可以手動同步。
+ * 4. 頭像：avatars.js 的動物頭像或 Google 大頭貼，在帳號選單裡選。
  *
  * 登入：Google 帳號（OAuth，PKCE 流程：Google 登入完回到原本的頁面，網址帶 ?code=，supabase-js 自己換成登入狀態
  *       並把 code 從網址拿掉）。
@@ -17,26 +22,30 @@
 (function () {
   "use strict";
   var DB = window.CGEP_INKDB || null;
+  var AV = window.CGEP_AVATARS || null;
   var LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js";
-  var CFG_KEY = "cgep:sb:cfg", RETURN_KEY = "cgep:sb:return", OWNER_KEY = "cgep:owner", META_KEY = "cgep:state-meta";
-  // 要跟著帳號走的進度：每個考試的 done／rest／papers，每個教材頁的小考紀錄
-  var STATE_RE = /^cgep:(quiz:[\w-]+|[\w-]+:(done|rest|papers))$/;
+  var CFG_KEY = "cgep:sb:cfg", RETURN_KEY = "cgep:sb:return", OWNER_KEY = "cgep:owner";
+  var META_KEY = "cgep:state-meta", BASE_KEY = "cgep:state-base", PROFILE_KEY = "cgep:profile";
+  // 要跟著帳號走的進度：每個考試的 done／rest／papers／start，每個教材頁的小考紀錄，頭像
+  var STATE_RE = /^cgep:(quiz:[\w-]+|profile|[\w-]+:(done|rest|papers|start))$/;
   var I = window.CGEP_ICON || function () { return ""; };
   var root = document.documentElement;
   var fromOAuth = /[?&]code=/.test(location.search);
   // privacy.html 在網站根目錄；用這支程式自己的網址推回去，首頁和教材頁都對
   var me = document.currentScript && document.currentScript.src;
   var PRIVACY = me ? new URL("../../privacy.html", me).href : "privacy.html";
-  var deleting = false;
   var sb = null, user = null, busy = false, again = false, timer = 0, lastOk = 0, running = null, chain = Promise.resolve();
+  var deleting = false, dirty = false;
+  // 登入卡片的階段：connect 連線中、ready 可以登入、go 前往 Google、auth 確認帳號、load 載入進度、done 完成
+  var stage = fromOAuth ? "auth" : "connect";
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
   function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
   function lsKeys() { var out = []; try { for (var i = 0; i < localStorage.length; i++) out.push(localStorage.key(i)); } catch (e) {} return out; }
-  function readMeta() { try { return JSON.parse(lsGet(META_KEY) || "{}") || {}; } catch (e) { return {}; } }
-  function writeMeta(m) { lsSet(META_KEY, JSON.stringify(m)); }
+  function readMap(k) { try { return JSON.parse(lsGet(k) || "{}") || {}; } catch (e) { return {}; } }
+  function writeMap(k, m) { lsSet(k, JSON.stringify(m)); }
   function emit(name, detail) { document.dispatchEvent(new CustomEvent(name, { detail: detail || {} })); }
   // 從 Supabase 複製網址時常常會帶到 /rest/v1/，只留 https://xxxx.supabase.co
   function baseUrl(u) { return String(u || "").trim().replace(/\/(rest|auth|storage|realtime)\/v1.*$/i, "").replace(/\/+$/, ""); }
@@ -47,11 +56,12 @@
     return null;
   }
 
-  // 頁面存進度時呼叫：記下修改時間，幾秒後同步
+  // 頁面存進度時呼叫：記下修改時間，幾秒後上傳
   window.CGEP_STATE = {
     touch: function (k) {
       if (!STATE_RE.test(k)) return;
-      var m = readMeta(); m[k] = Date.now(); writeMeta(m);
+      var m = readMap(META_KEY); m[k] = Date.now(); writeMap(META_KEY, m);
+      dirty = true;
       if (user) schedule(1500);
     }
   };
@@ -60,7 +70,59 @@
     now: function () { return syncNow(); }
   };
 
-  /* ---------- 畫面：登入卡片、目錄裡的同步區、首頁的帳號按鈕 ---------- */
+  /* ---------- 頭像 ---------- */
+  function profile() { return readMap(PROFILE_KEY); }
+  function meta() { return (user && user.user_metadata) || {}; }
+  function photoUrl() { var m = meta(); return /^https:\/\//.test(m.avatar_url || m.picture || "") ? (m.avatar_url || m.picture) : ""; }
+  function displayName() { var m = meta(); return m.full_name || m.name || ""; }
+  function avatarId() {
+    var p = profile();
+    if (p.avatar === "google" && photoUrl()) return "google";
+    if (AV && p.avatar && AV.has(p.avatar)) return p.avatar;
+    return AV ? AV.defaultFor(user ? user.id : "") : "";
+  }
+  function avatarHtml(id) {
+    id = id || avatarId();
+    if (id === "google") return '<img class="av" src="' + esc(photoUrl()) + '" alt="" referrerpolicy="no-referrer">';
+    return AV && id ? AV.svg(id) : I("user");
+  }
+  function setAvatar(id) {
+    var p = profile(); p.avatar = id;
+    writeMap(PROFILE_KEY, p);
+    window.CGEP_STATE.touch(PROFILE_KEY);
+    renderBox(); renderAcct();
+  }
+  var sheet = null;
+  function openPicker() {
+    closePicker(true);
+    var cur = avatarId();
+    var opts = (photoUrl() ? [{ id: "google", name: "Google 大頭貼" }] : []).concat(AV ? AV.list : []);
+    sheet = document.createElement("div");
+    sheet.className = "av-sheet";
+    sheet.innerHTML = '<div class="av-panel" role="dialog" aria-modal="true" aria-labelledby="av-title">' +
+      '<div class="av-head"><b id="av-title">選擇頭像</b><button type="button" class="av-x" data-act="av-close" aria-label="關閉">' + I("close") + "</button></div>" +
+      '<div class="av-grid">' + opts.map(function (o) {
+        return '<button type="button" class="av-opt' + (o.id === cur ? " on" : "") + '" data-av="' + esc(o.id) + '" aria-pressed="' + (o.id === cur) + '">' + avatarHtml(o.id) + "<span>" + esc(o.name) + "</span></button>";
+      }).join("") + "</div></div>";
+    document.body.appendChild(sheet);
+    sheet.addEventListener("click", function (e) {
+      var o = e.target.closest("[data-av]");
+      if (o) { setAvatar(o.dataset.av); closePicker(); return; }
+      if (e.target === sheet || e.target.closest("[data-act=av-close]")) closePicker();
+    });
+    requestAnimationFrame(function () { requestAnimationFrame(function () { if (sheet) sheet.classList.add("open"); }); });
+    var on = sheet.querySelector(".av-opt.on") || sheet.querySelector(".av-opt");
+    if (on) setTimeout(function () { on.focus(); }, 60);
+  }
+  function closePicker(now) {
+    if (!sheet) return;
+    var s = sheet; sheet = null;
+    if (now) { s.remove(); return; }
+    s.classList.remove("open");
+    setTimeout(function () { s.remove(); }, 260);
+  }
+
+  /* ---------- 畫面：登入卡片、目錄裡的帳號區、首頁的帳號按鈕 ---------- */
   var gate = document.createElement("div");
   gate.className = "gate-screen";
   gate.setAttribute("role", "dialog");
@@ -72,33 +134,56 @@
   if (side) { box = document.createElement("div"); box.className = "inkbak sync"; side.appendChild(box); }
   var acct = document.getElementById("acct");
 
-  var msgText = takeUrlError();
+  // 兩種訊息：sync-msg 是同步狀態（帳號選單、目錄）；gate-msg 只放登入卡片上的訊息（登入失敗、已登出…）
+  var msgText = "", gateText = takeUrlError();
   function say(t) { msgText = t; document.querySelectorAll(".sync-msg").forEach(function (m) { m.textContent = t; }); }
+  function gsay(t) { gateText = t; var m = gate.querySelector(".gate-msg"); if (m) m.textContent = t; }
   function hhmm(ts) { var d = new Date(ts); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
   function msg(extra) { return '<p class="sync-msg' + (extra ? " " + extra : "") + '" aria-live="polite">' + esc(msgText) + "</p>"; }
 
+  function steps(at) {
+    var names = ["確認 Google 帳號", "載入你的進度和筆跡", "準備頁面"];
+    return '<ol class="gate-steps">' + names.map(function (n, i) {
+      var st = i < at ? "done" : i === at ? "active" : "todo";
+      return '<li class="' + st + '"><span class="gs-dot">' + (st === "done" ? I("check") : st === "active" ? '<span class="spin"></span>' : "") + "</span><span>" + n + "</span></li>";
+    }).join("") + "</ol>";
+  }
   function renderGate() {
-    var c = cfg(), h = '<div class="gate-card"><div class="gate-mark">' + I("pen") + '</div><h1 id="gate-title">資工所備考</h1>' +
-      "<p>登入後才能使用。讀書進度、小考紀錄和手寫筆跡都存在你自己的帳號，跟其他人分開；換手機或電腦，登入同一個帳號就能接著讀。</p>";
-    if (!c) {
-      h += '<form class="sync-form" data-f="cfg">' +
-        '<input name="url" type="url" placeholder="Supabase Project URL" autocomplete="off" required>' +
-        '<input name="key" type="text" placeholder="publishable key" autocomplete="off" required>' +
-        '<button type="submit" class="gate-btn">儲存設定</button></form>';
-    } else if (!sb || (fromOAuth && !user)) {
-      h += '<p class="gate-wait">' + (fromOAuth ? "登入中…" : "連線中…") + "</p>";
+    var c = cfg(), signing = stage === "auth" || stage === "load" || stage === "done";
+    var h = '<div class="gate-card' + (signing ? " signing" : "") + '"><div class="gate-mark' + (stage !== "ready" && stage !== "cfg" ? " busy" : "") + '"><span class="gm-tile">' + I("pen") + "</span></div>" +
+      '<h1 id="gate-title">資工所備考</h1>';
+    if (signing) {
+      h += '<p class="gate-lead">' + (stage === "done" ? "登入完成！" : "登入中，請稍等一下") + "</p>" + steps(stage === "auth" ? 0 : stage === "load" ? 1 : 3);
     } else {
-      h += '<button type="button" class="gate-btn" data-act="google">' + I("login") + "<span>使用 Google 登入</span></button>" +
-        '<p class="gate-note">任何 Google 帳號都能登入，第一次登入會自動建立你的帳號。</p>';
+      h += "<p>登入後才能使用。讀書進度、小考紀錄和手寫筆跡都存在你自己的帳號，跟其他人分開；換手機或電腦，登入同一個帳號就能接著讀。</p>";
+      if (!c) {
+        h += '<form class="sync-form" data-f="cfg">' +
+          '<input name="url" type="url" placeholder="Supabase Project URL" autocomplete="off" required>' +
+          '<input name="key" type="text" placeholder="publishable key" autocomplete="off" required>' +
+          '<button type="submit" class="gate-btn">儲存設定</button></form>';
+      } else if (stage === "connect") {
+        h += '<div class="gate-btn ghost" aria-hidden="true"><span class="spin"></span><span>準備登入…</span></div>';
+      } else if (stage === "go") {
+        h += '<button type="button" class="gate-btn going" disabled><span class="spin light"></span><span>正在前往 Google…</span></button>' +
+          '<p class="gate-note">馬上會跳到 Google 的登入頁面</p>';
+      } else {
+        h += '<button type="button" class="gate-btn" data-act="google">' + I("login") + "<span>使用 Google 登入</span></button>" +
+          '<p class="gate-note">任何 Google 帳號都能登入，第一次登入會自動建立你的帳號。</p>';
+      }
     }
-    gate.innerHTML = h + msg("gate-msg") + '<p class="gate-legal"><a href="' + PRIVACY + '">隱私權政策 Privacy Policy</a></p></div>';
+    gate.innerHTML = h + '<p class="gate-msg" aria-live="polite">' + esc(gateText) + '</p><p class="gate-legal"><a href="' + PRIVACY + '">隱私權政策 Privacy Policy</a></p></div>';
+  }
+  function who() {
+    var name = displayName();
+    return '<div class="who-row"><button type="button" class="who-av" data-act="avatar" aria-label="更換頭像">' + avatarHtml() + '<span class="who-edit">' + I("pen") + "</span></button>" +
+      '<div class="who-txt">' + (name ? "<b>" + esc(name) + "</b>" : "") + '<span class="email">' + esc(user.email || "") + "</span>" +
+      '<button type="button" class="linkish" data-act="avatar">更換頭像</button></div></div>';
   }
   function renderBox() {
     if (!box) return;
     var h = '<div class="eyebrow">帳號與雲端同步</div>';
     if (user) {
-      h += "<p>已登入 <b>" + esc(user.email || "") + "</b></p>" +
-        '<div class="inkbak-btns"><button type="button" data-act="sync">' + I("sync") + '<span>立即同步</span></button><button type="button" data-act="out">' + I("logout") + "<span>登出</span></button></div>";
+      h += who() + '<div class="inkbak-btns"><button type="button" data-act="sync">' + I("sync") + '<span>立即同步</span></button><button type="button" data-act="out">' + I("logout") + "<span>登出</span></button></div>";
     }
     box.innerHTML = h + msg("inkbak-msg") + (user ? legal() : "");
   }
@@ -106,14 +191,15 @@
     if (!acct) return;
     if (!user) { acct.innerHTML = ""; acct.classList.remove("open"); return; }
     var open = acct.classList.contains("open");
-    acct.innerHTML = '<button type="button" class="acct-btn" data-act="menu" aria-haspopup="true" aria-expanded="' + open + '" aria-label="帳號">' + I("user") + "</button>" +
-      '<div class="acct-pop"><p class="who">已登入</p><p class="email">' + esc(user.email || "") + "</p>" +
+    acct.innerHTML = '<button type="button" class="acct-btn" data-act="menu" aria-haspopup="true" aria-expanded="' + open + '" aria-label="帳號">' + avatarHtml() + "</button>" +
+      '<div class="acct-pop">' + who() +
       '<div class="row"><button type="button" data-act="sync">' + I("sync") + '<span>立即同步</span></button><button type="button" data-act="out">' + I("logout") + "<span>登出</span></button></div>" + msg() + legal() + "</div>";
   }
   function legal() {
     return '<p class="acct-legal"><a href="' + PRIVACY + '">隱私權政策</a><button type="button" class="acct-del" data-act="delete">刪除帳號</button></p>';
   }
   function renderAll() { renderGate(); renderBox(); renderAcct(); }
+  function setStage(s) { stage = s; renderGate(); }
 
   function onClick(e) {
     var b = e.target.closest("button[data-act]");
@@ -123,31 +209,40 @@
     if (act === "sync") syncNow();
     if (act === "out" && sb) signOut();
     if (act === "delete" && sb && user) deleteAccount();
+    if (act === "avatar" && user) { if (acct) acct.classList.remove("open"); openPicker(); }
     if (act === "menu") { var on = !acct.classList.contains("open"); acct.classList.toggle("open", on); b.setAttribute("aria-expanded", String(on)); }
   }
   [gate, box, acct].forEach(function (el) { if (el) el.addEventListener("click", onClick); });
   document.addEventListener("click", function (e) { if (acct && acct.classList.contains("open") && !acct.contains(e.target)) acct.classList.remove("open"); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && acct) acct.classList.remove("open"); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (sheet) closePicker(); else if (acct) acct.classList.remove("open"); } });
   gate.addEventListener("submit", function (e) {
     e.preventDefault();
     var f = e.target;
     if (f.dataset.f !== "cfg") return;
     var url = baseUrl(f.url.value), key = f.key.value.trim();
-    if (!/^https:\/\/[^/]+$/.test(url)) { say("Project URL 的格式應該像 https://xxxx.supabase.co"); return; }
+    if (!/^https:\/\/[^/]+$/.test(url)) { gsay("Project URL 的格式應該像 https://xxxx.supabase.co"); return; }
     lsSet(CFG_KEY, JSON.stringify({ url: url, key: key }));
-    say(""); start();
+    gsay(""); start();
+  });
+  // 別台裝置換了頭像，或換帳號清掉資料
+  document.addEventListener("cgep:state-remote", function (e) {
+    if (e.detail.wiped || (e.detail.keys || []).indexOf(PROFILE_KEY) >= 0) { renderBox(); renderAcct(); }
   });
 
   /* ---------- 登入、登出 ---------- */
   // 前往 Google 登入。登入完會回到這一頁（不帶 #），所以先記住現在看到哪裡，回來再跳回去
   function google() {
     try { sessionStorage.setItem(RETURN_KEY, location.hash); } catch (e) {}
-    say("前往 Google 登入…");
+    gsay("");
+    setStage("go");
     sb.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: location.origin + location.pathname, queryParams: { prompt: "select_account" } }
-    }).then(function (r) { if (r && r.error) say(errText(r.error)); });
+    }).then(function (r) { if (r && r.error) { gsay(errText(r.error)); setStage("ready"); } });
+    // 使用者按了上一頁又回來時（頁面從快取還原），按鈕恢復可以按
+    setTimeout(function () { if (stage === "go") setStage("ready"); }, 15000);
   }
+  window.addEventListener("pageshow", function (e) { if (e.persisted && stage === "go") setStage("ready"); });
   function goBack() {
     var h = null;
     try { h = sessionStorage.getItem(RETURN_KEY); sessionStorage.removeItem(RETURN_KEY); } catch (e) {}
@@ -163,6 +258,7 @@
     var qs = q.toString(), hash = h.get("error") || h.get("error_description") ? "" : location.hash;
     try { history.replaceState(history.state, "", location.pathname + (qs ? "?" + qs : "") + hash); } catch (e) {}
     fromOAuth = false;
+    stage = "connect";
     setTimeout(goBack, 0);
     return errText({ message: desc, code: code });
   }
@@ -171,10 +267,9 @@
     say("登出前先同步…");
     syncNow().then(function (ok) {
       if (!ok && !window.confirm("有些資料還沒同步到雲端（可能沒網路）。現在登出的話，之後換別的帳號在這台裝置登入時，這些資料會被清掉。確定要登出？")) { say(""); return; }
-      return sb.auth.signOut({ scope: "local" }).then(function () { say("已登出。"); });
+      return sb.auth.signOut({ scope: "local" }).then(function () { say(""); gsay("已登出。"); });
     });
   }
-
   // 刪除帳號：雲端的帳號、進度、筆跡全部刪掉（delete_my_account() 刪 auth.users，資料表跟著 cascade 刪除），
   // 再清掉這台裝置上的資料、登出
   function deleteAccount() {
@@ -198,7 +293,7 @@
       return wipeLocal().then(function () {
         lsDel(OWNER_KEY);
         return sb.auth.signOut({ scope: "local" }).catch(function () {});
-      }).then(function () { deleting = false; say("帳號和資料已刪除。" + note); });
+      }).then(function () { deleting = false; dirty = false; say(""); gsay("帳號和資料已刪除。" + note); });
     }).catch(function (err) {
       deleting = false;
       say("刪除失敗：" + errText(err).replace(/^失敗：/, "") + "（什麼都還沒刪，可以再試一次）");
@@ -213,10 +308,19 @@
     return p.then(function () { lsSet(OWNER_KEY, uid); });
   }
   function wipeLocal() {
-    lsKeys().forEach(function (k) { if (STATE_RE.test(k) || k === META_KEY || /^cgep:unit:/.test(k)) lsDel(k); });
+    lsKeys().forEach(function (k) { if (STATE_RE.test(k) || k === META_KEY || k === BASE_KEY || /^cgep:unit:/.test(k)) lsDel(k); });
+    dirty = false;
     emit("cgep:state-remote", { keys: [], wiped: true });
     return DB ? DB.clearAll().catch(function () {}) : Promise.resolve();
   }
+  // 登入卡片淡出，頁面出現
+  function leave() {
+    if (!root.classList.contains("gate")) return;
+    root.classList.add("gate-leaving");
+    root.classList.remove("gate");
+    setTimeout(function () { root.classList.remove("gate-leaving"); }, 450);
+  }
+  function wait(ms) { return new Promise(function (res) { setTimeout(res, ms); }); }
 
   function setUser(u) {
     chain = chain.then(function () {
@@ -224,16 +328,24 @@
       if (!u) {
         user = null; lastOk = 0;
         root.classList.add("gate");
+        stage = "ready";
         renderAll();
         return;
       }
-      if (u.id === was) { user = u; renderAll(); return; }
+      if (u.id === was) { user = u; renderBox(); renderAcct(); return; }
+      var gated = root.classList.contains("gate");
+      if (gated) setStage("load");
       return claim(u.id).then(function () {
         user = u; lastOk = 0;
-        if (fromOAuth) { fromOAuth = false; say(""); goBack(); }
-        root.classList.remove("gate");
-        renderAll();
-        setTimeout(syncNow, 0);
+        renderBox(); renderAcct();
+        // 剛登入：先把雲端的進度抓下來再顯示頁面（最多等 6 秒，沒網路也不會卡住）
+        var first = syncNow({ quiet: true });
+        if (!gated) return;
+        return Promise.race([first, wait(6000)]).then(function () {
+          if (fromOAuth) { fromOAuth = false; goBack(); }
+          setStage("done");
+          return wait(450);
+        }).then(leave);
       });
     }).catch(function () {});
     return chain;
@@ -254,33 +366,47 @@
   }
 
   /* ---------- 同步 ---------- */
-  function schedule(ms) { clearTimeout(timer); timer = setTimeout(syncNow, ms); }
+  function schedule(ms) { clearTimeout(timer); timer = setTimeout(function () { syncNow(); }, ms); }
   function chunks(arr, n) { var out = []; for (var i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n)); return out; }
   function same(uid) { return user && user.id === uid; }
+  function isObj(v) { return !!v && typeof v === "object" && !Array.isArray(v); }
 
-  // 進度（localStorage）：資料量很小，一次全部抓下來比較
+  // 進度（localStorage）：資料量很小，一次全部抓下來比較。
+  // base[k]：上次和雲端一致時的版本時間。兩邊都在那之後改過 → 合併（清單取聯集，這台裝置的值優先）。
   function syncState(uid, res) {
     return sb.from("user_state").select("key,t,data").then(function (r) {
       if (r.error) throw r.error;
       if (!same(uid)) return;
-      var meta = readMeta(), remote = {}, keys = {}, pulled = [], push = [];
+      var meta = readMap(META_KEY), base = readMap(BASE_KEY), remote = {}, keys = {}, pulled = [], push = [], after = {};
       r.data.forEach(function (row) { remote[row.key] = row; keys[row.key] = 1; });
       lsKeys().forEach(function (k) { if (STATE_RE.test(k)) keys[k] = 1; });
       Object.keys(keys).forEach(function (k) {
-        var rr = remote[k], lt = meta[k] || 0, raw = lsGet(k);
-        if (rr && Number(rr.t) > lt) {
-          lsSet(k, JSON.stringify(rr.data)); meta[k] = Number(rr.t); pulled.push(k);
-        } else if (raw !== null && (!rr || lt > Number(rr.t))) {
-          var v; try { v = JSON.parse(raw); } catch (e) { return; }
+        var rr = remote[k], rt = rr ? Number(rr.t) : 0, lt = meta[k] || 0, bt = base[k] || 0, raw = lsGet(k), lv;
+        if (raw !== null) { try { lv = JSON.parse(raw); } catch (e) { raw = null; } }
+        if (rr && raw !== null && lt > bt && rt > bt && lt !== rt) {
+          var mv = isObj(lv) && isObj(rr.data) ? Object.assign({}, rr.data, lv) : (lt >= rt ? lv : rr.data);
+          var t = Math.max(lt, rt) + 1;
+          lsSet(k, JSON.stringify(mv)); meta[k] = t; pulled.push(k);
+          push.push({ user_id: uid, key: k, t: t, data: mv }); after[k] = t;
+        } else if (rr && rt > lt) {
+          lsSet(k, JSON.stringify(rr.data)); meta[k] = rt; base[k] = rt; pulled.push(k);
+        } else if (raw !== null && (!rr || lt > rt)) {
           if (!lt) meta[k] = lt = Date.now();
-          push.push({ user_id: uid, key: k, t: lt, data: v });
-        }
+          push.push({ user_id: uid, key: k, t: lt, data: lv }); after[k] = lt;
+        } else if (rr) base[k] = rt;
       });
-      writeMeta(meta);
-      res.state += pulled.length + push.length;
+      writeMap(META_KEY, meta); writeMap(BASE_KEY, base);
+      res.down += pulled.length;
       if (pulled.length) emit("cgep:state-remote", { keys: pulled });
       if (!push.length) return;
-      return sb.from("user_state").upsert(push, { onConflict: "user_id,key" }).then(function (r2) { if (r2.error) throw r2.error; });
+      return sb.from("user_state").upsert(push, { onConflict: "user_id,key" }).then(function (r2) {
+        if (r2.error) throw r2.error;
+        // 傳上去成功才記為「和雲端一致」，失敗的話下次還會再傳
+        var b2 = readMap(BASE_KEY);
+        Object.keys(after).forEach(function (k) { b2[k] = after[k]; });
+        writeMap(BASE_KEY, b2);
+        res.up += push.length;
+      });
     });
   }
 
@@ -334,40 +460,47 @@
     });
   }
 
-  // 回傳 true：全部同步好了；false：有失敗（資料還在這台裝置，等一下會再試）
-  function syncNow() {
+  // 回傳 true：全部同步好了；false：有失敗（資料還在這台裝置）。quiet：只是檢查，沒東西要傳就不顯示「同步中」
+  function syncNow(opt) {
+    opt = opt || {};
     if (!sb || !user || deleting) return Promise.resolve(false);
     if (busy) { again = true; return running; }
     busy = true; again = false;
-    say("同步中…");
-    var uid = user.id, res = { state: 0, inkPulled: [], inkPushed: [] }, errs = [];
+    var wasDirty = dirty;
+    dirty = false;
+    clearTimeout(timer);
+    if (!opt.quiet) say("同步中…");
+    var uid = user.id, res = { up: 0, down: 0, inkPulled: [], inkPushed: [] }, errs = [];
     running = syncState(uid, res).catch(function (e) { errs.push(e); })
       .then(function () { return DB ? syncInk(uid, res).catch(function (e) { errs.push(e); }) : null; })
       .then(function () {
         if (errs.length) {
-          say("同步失敗：" + errText(errs[0]).replace(/^失敗：/, "") + "（資料還在這台裝置，等一下會再試）");
-          schedule(60000);
+          dirty = dirty || wasDirty;
+          say("同步失敗：" + errText(errs[0]).replace(/^失敗：/, "") + "（資料還在這台裝置" + (dirty ? "，等一下會再試" : "") + "）");
+          if (dirty) schedule(60000);
           return false;
         }
         lastOk = Date.now();
-        var n = res.inkPulled.length + res.inkPushed.length;
-        say("已同步（" + hhmm(lastOk) + "）" + (n ? "，手寫 " + n + " 題" : ""));
+        var up = res.up + res.inkPushed.length, down = res.down + res.inkPulled.length;
+        if (up || down) say("已同步（" + hhmm(lastOk) + "）" + (up ? "，上傳 " + up + " 項" : "") + (down ? "，從雲端更新 " + down + " 項" : ""));
+        else say(opt.quiet ? "雲端和這台裝置的資料一致" : "已同步（" + hhmm(lastOk) + "），沒有需要更新的資料");
         emit("cgep:synced", { pulled: res.inkPulled, pushed: res.inkPushed });
         return true;
       })
-      .then(function (ok) { busy = false; if (again) schedule(500); return ok; });
+      .then(function (ok) { busy = false; if (again) { again = false; schedule(500); } return ok; });
     return running;
   }
 
-  document.addEventListener("cgep:ink-local", function () { if (user) schedule(2500); });
-  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible" && user && Date.now() - lastOk > 15000) syncNow(); });
-  window.addEventListener("online", function () { if (user) syncNow(); });
+  // 有變更才同步：手寫存檔、進度修改（CGEP_STATE.touch）時排一次；離開頁面時還沒傳的先傳；網路恢復時補傳
+  document.addEventListener("cgep:ink-local", function () { dirty = true; if (user) schedule(2500); });
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "hidden" && dirty && user) syncNow({ quiet: true }); });
+  window.addEventListener("online", function () { if (user && dirty) syncNow(); });
 
   /* ---------- 連線 ---------- */
   function start() {
     var c = cfg();
+    if (!c) { stage = "cfg"; root.classList.add("gate"); renderAll(); return; }
     renderAll();
-    if (!c) { root.classList.add("gate"); return; }
     loadLib().then(function () {
       sb = window.supabase.createClient(c.url, c.key, {
         auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: "cgep-sb-auth" }
@@ -379,13 +512,16 @@
       return sb.auth.getSession().then(function (r) {
         var s = r.data && r.data.session;
         if (!s && fromOAuth) fromOAuth = false; // 換 code 失敗（錯誤已經顯示）
+        if (!s) stage = "ready";
         return setUser(s ? s.user : null);
       });
     }).catch(function () {
       // 程式庫載不到（沒網路）：之前登入過就照常用（資料都在這台裝置），沒登入過才擋
       if (!lsGet("cgep-sb-auth")) root.classList.add("gate");
-      say(lsGet("cgep-sb-auth") ? "現在連不到雲端，進度先存在這台裝置，有網路時會自動同步。" : "需要網路才能登入，連上網路後重新整理頁面。");
+      say("現在連不到雲端，進度先存在這台裝置，有網路時會自動同步。");
+      gsay("需要網路才能登入，連上網路後重新整理頁面。");
       fromOAuth = false;
+      stage = "ready";
       renderAll();
     });
   }

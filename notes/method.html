@@ -326,6 +326,7 @@ window.MathJax = {
 <li><a href="#exam">先看結論：中山怎麼考</a></li>
 <li><a href="#methods">五個有研究支持的方法</a></li>
 <li><a href="#daily">每天的讀書流程</a></li>
+<li><a href="#tracks">依開始日期選計畫</a></li>
 <li><a href="#catchup">進度落後怎麼補</a></li>
 <li><a href="#ai">看不懂時：用 AI 當家教</a></li>
 <li><a href="#quiz">小考制度</a></li>
@@ -473,6 +474,51 @@ window.MathJax = {
 </tr>
 </tbody>
 </table>
+<h2 id="tracks">依開始日期選計畫</h2>
+<p>每個人開始讀的時間不一樣，所以行程從<strong>你自己的開始日期</strong>排到考前一天（預設是第一次用網站那天，可以在「每日行程」最上面改）。剩下的天數決定用哪一種計畫：</p>
+<table>
+<thead>
+<tr>
+<th>開始時距離筆試</th>
+<th>計畫</th>
+<th>怎麼排</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>85 天以上</td>
+<td>完整計畫</td>
+<td>診斷 2 天 → 打底 30 天（照單元讀，每 5 天一次週考）→ 考古題 18 天 → 衝刺 12 天。每週休 2 天。</td>
+</tr>
+<tr>
+<td>70–84 天</td>
+<td>標準計畫</td>
+<td>內容一樣，改成每週休 1 天把時間補回來；天數比較少時，選做日（他校考古題、模考）先拿掉。</td>
+</tr>
+<tr>
+<td>55–69 天</td>
+<td>加速計畫</td>
+<td>週考減半；考古題從 104 年做起，100–103 年有空再做。每個單元先做小考再讀。</td>
+</tr>
+<tr>
+<td>40–54 天</td>
+<td>衝刺計畫</td>
+<td>打底期兩天併一天（先做兩節的小考，錯了才讀）；考古題 104–107 年＋重做 111–114 年，模考 2 次。</td>
+</tr>
+<tr>
+<td>25–39 天</td>
+<td>考前計畫</td>
+<td>打底期三到四天併一天，只讀 <svg class="ico ico-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 9.7l5.4-.8z" fill="currentColor" stroke-width="1.2"/></svg><svg class="ico ico-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 9.7l5.4-.8z" fill="currentColor" stroke-width="1.2"/></svg><svg class="ico ico-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 9.7l5.4-.8z" fill="currentColor" stroke-width="1.2"/></svg> 主題；以考古題帶讀，錯題本和公式總表一定要做。</td>
+</tr>
+<tr>
+<td>25 天以內</td>
+<td>最後衝刺</td>
+<td>不讀新單元：每天一份近年考古題（限時），寫完把錯的題目對應的小節讀懂；睡前背公式、翻錯題本。</td>
+</tr>
+</tbody>
+</table>
+<p>實際的行程是照「讀書天夠不夠」一層一層壓縮出來的：先拿掉選做日，再合併、減少週考，再從比較舊的考古題年份開始改成「有空再做」，最後才把打底期的天數併起來。每一層調整都會列在「每日行程」的「這份計畫做了哪些調整」裡。被拿掉的內容不是不重要，而是<strong>時間不夠時，寫考古題比讀新單元更能拿分</strong>。</p>
+<p>改開始日期或休息日時，行程會重新排，已經打勾的進度不會不見（併起來的天，原本的每一天都打過勾就算完成）。</p>
 <h2 id="catchup">進度落後怎麼補</h2>
 <p>首頁「今日」會列出今天以前還沒打勾的讀書天，並且自動排好補的時段。背後的規則是這樣：</p>
 <p><strong>1. 不要把整個行程往後推。</strong> 後面是考古題期和衝刺期，考前最有效的就是寫考古題；整個往後推，等於把最後的練習時間吃掉。<strong>今天的進度照常做</strong>，落後的另外找時間補。</p>
@@ -566,7 +612,8 @@ window.MathJax = {
 <li>首頁：每日行程打勾、休息日設定、考古題進度</li>
 <li>教材：小考的「答對／答錯」紀錄、每一題的手寫筆跡</li>
 </ul>
-<p>手機、平板、電腦登入同一個帳號，就會看到同一份進度。沒網路時照樣寫，連上網路後會自動補傳；每一項以「最後修改的那一份」為準。首頁右上角的人像按鈕、教材目錄最下面，都可以看同步狀態和登出。</p>
+<p>手機、平板、電腦登入同一個帳號，就會看到同一份進度。<strong>有變更時才同步</strong>：打勾、手寫、換頭像之後幾秒會上傳；打開頁面時會安靜地檢查一次別台裝置有沒有改過，有才下載。沒網路時照樣寫，連上網路後會自動補傳。兩台裝置都改了同一份清單（例如兩邊都打了勾），會合併起來，不會互相蓋掉。</p>
+<p>首頁右上角的頭像、教材目錄最下面，可以看同步狀態、登出，也可以<strong>換頭像</strong>（12 種動物，或用 Google 大頭貼）。</p>
 <p><strong>同一台裝置換人用</strong>：登出後換另一個帳號登入，會先清掉這台裝置上前一個人的資料（雲端那份還在，他再登入就會載回來），所以不會看到別人的進度。</p>
 <p><strong>誰能登入</strong>：任何 Google 帳號都可以，第一次登入會自動建立自己的帳號。同學想一起用，把網址傳給他就好。</p>
 <p><strong>刪除帳號</strong>：帳號選單（首頁右上角、教材目錄最下面）的「刪除帳號」，會把自己的帳號、進度和所有筆跡從雲端永久刪除。網站收集哪些資料寫在<a href="../privacy.html">隱私權政策</a>。</p>
@@ -787,6 +834,7 @@ window.MathJax = {
 <script src="assets/viz.js"></script>
 <script src="assets/glide.js"></script>
 <script src="assets/nav.js"></script>
+<script src="assets/avatars.js"></script>
 <script src="assets/supabase-config.js"></script>
 <script src="assets/sync.js"></script>
 </body>
