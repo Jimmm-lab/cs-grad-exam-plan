@@ -177,7 +177,7 @@ Dunlosky 等人在 2013 年整理了十種常見讀書方法的研究證據。�
 
 **同一台裝置換人用**：登出後換另一個帳號登入，會先清掉這台裝置上前一個人的資料（雲端那份還在，他再登入就會載回來），所以不會看到別人的進度。
 
-**誰能登入**：只有加進 Google Cloud「Test users」名單的 Gmail（最多 100 個）。要讓同學一起用，就把他的 Gmail 加進名單：Google Cloud Console → Google Auth Platform → **Audience** → Test users → **Add users**。
+**誰能登入**：任何 Google 帳號都可以，第一次登入會自動建立自己的帳號。同學想一起用，把網址傳給他就好。
 
 <details markdown="1"><summary>當初的設定步驟（換專案或重建時才需要）</summary>
 
@@ -190,13 +190,13 @@ Dunlosky 等人在 2013 年整理了十種常見讀書方法的研究證據。�
 **Google 登入**
 
 4. [Google Cloud Console](https://console.cloud.google.com/) 建一個專案 → **Google Auth Platform** → Get started：App name 隨意、User support email 選自己、Audience 選 **External**。
-5. **Audience** → Test users → **Add users**，加入要使用的 Gmail（發布狀態保持 Testing，只有名單上的帳號能登入）。
+5. **Audience** → Publishing status 按 **Publish app**，改成 In production，任何 Google 帳號都能登入（只用到 email、基本資料，不需要 Google 審核）。如果只想讓特定的人用，就保持 Testing，把他們的 Gmail 加進 Test users（最多 100 個）。
 6. **Clients** → Create client → **Web application**：
    - Authorized JavaScript origins：`https://jimmm-lab.github.io`
    - Authorized redirect URIs：`https://專案代號.supabase.co/auth/v1/callback`（Supabase 的 Google 設定頁會顯示這個網址）
 7. 複製 **Client ID** 和 **Client secret**，貼到 Supabase 的 **Authentication** → Sign In / Providers → **Google**，打開開關、Save。Client secret 只貼在這裡，不要給任何人。
 8. Supabase **Authentication** → **URL Configuration**：Site URL 填 `https://jimmm-lab.github.io/cs-grad-exam-plan/`，Redirect URLs 加 `https://jimmm-lab.github.io/cs-grad-exam-plan/**`。
-9. Supabase **Authentication** → Sign In / Providers：**Allow new users to sign up 保持開著**（每個人第一次用 Google 登入時會自動建立帳號，誰能登入由第 5 步的名單決定）；**Email 關掉**（不然有人可以繞過 Google 直接註冊）。
+9. Supabase **Authentication** → Sign In / Providers：**Allow new users to sign up 保持開著**（每個人第一次用 Google 登入時會自動建立帳號）；**Email 關掉**（不然有人可以繞過 Google 直接註冊）。
 
 </details>
 

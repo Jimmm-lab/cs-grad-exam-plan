@@ -84,7 +84,7 @@
       h += '<p class="gate-wait">' + (fromOAuth ? "登入中…" : "連線中…") + "</p>";
     } else {
       h += '<button type="button" class="gate-btn" data-act="google">' + I("login") + "<span>使用 Google 登入</span></button>" +
-        '<p class="gate-note">只有受邀的 Google 帳號能登入。</p>';
+        '<p class="gate-note">任何 Google 帳號都能登入，第一次登入會自動建立你的帳號。</p>';
     }
     gate.innerHTML = h + msg("gate-msg") + "</div>";
   }
@@ -203,7 +203,7 @@
   function errText(err) {
     var m = (err && err.message) || String(err), code = (err && err.code) || "";
     if (/signup_disabled|Signups not allowed/i.test(code + " " + m)) return "這個 Google 帳號不能登入：網站目前不開放新帳號。";
-    if (/access_denied/i.test(code) || /access.denied|cancel/i.test(m)) return "Google 登入沒有完成（取消了，或這個帳號不在受邀名單裡）。";
+    if (/access_denied/i.test(code) || /access.denied|cancel/i.test(m)) return "Google 登入沒有完成（可能按了取消），再按一次「使用 Google 登入」。";
     if (/provider is not enabled|Unsupported provider/i.test(m)) return "Supabase 還沒開啟 Google 登入：Authentication → Sign In / Providers → Google。";
     if (/code verifier|flow state|invalid.*grant|bad_code_verifier/i.test(code + " " + m)) return "登入逾時或在別的分頁完成了，請再按一次「使用 Google 登入」。";
     if (/rate limit|too many/i.test(m)) return "嘗試太多次了，等幾分鐘再試。";
