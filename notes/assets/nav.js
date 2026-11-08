@@ -110,6 +110,16 @@
       tg.addEventListener("click", function () { setSub(li, !li.classList.contains("open")); });
     });
   }
+  // 點「現在這個單元」的名稱：展開／收起它的小節（不重新跳轉，手機的目錄也不會關掉）。點別的單元才換單元。
+  if (aside) aside.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest(".toc > ul > li > a");
+    if (!a) return;
+    var it = tocItems.filter(function (x) { return x.a === a; })[0];
+    if (!it || !it.sec || it.sec !== current || !it.li.classList.contains("has-sub")) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setSub(it.li, !it.li.classList.contains("open"));
+  }, true);
   function setSub(li, open) {
     li.classList.toggle("open", open);
     var tg = li.querySelector(".toc-tg");
@@ -233,18 +243,33 @@
     s.appendChild(pg);
   });
 
-  function show(sec, target, scroll) {
+  // 目錄：標出現在的單元，展開它的小節，其他單元收起來。換單元時直接切換、不跑動畫
+  // （新單元的數學式排版會讓畫面卡一下，動畫在那時候跑會一頓一頓的）
+  function markToc(sec) {
+    if (aside) aside.classList.add("toc-instant");
+    tocItems.forEach(function (it) {
+      var on = it.sec === sec;
+      it.a.classList.toggle("cur", on);
+      if (on) it.a.setAttribute("aria-current", "true"); else it.a.removeAttribute("aria-current");
+      if (it.li.classList.contains("has-sub")) setSub(it.li, on);
+    });
+    if (aside) setTimeout(function () { aside.classList.remove("toc-instant"); }, 60);
+  }
+  var pending = null;
+  // 換單元：目錄先更新、先畫到螢幕上（點下去馬上有反應），下一個畫面才換內容、排版數學式
+  function show(sec, target, scroll, now) {
+    if (sec !== current && !now) {
+      markToc(sec);
+      var go = !pending;
+      pending = [sec, target, scroll];
+      if (go) requestAnimationFrame(function () { setTimeout(function () { var a = pending; pending = null; show(a[0], a[1], a[2], true); }, 0); });
+      return;
+    }
     if (sec !== current) {
+      markToc(sec);
       secs.forEach(function (s) { s.hidden = s !== sec; });
       current = sec;
       save(KEY, sec.dataset.unit);
-      // 目錄：標出現在的單元，展開它的小節，其他單元收起來
-      tocItems.forEach(function (it) {
-        var on = it.sec === sec;
-        it.a.classList.toggle("cur", on);
-        if (on) it.a.setAttribute("aria-current", "true"); else it.a.removeAttribute("aria-current");
-        if (it.li.classList.contains("has-sub")) setSub(it.li, on);
-      });
       setTimeout(fabSoon, 50);
     }
     if (scroll) {
@@ -267,10 +292,10 @@
     if (!sec) {
       var saved = load(KEY);
       sec = secs.filter(function (s) { return s.dataset.unit === saved; })[0] || secs[0];
-      show(sec, null, !first);
+      show(sec, null, !first, first);
       return;
     }
-    show(sec, t, true);
+    show(sec, t, true, first);
   }
   // 瀏覽器在載入完成後會自己再捲到錨點一次；MathJax 載入後才排版第一個單元
   window.addEventListener("load", function () { setTimeout(realign, 0); });
