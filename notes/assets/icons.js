@@ -32,6 +32,9 @@ window.CGEP_ICON = (function () {
     logout: '<path d="M10.5 4.5h-4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h4"/><path d="M9.5 12h10"/><path d="M16 8.5l3.5 3.5-3.5 3.5"/>',
     user: '<circle cx="12" cy="8.5" r="3.6"/><path d="M5 19.5c.9-3.4 3.6-5.2 7-5.2s6.1 1.8 7 5.2"/>',
     chevron: '<path d="M6.5 9.5l5.5 5.5 5.5-5.5"/>',
+    calendar: '<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h2M12 14h2M16 14h.5M8 17h2M12 17h2"/>',
+    book: '<path d="M12 6.5C10.5 5.2 8.3 4.5 4.5 4.5v13c3.8 0 6 .7 7.5 2 1.5-1.3 3.7-2 7.5-2v-13c-3.8 0-6 .7-7.5 2z"/><path d="M12 6.5v13"/>',
+    cloud: '<path d="M7.5 18.5h9.5a4 4 0 0 0 .7-7.94A5.5 5.5 0 0 0 7.3 9.4 4.6 4.6 0 0 0 7.5 18.5z"/>',
     sync: '<path d="M19.5 12a7.5 7.5 0 0 1-13 5.1"/><path d="M4.5 12a7.5 7.5 0 0 1 13-5.1"/><path d="M17.5 3.5v3.4h-3.4"/><path d="M6.5 20.5v-3.4h3.4"/>'
   };
   return function (name, cls) {

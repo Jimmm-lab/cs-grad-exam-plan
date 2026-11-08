@@ -136,6 +136,8 @@
 
   // 兩種訊息：sync-msg 是同步狀態（帳號選單、目錄）；gate-msg 只放登入卡片上的訊息（登入失敗、已登出…）
   var msgText = "", gateText = takeUrlError();
+  // 登入卡片要顯示的狀態：剛登出（out）、剛刪除帳號（deleted）；按登入或登入成功後清掉
+  var notice = null;
   function say(t) { msgText = t; document.querySelectorAll(".sync-msg").forEach(function (m) { m.textContent = t; }); }
   function gsay(t) { gateText = t; var m = gate.querySelector(".gate-msg"); if (m) m.textContent = t; }
   function hhmm(ts) { var d = new Date(ts); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
@@ -148,10 +150,30 @@
       return '<li class="' + st + '"><span class="gs-dot">' + (st === "done" ? I("check") : st === "active" ? '<span class="spin"></span>' : "") + "</span><span>" + n + "</span></li>";
     }).join("") + "</ol>";
   }
+  // 網站重點（登入前看的介紹，一行一個）
+  var FEATS = [
+    ["calendar", "f1", "每日行程", "依開始日期排好每天讀什麼，落後幫你補"],
+    ["book", "f2", "考古題教材", "111–115 年逐題詳解，附觀念課和動畫"],
+    ["pen", "f3", "手寫作答", "每一題都能用觸控筆直接寫計算過程"],
+    ["cloud", "f4", "雲端同步", "進度和筆跡跟著帳號走，換裝置接著讀"]
+  ];
+  function feats() {
+    return '<ul class="gate-feats">' + FEATS.map(function (f) {
+      return '<li><span class="gf-ico ' + f[1] + '">' + I(f[0]) + "</span><span><b>" + f[2] + "</b><span>" + f[3] + "</span></span></li>";
+    }).join("") + "</ul>";
+  }
   function renderGate() {
     var c = cfg(), signing = stage === "auth" || stage === "load" || stage === "done";
-    var h = '<div class="gate-card' + (signing ? " signing" : "") + '"><div class="gate-mark' + (stage !== "ready" && stage !== "cfg" ? " busy" : "") + '"><span class="gm-tile">' + I("pen") + "</span></div>" +
-      '<h1 id="gate-title">資工所備考</h1>';
+    var head = '<div class="gate-mark"><span class="gm-tile">' + I("pen") + '</span></div><h1 id="gate-title">資工所備考</h1>';
+    // 剛登出／刪除帳號：換成結果畫面（大勾勾＋一句說明），下面一樣可以再登入
+    if (notice && !signing && stage !== "go") {
+      head = '<div class="gate-result ' + notice.kind + '"><span>' + I(notice.kind === "deleted" ? "trash" : "check") + "</span></div>" +
+        '<h1 id="gate-title">' + (notice.kind === "deleted" ? "帳號已刪除" : "已登出") + "</h1>" +
+        '<p class="gate-sub">' + (notice.kind === "deleted" ? "雲端和這台裝置上的資料都已經清除。" + esc(notice.note || "") : "你的進度和筆跡都存在雲端，下次登入就會回來。") + "</p>";
+    } else if (!signing) {
+      head += '<p class="gate-sub">考古題整理成的讀書計畫與教材</p>' + feats();
+    }
+    var h = '<div class="gate-card' + (signing ? " signing" : "") + (notice ? " result" : "") + '">' + head;
     if (signing) {
       h += steps(stage === "auth" ? 0 : stage === "load" ? 1 : 3);
     } else {
@@ -165,7 +187,7 @@
       } else if (stage === "go") {
         h += '<button type="button" class="gate-btn going" disabled><span class="spin light"></span><span>正在前往 Google…</span></button>';
       } else {
-        h += '<button type="button" class="gate-btn" data-act="google">' + I("login") + "<span>使用 Google 登入</span></button>";
+        h += '<button type="button" class="gate-btn" data-act="google">' + I("login") + "<span>" + (notice && notice.kind === "out" ? "再次登入" : "使用 Google 登入") + "</span></button>";
       }
     }
     gate.innerHTML = h + '<p class="gate-msg" aria-live="polite">' + esc(gateText) + '</p><p class="gate-legal"><a href="' + PRIVACY + '">隱私權政策 Privacy Policy</a></p></div>';
@@ -231,6 +253,7 @@
   function google() {
     try { sessionStorage.setItem(RETURN_KEY, location.hash); } catch (e) {}
     gsay("");
+    notice = null;
     setStage("go");
     sb.auth.signInWithOAuth({
       provider: "google",
@@ -264,7 +287,8 @@
     say("登出前先同步…");
     syncNow().then(function (ok) {
       if (!ok && !window.confirm("有些資料還沒同步到雲端（可能沒網路）。現在登出的話，之後換別的帳號在這台裝置登入時，這些資料會被清掉。確定要登出？")) { say(""); return; }
-      return sb.auth.signOut({ scope: "local" }).then(function () { say(""); gsay("已登出。"); });
+      notice = { kind: "out" };
+      return sb.auth.signOut({ scope: "local" }).then(function () { say(""); gsay(""); renderGate(); }, function () { notice = null; });
     });
   }
   // 刪除帳號：雲端的帳號、進度、筆跡全部刪掉（delete_my_account() 刪 auth.users，資料表跟著 cascade 刪除），
@@ -289,8 +313,9 @@
     }).then(function (note) {
       return wipeLocal().then(function () {
         lsDel(OWNER_KEY);
+        notice = { kind: "deleted", note: note };
         return sb.auth.signOut({ scope: "local" }).catch(function () {});
-      }).then(function () { deleting = false; dirty = false; say(""); gsay("帳號和資料已刪除。" + note); });
+      }).then(function () { deleting = false; dirty = false; say(""); gsay(""); renderGate(); });
     }).catch(function (err) {
       deleting = false;
       say("刪除失敗：" + errText(err).replace(/^失敗：/, "") + "（什麼都還沒刪，可以再試一次）");
@@ -331,6 +356,7 @@
       }
       if (u.id === was) { user = u; renderBox(); renderAcct(); return; }
       var gated = root.classList.contains("gate");
+      notice = null;
       if (gated) setStage("load");
       return claim(u.id).then(function () {
         user = u; lastOk = 0;
