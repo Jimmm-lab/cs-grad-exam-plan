@@ -45,3 +45,39 @@ $$;
 drop trigger if exists ink_pads_touch on public.ink_pads;
 create trigger ink_pads_touch before update on public.ink_pads
   for each row execute function public.ink_pads_touch();
+
+-- ============================================================
+-- 讀書進度（每日行程打勾、休息日、考古題進度、小考紀錄）
+-- key 例如 cgep:nsysu-cse-116:done、cgep:quiz:discrete；data 是那一項的 JSON
+-- ============================================================
+create table if not exists public.user_state (
+  user_id    uuid        not null default auth.uid() references auth.users (id) on delete cascade,
+  key        text        not null,
+  t          bigint      not null,                -- 最後修改時間（瀏覽器的毫秒時間戳）
+  data       jsonb,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, key)
+);
+
+alter table public.user_state enable row level security;
+
+drop policy if exists "user_state_select_own" on public.user_state;
+drop policy if exists "user_state_insert_own" on public.user_state;
+drop policy if exists "user_state_update_own" on public.user_state;
+drop policy if exists "user_state_delete_own" on public.user_state;
+
+create policy "user_state_select_own" on public.user_state
+  for select to authenticated using ((select auth.uid()) = user_id);
+create policy "user_state_insert_own" on public.user_state
+  for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "user_state_update_own" on public.user_state
+  for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+create policy "user_state_delete_own" on public.user_state
+  for delete to authenticated using ((select auth.uid()) = user_id);
+
+grant select, insert, update, delete on public.user_state to authenticated;
+revoke all on public.user_state from anon;
+
+drop trigger if exists user_state_touch on public.user_state;
+create trigger user_state_touch before update on public.user_state
+  for each row execute function public.ink_pads_touch();

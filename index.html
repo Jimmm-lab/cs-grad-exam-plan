@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 沒登入的話先把頁面藏起來（登入畫面在 notes/assets/sync.js） -->
+<script>(function(){var d=document.documentElement;try{if(!localStorage.getItem("cgep-sb-auth")||/[?&]code=/.test(location.search))d.classList.add("gate")}catch(e){d.classList.add("gate")}})();</script>
+<link rel="stylesheet" href="notes/assets/account.css">
 <title>資工所備考計畫</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -156,6 +159,30 @@ section.view { display: grid; gap: 28px; }
 .tag { font: 700 11px/1.6 var(--font-mono); padding: 0 6px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); font-weight: 500; }
 .tag.ms { border-color: var(--accent); color: var(--accent); }
 .tag.opt { border-style: dashed; }
+.tag.late { border-color: var(--accent); color: var(--accent); }
+.day.late { box-shadow: inset 3px 0 0 var(--accent); }
+
+/* 補進度 */
+.catchup { background: var(--card); border: 1px solid var(--accent); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; }
+.catchup h3 { margin: 4px 0 0; font-size: 17px; }
+.cu-rule { margin: 0; font-size: 13.5px; color: var(--muted); line-height: 1.75; }
+.cu-plan { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.cu-plan > li { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.cu-plan > li:first-child { border-top: 0; padding-top: 0; }
+.cu-when b { display: block; font: 700 14px/1.5 var(--font-mono); }
+.cu-when span { display: block; font-size: 12px; line-height: 1.5; color: var(--muted); }
+.cu-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.cu-item { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; line-height: 1.6; cursor: pointer; }
+.cu-item input { margin: 3px 0 0; width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+.cu-item b { font: 700 13px/1.6 var(--font-mono); margin-right: 6px; }
+.cu-links { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 4px 0 0 26px; font-size: 12.5px; }
+.cu-links a { color: var(--muted); text-decoration: none; display: inline-flex; gap: 6px; align-items: center; }
+.cu-links a:hover { color: var(--accent); }
+.cu-left { margin: 0; font-size: 13.5px; line-height: 1.7; padding: 10px 12px; background: var(--accent-soft); border-radius: 6px; }
+.catchup details summary { cursor: pointer; font-size: 13.5px; color: var(--muted); }
+.catchup details[open] summary { margin-bottom: 12px; }
+.cu-more { margin: 0; font-size: 13px; }
+@media (max-width: 560px) { .cu-plan > li { grid-template-columns: 1fr; gap: 6px; } .cu-when b, .cu-when span { display: inline; margin-right: 8px; } }
 .day .items { display: grid; gap: 3px; font-size: 14px; }
 .day .items div { display: grid; grid-template-columns: 76px 1fr; gap: 8px; min-width: 0; }
 .day .items .subj { justify-self: start; }
@@ -239,11 +266,14 @@ table.sheet { border-collapse: collapse; width: 100%; font-size: 14px; }
 .ico { width: 1.15em; height: 1.15em; vertical-align: -0.2em; flex: none; }
 .ico-star { color: var(--accent); width: 1em; height: 1em; vertical-align: -0.12em; }
 .done-btn .ico { margin-right: 4px; }
-.fab { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 10px; z-index: 18; }
-.fab button { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 10px rgba(10, 15, 30, .16); }
+.fab { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; align-items: center; z-index: 18; }
+.fab button { box-sizing: border-box; width: 46px; height: 46px; margin-top: 10px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 10px rgba(10, 15, 30, .16); }
+.fab button:first-child { margin-top: 0; }
 .fab .ico { width: 22px; height: 22px; }
-.fab button { transition: opacity .2s, visibility .2s; }
-.fab button.is-off { opacity: 0; visibility: hidden; pointer-events: none; }
+/* 收起來的按鈕：高度和間距一起縮成 0，另一顆往下補位，不會留一個空格 */
+.fab button { transition: opacity .18s ease, transform .22s ease, height .22s ease, margin-top .22s ease; }
+.fab button.is-off { height: 0; margin-top: 0; opacity: 0; transform: scale(.4); visibility: hidden; pointer-events: none; border-width: 0; box-shadow: none; transition: opacity .14s ease, transform .22s ease, height .22s ease, margin-top .22s ease, visibility 0s linear .22s, border-width 0s linear .22s, box-shadow 0s linear .22s; }
+@media (prefers-reduced-motion: reduce) { .fab button, .fab button.is-off { transition: none; } }
 main.wrap { padding-bottom: 140px; }
 </style>
 </head>
@@ -260,6 +290,7 @@ main.wrap { padding-bottom: 140px; }
         <label for="exam-select" class="eyebrow">考試</label>
         <select id="exam-select"></select>
       </div>
+      <div class="acct" id="acct"></div>
     </div>
     <nav class="tabs" aria-label="頁面">
       <a href="#today">今日</a>
@@ -300,7 +331,7 @@ main.wrap { padding-bottom: 140px; }
   function load(key, fallback) {
     try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
   }
-  function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+  function save(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} if (window.CGEP_STATE) window.CGEP_STATE.touch(key); }
 
   /* ---------- dates (local, date-only) ---------- */
   function parse(s) { var p = s.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
@@ -436,6 +467,9 @@ main.wrap { padding-bottom: 140px; }
         '<p class="flow">每個區塊的流程：<b>10 分鐘</b>白紙回想昨天 → <b>讀</b>觀念課與例題 → <b>練</b>小考與考古題（限時） → <b>訂正</b>寫錯因進錯題本。<a href="notes/method.html#daily">為什麼這樣排</a></p></div>';
     }
 
+    var late = overdue();
+    if (late.length && !slot.exam) html += renderCatchup(late);
+
     // milestones
     var ms = exam.milestones || [];
     var nextIdx = ms.findIndex(function (m) { return parse(m.date) >= T; });
@@ -453,12 +487,66 @@ main.wrap { padding-bottom: 140px; }
 
     el.innerHTML = html;
     var btn = document.getElementById("today-done");
-    if (btn) btn.addEventListener("click", function () { toggleDone(slot.task.id); renderToday(); });
+    if (btn) btn.addEventListener("click", function () { toggleDone(slot.task.id); renderToday(); renderPlan(); });
+    el.querySelectorAll(".cu-chk").forEach(function (c) {
+      c.addEventListener("change", function () { toggleDone(c.dataset.id); renderToday(); renderPlan(); });
+    });
   }
 
   function toggleDone(id) {
     if (state.done[id]) delete state.done[id]; else state.done[id] = 1;
     save(K + "done", state.done);
+  }
+
+  /* ---------- 補進度 ---------- */
+  // 今天以前還沒打勾的讀書天
+  function overdue() { return taskSlots().filter(function (s) { return s.date < T && !state.done[s.task.id]; }); }
+  // 補進度的時段：從今天起每週第一個休息日（另一個休息日照常休息），加上還沒做的選做日。
+  // 一個時段補 2 天：用「先做題、錯了才讀」的方式，一天的量大約半天補得完。
+  // 不把整個行程往後推：後面的考古題期和衝刺期不能被壓縮。
+  function catchup(list) {
+    var seen = {}, slots = [];
+    function week(d) { return iso(addDays(d, -((d.getDay() + 6) % 7))); }
+    plan.slots.forEach(function (s) {
+      if (s.date < T || s.exam) return;
+      if (s.rest) {
+        var wk = week(s.date);
+        if (seen[wk]) return;
+        seen[wk] = 1;
+        // 同一週後面還有休息日的話，告訴使用者那天照常休息
+        var other = plan.slots.filter(function (x) { return x.rest && x.date > s.date && week(x.date) === wk; })[0];
+        slots.push({ date: s.date, kind: "休息日" + (other ? "（" + md(other.date) + "照常休息）" : "") });
+      } else if (s.task && s.task.optional && !state.done[s.task.id] && iso(s.date) !== iso(T)) {
+        slots.push({ date: s.date, kind: "選做日：原本的「" + s.task.title.split("｜")[0] + "」先不做" });
+      }
+    });
+    slots.sort(function (a, b) { return a.date - b.date; });
+    var i = 0, rows = [];
+    slots.forEach(function (sl) {
+      if (i >= list.length) return;
+      rows.push({ slot: sl, items: list.slice(i, i + 2) });
+      i += 2;
+    });
+    return { rows: rows, left: Math.max(0, list.length - i) };
+  }
+  function renderCatchup(late) {
+    var cu = catchup(late);
+    function item(s) {
+      return '<li><label class="cu-item"><input type="checkbox" class="cu-chk" data-id="' + esc(s.task.id) + '" aria-label="' + md(s.date) + ' 補完了"><span><b>' + md(s.date) + "（" + WD[s.date.getDay()] + "）</b>" + esc(s.task.title) + "</span></label>" +
+        '<div class="cu-links">' + s.task.blocks.map(function (b) { return b.link ? '<a href="' + esc(b.link) + '">' + subjChip(b.subject) + "<span>" + esc(b.title) + "</span></a>" : ""; }).join("") + "</div></li>";
+    }
+    function row(r) {
+      var d = r.slot.date, when = iso(d) === iso(T) ? "今天" : md(d) + "（" + WD[d.getDay()] + "）";
+      return '<li><div class="cu-when"><b>' + when + "</b><span>" + esc(r.slot.kind) + '</span></div><ul class="cu-list">' + r.items.map(item).join("") + "</ul></li>";
+    }
+    var h = '<div class="catchup" id="catchup"><div><div class="eyebrow">補進度</div><h3>落後 ' + late.length + " 天，照這個順序補</h3></div>" +
+      '<p class="cu-rule"><b>今天的行程照常做</b>，落後的天數排進下面的時段，一個時段補 2 天。補的時候<b>先寫那天的小考和考古題（限時）</b>，寫錯或寫不出來的部分才回去讀教材，補完一天就打勾。</p>';
+    var first = cu.rows.slice(0, 3), more = cu.rows.slice(3);
+    h += '<ol class="cu-plan">' + first.map(row).join("") + "</ol>";
+    if (more.length) h += "<details><summary>後面還有 " + more.length + " 個時段</summary>" + '<ol class="cu-plan">' + more.map(row).join("") + "</ol></details>";
+    if (cu.left) h += '<p class="cu-left">還有 ' + cu.left + " 天排不進來（考前的休息日和選做日都用完了）：每天晚上多做 1 個區塊（約 1.5 小時），只做那幾天的 ★★★ 題目和小考，大約 " + cu.left * 3 + " 天補完。</p>";
+    h += '<p class="cu-more"><a href="notes/method.html#catchup">時間不夠時先補什麼、可以跳過什麼</a></p></div>';
+    return h;
   }
 
   /* ---------- NOTES ---------- */
@@ -506,9 +594,9 @@ main.wrap { padding-bottom: 140px; }
         } else if (s.rest) {
           html += '<div class="day rest' + isToday + '" id="day-' + k + '"><span></span>' + dt + '<div class="main">休息' + (msTags ? " " + msTags : "") + "</div></div>";
         } else {
-          var t = s.task, d = !!state.done[t.id];
-          html += '<div class="day' + (d ? " done" : "") + isToday + '" id="day-' + k + '"><input type="checkbox" class="chk" id="c-' + esc(t.id) + '" data-id="' + esc(t.id) + '"' + (d ? " checked" : "") + ' aria-label="' + md(s.date) + ' 完成">' + dt +
-            '<div class="main"><div class="t">' + esc(t.title) + (t.tag ? ' <span class="tag">' + esc(t.tag) + "</span>" : "") + (t.optional ? ' <span class="tag opt">選做</span>' : "") + msTags + '</div><div class="items">' +
+          var t = s.task, d = !!state.done[t.id], late = !d && s.date < T;
+          html += '<div class="day' + (d ? " done" : "") + (late ? " late" : "") + isToday + '" id="day-' + k + '"><input type="checkbox" class="chk" id="c-' + esc(t.id) + '" data-id="' + esc(t.id) + '"' + (d ? " checked" : "") + ' aria-label="' + md(s.date) + ' 完成">' + dt +
+            '<div class="main"><div class="t">' + esc(t.title) + (late ? ' <span class="tag late">落後</span>' : "") + (t.tag ? ' <span class="tag">' + esc(t.tag) + "</span>" : "") + (t.optional ? ' <span class="tag opt">選做</span>' : "") + msTags + '</div><div class="items">' +
             t.blocks.map(function (b) { var tt = b.link ? '<a href="' + esc(b.link) + '">' + esc(b.title) + "</a>" : esc(b.title); return "<div>" + subjChip(b.subject) + "<span>" + tt + (b.practice ? "・" + rich(b.practice) : "") + "</span></div>"; }).join("") +
             "</div>" + (t.note ? '<div style="font-size:13px;color:var(--muted)">' + esc(t.note) + "</div>" : "") +
             (t.review && t.review.length ? '<div class="rv-line">複習：' + t.review.map(function (r) { return esc(r.text.replace(/（.*?）/g, "")); }).join("；") + "</div>" : "") + "</div></div>";
@@ -612,11 +700,25 @@ main.wrap { padding-bottom: 140px; }
   fabSoon();
   document.querySelector(".fab").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
-    var y = b.dataset.go === "top" ? 0 : document.documentElement.scrollHeight - window.innerHeight;
-    window.scrollTo({ top: y, behavior: Math.abs(y - window.scrollY) > window.innerHeight * 3 ? "instant" : "smooth" });
+    var glide = window.CGEP_GLIDE || function (y) { window.scrollTo(0, typeof y === "function" ? y() : y); };
+    glide(b.dataset.go === "top" ? 0 : function () { return document.documentElement.scrollHeight - window.innerHeight; });
+  });
+  // 雲端同步下來新的進度，或換了帳號：重新讀進度、重畫
+  document.addEventListener("cgep:state-remote", function () {
+    state.rest = load(K + "rest", exam.defaultRest);
+    state.done = load(K + "done", {});
+    state.papers = load(K + "papers", {});
+    plan = build();
+    renderToday(); renderNotes(); renderPlan(); renderPapers();
+    fabSoon();
   });
   route();
 })();
 </script>
+<script src="notes/assets/icons.js"></script>
+<script src="notes/assets/glide.js"></script>
+<script src="notes/assets/inkdb.js"></script>
+<script src="notes/assets/supabase-config.js"></script>
+<script src="notes/assets/sync.js"></script>
 </body>
 </html>

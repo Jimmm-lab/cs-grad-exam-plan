@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 沒登入的話先把頁面藏起來（登入畫面在 assets/sync.js） -->
+<script>(function(){var d=document.documentElement;try{if(!localStorage.getItem("cgep-sb-auth")||/[?&]code=/.test(location.search))d.classList.add("gate")}catch(e){d.classList.add("gate")}})();</script>
+<link rel="stylesheet" href="assets/account.css">
 <title>資料結構：從中山考古題學</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -198,8 +201,20 @@ section.unit > h2:first-child, section.unit > h1 + p + h2 { margin-top: 0; }
 
 /* 目錄：現在的單元與它的小節 */
 aside.toc a.cur { color: var(--ink); font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); padding-left: 9px; }
+/* 目錄的小節：按單元右邊的箭頭展開（高度和內容一起快速往下浮現） */
+aside.toc .toc li.has-sub { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; column-gap: 2px; }
+.toc-tg { width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: none; color: var(--muted); display: grid; place-items: center; cursor: pointer; }
+.toc-tg:hover { background: var(--code); color: var(--ink); }
+.toc-tg .ico { width: 16px; height: 16px; transition: transform .22s ease; }
+li.open > .toc-tg { color: var(--ink); }
+li.open > .toc-tg .ico { transform: rotate(180deg); }
+.toc-subw { grid-column: 1 / -1; display: grid; grid-template-rows: 0fr; transition: grid-template-rows .24s ease; }
+li.open > .toc-subw { grid-template-rows: 1fr; }
+.toc-subi { min-height: 0; overflow: hidden; opacity: 0; transform: translateY(-8px); visibility: hidden; transition: opacity .16s ease, transform .24s ease, visibility 0s linear .24s; }
+li.open > .toc-subw > .toc-subi { opacity: 1; transform: none; visibility: visible; transition: opacity .2s ease .03s, transform .24s ease; }
 aside.toc .toc-sub { list-style: none; margin: 2px 0 8px 12px; padding: 0; display: grid; gap: 0; border-left: 1px solid var(--line); }
 aside.toc .toc-sub a { padding: 3px 0 3px 10px; font-size: 12.5px; }
+@media (prefers-reduced-motion: reduce) { .toc-subw, .toc-subi, .toc-tg .ico { transition: none !important; } }
 .toc-head { display: none; }
 
 /* 換單元 */
@@ -211,13 +226,16 @@ aside.toc .toc-sub a { padding: 3px 0 3px 10px; font-size: 12.5px; }
 .pager .ico { width: 20px; height: 20px; color: var(--accent); }
 
 /* 右下角按鈕 */
-.fab { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 10px; z-index: 18; transition: opacity .2s; }
-.fab button { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 10px rgba(10, 15, 30, .16); }
+.fab { position: fixed; right: max(14px, env(safe-area-inset-right, 0px)); bottom: max(16px, env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; align-items: center; z-index: 18; transition: opacity .2s; }
+.fab button { box-sizing: border-box; width: 46px; height: 46px; margin-top: 10px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: 0 2px 10px rgba(10, 15, 30, .16); }
+.fab button:first-child { margin-top: 0; }
 .fab button .ico { width: 22px; height: 22px; }
 .fab .fab-toc { display: none; background: var(--ink); color: var(--card); border-color: var(--ink); }
 .fab.fab-off { opacity: 0; pointer-events: none; }
-.fab button { transition: opacity .2s, visibility .2s; }
-.fab button.is-off { opacity: 0; visibility: hidden; pointer-events: none; }
+/* 收起來的按鈕：高度和間距一起縮成 0，下面的按鈕往下補位，不會留一個空格 */
+.fab button { transition: opacity .18s ease, transform .22s ease, height .22s ease, margin-top .22s ease; }
+.fab button.is-off { height: 0; margin-top: 0; opacity: 0; transform: scale(.4); visibility: hidden; pointer-events: none; border-width: 0; box-shadow: none; transition: opacity .14s ease, transform .22s ease, height .22s ease, margin-top .22s ease, visibility 0s linear .22s, border-width 0s linear .22s, box-shadow 0s linear .22s; }
+@media (prefers-reduced-motion: reduce) { .fab button, .fab button.is-off { transition: none; } }
 .toc-backdrop { display: none; }
 
 /* 手寫筆跡備份 */
@@ -237,6 +255,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   aside.toc { position: fixed; top: var(--hdr, 52px); left: 8px; right: 8px; z-index: 30; max-height: calc(100vh - var(--hdr, 52px) - 14px); max-height: calc(100dvh - var(--hdr, 52px) - 14px); margin: 0; padding: 0 16px calc(20px + env(safe-area-inset-bottom, 0px)); background: var(--card); border: 1px solid var(--line); border-top: 0; border-radius: 0 0 14px 14px; box-shadow: 0 16px 32px rgba(5, 8, 15, .25); overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; font-size: 14.5px; opacity: 0; transform: translateY(-16px); clip-path: inset(0 -24px 100% -24px); visibility: hidden; transition: clip-path .32s ease, transform .32s ease, opacity .2s ease, visibility 0s linear .32s; }
   body.toc-open aside.toc { opacity: 1; transform: none; clip-path: inset(0 -24px -48px -24px); visibility: visible; transition: clip-path .32s ease, transform .32s ease, opacity .2s ease; }
   aside.toc a { padding: 7px 0; }
+  .toc-tg { width: 40px; height: 37px; }
+  .toc-tg .ico { width: 18px; height: 18px; }
+  aside.toc .toc-sub a { padding: 6px 0 6px 12px; font-size: 13.5px; }
   .toc-head { display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; margin: 0 -16px 8px; padding: 8px 16px; background: var(--card); border-bottom: 1px solid var(--line); z-index: 1; }
   .toc-head .eyebrow { margin: 0; }
   aside.toc > .eyebrow { display: none; }
@@ -2388,7 +2409,7 @@ f(3) 回來，印 3</code></pre>
 (function () {
   var KEY = "cgep:quiz:ds";
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
-  function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} }
+  function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} if (window.CGEP_STATE) window.CGEP_STATE.touch(KEY); }
   var rec = load();
   var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
   var seen = {};
@@ -2427,6 +2448,8 @@ f(3) 回來，印 3</code></pre>
     document.getElementById("qb-wrong").innerHTML = wrong.map(function (d) { return '<a href="#' + d.id + '">' + d.dataset.label + "</a>"; }).join("");
   }
   document.getElementById("qb-reset").addEventListener("click", function () { rec = {}; save(rec); paint(); });
+  // 雲端同步下來新的紀錄，或換了帳號
+  document.addEventListener("cgep:state-remote", function (e) { if (e.detail.wiped || (e.detail.keys || []).indexOf(KEY) >= 0) { rec = load(); paint(); } });
   paint();
 })();
 </script>
@@ -2434,6 +2457,7 @@ f(3) 回來，印 3</code></pre>
 <script src="assets/inkdb.js"></script>
 <script src="assets/ink.js"></script>
 <script src="assets/viz.js"></script>
+<script src="assets/glide.js"></script>
 <script src="assets/nav.js"></script>
 <script src="assets/supabase-config.js"></script>
 <script src="assets/sync.js"></script>

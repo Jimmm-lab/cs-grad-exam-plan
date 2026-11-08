@@ -85,6 +85,34 @@ Dunlosky 等人在 2013 年整理了十種常見讀書方法的研究證據。�
 | 20 分鐘 | 對答案、按「答對／答錯」、寫錯因到錯題本 | 自我解釋 |
 | 睡前 15 分鐘 | 翻今天和 3 天前、7 天前的錯題 | 分散練習 |
 
+## 進度落後怎麼補 {#catchup}
+
+首頁「今日」會列出今天以前還沒打勾的讀書天，並且自動排好補的時段。背後的規則是這樣：
+
+**1. 不要把整個行程往後推。** 後面是考古題期和衝刺期，考前最有效的就是寫考古題；整個往後推，等於把最後的練習時間吃掉。**今天的進度照常做**，落後的另外找時間補。
+
+**2. 補的時段：** 每週第一個休息日拿來補（另一個休息日照常休息，不然很容易累到整週都落後）；選做日（他校考古題、模考）也先拿來補。一個時段補 2 天。
+
+**3. 補的方法是「先做題、錯了才讀」**，一天的量大約半天補完：
+
+1. 直接寫那天的單元小考（限時，每個單元 20–30 分鐘）。
+2. 寫那天行程指定的考古題（限時）。
+3. 對答案。**寫錯或寫不出來的題目**，才回去讀對應的觀念課和教材小節；全對的單元，教材不用從頭讀。
+4. 錯題照常寫進錯題本，補完一天就在首頁打勾。
+
+這樣做本身就是主動回想（第 1 個方法）：先試著寫，卡住的地方就是最需要讀的地方。
+
+**4. 時間真的不夠時，照這個順序取捨：**
+
+| 優先 | 補什麼 | 原因 |
+|---|---|---|
+| 1 | 弱科（離散、計結）的 ★★★ 主題 | 每年都考、配分高，弱科進步的空間也最大 |
+| 2 | OS／資結的 ★★★ 主題 | 每年都考 |
+| 3 | ★★ 主題的小考 | 先求會做，詳解之後在考古題期再補 |
+| 4 | ★ 主題、補充讀物、他校題 | 可以先跳過，考古題期遇到再回頭看 |
+
+**5. 落後超過一週**，表示原本的步調太緊，不是一兩天努力就補得回來：選做日全部拿來補、★ 主題先跳過，每天晚上多 1 個區塊（約 1.5 小時）只做 ★★★ 的小考和考古題，大約兩到三週會追上。**不要熬夜補**：睡眠不足隔天效率更差，也會讓前一天讀的東西記不牢。
+
 ## 看不懂時：用 AI 當家教 {#ai}
 
 每個單元開頭都有**觀念課**（第 0 節），用比喻和小例子從頭講起，之後才是公式整理和考古題詳解。答案都用程式驗算過。但讀到還是不懂的地方時，靜態的文字沒辦法回答你「那這裡為什麼要除以 2？」。這時候開 Gemini（或任何 AI 聊天工具）來問，效果通常比多讀幾份講義好，因為它可以針對你卡住的那一步解釋。
@@ -138,37 +166,41 @@ Dunlosky 等人在 2013 年整理了十種常見讀書方法的研究證據。�
 
 **用法建議**：先在手寫板上寫完整的過程，再打開答案逐行對照，然後按「答對了／答錯了」。不要先看答案再抄，那樣沒有練到回想。
 
-### 雲端同步（Supabase） {#sync}
+### 帳號與雲端同步 {#sync}
 
-登入後，手寫筆跡會自動同步到你自己的 Supabase 資料庫，手機、平板、電腦用同一組帳號登入就會看到同一份筆跡。沒網路時照樣寫，連上網路後會自動補傳。每一題以「最後修改的那一份」為準。
+**整個網站要登入才能用**（Google 帳號）。每個人的資料都存在自己的帳號底下，彼此看不到，也不會互相蓋掉：
 
-**目前狀態**：網站已經連到你的 Supabase 專案，用 **Google 帳號登入**。只有你的 Google 帳號能用：Supabase 關閉了新帳號註冊，別人就算按了登入也會被擋下來。每台裝置只要：
+- 首頁：每日行程打勾、休息日設定、考古題進度
+- 教材：小考的「答對／答錯」紀錄、每一題的手寫筆跡
 
-1. 打開教材任何一頁 → **目錄** → 最下面的「雲端同步」。
-2. 按「**使用 Google 登入**」，選你的 Google 帳號。登入完會回到原本看的那一題。每台裝置登入一次就會一直記住。
+手機、平板、電腦登入同一個帳號，就會看到同一份進度。沒網路時照樣寫，連上網路後會自動補傳；每一項以「最後修改的那一份」為準。首頁右上角的人像按鈕、教材目錄最下面，都可以看同步狀態和登出。
 
-就算有人在網頁原始碼看到 Supabase 的網址和 key，也沒辦法建立帳號，更讀不到你的筆跡（資料表設定成每個帳號只能讀寫自己的資料）。
+**同一台裝置換人用**：登出後換另一個帳號登入，會先清掉這台裝置上前一個人的資料（雲端那份還在，他再登入就會載回來），所以不會看到別人的進度。
+
+**誰能登入**：只有加進 Google Cloud「Test users」名單的 Gmail（最多 100 個）。要讓同學一起用，就把他的 Gmail 加進名單：Google Cloud Console → Google Auth Platform → **Audience** → Test users → **Add users**。
 
 <details markdown="1"><summary>當初的設定步驟（換專案或重建時才需要）</summary>
 
 **Supabase 專案**
 
 1. [supabase.com](https://supabase.com/) → **New project**。Region 選 Northeast Asia (Tokyo)；Security 保持 Enable Data API 勾選、Automatically expose new tables 不勾、Enable automatic RLS 勾選。
-2. **SQL Editor** → New query，貼上 [`supabase/schema.sql`](https://github.com/Jimmm-lab/cs-grad-exam-plan/blob/main/supabase/schema.sql) 整段，按 **Run**。
+2. **SQL Editor** → New query，貼上 [`supabase/schema.sql`](https://github.com/Jimmm-lab/cs-grad-exam-plan/blob/main/supabase/schema.sql) 整段，按 **Run**（建立 `ink_pads` 手寫、`user_state` 進度兩張表）。
 3. 把 Project URL（`https://xxxx.supabase.co`，不用 `/rest/v1/`）和 publishable key 填進 `notes/assets/supabase-config.js`。這兩個值本來就是公開的，資料靠第 2 步的權限保護。**service_role／secret key 絕對不要貼到任何地方。**
 
 **Google 登入**
 
 4. [Google Cloud Console](https://console.cloud.google.com/) 建一個專案 → **Google Auth Platform** → Get started：App name 隨意、User support email 選自己、Audience 選 **External**。
-5. **Audience** → Test users → **Add users**，加入自己的 Gmail（發布狀態保持 Testing，只有名單上的帳號能登入）。
+5. **Audience** → Test users → **Add users**，加入要使用的 Gmail（發布狀態保持 Testing，只有名單上的帳號能登入）。
 6. **Clients** → Create client → **Web application**：
    - Authorized JavaScript origins：`https://jimmm-lab.github.io`
    - Authorized redirect URIs：`https://專案代號.supabase.co/auth/v1/callback`（Supabase 的 Google 設定頁會顯示這個網址）
 7. 複製 **Client ID** 和 **Client secret**，貼到 Supabase 的 **Authentication** → Sign In / Providers → **Google**，打開開關、Save。Client secret 只貼在這裡，不要給任何人。
 8. Supabase **Authentication** → **URL Configuration**：Site URL 填 `https://jimmm-lab.github.io/cs-grad-exam-plan/`，Redirect URLs 加 `https://jimmm-lab.github.io/cs-grad-exam-plan/**`。
-9. 在網站用 Google 登入一次（第一次登入會建立帳號）。成功後到 **Authentication** → Sign In / Providers，關掉 **Allow new users to sign up**，之後就只有這個帳號能登入。
+9. Supabase **Authentication** → Sign In / Providers：**Allow new users to sign up 保持開著**（每個人第一次用 Google 登入時會自動建立帳號，誰能登入由第 5 步的名單決定）；**Email 關掉**（不然有人可以繞過 Google 直接註冊）。
 
 </details>
+
+教材內容本身是公開的（放在 GitHub 上）；登入是為了讓每個人的進度和筆跡分開保存。
 
 **注意**：Supabase 免費專案如果一個禮拜都沒有人使用會被暫停，回 Supabase 網站按 Restore 就會恢復，資料不會不見。每天讀書都會同步的話，通常不會遇到。
 

@@ -3,7 +3,9 @@
  *    網址的 #錨點決定顯示哪個單元，行程表和錯題清單的連結都照常能跳。
  *    沒有錨點時，回到上次看的單元。
  * 2. 手機上按右下角的「目錄」，目錄從頁首下方由上往下展開；打開時只有目錄能捲動，後面的頁面鎖住。
- * 3. 右下角「回到最上面」「到最下面」按鈕，已經在最上面／最下面時自動消失。
+ * 3. 右下角「回到最上面」「到最下面」按鈕，已經在最上面／最下面時收起來（下面的按鈕往下補位，不留空格），
+ *    按了會在半秒左右快速滑過去（glide.js）。
+ * 4. 目錄裡每個單元右邊有箭頭，可以展開這個單元的小節；現在看的單元自動展開。
  */
 (function () {
   "use strict";
@@ -11,7 +13,6 @@
   var body = document.body;
   var slug = body.getAttribute("data-slug") || "";
   var aside = document.querySelector("aside.toc");
-  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function save(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
@@ -20,18 +21,19 @@
   var fab = document.createElement("div");
   fab.className = "fab";
   fab.innerHTML =
-    '<button type="button" class="fab-toc" aria-label="打開目錄" aria-expanded="false">' + I("toc") + "</button>" +
+    // 「目錄」放最下面（最常按、離拇指最近，位置固定不動）；上、下兩個在它上面，收起來時往下補位
     '<button type="button" data-go="top" aria-label="回到最上面" title="回到最上面">' + I("top") + "</button>" +
-    '<button type="button" data-go="bottom" aria-label="到最下面" title="到最下面">' + I("bottom") + "</button>";
+    '<button type="button" data-go="bottom" aria-label="到最下面" title="到最下面">' + I("bottom") + "</button>" +
+    '<button type="button" class="fab-toc" aria-label="打開目錄" aria-expanded="false">' + I("toc") + "</button>";
   body.appendChild(fab);
   fab.addEventListener("click", function (e) {
     var b = e.target.closest("button");
     if (!b) return;
     if (b.classList.contains("fab-toc")) { setDrawer(!body.classList.contains("toc-open")); return; }
-    var y = b.dataset.go === "top" ? 0 : document.documentElement.scrollHeight - window.innerHeight;
-    // 距離很遠時直接跳過去，平滑捲動會捲很久
-    var far = Math.abs(y - window.scrollY) > window.innerHeight * 3;
-    window.scrollTo({ top: y, behavior: reduce || far ? "instant" : "smooth" });
+    if (!b.dataset.go) return;
+    var toTop = b.dataset.go === "top";
+    var glide = window.CGEP_GLIDE || function (y) { window.scrollTo(0, typeof y === "function" ? y() : y); };
+    glide(toTop ? 0 : function () { return document.documentElement.scrollHeight - window.innerHeight; });
   });
 
   // 手寫板打開時，按鈕如果剛好蓋在紙上，就先藏起來，免得筆寫到按鈕
@@ -70,6 +72,52 @@
   backdrop.addEventListener("click", function () { setDrawer(false); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") setDrawer(false); });
   var header = document.querySelector("header.top");
+
+  /* ---------- 目錄：每個單元底下的小節，按右邊的箭頭展開 ---------- */
+  var tocItems = [];
+  if (aside) {
+    Array.prototype.forEach.call(aside.querySelectorAll(".toc > ul > li"), function (li) {
+      var a = li.querySelector("a");
+      if (!a) return;
+      var id = (a.getAttribute("href") || "").slice(1);
+      try { id = decodeURIComponent(id); } catch (e) {}
+      var h = id ? document.getElementById(id) : null;
+      var sec = h && h.closest ? h.closest("section.unit") : null;
+      var subs = [];
+      if (sec) subs = sec.querySelectorAll("h3[id]");
+      else if (h && h.tagName === "H2") {
+        // 沒有分單元的頁面（學習方法）：收集這個 ## 底下、到下一個 ## 之前的 ### 小節
+        for (var n = h.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) if (n.tagName === "H3" && n.id) subs.push(n);
+      }
+      tocItems.push({ li: li, a: a, sec: sec });
+      if (!subs.length) return;
+      li.classList.add("has-sub");
+      var tg = document.createElement("button");
+      tg.type = "button";
+      tg.className = "toc-tg";
+      tg.setAttribute("aria-expanded", "false");
+      tg.setAttribute("aria-controls", "tsub-" + id);
+      tg.setAttribute("aria-label", "展開「" + a.textContent.trim() + "」的小節");
+      tg.innerHTML = I("chevron");
+      var wrap = document.createElement("div");
+      wrap.className = "toc-subw";
+      wrap.id = "tsub-" + id;
+      wrap.innerHTML = '<div class="toc-subi"><ul class="toc-sub">' + Array.prototype.map.call(subs, function (x) {
+        return '<li><a href="#' + esc(x.id) + '">' + esc(x.textContent.trim()) + "</a></li>";
+      }).join("") + "</ul></div>";
+      li.appendChild(tg);
+      li.appendChild(wrap);
+      tg.addEventListener("click", function () { setSub(li, !li.classList.contains("open")); });
+    });
+  }
+  function setSub(li, open) {
+    li.classList.toggle("open", open);
+    var tg = li.querySelector(".toc-tg");
+    if (tg) {
+      tg.setAttribute("aria-expanded", String(open));
+      tg.setAttribute("aria-label", (open ? "收起" : "展開") + "「" + li.querySelector("a").textContent.trim() + "」的小節");
+    }
+  }
   function setDrawer(open) {
     if (open && header) document.documentElement.style.setProperty("--hdr", Math.round(header.getBoundingClientRect().bottom) + "px");
     body.classList.toggle("toc-open", open);
@@ -171,7 +219,6 @@
 
   /* ---------- 一次只顯示一個單元 ---------- */
   var KEY = "cgep:unit:" + slug;
-  var tocLinks = aside ? Array.prototype.slice.call(aside.querySelectorAll(".toc a")) : [];
   var title = function (s) { var h = s.querySelector("h2"); return h ? h.textContent.trim() : ""; };
 
   // 每個單元最後加「上一單元／下一單元」
@@ -191,22 +238,12 @@
       secs.forEach(function (s) { s.hidden = s !== sec; });
       current = sec;
       save(KEY, sec.dataset.unit);
-      // 目錄：標出現在的單元，底下列出這個單元的小節
-      var old = aside && aside.querySelector(".toc-sub");
-      if (old) old.remove();
-      tocLinks.forEach(function (a) {
-        var on = a.getAttribute("href") === "#" + sec.dataset.unit;
-        a.classList.toggle("cur", on);
-        if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
-        if (on) {
-          var subs = sec.querySelectorAll("h3[id]");
-          if (subs.length) {
-            var ul = document.createElement("ul");
-            ul.className = "toc-sub";
-            ul.innerHTML = Array.prototype.map.call(subs, function (h) { return '<li><a href="#' + esc(h.id) + '">' + esc(h.textContent.trim()) + "</a></li>"; }).join("");
-            a.parentNode.appendChild(ul);
-          }
-        }
+      // 目錄：標出現在的單元，展開它的小節，其他單元收起來
+      tocItems.forEach(function (it) {
+        var on = it.sec === sec;
+        it.a.classList.toggle("cur", on);
+        if (on) it.a.setAttribute("aria-current", "true"); else it.a.removeAttribute("aria-current");
+        if (it.li.classList.contains("has-sub")) setSub(it.li, on);
       });
       setTimeout(fabSoon, 50);
     }

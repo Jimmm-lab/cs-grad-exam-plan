@@ -92,6 +92,14 @@ window.CGEP_INKDB = (function () {
         });
       }).then(function () { notify(keys, false); });
     },
+    // 換成別的帳號登入：把這台裝置上前一個人的筆跡全部清掉
+    clearAll: function () {
+      var keys = [];
+      return all("meta").then(function (m) {
+        keys = Object.keys(m);
+        return run(["pads", "meta"], "readwrite", function (t) { t.objectStore("pads").clear(); t.objectStore("meta").clear(); });
+      }).then(function () { if (keys.length) notify(keys, true); });
+    },
     // 雲端比較新：直接寫進來（value 是 null 表示雲端那邊已經清除）
     applyRemote: function (rows) {
       return run(["pads", "meta"], "readwrite", function (t) {

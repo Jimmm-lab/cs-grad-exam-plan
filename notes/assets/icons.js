@@ -28,7 +28,11 @@ window.CGEP_ICON = (function () {
     back: '<path d="M14.5 6l-6 6 6 6"/>',
     download: '<path d="M12 4v11"/><path d="M7.5 10.5L12 15l4.5-4.5"/><path d="M5 19.5h14"/>',
     upload: '<path d="M12 15.5V4.5"/><path d="M7.5 9L12 4.5 16.5 9"/><path d="M5 19.5h14"/>',
-    login: '<path d="M13.5 4.5h4a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-4"/><path d="M4.5 12h10"/><path d="M11 8.5l3.5 3.5-3.5 3.5"/>'
+    login: '<path d="M13.5 4.5h4a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-4"/><path d="M4.5 12h10"/><path d="M11 8.5l3.5 3.5-3.5 3.5"/>',
+    logout: '<path d="M10.5 4.5h-4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h4"/><path d="M9.5 12h10"/><path d="M16 8.5l3.5 3.5-3.5 3.5"/>',
+    user: '<circle cx="12" cy="8.5" r="3.6"/><path d="M5 19.5c.9-3.4 3.6-5.2 7-5.2s6.1 1.8 7 5.2"/>',
+    chevron: '<path d="M6.5 9.5l5.5 5.5 5.5-5.5"/>',
+    sync: '<path d="M19.5 12a7.5 7.5 0 0 1-13 5.1"/><path d="M4.5 12a7.5 7.5 0 0 1 13-5.1"/><path d="M17.5 3.5v3.4h-3.4"/><path d="M6.5 20.5v-3.4h3.4"/>'
   };
   return function (name, cls) {
     return '<svg class="ico' + (cls ? " " + cls : "") + '" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (P[name] || "") + "</svg>";
