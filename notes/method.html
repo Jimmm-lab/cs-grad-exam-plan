@@ -569,6 +569,7 @@ window.MathJax = {
 <p>手機、平板、電腦登入同一個帳號，就會看到同一份進度。沒網路時照樣寫，連上網路後會自動補傳；每一項以「最後修改的那一份」為準。首頁右上角的人像按鈕、教材目錄最下面，都可以看同步狀態和登出。</p>
 <p><strong>同一台裝置換人用</strong>：登出後換另一個帳號登入，會先清掉這台裝置上前一個人的資料（雲端那份還在，他再登入就會載回來），所以不會看到別人的進度。</p>
 <p><strong>誰能登入</strong>：任何 Google 帳號都可以，第一次登入會自動建立自己的帳號。同學想一起用，把網址傳給他就好。</p>
+<p><strong>刪除帳號</strong>：帳號選單（首頁右上角、教材目錄最下面）的「刪除帳號」，會把自己的帳號、進度和所有筆跡從雲端永久刪除。網站收集哪些資料寫在<a href="../privacy.html">隱私權政策</a>。</p>
 <details>
 <summary>當初的設定步驟（換專案或重建時才需要）</summary>
 <p><strong>Supabase 專案</strong></p>
@@ -580,7 +581,7 @@ window.MathJax = {
 <p><strong>Google 登入</strong></p>
 <ol start="4">
 <li><a href="https://console.cloud.google.com/">Google Cloud Console</a> 建一個專案 → <strong>Google Auth Platform</strong> → Get started：App name 隨意、User support email 選自己、Audience 選 <strong>External</strong>。</li>
-<li><strong>Audience</strong> → Publishing status 按 <strong>Publish app</strong>，改成 In production，任何 Google 帳號都能登入（只用到 email、基本資料，不需要 Google 審核）。如果只想讓特定的人用，就保持 Testing，把他們的 Gmail 加進 Test users（最多 100 個）。</li>
+<li><strong>Branding</strong>：Application home page 填 <code>https://jimmm-lab.github.io/cs-grad-exam-plan/</code>、Application privacy policy link 填 <code>https://jimmm-lab.github.io/cs-grad-exam-plan/privacy.html</code>，Authorized domains 加 <code>jimmm-lab.github.io</code> 和 <code>專案代號.supabase.co</code>，<strong>不要上傳 logo</strong>（上傳 logo 就要送 Google 審核）。接著 <strong>Audience</strong> → Publishing status 按 <strong>Publish app</strong>，改成 In production，任何 Google 帳號都能登入（只用到 email、基本資料，不需要 Google 審核）。如果只想讓特定的人用，就保持 Testing，把他們的 Gmail 加進 Test users（最多 100 個）。</li>
 <li><strong>Clients</strong> → Create client → <strong>Web application</strong>：
    - Authorized JavaScript origins：<code>https://jimmm-lab.github.io</code>
    - Authorized redirect URIs：<code>https://專案代號.supabase.co/auth/v1/callback</code>（Supabase 的 Google 設定頁會顯示這個網址）</li>

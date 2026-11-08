@@ -33,3 +33,10 @@ html.gate .gate-screen { display: flex; position: fixed; inset: 0; z-index: 1000
 .acct-pop .sync-msg { margin: 10px 0 0; font: 400 12.5px/1.6 var(--font-body); color: var(--muted); }
 .acct-pop .sync-msg:empty { display: none; }
 @media (prefers-reduced-motion: reduce) { .acct-pop, .acct.open .acct-pop { transition: none; } }
+
+/* 登入畫面、帳號選單下方：隱私權政策、刪除帳號 */
+.gate-card .gate-legal { margin: 16px 0 0; text-align: center; font-size: 12.5px; }
+.gate-card .gate-legal a { color: var(--muted); }
+.acct-legal { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--line); font: 400 12.5px/1.5 var(--font-body); }
+.acct-legal a { color: var(--muted); }
+.acct-legal .acct-del { flex: none; min-height: 0; padding: 4px 0; border: 0; background: none; color: var(--accent); font: 500 12.5px/1.5 var(--font-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }

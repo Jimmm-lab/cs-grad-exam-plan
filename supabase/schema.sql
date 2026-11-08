@@ -81,3 +81,26 @@ revoke all on public.user_state from anon;
 drop trigger if exists user_state_touch on public.user_state;
 create trigger user_state_touch before update on public.user_state
   for each row execute function public.ink_pads_touch();
+
+-- ============================================================
+-- 使用者自己刪除帳號：刪掉 auth.users 裡自己那一筆，ink_pads、user_state 會跟著刪除（on delete cascade）
+-- 網頁上的「刪除帳號」按鈕呼叫這個函式。security definer：用建立者的權限執行，但只能刪 auth.uid() 自己。
+-- ============================================================
+create or replace function public.delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'not signed in';
+  end if;
+  delete from public.ink_pads where user_id = auth.uid();
+  delete from public.user_state where user_id = auth.uid();
+  delete from auth.users where id = auth.uid();
+end
+$$;
+
+revoke all on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;

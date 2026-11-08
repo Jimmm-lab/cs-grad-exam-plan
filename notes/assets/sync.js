@@ -11,7 +11,8 @@
  * 登入：Google 帳號（OAuth，PKCE 流程：Google 登入完回到原本的頁面，網址帶 ?code=，supabase-js 自己換成登入狀態
  *       並把 code 從網址拿掉）。
  * 設定：supabase-config.js 填 url 和 key（publishable key，本來就是公開的，資料靠資料表的 Row Level Security 保護）。
- * 資料表：supabase/schema.sql（ink_pads：手寫；user_state：其他進度）。
+ * 資料表：supabase/schema.sql（ink_pads：手寫；user_state：其他進度；delete_my_account()：使用者自己刪除帳號）。
+ * 隱私權政策：網站根目錄的 privacy.html（不用登入就能看）。
  */
 (function () {
   "use strict";
@@ -23,6 +24,10 @@
   var I = window.CGEP_ICON || function () { return ""; };
   var root = document.documentElement;
   var fromOAuth = /[?&]code=/.test(location.search);
+  // privacy.html 在網站根目錄；用這支程式自己的網址推回去，首頁和教材頁都對
+  var me = document.currentScript && document.currentScript.src;
+  var PRIVACY = me ? new URL("../../privacy.html", me).href : "privacy.html";
+  var deleting = false;
   var sb = null, user = null, busy = false, again = false, timer = 0, lastOk = 0, running = null, chain = Promise.resolve();
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -86,7 +91,7 @@
       h += '<button type="button" class="gate-btn" data-act="google">' + I("login") + "<span>使用 Google 登入</span></button>" +
         '<p class="gate-note">任何 Google 帳號都能登入，第一次登入會自動建立你的帳號。</p>';
     }
-    gate.innerHTML = h + msg("gate-msg") + "</div>";
+    gate.innerHTML = h + msg("gate-msg") + '<p class="gate-legal"><a href="' + PRIVACY + '">隱私權政策 Privacy Policy</a></p></div>';
   }
   function renderBox() {
     if (!box) return;
@@ -95,7 +100,7 @@
       h += "<p>已登入 <b>" + esc(user.email || "") + "</b></p>" +
         '<div class="inkbak-btns"><button type="button" data-act="sync">' + I("sync") + '<span>立即同步</span></button><button type="button" data-act="out">' + I("logout") + "<span>登出</span></button></div>";
     }
-    box.innerHTML = h + msg("inkbak-msg");
+    box.innerHTML = h + msg("inkbak-msg") + (user ? legal() : "");
   }
   function renderAcct() {
     if (!acct) return;
@@ -103,7 +108,10 @@
     var open = acct.classList.contains("open");
     acct.innerHTML = '<button type="button" class="acct-btn" data-act="menu" aria-haspopup="true" aria-expanded="' + open + '" aria-label="帳號">' + I("user") + "</button>" +
       '<div class="acct-pop"><p class="who">已登入</p><p class="email">' + esc(user.email || "") + "</p>" +
-      '<div class="row"><button type="button" data-act="sync">' + I("sync") + '<span>立即同步</span></button><button type="button" data-act="out">' + I("logout") + "<span>登出</span></button></div>" + msg() + "</div>";
+      '<div class="row"><button type="button" data-act="sync">' + I("sync") + '<span>立即同步</span></button><button type="button" data-act="out">' + I("logout") + "<span>登出</span></button></div>" + msg() + legal() + "</div>";
+  }
+  function legal() {
+    return '<p class="acct-legal"><a href="' + PRIVACY + '">隱私權政策</a><button type="button" class="acct-del" data-act="delete">刪除帳號</button></p>';
   }
   function renderAll() { renderGate(); renderBox(); renderAcct(); }
 
@@ -114,6 +122,7 @@
     if (act === "google" && sb) google();
     if (act === "sync") syncNow();
     if (act === "out" && sb) signOut();
+    if (act === "delete" && sb && user) deleteAccount();
     if (act === "menu") { var on = !acct.classList.contains("open"); acct.classList.toggle("open", on); b.setAttribute("aria-expanded", String(on)); }
   }
   [gate, box, acct].forEach(function (el) { if (el) el.addEventListener("click", onClick); });
@@ -163,6 +172,36 @@
     syncNow().then(function (ok) {
       if (!ok && !window.confirm("有些資料還沒同步到雲端（可能沒網路）。現在登出的話，之後換別的帳號在這台裝置登入時，這些資料會被清掉。確定要登出？")) { say(""); return; }
       return sb.auth.signOut({ scope: "local" }).then(function () { say("已登出。"); });
+    });
+  }
+
+  // 刪除帳號：雲端的帳號、進度、筆跡全部刪掉（delete_my_account() 刪 auth.users，資料表跟著 cascade 刪除），
+  // 再清掉這台裝置上的資料、登出
+  function deleteAccount() {
+    var email = user.email || "這個帳號";
+    if (!window.confirm("刪除帳號 " + email + "？\n\n雲端上的讀書進度、小考紀錄和所有手寫筆跡都會永久刪除，這台裝置上的資料也會清掉，無法復原。")) return;
+    deleting = true; clearTimeout(timer);
+    var uid = user.id;
+    say("刪除中…");
+    sb.rpc("delete_my_account").then(function (r) {
+      if (!r.error) return "";
+      // 刪除帳號的函式還沒建立（或沒權限）：至少把自己的資料刪掉（資料表權限允許刪自己的資料）
+      return Promise.all([
+        sb.from("ink_pads").delete().eq("user_id", uid),
+        sb.from("user_state").delete().eq("user_id", uid)
+      ]).then(function (rs) {
+        var bad = rs.filter(function (x) { return x.error; })[0];
+        if (bad) throw bad.error;
+        return "（雲端的進度和筆跡已刪除；帳號紀錄要請網站管理者在 Supabase 刪除）";
+      });
+    }).then(function (note) {
+      return wipeLocal().then(function () {
+        lsDel(OWNER_KEY);
+        return sb.auth.signOut({ scope: "local" }).catch(function () {});
+      }).then(function () { deleting = false; say("帳號和資料已刪除。" + note); });
+    }).catch(function (err) {
+      deleting = false;
+      say("刪除失敗：" + errText(err).replace(/^失敗：/, "") + "（什麼都還沒刪，可以再試一次）");
     });
   }
 
@@ -297,7 +336,7 @@
 
   // 回傳 true：全部同步好了；false：有失敗（資料還在這台裝置，等一下會再試）
   function syncNow() {
-    if (!sb || !user) return Promise.resolve(false);
+    if (!sb || !user || deleting) return Promise.resolve(false);
     if (busy) { again = true; return running; }
     busy = true; again = false;
     say("同步中…");

@@ -179,6 +179,8 @@ Dunlosky 等人在 2013 年整理了十種常見讀書方法的研究證據。�
 
 **誰能登入**：任何 Google 帳號都可以，第一次登入會自動建立自己的帳號。同學想一起用，把網址傳給他就好。
 
+**刪除帳號**：帳號選單（首頁右上角、教材目錄最下面）的「刪除帳號」，會把自己的帳號、進度和所有筆跡從雲端永久刪除。網站收集哪些資料寫在[隱私權政策](../privacy.html)。
+
 <details markdown="1"><summary>當初的設定步驟（換專案或重建時才需要）</summary>
 
 **Supabase 專案**
@@ -190,7 +192,7 @@ Dunlosky 等人在 2013 年整理了十種常見讀書方法的研究證據。�
 **Google 登入**
 
 4. [Google Cloud Console](https://console.cloud.google.com/) 建一個專案 → **Google Auth Platform** → Get started：App name 隨意、User support email 選自己、Audience 選 **External**。
-5. **Audience** → Publishing status 按 **Publish app**，改成 In production，任何 Google 帳號都能登入（只用到 email、基本資料，不需要 Google 審核）。如果只想讓特定的人用，就保持 Testing，把他們的 Gmail 加進 Test users（最多 100 個）。
+5. **Branding**：Application home page 填 `https://jimmm-lab.github.io/cs-grad-exam-plan/`、Application privacy policy link 填 `https://jimmm-lab.github.io/cs-grad-exam-plan/privacy.html`，Authorized domains 加 `jimmm-lab.github.io` 和 `專案代號.supabase.co`，**不要上傳 logo**（上傳 logo 就要送 Google 審核）。接著 **Audience** → Publishing status 按 **Publish app**，改成 In production，任何 Google 帳號都能登入（只用到 email、基本資料，不需要 Google 審核）。如果只想讓特定的人用，就保持 Testing，把他們的 Gmail 加進 Test users（最多 100 個）。
 6. **Clients** → Create client → **Web application**：
    - Authorized JavaScript origins：`https://jimmm-lab.github.io`
    - Authorized redirect URIs：`https://專案代號.supabase.co/auth/v1/callback`（Supabase 的 Google 設定頁會顯示這個網址）
