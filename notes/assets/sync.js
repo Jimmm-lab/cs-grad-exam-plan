@@ -18,10 +18,12 @@
   var sb = null, user = null, busy = false, again = false, timer = 0, lastOk = 0;
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  // 從 Supabase 複製網址時常常會帶到 /rest/v1/，只留 https://xxxx.supabase.co
+  function baseUrl(u) { return String(u || "").trim().replace(/\/(rest|auth|storage|realtime)\/v1.*$/i, "").replace(/\/+$/, ""); }
   function cfg() {
     var c = window.CGEP_SUPABASE || {};
-    if (c.url && c.key) return { url: c.url, key: c.key, fixed: true };
-    try { var v = JSON.parse(localStorage.getItem(CFG_KEY) || "null"); if (v && v.url && v.key) return v; } catch (e) {}
+    if (c.url && c.key) return { url: baseUrl(c.url), key: String(c.key).trim(), fixed: true };
+    try { var v = JSON.parse(localStorage.getItem(CFG_KEY) || "null"); if (v && v.url && v.key) return { url: baseUrl(v.url), key: v.key }; } catch (e) {}
     return null;
   }
 
@@ -68,7 +70,7 @@
     e.preventDefault();
     var f = e.target, kind = f.dataset.f;
     if (kind === "cfg") {
-      var url = f.url.value.trim().replace(/\/+$/, ""), key = f.key.value.trim();
+      var url = baseUrl(f.url.value), key = f.key.value.trim();
       if (!/^https:\/\/[^/]+$/.test(url)) { say("Project URL 的格式應該像 https://xxxx.supabase.co"); return; }
       try { localStorage.setItem(CFG_KEY, JSON.stringify({ url: url, key: key })); } catch (err) {}
       say(""); start();

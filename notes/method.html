@@ -495,15 +495,20 @@ window.MathJax = {
 <p><strong>用法建議</strong>：先在手寫板上寫完整的過程，再打開答案逐行對照，然後按「答對了／答錯了」。不要先看答案再抄，那樣沒有練到回想。</p>
 <h3 id="sync">雲端同步（Supabase）</h3>
 <p>登入後，手寫筆跡會自動同步到你自己的 Supabase 資料庫，手機、平板、電腦用同一組帳號登入就會看到同一份筆跡。沒網路時照樣寫，連上網路後會自動補傳。每一題以「最後修改的那一份」為準。</p>
-<p><strong>第一次設定</strong>（約 10 分鐘，只要做一次）：</p>
+<p><strong>目前狀態</strong>：網站已經連到你的 Supabase 專案（資料表、權限、關閉確認信都設定好了），每台裝置只要：</p>
 <ol>
-<li>到 <a href="https://supabase.com/">supabase.com</a> 登入（可以用 GitHub 帳號），按 <strong>New project</strong>。名字隨意，區域選離台灣近的（例如 Tokyo 或 Singapore），資料庫密碼自己記下來。免費方案就夠用。</li>
-<li>專案建好後，左邊點 <strong>SQL Editor</strong> → New query，把 repo 裡的 <a href="https://github.com/Jimmm-lab/cs-grad-exam-plan/blob/main/supabase/schema.sql"><code>supabase/schema.sql</code></a> 整段貼上，按 <strong>Run</strong>。這一步建立存筆跡的資料表，並設定「每個人只能讀寫自己的資料」。</li>
-<li>左邊點 <strong>Authentication</strong> → Sign In / Providers → <strong>Email</strong>，把 <strong>Confirm email</strong> 關掉（自己用不需要確認信，而且免費方案寄信的額度很少）。如果想保留確認信，就到 Authentication → URL Configuration，把 Site URL 改成 <code>https://jimmm-lab.github.io/cs-grad-exam-plan/</code>。</li>
-<li>到專案首頁的 <strong>Connect</strong>，或 Project Settings 裡的 <strong>Data API／API Keys</strong>，複製 <strong>Project URL</strong> 和 <strong>publishable key</strong>（沒有的話用 legacy 的 <strong>anon public</strong> key）。</li>
-<li>打開教材任何一頁 → <strong>目錄</strong> → 最下面的「雲端同步」，貼上這兩個值，按「儲存設定」。第一次按「<strong>註冊</strong>」，之後每台裝置都用同一組 Email、密碼「登入」。</li>
+<li>打開教材任何一頁 → <strong>目錄</strong> → 最下面的「雲端同步」。</li>
+<li>第一次按「<strong>註冊</strong>」（Email + 至少 6 個字元的密碼），之後每台裝置都用同一組 Email、密碼按「<strong>登入</strong>」。</li>
 </ol>
-<p>也可以把 Project URL 和 publishable key 傳給我，我寫進網站的 <code>notes/assets/supabase-config.js</code>，以後每台裝置打開就能直接登入，不用再貼。這兩個值本來就是公開的（網頁原始碼看得到），資料靠第 2 步的權限設定保護。<strong>service_role／secret key 絕對不要貼到任何地方。</strong></p>
+<details>
+<summary>當初的專案設定步驟（換專案或重建時才需要）</summary>
+<ol>
+<li><a href="https://supabase.com/">supabase.com</a> → <strong>New project</strong>。Region 選 Northeast Asia (Tokyo)；Security 保持 Enable Data API 勾選、Automatically expose new tables 不勾、Enable automatic RLS 勾選。</li>
+<li><strong>SQL Editor</strong> → New query，貼上 <a href="https://github.com/Jimmm-lab/cs-grad-exam-plan/blob/main/supabase/schema.sql"><code>supabase/schema.sql</code></a> 整段，按 <strong>Run</strong>。</li>
+<li><strong>Authentication</strong> → Sign In / Providers → <strong>Email</strong>，關掉 <strong>Confirm email</strong>。</li>
+<li>把 Project URL（<code>https://xxxx.supabase.co</code>，不用 <code>/rest/v1/</code>）和 publishable key 填進 <code>notes/assets/supabase-config.js</code>。這兩個值本來就是公開的，資料靠第 2 步的權限保護。<strong>service_role／secret key 絕對不要貼到任何地方。</strong></li>
+</ol>
+</details>
 <p><strong>注意</strong>：Supabase 免費專案如果一個禮拜都沒有人使用會被暫停，回 Supabase 網站按 Restore 就會恢復，資料不會不見。每天讀書都會同步的話，通常不會遇到。</p>
 <h3 id="_3">手動模擬的題目有動畫</h3>
 <p>資料結構、計結、OS 很多題目要你「一步一步模擬」。教材裡標著 <strong>動畫</strong> 的方塊，每一步都會說明在做什麼，可以按「下一步」慢慢看，也可以拉下面的滑桿跳到某一步。<strong>數字都可以改</strong>，把考古題或他校題目的數字填進去，就能檢查自己手算的每一步。</p>

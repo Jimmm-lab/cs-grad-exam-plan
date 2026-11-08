@@ -6,4 +6,7 @@
  * 這兩個值本來就是公開的（任何人打開網頁原始碼都看得到），資料靠資料表的 Row Level Security
  * 保護：每個人只能讀寫自己的筆跡。千萬不要填 service_role 或 secret key。
  */
-window.CGEP_SUPABASE = { url: "", key: "" };
+window.CGEP_SUPABASE = {
+  url: "https://tvinjtrlwzxxqhivqqyl.supabase.co",
+  key: "sb_publishable_dolqojM0S9kHuCzzOGJTeQ_UX63g3MW"
+};
