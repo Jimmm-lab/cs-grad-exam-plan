@@ -142,21 +142,31 @@ Dunlosky 等人在 2013 年整理了十種常見讀書方法的研究證據。�
 
 登入後，手寫筆跡會自動同步到你自己的 Supabase 資料庫，手機、平板、電腦用同一組帳號登入就會看到同一份筆跡。沒網路時照樣寫，連上網路後會自動補傳。每一題以「最後修改的那一份」為準。
 
-**目前狀態**：網站已經連到你的 Supabase 專案。**只有一組帳號**，在 Supabase 後台建立，網站上不開放註冊，知道帳號密碼的人才能登入。每台裝置只要：
+**目前狀態**：網站已經連到你的 Supabase 專案，用 **Google 帳號登入**。只有你的 Google 帳號能用：Supabase 關閉了新帳號註冊，別人就算按了登入也會被擋下來。每台裝置只要：
 
 1. 打開教材任何一頁 → **目錄** → 最下面的「雲端同步」。
-2. 輸入那組 Email、密碼，按「**登入**」。每台裝置登入一次就會一直記住，不用每次輸入。
+2. 按「**使用 Google 登入**」，選你的 Google 帳號。登入完會回到原本看的那一題。每台裝置登入一次就會一直記住。
 
-就算有人在網頁原始碼看到 Supabase 的網址和 key，也沒辦法註冊，更讀不到你的筆跡（資料表設定成每個帳號只能讀寫自己的資料）。
+就算有人在網頁原始碼看到 Supabase 的網址和 key，也沒辦法建立帳號，更讀不到你的筆跡（資料表設定成每個帳號只能讀寫自己的資料）。
 
-<details markdown="1"><summary>當初的專案設定步驟（換專案或重建時才需要）</summary>
+<details markdown="1"><summary>當初的設定步驟（換專案或重建時才需要）</summary>
+
+**Supabase 專案**
 
 1. [supabase.com](https://supabase.com/) → **New project**。Region 選 Northeast Asia (Tokyo)；Security 保持 Enable Data API 勾選、Automatically expose new tables 不勾、Enable automatic RLS 勾選。
 2. **SQL Editor** → New query，貼上 [`supabase/schema.sql`](https://github.com/Jimmm-lab/cs-grad-exam-plan/blob/main/supabase/schema.sql) 整段，按 **Run**。
-3. **Authentication** → Sign In / Providers → **Email**，關掉 **Confirm email**。
-4. **Authentication** → **Users** → **Add user** → Create new user，填 Email 和密碼，勾 **Auto Confirm User**。
-5. **Authentication** → Sign In / Providers，關掉最上面的 **Allow new users to sign up**（之後就只剩後台建立的帳號能登入）。
-6. 把 Project URL（`https://xxxx.supabase.co`，不用 `/rest/v1/`）和 publishable key 填進 `notes/assets/supabase-config.js`。這兩個值本來就是公開的，資料靠第 2 步的權限保護。**service_role／secret key 絕對不要貼到任何地方。**
+3. 把 Project URL（`https://xxxx.supabase.co`，不用 `/rest/v1/`）和 publishable key 填進 `notes/assets/supabase-config.js`。這兩個值本來就是公開的，資料靠第 2 步的權限保護。**service_role／secret key 絕對不要貼到任何地方。**
+
+**Google 登入**
+
+4. [Google Cloud Console](https://console.cloud.google.com/) 建一個專案 → **Google Auth Platform** → Get started：App name 隨意、User support email 選自己、Audience 選 **External**。
+5. **Audience** → Test users → **Add users**，加入自己的 Gmail（發布狀態保持 Testing，只有名單上的帳號能登入）。
+6. **Clients** → Create client → **Web application**：
+   - Authorized JavaScript origins：`https://jimmm-lab.github.io`
+   - Authorized redirect URIs：`https://專案代號.supabase.co/auth/v1/callback`（Supabase 的 Google 設定頁會顯示這個網址）
+7. 複製 **Client ID** 和 **Client secret**，貼到 Supabase 的 **Authentication** → Sign In / Providers → **Google**，打開開關、Save。Client secret 只貼在這裡，不要給任何人。
+8. Supabase **Authentication** → **URL Configuration**：Site URL 填 `https://jimmm-lab.github.io/cs-grad-exam-plan/`，Redirect URLs 加 `https://jimmm-lab.github.io/cs-grad-exam-plan/**`。
+9. 在網站用 Google 登入一次（第一次登入會建立帳號）。成功後到 **Authentication** → Sign In / Providers，關掉 **Allow new users to sign up**，之後就只有這個帳號能登入。
 
 </details>
 

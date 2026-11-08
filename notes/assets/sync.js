@@ -3,6 +3,7 @@
  * 設定：notes/assets/supabase-config.js 填 url 和 key（anon／publishable key，本來就是公開的，
  *       資料靠資料表的 Row Level Security 保護）；沒填的話可以在目錄最下面的「雲端同步」貼上。
  * 資料表：supabase/schema.sql。
+ * 登入：Google 帳號（OAuth，PKCE 流程：Google 登入完回到原本的頁面，網址帶 ?code=，supabase-js 自己換成登入狀態並把 code 從網址拿掉）。
  * 同步方式：每一題比較「最後修改時間」，比較新的那邊蓋掉另一邊；清除的題目也會同步。
  *   開頁面、登入、回到這個分頁、手寫存檔後幾秒、按「立即同步」時各同步一次。
  */
@@ -15,6 +16,7 @@
   var LIB = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js";
   var CFG_KEY = "cgep:sb:cfg";
   var I = window.CGEP_ICON || function () { return ""; };
+  var RETURN_KEY = "cgep:sb:return";
   var sb = null, user = null, busy = false, again = false, timer = 0, lastOk = 0;
 
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -36,7 +38,7 @@
   var box = document.createElement("div");
   box.className = "inkbak sync";
   side.appendChild(box);
-  var msgText = "";
+  var msgText = takeUrlError();
   function say(t) { msgText = t; var m = box.querySelector(".sync-msg"); if (m) m.textContent = t; }
   function hhmm(ts) { var d = new Date(ts); return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0"); }
 
@@ -52,11 +54,8 @@
     } else if (!sb) {
       h += "<p>連線中…</p>";
     } else if (!user) {
-      h += "<p>登入後，手寫筆跡會自動同步到雲端，手機和電腦都能看到。帳號在 Supabase 後台建立，這裡不開放註冊。</p>" +
-        '<form class="sync-form" data-f="login">' +
-        '<input name="email" type="email" placeholder="Email" autocomplete="username" required>' +
-        '<input name="pw" type="password" placeholder="密碼" autocomplete="current-password" required>' +
-        '<div class="inkbak-btns"><button type="submit" data-act="in">登入</button></div></form>' +
+      h += "<p>用 Google 帳號登入後，手寫筆跡會自動同步到雲端，手機和電腦都能看到。</p>" +
+        '<div class="inkbak-btns"><button type="button" data-act="google">' + I("login") + "<span>使用 Google 登入</span></button></div>" +
         (c.fixed ? "" : '<p><button type="button" class="linkish" data-act="forget">清除 Supabase 設定</button></p>');
     } else {
       h += "<p>已登入 <b>" + esc(user.email || "") + "</b></p>" +
@@ -76,25 +75,47 @@
       say(""); start();
       return;
     }
-    if (kind === "login" && sb) {
-      say("登入中…");
-      sb.auth.signInWithPassword({ email: f.email.value.trim(), password: f.pw.value }).then(function (r) {
-        if (r.error) say(errText(r.error));
-      });
-    }
   });
   box.addEventListener("click", function (e) {
     var b = e.target.closest("button[data-act]");
     if (!b || b.type === "submit") return;
+    if (b.dataset.act === "google" && sb) google();
     if (b.dataset.act === "sync") syncNow();
     if (b.dataset.act === "out" && sb) sb.auth.signOut().then(function () { say("已登出。這台裝置上的筆跡還在。"); });
     if (b.dataset.act === "forget") { try { localStorage.removeItem(CFG_KEY); } catch (err) {} sb = null; user = null; say(""); render(); }
   });
+  // 前往 Google 登入。登入完會回到這一頁（不帶 #），所以先記住現在看到哪一題，回來再跳回去
+  function google() {
+    try { sessionStorage.setItem(RETURN_KEY, location.hash); } catch (e) {}
+    say("前往 Google 登入…");
+    sb.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: location.origin + location.pathname, queryParams: { prompt: "select_account" } }
+    }).then(function (r) { if (r && r.error) say(errText(r.error)); });
+  }
+  function goBack() {
+    var h = null;
+    try { h = sessionStorage.getItem(RETURN_KEY); sessionStorage.removeItem(RETURN_KEY); } catch (e) {}
+    if (h && h !== location.hash) location.hash = h;
+  }
+  // Google 或 Supabase 登入失敗時，錯誤會放在網址（?error=… 或 #error=…）：讀出來顯示，再從網址拿掉
+  function takeUrlError() {
+    var q = new URLSearchParams(location.search), h = new URLSearchParams(location.hash.replace(/^#/, ""));
+    var desc = q.get("error_description") || h.get("error_description") || q.get("error") || h.get("error");
+    if (!desc) return "";
+    var code = q.get("error_code") || h.get("error_code") || q.get("error") || h.get("error") || "";
+    ["error", "error_code", "error_description"].forEach(function (k) { q.delete(k); });
+    var qs = q.toString(), hash = h.get("error") || h.get("error_description") ? "" : location.hash;
+    try { history.replaceState(history.state, "", location.pathname + (qs ? "?" + qs : "") + hash); } catch (e) {}
+    setTimeout(goBack, 0);
+    return errText({ message: desc, code: code });
+  }
   function errText(err) {
-    var m = (err && err.message) || String(err);
-    if (/Invalid login credentials/i.test(m)) return "Email 或密碼不對。";
-    if (/Email not confirmed/i.test(m)) return "還沒點信箱裡的確認信。點完再登入。";
-    if (/Password should be/i.test(m)) return "密碼至少要 6 個字元。";
+    var m = (err && err.message) || String(err), code = (err && err.code) || "";
+    if (/signup_disabled|Signups not allowed/i.test(code + " " + m)) return "這個 Google 帳號不能登入：網站只讓已經登入過的那個帳號使用。";
+    if (/access_denied/i.test(code) || /access.denied|cancel/i.test(m)) return "Google 登入取消了。";
+    if (/provider is not enabled|Unsupported provider/i.test(m)) return "Supabase 還沒開啟 Google 登入：Authentication → Sign In / Providers → Google。";
+    if (/code verifier|flow state|invalid.*grant|bad_code_verifier/i.test(code + " " + m)) return "登入逾時或在別的分頁完成了，請再按一次「使用 Google 登入」。";
     if (/rate limit|too many/i.test(m)) return "嘗試太多次了，等幾分鐘再試。";
     if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return "連不到 Supabase：檢查網路，或 Project URL 有沒有貼錯。";
     if (/Invalid API key|No API key/i.test(m)) return "API key 不對，請重新確認 publishable／anon key。";
@@ -180,12 +201,13 @@
     if (!c) return;
     loadLib().then(function () {
       sb = window.supabase.createClient(c.url, c.key, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: "cgep-sb-auth" }
+        auth: { flowType: "pkce", persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: "cgep-sb-auth" }
       });
       sb.auth.onAuthStateChange(function (ev, session) {
         var was = user && user.id;
         user = session ? session.user : null;
         render();
+        if (ev === "SIGNED_IN" && user && user.id !== was) { say(""); goBack(); }
         if (user && user.id !== was) syncNow();
       });
       return sb.auth.getSession().then(function (r) {
