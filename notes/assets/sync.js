@@ -150,47 +150,48 @@
       return '<li class="' + st + '"><span class="gs-dot">' + (st === "done" ? I("check") : st === "active" ? '<span class="spin"></span>' : "") + "</span><span>" + n + "</span></li>";
     }).join("") + "</ol>";
   }
-  // 網站重點（登入前看的介紹，一行一個）
+  // 網站重點（登入前看的介紹，一行一個，盡量短）
   var FEATS = [
-    ["calendar", "f1", "每日行程", "依開始日期排好每天讀什麼，落後幫你補"],
-    ["book", "f2", "考古題教材", "111–115 年逐題詳解，附觀念課和動畫"],
-    ["pen", "f3", "手寫作答", "每一題都能用觸控筆直接寫計算過程"],
-    ["cloud", "f4", "雲端同步", "進度和筆跡跟著帳號走，換裝置接著讀"]
+    ["calendar", "依開始日期排好每天的進度"],
+    ["book", "111–115 年考古題逐題詳解"],
+    ["pen", "每一題都能用觸控筆作答"]
   ];
   function feats() {
-    return '<ul class="gate-feats">' + FEATS.map(function (f) {
-      return '<li><span class="gf-ico ' + f[1] + '">' + I(f[0]) + "</span><span><b>" + f[2] + "</b><span>" + f[3] + "</span></span></li>";
-    }).join("") + "</ul>";
+    return '<ul class="gate-feats">' + FEATS.map(function (f) { return "<li>" + I(f[0]) + "<span>" + f[1] + "</span></li>"; }).join("") + "</ul>";
   }
+  // Google 官方的四色「G」（照 Google 的登入按鈕品牌規範，不能自己畫、不能改成單色）
+  var GLOGO = '<svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' +
+    '<path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>' +
+    '<path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>' +
+    '<path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>' +
+    '<path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
   function renderGate() {
     var c = cfg(), signing = stage === "auth" || stage === "load" || stage === "done";
-    var head = '<div class="gate-mark"><span class="gm-tile">' + I("pen") + '</span></div><h1 id="gate-title">資工所備考</h1>';
-    // 剛登出／刪除帳號：換成結果畫面（大勾勾＋一句說明），下面一樣可以再登入
+    var head = '<div class="gate-brand"><span class="gm-tile">' + I("pen") + '</span><h1 id="gate-title">資工所備考</h1><p class="gate-sub">考古題整理成的讀書計畫與教材</p></div>';
+    // 剛登出／刪除帳號：換成結果畫面（大圖示＋一句說明），下面一樣可以再登入
     if (notice && !signing && stage !== "go") {
-      head = '<div class="gate-result ' + notice.kind + '"><span>' + I(notice.kind === "deleted" ? "trash" : "check") + "</span></div>" +
+      head = '<div class="gate-brand"><span class="gate-result ' + notice.kind + '">' + I(notice.kind === "deleted" ? "trash" : "check") + "</span>" +
         '<h1 id="gate-title">' + (notice.kind === "deleted" ? "帳號已刪除" : "已登出") + "</h1>" +
-        '<p class="gate-sub">' + (notice.kind === "deleted" ? "雲端和這台裝置上的資料都已經清除。" + esc(notice.note || "") : "你的進度和筆跡都存在雲端，下次登入就會回來。") + "</p>";
+        '<p class="gate-sub">' + (notice.kind === "deleted" ? "雲端和這台裝置上的資料都已經清除。" + esc(notice.note || "") : "進度和筆跡都存在雲端，下次登入就會回來。") + "</p></div>";
     } else if (!signing) {
-      head += '<p class="gate-sub">考古題整理成的讀書計畫與教材</p>' + feats();
+      head += feats();
     }
     var h = '<div class="gate-card' + (signing ? " signing" : "") + (notice ? " result" : "") + '">' + head;
     if (signing) {
       h += steps(stage === "auth" ? 0 : stage === "load" ? 1 : 3);
+    } else if (!c) {
+      h += '<form class="sync-form" data-f="cfg">' +
+        '<input name="url" type="url" placeholder="Supabase Project URL" autocomplete="off" required>' +
+        '<input name="key" type="text" placeholder="publishable key" autocomplete="off" required>' +
+        '<button type="submit" class="gsi-btn">儲存設定</button></form>';
+    } else if (stage === "connect") {
+      h += '<div class="gsi-btn ghost" aria-hidden="true"><span class="spin"></span><span>準備登入…</span></div>';
+    } else if (stage === "go") {
+      h += '<button type="button" class="gsi-btn going" disabled><span class="spin"></span><span>正在前往 Google…</span></button>';
     } else {
-      if (!c) {
-        h += '<form class="sync-form" data-f="cfg">' +
-          '<input name="url" type="url" placeholder="Supabase Project URL" autocomplete="off" required>' +
-          '<input name="key" type="text" placeholder="publishable key" autocomplete="off" required>' +
-          '<button type="submit" class="gate-btn">儲存設定</button></form>';
-      } else if (stage === "connect") {
-        h += '<div class="gate-btn ghost" aria-hidden="true"><span class="spin"></span><span>準備登入…</span></div>';
-      } else if (stage === "go") {
-        h += '<button type="button" class="gate-btn going" disabled><span class="spin light"></span><span>正在前往 Google…</span></button>';
-      } else {
-        h += '<button type="button" class="gate-btn" data-act="google">' + I("login") + "<span>" + (notice && notice.kind === "out" ? "再次登入" : "使用 Google 登入") + "</span></button>";
-      }
+      h += '<button type="button" class="gsi-btn" data-act="google">' + GLOGO + "<span>使用 Google 帳戶登入</span></button>";
     }
-    gate.innerHTML = h + '<p class="gate-msg" aria-live="polite">' + esc(gateText) + '</p><p class="gate-legal"><a href="' + PRIVACY + '">隱私權政策 Privacy Policy</a></p></div>';
+    gate.innerHTML = h + '<p class="gate-msg" aria-live="polite">' + esc(gateText) + '</p><p class="gate-legal"><a href="' + PRIVACY + '">隱私權政策</a></p></div>';
   }
   function who() {
     var name = displayName();

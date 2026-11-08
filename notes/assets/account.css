@@ -7,40 +7,57 @@
 html.gate { overflow: hidden; }
 html.gate body > :not(.gate-screen) { visibility: hidden !important; }
 .gate-screen { display: none; }
-html.gate .gate-screen, html.gate-leaving .gate-screen { display: flex; position: fixed; inset: 0; z-index: 1000; background: var(--paper); align-items: center; justify-content: center; padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
-html.gate .gate-screen { animation: gate-in .35s ease both; }
+/* 登入頁：淡淡的方格紙（跟手寫板同一種紋路），中間一張卡片 */
+html.gate .gate-screen, html.gate-leaving .gate-screen {
+  display: flex; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center;
+  padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px)); overflow-y: auto;
+  background-color: var(--paper);
+  background-image: linear-gradient(var(--gate-grid) 1px, transparent 1px), linear-gradient(90deg, var(--gate-grid) 1px, transparent 1px);
+  background-size: 24px 24px; background-position: center;
+}
+.gate-screen::before { content: ""; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 30%, var(--paper) 78%); }
+:root { --gate-grid: rgba(26, 33, 48, .055); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --gate-grid: rgba(229, 232, 239, .045); } }
+:root[data-theme="dark"] { --gate-grid: rgba(229, 232, 239, .045); }
+html.gate .gate-screen { animation: gate-in .3s ease both; }
 html.gate-leaving .gate-screen { opacity: 0; pointer-events: none; transition: opacity .4s ease; }
 html.gate-leaving .gate-card { transform: translateY(-10px) scale(.98); transition: transform .4s ease; }
 @keyframes gate-in { from { opacity: 0; } to { opacity: 1; } }
 
-.gate-card { width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 30px 22px 22px; box-shadow: 0 12px 34px rgba(10, 15, 30, .09); animation: card-in .45s cubic-bezier(.2, .8, .2, 1) both; }
-@keyframes card-in { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+.gate-card { position: relative; width: 100%; max-width: 360px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 32px 26px 22px; box-shadow: 0 1px 2px rgba(10, 15, 30, .04), 0 12px 32px rgba(10, 15, 30, .08); animation: card-in .45s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes card-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-/* 上方的筆圖示 */
-.gate-mark { width: 56px; height: 56px; margin: 0 auto 14px; }
-.gm-tile { width: 56px; height: 56px; border-radius: 16px; background: var(--ink); color: var(--card); display: grid; place-items: center; }
-.gm-tile .ico { width: 26px; height: 26px; }
+/* 品牌：筆的方塊、明體大標題、一行副標 */
+.gate-brand { text-align: center; }
+.gm-tile { width: 52px; height: 52px; margin: 0 auto 16px; border-radius: 15px; background: var(--ink); color: var(--card); display: grid; place-items: center; }
+.gm-tile .ico { width: 25px; height: 25px; }
+.gate-card h1 { font: 900 27px/1.25 var(--font-display, serif); margin: 0 0 6px; color: var(--ink); letter-spacing: .06em; }
+.gate-card .gate-sub { margin: 0; font: 400 13.5px/1.6 var(--font-body); color: var(--muted); }
 
-.gate-card h1 { font: 700 21px/1.3 var(--font-body); margin: 0 0 6px; text-align: center; color: var(--ink); letter-spacing: .02em; }
-.gate-card p { color: var(--muted); font: 400 14px/1.75 var(--font-body); margin: 0 0 18px; }
+/* 三個重點：紅色小圖示＋一行字 */
+.gate-feats { list-style: none; margin: 24px 0 26px; padding: 18px 0 0; border-top: 1px solid var(--line); display: grid; gap: 12px; }
+.gate-feats li { display: flex; align-items: center; gap: 12px; font: 500 14.5px/1.5 var(--font-body); color: var(--ink); }
+.gate-feats .ico { width: 19px; height: 19px; flex: none; color: var(--accent); }
 
-.gate-btn { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; min-height: 50px; border-radius: 12px; border: 1px solid var(--ink); background: var(--ink); color: var(--card); font: 700 15.5px/1 var(--font-body); cursor: pointer; transition: transform .12s ease, opacity .2s; }
-.gate-btn .ico { width: 20px; height: 20px; }
-.gate-btn:active { transform: scale(.985); }
-.gate-btn.going { cursor: progress; }
-.gate-btn.going::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: linear-gradient(90deg, var(--rainbow)); transform-origin: left; animation: going 2.4s cubic-bezier(.2, .7, .2, 1) forwards; }
+/* Google 登入按鈕：照 Google 的規範（白底、灰框、官方四色 G；深色模式用深底） */
+.gsi-btn { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 48px; padding: 0 18px; border-radius: 999px; border: 1px solid #747775; background: #fff; color: #1f1f1f; font: 500 15px/1 var(--font-body); letter-spacing: .02em; cursor: pointer; transition: background .15s, box-shadow .15s, transform .1s; }
+.gsi-btn:hover { background: #f7f8f8; box-shadow: 0 1px 3px rgba(60, 64, 67, .25); }
+.gsi-btn:active { transform: scale(.99); }
+.gsi-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.gsi-btn .g-logo { width: 20px; height: 20px; flex: none; }
+.gsi-btn.going { cursor: progress; }
+.gsi-btn.going::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: linear-gradient(90deg, var(--rainbow)); transform-origin: left; animation: going 2.4s cubic-bezier(.2, .7, .2, 1) forwards; }
 @keyframes going { from { transform: scaleX(0); } to { transform: scaleX(.92); } }
-.gate-btn.ghost { background: var(--paper); border-color: var(--line); color: var(--muted); cursor: default; }
-.gate-btn.ghost::before { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .55) 50%, transparent 70%); transform: translateX(-100%); animation: shimmer 1.4s ease-in-out infinite; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .gate-btn.ghost::before { background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .08) 50%, transparent 70%); } }
-:root[data-theme="dark"] .gate-btn.ghost::before { background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .08) 50%, transparent 70%); }
-@keyframes shimmer { to { transform: translateX(100%); } }
+.gsi-btn.ghost { border-color: var(--line); background: var(--paper); color: var(--muted); cursor: default; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .gsi-btn:not(.ghost) { background: #131314; border-color: #8e918f; color: #e3e3e3; } :root:not([data-theme="light"]) .gsi-btn:not(.ghost):hover { background: #1f2023; } }
+:root[data-theme="dark"] .gsi-btn:not(.ghost) { background: #131314; border-color: #8e918f; color: #e3e3e3; }
 
 /* 轉圈圈 */
 .spin { display: inline-block; width: 18px; height: 18px; border-radius: 50%; flex: none; background: conic-gradient(from 0deg, transparent 0 14%, var(--rainbow)); -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 3px), #000 calc(100% - 2.5px)); animation: spin .85s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* 登入的三個步驟 */
+/* 登入中的三個步驟 */
+.gate-card.signing .gate-brand { margin-bottom: 22px; }
 .gate-steps { list-style: none; margin: 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); display: grid; gap: 12px; }
 .gate-steps li { display: flex; align-items: center; gap: 12px; font: 500 14.5px/1.4 var(--font-body); color: var(--muted); transition: color .25s; }
 .gate-steps .gs-dot { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: none; border: 2px solid var(--line); background: var(--card); transition: background .25s, border-color .25s; }
@@ -52,37 +69,21 @@ html.gate-leaving .gate-card { transform: translateY(-10px) scale(.98); transiti
 .gate-steps li.done .ico { width: 15px; height: 15px; stroke-width: 3; }
 @keyframes pop { 0% { transform: scale(.6); } 70% { transform: scale(1.12); } 100% { transform: scale(1); } }
 
-.gate-card .gate-msg { margin: 14px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); color: var(--ink); font-size: 13.5px; }
+/* 登出、刪除帳號之後 */
+.gate-result { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: var(--ok, #2f7d3b); animation: pop .4s ease both; }
+.gate-result.deleted { background: var(--accent); }
+.gate-result .ico { width: 28px; height: 28px; stroke-width: 2.6; }
+.gate-card.result .gate-brand { margin-bottom: 24px; }
+
+.gate-card .gate-msg { margin: 14px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--accent-soft); color: var(--ink); font: 400 13.5px/1.6 var(--font-body); }
 .gate-card .gate-msg:empty { display: none; }
-.gate-card .sync-form { display: grid; gap: 8px; }
+.gate-card .sync-form { display: grid; gap: 8px; margin-top: 20px; }
 .gate-card .sync-form input { width: 100%; min-height: 44px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); font: 500 15px/1.4 var(--font-body); }
-/* 網站重點：彩色小圖示＋一行說明 */
-.gate-card .gate-sub { text-align: center; margin: 0 0 18px; font-size: 13.5px; }
-.gate-feats { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 12px; }
-.gate-feats li { display: flex; align-items: center; gap: 12px; animation: feat-in .4s ease both; }
-.gate-feats li:nth-child(2) { animation-delay: .05s; } .gate-feats li:nth-child(3) { animation-delay: .1s; } .gate-feats li:nth-child(4) { animation-delay: .15s; }
-@keyframes feat-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-.gate-feats li > span:last-child { display: grid; gap: 1px; min-width: 0; font: 400 13px/1.5 var(--font-body); color: var(--muted); }
-.gate-feats b { font: 700 14.5px/1.4 var(--font-body); color: var(--ink); }
-.gf-ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: none; color: #fff; }
-.gf-ico .ico { width: 21px; height: 21px; }
-.gf-ico.f1 { background: linear-gradient(135deg, #ff8a65, #ff5c7a); }
-.gf-ico.f2 { background: linear-gradient(135deg, #ffc145, #ff9a3c); }
-.gf-ico.f3 { background: linear-gradient(135deg, #4cd28a, #22b8a5); }
-.gf-ico.f4 { background: linear-gradient(135deg, #a78bfa, #7c6cf2); }
-
-/* 登出、刪除帳號之後的結果畫面 */
-.gate-result { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg, #4cd28a, #22b8a5); box-shadow: 0 8px 20px rgba(34, 184, 165, .3); animation: pop .4s ease both; }
-.gate-result.deleted { background: linear-gradient(135deg, #ff8a65, #ff5c7a); box-shadow: 0 8px 20px rgba(255, 92, 122, .28); }
-.gate-result .ico { width: 30px; height: 30px; stroke-width: 2.6; }
-.gate-card.signing h1 { margin-bottom: 18px; }
-.gate-card.result .gate-sub { margin-bottom: 22px; line-height: 1.7; }
-
-.gate-card .gate-legal { margin: 16px 0 0; text-align: center; font-size: 12.5px; }
-.gate-card .gate-legal a { color: var(--muted); }
+.gate-card .gate-legal { margin: 18px 0 0; text-align: center; font: 400 12.5px/1.5 var(--font-body); }
+.gate-card .gate-legal a { color: var(--muted); text-underline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
-  html.gate .gate-screen, .gate-card, .gate-steps li.done .gs-dot { animation: none; }
-  .spin, .gate-btn.ghost::before, .gate-btn.going::after { animation-duration: 3s; }
+  html.gate .gate-screen, .gate-card, .gate-steps li.done .gs-dot, .gate-result { animation: none; }
+  .spin, .gsi-btn.going::after { animation-duration: 3s; }
 }
 
 /* 頭像 */

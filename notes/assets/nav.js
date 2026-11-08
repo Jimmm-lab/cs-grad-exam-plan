@@ -134,11 +134,63 @@
     document.documentElement.classList.toggle("toc-lock", open);
     fab.querySelector(".fab-toc").setAttribute("aria-expanded", String(open));
     if (open && aside) {
-      // 只捲目錄本身，讓現在的單元出現在目錄中間；後面的頁面不動
-      var cur = aside.querySelector("a.cur");
+      // 只捲目錄本身，讓現在讀到的小節（沒有的話就是單元）出現在目錄中間；後面的頁面不動
+      var cur = aside.querySelector("a.cur-sub") || aside.querySelector("a.cur");
       aside.scrollTop = cur ? Math.max(0, cur.offsetTop - aside.clientHeight / 3) : 0;
     }
   }
+
+  /* ---------- 目錄：標出現在讀到哪一個小節（粗體＋左邊一條紅線），捲動時跟著換 ---------- */
+  var subLinks = {}, curSub = null, curTop = null, spyTick = 0;
+  tocItems.forEach(function (it) {
+    Array.prototype.forEach.call(it.li.querySelectorAll(".toc-sub a"), function (a) { subLinks[a.getAttribute("href").slice(1)] = a; });
+  });
+  // 標題的上緣捲到頁首下面一點點，就算讀到這一節；捲到最底時，畫面上半部最後一個標題就是現在這節
+  function lastPassed(list, line, atEnd) {
+    var pick = null;
+    for (var i = 0; i < list.length; i++) {
+      var top = list[i].getBoundingClientRect().top;
+      if (top <= line || (atEnd && top < window.innerHeight * 0.6)) pick = list[i];
+      else if (!atEnd) break;
+    }
+    return pick;
+  }
+  function keepVisible(a) {
+    if (!aside || aside.scrollHeight <= aside.clientHeight + 2) return;
+    var ar = aside.getBoundingClientRect(), r = a.getBoundingClientRect();
+    if (r.top < ar.top + 48 || r.bottom > ar.bottom - 48) aside.scrollTop += r.top - ar.top - aside.clientHeight / 3;
+  }
+  function spy() {
+    spyTick = 0;
+    var root = current || document.querySelector("article");
+    if (!root || root.hidden) return;
+    var line = (header ? header.getBoundingClientRect().bottom : 0) + 28;
+    var atEnd = window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 4;
+    // 沒有分單元的頁面（學習方法）：也要標出現在在哪一個大段
+    if (!current) {
+      var h2 = lastPassed(root.querySelectorAll("h2[id]"), line, atEnd);
+      tocItems.forEach(function (it) {
+        var on = !!h2 && it.a.getAttribute("href") === "#" + h2.id;
+        if (it.a.classList.contains("cur") !== on) {
+          it.a.classList.toggle("cur", on);
+          if (on) it.a.setAttribute("aria-current", "true"); else it.a.removeAttribute("aria-current");
+        }
+      });
+      if (h2 !== curTop) { curTop = h2; var top = h2 && tocItems.filter(function (it) { return it.a.getAttribute("href") === "#" + h2.id; })[0]; if (top) keepVisible(top.a); }
+    }
+    var h3 = lastPassed(root.querySelectorAll("h3[id]"), line, atEnd);
+    // 小節要在現在這個大段裡面才算（學習方法頁捲到下一個大段的開頭時，不要還標著上一段的小節）
+    if (h3 && !current && curTop && (curTop.compareDocumentPosition(h3) & Node.DOCUMENT_POSITION_PRECEDING)) h3 = null;
+    var a = h3 ? subLinks[h3.id] || null : null;
+    if (a === curSub) return;
+    if (curSub) { curSub.classList.remove("cur-sub"); curSub.removeAttribute("aria-current"); }
+    curSub = a;
+    if (a) { a.classList.add("cur-sub"); a.setAttribute("aria-current", "location"); keepVisible(a); }
+  }
+  function spySoon() { if (!spyTick) spyTick = requestAnimationFrame(spy); }
+  window.addEventListener("scroll", spySoon, { passive: true });
+  window.addEventListener("resize", spySoon);
+  if (window.ResizeObserver) new ResizeObserver(spySoon).observe(document.body);
 
   /* ---------- 數學式排版、手機上的表格 ---------- */
   var phone = window.matchMedia ? window.matchMedia("(max-width: 700px)") : { matches: false };
@@ -271,6 +323,7 @@
       current = sec;
       save(KEY, sec.dataset.unit);
       setTimeout(fabSoon, 50);
+      setTimeout(spySoon, 80);
     }
     if (scroll) {
       nav = { sec: sec, t: target, at: Date.now() };

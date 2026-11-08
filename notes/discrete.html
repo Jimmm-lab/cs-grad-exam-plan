@@ -213,7 +213,10 @@ li.open > .toc-subw { grid-template-rows: 1fr; }
 .toc-subi { min-height: 0; overflow: hidden; opacity: 0; transform: translateY(-8px); visibility: hidden; transition: opacity .16s ease, transform .24s ease, visibility 0s linear .24s; }
 li.open > .toc-subw > .toc-subi { opacity: 1; transform: none; visibility: visible; transition: opacity .2s ease .03s, transform .24s ease; }
 aside.toc .toc-sub { list-style: none; margin: 2px 0 8px 12px; padding: 0; display: grid; gap: 0; border-left: 1px solid var(--line); }
-aside.toc .toc-sub a { padding: 3px 0 3px 10px; font-size: 12.5px; }
+aside.toc .toc-sub a { padding: 3px 0 3px 10px; font-size: 12.5px; position: relative; transition: color .15s; }
+/* 現在讀到的小節：粗體、深色字，左邊的線變成紅色 */
+aside.toc .toc-sub a.cur-sub { color: var(--ink); font-weight: 700; }
+aside.toc .toc-sub a.cur-sub::before { content: ""; position: absolute; left: -1.5px; top: 3px; bottom: 3px; width: 3px; border-radius: 2px; background: var(--accent); }
 aside.toc.toc-instant .toc-subw, aside.toc.toc-instant .toc-subi, aside.toc.toc-instant .toc-tg .ico { transition: none !important; }
 aside.toc .toc > ul > li.has-sub > a.cur { cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .toc-subw, .toc-subi, .toc-tg .ico { transition: none !important; } }
