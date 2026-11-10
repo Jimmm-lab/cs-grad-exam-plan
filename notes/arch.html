@@ -120,6 +120,35 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .ink-tools button:disabled { opacity: .4; cursor: default; }
 .ink-tools .ink-sw { padding: 0; display: inline-grid; place-items: center; }
 .ink-sw span { display: block; width: 18px; height: 18px; border-radius: 50%; }
+/* 筆的種類：圖示＋小字，一眼分得出來 */
+.ink-tools .ink-tool { flex-direction: column; gap: 2px; width: 54px; min-height: 50px; padding: 4px 0 3px; font: 500 11px/1.1 var(--font-body); }
+.ink-tools .ink-tool .ico { width: 20px; height: 20px; }
+/* 「● 數字」：現在這支筆的顏色和粗細，按了打開設定 */
+.ink-tools .ink-cur { gap: 6px; padding: 0 10px; min-width: 52px; }
+.ink-cur i { display: block; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+.ink-cur b { font: 600 12px/1 var(--font-mono); }
+.ink-cur[aria-expanded="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+/* 粗細和顏色的設定面板（在工具列下面展開） */
+.ink-cfg { display: grid; gap: 12px; padding: 12px; border-bottom: 1px solid var(--line); background: var(--card); }
+.ink-cfg[hidden] { display: none; }
+.ink-cfg-head { display: flex; align-items: center; gap: 8px; }
+.ink-cfg-head b { font: 700 14.5px/1.3 var(--font-body); }
+.ink-cfg-head span { font-size: 12.5px; color: var(--muted); }
+.ink-cfg-x { margin-left: auto; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.ink-cfg-x .ico { width: 16px; height: 16px; }
+.ink-w { display: grid; grid-template-columns: auto 1fr 2.6em; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+.ink-w input { width: 100%; min-height: 32px; accent-color: var(--ink); }
+.ink-w output { font: 600 13px/1 var(--font-mono); color: var(--ink); text-align: right; }
+.ink-prev { display: block; width: 100%; height: 48px; border: 1px dashed var(--line); border-radius: 8px; background: var(--card); }
+.ink-pal { display: grid; grid-template-columns: 4em 1fr; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.ink-pal > div { display: flex; flex-wrap: wrap; gap: 4px; }
+.ink-pal button { width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; background: none; cursor: pointer; }
+.ink-pal button span { display: block; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+.ink-pal button[aria-pressed="true"] span { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--ink); }
+.ink-custom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; font-size: 13px; color: var(--muted); }
+.ink-custom label { display: inline-flex; align-items: center; gap: 8px; }
+.ink-custom input[type="color"] { width: 46px; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; }
+.ink-custom button { border: 0; padding: 6px 0; background: none; color: var(--muted); font: 400 12.5px/1.4 var(--font-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .ink-canvas { display: block; width: 100%; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; background-color: var(--card); }
 .ink-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; color: var(--muted); }
 .ink-pen { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
@@ -669,7 +698,136 @@ window.MathJax = {
 <h4 id="block">為什麼一次搬一整塊（block）</h4>
 <p>你去圖書館拿一本書時，很可能等一下也會用到<strong>旁邊那幾本</strong>（程式讀陣列時，讀完 <code>a[0]</code> 接著就讀 <code>a[1]</code>）。所以乾脆一次把一整排搬回來，這一整排就叫 <strong>block</strong>。這叫利用<strong>空間區域性</strong>。</p>
 <p>剛用過的書很可能等一下又要用（迴圈一直用同一個變數），所以放在書桌上不急著收，這叫<strong>時間區域性</strong>。cache 就是靠這兩種區域性才有用。</p>
-<h4 id="block-cache">最關鍵的問題：某個 block 在 cache 裡要放哪一格？</h4>
+<h4 id="_6">第一步：書桌有幾個抽屜，每本書放哪個抽屜</h4>
+<p>把書桌想成有 <strong>4 個抽屜</strong>，編號 0–3，這個編號叫 <strong>index</strong>。圖書館的書照順序編號：block 0、1、2、3、…。最簡單的規定是：</p>
+<blockquote>
+<p><strong>第 <span class="arithmatex">\(n\)</span> 號 block 只能放進第 <span class="arithmatex">\(n \bmod 4\)</span> 號抽屜。</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>抽屜（index）</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>可能放進來的 block</td>
+<td>0、4、8、12…</td>
+<td>1、5、9、13…</td>
+<td>2、6、10、14…</td>
+<td>3、7、11、15…</td>
+</tr>
+<tr>
+<td>這些 block 的 tag</td>
+<td>0、1、2、3…</td>
+<td>0、1、2、3…</td>
+<td>0、1、2、3…</td>
+<td>0、1、2、3…</td>
+</tr>
+</tbody>
+</table>
+<p>問題來了：0、4、8、12 號都要擠 0 號抽屜，<strong>光看抽屜號碼不知道裡面放的是哪一本</strong>。所以每個抽屜外面貼一張標籤，寫「現在裡面是第幾輪的那本」，也就是 <span class="arithmatex">\(n\div4\)</span> 的商。這張標籤就是 <strong>tag</strong>。例如 0 號抽屜貼著 tag 2，裡面就是 block <span class="arithmatex">\(2\times4+0=8\)</span>。</p>
+<p>這種「每個 block 只有一個抽屜可以放」的 cache 叫 <strong>direct-mapped</strong>。</p>
+<h4 id="offsetindextag">第二步：用十進位算出 offset、index、tag</h4>
+<p>位址是「第幾個 byte」。假設 <strong>block 4 bytes、cache 有 4 個抽屜</strong>，CPU 要讀位址 45：</p>
+<ol>
+<li><strong>在第幾個 block、block 裡的第幾個 byte</strong>：<span class="arithmatex">\(45\div4=11\)</span> 餘 <span class="arithmatex">\(1\)</span> → 在 <strong>block 11</strong>，block 裡的第 <strong>1</strong> 個 byte（從 0 數），這個「第幾個 byte」叫 <strong>offset</strong>。</li>
+<li><strong>放哪個抽屜</strong>：<span class="arithmatex">\(11\bmod4=3\)</span> → <strong>index 3</strong>。</li>
+<li><strong>標籤寫什麼</strong>：<span class="arithmatex">\(11\div4=2\)</span>（取商）→ <strong>tag 2</strong>。</li>
+</ol>
+<p>寫成公式：</p>
+<div class="arithmatex">\[\text{block 號碼}=\left\lfloor\frac{\text{位址}}{\text{block 大小}}\right\rfloor,\qquad \text{offset}=\text{位址}\bmod\text{block 大小}\]</div>
+<div class="arithmatex">\[\text{index}=\text{block 號碼}\bmod\text{set 數},\qquad \text{tag}=\left\lfloor\frac{\text{block 號碼}}{\text{set 數}}\right\rfloor\]</div>
+<p>（抽屜正式的名稱是 <strong>set</strong>；direct-mapped 時一個 set 只有一格。）</p>
+<h4 id="_7">第三步：換成二進位，其實是同一件事</h4>
+<p>block 大小和 set 數都是 2 的次方。<strong>除以 4 就是把二進位往右切掉 2 位，餘數就是被切掉的那 2 位</strong>。所以：</p>
+<ul>
+<li>最右邊 <span class="arithmatex">\(\log_2(\text{block 大小})\)</span> 位是 offset，</li>
+<li>再往左 <span class="arithmatex">\(\log_2(\text{set 數})\)</span> 位是 index，</li>
+<li>剩下的全部是 tag。</li>
+</ul>
+<p>位址 45 ＝ <code>0010 1101</code>（8 位元位址）：</p>
+<table>
+<thead>
+<tr>
+<th>tag</th>
+<th>index</th>
+<th>offset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0010</code> ＝ 2</td>
+<td><code>11</code> ＝ 3</td>
+<td><code>01</code> ＝ 1</td>
+</tr>
+</tbody>
+</table>
+<p>跟十進位算的一模一樣。<strong>考試時：幾個位元用 <span class="arithmatex">\(\log_2\)</span> 算；某個位址的 tag、index 用十進位除法算，比較不會切錯。</strong></p>
+<h4 id="cache">第四步：cache 裡面實際存了什麼</h4>
+<p>每一格（每個抽屜）存三樣東西。讀完位址 45 之後，cache 長這樣：</p>
+<table>
+<thead>
+<tr>
+<th>index</th>
+<th>valid</th>
+<th>tag</th>
+<th>data（整個 block，4 bytes）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>2</td>
+<td>位址 44、45、46、47 的內容</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>valid</strong>：這格有沒有放東西。開機時全部是 0，所以每一格第一次用一定 miss。</li>
+<li><strong>tag</strong>：放的是哪一個 block。tag 和 index 合起來就是 block 號碼：<span class="arithmatex">\(2\times4+3=11\)</span>。</li>
+<li><strong>data</strong>：整個 block 的資料。位址 45 只要 1 個 byte，但搬進來的是 44–47 一整塊。</li>
+</ul>
+<h4 id="cache_1">第五步：查一次 cache 的四個動作</h4>
+<ol>
+<li>用 <strong>index</strong> 找到那一格。</li>
+<li>看 <strong>valid</strong> 是不是 1。</li>
+<li>比對格子裡存的 <strong>tag</strong> 跟位址算出來的 tag 一不一樣。</li>
+<li>valid 是 1 <strong>而且</strong> tag 一樣 → <strong>hit</strong>，用 <strong>offset</strong> 從 data 裡取出那個 byte。否則 → <strong>miss</strong>：去記憶體把整個 block 搬進來，寫入新的 tag、把 valid 設成 1。</li>
+</ol>
+<p>所以讀完 45 之後，再讀 44、46、47 都是 hit（同一個 block，只差 offset）；讀 48 就是 miss（block 12，放 0 號抽屜）。</p>
+<h4 id="conflict-miss">搶抽屜：conflict miss</h4>
+<p>再看位址 109：<span class="arithmatex">\(109\div4=27\)</span> 餘 1 → block 27 → index <span class="arithmatex">\(27\bmod4=3\)</span>、tag <span class="arithmatex">\(27\div4=6\)</span>。它也要用 <strong>3 號抽屜</strong>，只是 tag 不同（二進位 <code>0110 1101</code>，index 一樣是 <code>11</code>）。</p>
+<p>依序讀 45、109、45：</p>
+<ol>
+<li>45：3 號格是空的（valid 0）→ miss，放入 tag 2</li>
+<li>109：3 號格的 tag 是 2，不是 6 → miss，把 45 的 block 踢掉，換成 tag 6</li>
+<li>45：3 號格的 tag 是 6，不是 2 → 又 miss</li>
+</ol>
+<p>其他三格明明都空著，卻一直 miss，這叫 <strong>conflict miss</strong>。解決方法是讓一個抽屜可以放不只一本：</p>
 <table>
 <thead>
 <tr>
@@ -685,7 +843,7 @@ window.MathJax = {
 <td>direct-mapped（1-way）</td>
 </tr>
 <tr>
-<td>每個 block 只能放某一區，但區裡哪格都可以</td>
+<td>每個 block 只能放某一區，區裡哪格都可以</td>
 <td>分區自由座</td>
 <td><span class="arithmatex">\(n\)</span>-way set-associative</td>
 </tr>
@@ -696,39 +854,8 @@ window.MathJax = {
 </tr>
 </tbody>
 </table>
-<p>「區」就叫 <strong>set</strong>。direct-mapped 是每個 set 只有 1 格；fully associative 是整個 cache 只有 1 個 set。</p>
-<h4 id="8">位址怎麼決定放哪裡：一個 8 位元的小例子</h4>
-<p>假設：位址 8 位元、block 4 bytes、cache 有 4 個 set、direct-mapped。</p>
-<p><strong>第一步：offset</strong>。一個 block 有 4 個 byte，要分出「這是 block 裡的第幾個 byte」需要 2 位元（00、01、10、11）。所以<strong>最右邊 2 位元是 offset</strong>。</p>
-<p><strong>第二步：index</strong>。有 4 個 set，要 2 位元決定「放第幾格」。所以<strong>再往左 2 位元是 index</strong>。</p>
-<p><strong>第三步：tag</strong>。剩下的 4 位元。很多不同的 block 都會被分到同一格，tag 用來記「現在這格放的是哪一個 block」。</p>
-<p>例子：位址 45 ＝ <code>0010 1101</code></p>
-<table>
-<thead>
-<tr>
-<th>tag</th>
-<th>index</th>
-<th>offset</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>0010</code></td>
-<td><code>11</code></td>
-<td><code>01</code></td>
-</tr>
-</tbody>
-</table>
-<p>讀法：去 3 號格（index <code>11</code>），看那格存的 tag 是不是 <code>0010</code>。是 → hit，取那個 block 的第 1 個 byte（offset <code>01</code>）；不是或那格是空的 → miss。</p>
-<p>再看位址 109 ＝ <code>0110 1101</code>：index 也是 <code>11</code>，但 tag 是 <code>0110</code>。所以 45 和 109 <strong>搶同一格</strong>。</p>
-<p>依序讀 45、109、45：</p>
-<ol>
-<li>45：3 號格是空的 → miss，放入 tag <code>0010</code></li>
-<li>109：3 號格是 <code>0010</code> 不是 <code>0110</code> → miss，把 45 的 block 踢掉，換成 <code>0110</code></li>
-<li>45：3 號格是 <code>0110</code> → 又 miss</li>
-</ol>
-<p>其他三格明明都空著，卻一直 miss，這叫 <strong>conflict miss</strong>。改成 2-way（每個 set 有 2 格），45 和 109 就能同時放在同一個 set 裡，第三次就 hit 了。</p>
-<p>下面是這個例子的動畫。看完以後把「set 數」改成 2、「每個 set 幾格」改成 2（容量一樣是 4 個 block），再按重播，第三次就變成 hit。位址序列也可以換成任何考題的數字：</p>
+<p>「區」就是 <strong>set</strong>。容量一樣是 4 格時，改成 <strong>2-way</strong>：只剩 2 個 set，每個 set 有 2 格。index ＝ block 號碼 mod <strong>2</strong>：45（block 11）和 109（block 27）都在 set 1，但 set 1 有兩格，可以<strong>同時放</strong>，第三次讀 45 就 hit 了。</p>
+<p>下面是這個例子的動畫，每一步都會顯示 index、tag 和比對結果。看完以後把「set 數」改成 2、「每個 set 幾格」改成 2（容量一樣是 4 個 block），再按重播，第三次就變成 hit。位址序列也可以換成任何考題的數字：</p>
 <div class="viz" data-viz="cache" data-addrs="45,109,45" data-unit="byte" data-block="4" data-sets="4" data-ways="1"></div>
 
 <div class="admonition key">
@@ -766,6 +893,16 @@ window.MathJax = {
 <p>平均拿一筆資料要等多久？每次都一定要先看書桌（hit time），如果沒找到，還要再加上跑圖書館的時間（miss penalty），而沒找到的機率是 miss rate：</p>
 <div class="arithmatex">\[\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}\]</div>
 <p>hit time 1、miss rate 5%、miss penalty 100：平均 <span class="arithmatex">\(1+0.05\times100=6\)</span> cycles。miss rate 只有 5%，平均時間卻是 hit 的 6 倍，所以降低 miss rate 這麼重要。</p>
+<div class="admonition trap">
+<p class="admonition-title">最常見的五個錯</p>
+<ol>
+<li><strong>set-associative 的 index 要用 set 數，不是 block 數</strong>。4096 個 block、4-way → <span class="arithmatex">\(4096\div4=1024\)</span> 個 set → index 10 位元，不是 12。</li>
+<li><strong>word address 和 byte address</strong>：題目給 word address 時，offset 用「block 有幾個 word」算；給 byte address 時用 byte 數算。</li>
+<li><strong>「cache 容量 16 KB」通常只算 data</strong>，不含 tag、valid；題目問「總位元數」時才把 tag、valid（write-back 再加 dirty）加上去。</li>
+<li><strong>hit 要兩個條件同時成立</strong>：valid 是 1，<strong>而且</strong> tag 一樣。開機時 valid 全是 0，第一次用到一定 miss。</li>
+<li><strong>只差 offset 的位址在同一個 block</strong>：讀過 44，再讀 45、46、47 都是 hit；但 48 已經是下一個 block。</li>
+</ol>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -773,7 +910,14 @@ window.MathJax = {
 <li><strong>影片</strong>：<a href="https://ocw.nthu.edu.tw/courses/13">清大黃婷婷・計算機結構</a> 第 7 週 Large and fast: exploiting memory hierarchy。</li>
 </ul>
 </div>
-<h4 id="_6">換你試試</h4>
+<h4 id="_8">換你試試</h4>
+<p><strong>T-0.</strong> block 8 bytes、4 個 set、direct-mapped（byte address）。位址 100 在第幾個 block？offset、index、tag 是多少？先用十進位算，再用二進位對答案。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><strong>十進位</strong>：<span class="arithmatex">\(100\div8=12\)</span> 餘 <span class="arithmatex">\(4\)</span> → block 12、<strong>offset 4</strong>；index <span class="arithmatex">\(=12\bmod4=\)</span> <strong>0</strong>；tag <span class="arithmatex">\(=12\div4=\)</span> <strong>3</strong>。</p>
+<p><strong>二進位對答案</strong>：100 ＝ <code>0110 0100</code>。offset 是最右 <span class="arithmatex">\(\log_2 8=3\)</span> 位 <code>100</code> ＝ 4；index 是接著 <span class="arithmatex">\(\log_2 4=2\)</span> 位 <code>00</code> ＝ 0；tag 是剩下的 <code>011</code> ＝ 3。兩種算法一樣。</p>
+<p><strong>意思是</strong>：位址 100 在 block 12 的第 4 個 byte；block 12 放在 0 號格，格子的標籤寫 3（<span class="arithmatex">\(3\times4+0=12\)</span>）。</p>
+</details>
 <p><strong>T-1.</strong> 8 位元位址、block 2 bytes、8 個 set、direct-mapped。offset、index、tag 各幾位元？位址 90 的 tag、index、offset 是多少？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1093,7 +1237,7 @@ window.MathJax = {
 <p>虛擬位址 ＝ <strong>VPN | page offset</strong>。page offset 由 page 大小決定，直接搬到實體位址；VPN 查 TLB 或 page table 換成 PPN。</p>
 </div>
 <h3 id="u3-0">3.0 觀念課：每個程式都以為自己擁有整棟大樓</h3>
-<h4 id="_7">比喻：門牌對照表</h4>
+<h4 id="_9">比喻：門牌對照表</h4>
 <p>每個程式都以為自己住在一整棟大樓裡，房號從 0 開始（<strong>虛擬位址</strong>）。實際上作業系統只分給它幾個真實的房間（<strong>實體記憶體的 frame</strong>），不常用的東西放在倉庫（<strong>磁碟</strong>）。</p>
 <p>要找東西時，查一張「虛擬房號 → 實體房號」的對照表，這張表就是 <strong>page table</strong>。</p>
 <p><strong>為什麼要這樣做</strong>：</p>
@@ -1102,7 +1246,7 @@ window.MathJax = {
 <li>程式之間互相看不到對方的房間（<strong>保護</strong>）。</li>
 <li>程式可以比實體記憶體還大，不常用的放磁碟。</li>
 </ul>
-<h4 id="8_1">一個 8 位元的小例子</h4>
+<h4 id="8">一個 8 位元的小例子</h4>
 <p>虛擬位址 8 位元、page 大小 16 bytes。</p>
 <ul>
 <li>page 內有 16 個 byte → <strong>offset 4 位元</strong>（右邊 4 位），這部分<strong>直接照抄</strong>到實體位址</li>
@@ -1148,7 +1292,7 @@ window.MathJax = {
 <li><strong>作業系統角度</strong>：<a href="https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&amp;cid=141&amp;id=999">清大周志遠・作業系統講義</a> Ch8 Memory Management、Ch9 Virtual Memory。這一單元和 OS 的記憶體單元可以一起讀。</li>
 </ul>
 </div>
-<h4 id="_8">換你試試</h4>
+<h4 id="_10">換你試試</h4>
 <p>用上面的 page table（VPN 0→2、VPN 5→0）。</p>
 <p><strong>T-1.</strong> 虛擬位址 0x07 的實體位址？</p>
 <details class="quiz">
@@ -1290,14 +1434,14 @@ window.MathJax = {
 <p>pipeline 讓<strong>吞吐量</strong>變高，但單一指令的<strong>延遲</strong>不會變短。週期時間由最慢的那一級決定。</p>
 </div>
 <h3 id="u4-0">4.0 觀念課：洗衣服的流水線</h3>
-<h4 id="_9">比喻：洗、烘、摺</h4>
+<h4 id="_11">比喻：洗、烘、摺</h4>
 <p>洗衣服有三步：洗 30 分、烘 30 分、摺 30 分。有 4 批衣服：</p>
 <ul>
 <li><strong>一批做完才做下一批</strong>：<span class="arithmatex">\(4\times90=360\)</span> 分鐘</li>
 <li><strong>流水線</strong>：第一批洗完拿去烘的同時，第二批開始洗。總時間 <span class="arithmatex">\((3+3)\times30=180\)</span> 分鐘</li>
 </ul>
 <p>每一批從頭到尾還是要 90 分鐘（<strong>延遲沒變</strong>），但每 30 分鐘就有一批完成（<strong>吞吐量變高</strong>）。</p>
-<h4 id="_10">指令的五個步驟</h4>
+<h4 id="_12">指令的五個步驟</h4>
 <table>
 <thead>
 <tr>
@@ -1422,7 +1566,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>影片</strong>：<a href="https://ocw.nthu.edu.tw/courses/13">清大黃婷婷・計算機結構</a> 第 6 週 Enhancing performance with pipelining。</li>
 </ul>
 </div>
-<h4 id="_11">換你試試</h4>
+<h4 id="_13">換你試試</h4>
 <p><strong>T-1.</strong> 10 條指令、5 級 pipeline、每級 200 ps。pipeline 和非 pipeline（每條 1000 ps）各要多久？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1585,7 +1729,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p>猜錯一次要丟掉「branch 決定之前已經進來的指令」。penalty 由<strong>在第幾級決定</strong>決定，pipeline 越深 penalty 越大。</p>
 </div>
 <h3 id="u5-0">5.0 觀念課：還不知道要跳去哪，只好先猜</h3>
-<h4 id="_12">問題在哪</h4>
+<h4 id="_14">問題在哪</h4>
 <p><code>beq</code> 要比較完兩個暫存器，才知道要跳還是不跳。假設在 EX（第 3 級）結束時才知道結果：</p>
 <table>
 <thead>
@@ -1623,7 +1767,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 </table>
 <p>在知道結果之前，pipeline 已經抓了 2 條指令進來。猜對了沒事；<strong>猜錯了，這 2 條要丟掉</strong>，浪費 2 個 cycle。這就是 misprediction penalty：</p>
 <div class="arithmatex">\[\text{penalty}=\text{決定 branch 的那一級}-1\]</div>
-<h4 id="_13">平均多花多少</h4>
+<h4 id="_15">平均多花多少</h4>
 <p>100 條指令裡有 20 條 branch，猜對率 75%：猜錯 <span class="arithmatex">\(20\times0.25=5\)</span> 次，每次 2 cycle，多花 10 cycle。理想 CPI 1 變成 <span class="arithmatex">\(\frac{100+10}{100}=1.1\)</span>。</p>
 <div class="arithmatex">\[\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty}\]</div>
 <h4 id="2-bit-1-bit">2-bit 預測器為什麼比 1-bit 好</h4>
@@ -1639,7 +1783,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>英文</strong>：<a href="https://safari.ethz.ch/ddca/spring2025/doku.php?id=start">ETH Digital Design &amp; Computer Architecture 2025</a> 的 superscalar 與 branch prediction 講次。114 Q3（dual-path、confidence estimator）就是這門課的題型。</li>
 </ul>
 </div>
-<h4 id="_14">換你試試</h4>
+<h4 id="_16">換你試試</h4>
 <p><strong>T-1.</strong> 30% 是 branch、準確率 80%、penalty 3，CPI？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1888,7 +2032,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf">MIT 6.823 Problem Set 10</a>（<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf">解答</a>）有跟 112 Q3、114 Q5 一樣的 fixed／data-dependent switching 題目。</li>
 </ul>
 </div>
-<h4 id="_15">換你試試</h4>
+<h4 id="_17">換你試試</h4>
 <p>同樣的迴圈，LD 改成 6 個 cycle。</p>
 <p><strong>T-1.</strong> 固定輪流需要幾個 thread？</p>
 <details class="quiz">
@@ -1948,13 +2092,13 @@ BNE  ...</code></pre>
 <li>refresh 的命令要佔用<strong>命令匯流排</strong>（command bus）一段時間，這段時間不能送別的命令。</li>
 <li>正在 refresh 的那個 <strong>bank</strong> 不能被讀寫。</li>
 </ul>
-<h4 id="_16">使用率怎麼算</h4>
+<h4 id="_18">使用率怎麼算</h4>
 <div class="arithmatex">\[\text{使用率}=\frac{\text{這段時間內被 refresh 佔用的總時間}}{\text{這段時間}}\]</div>
 <p><strong>小例子</strong>：1 個 bank、1000 列，每次 refresh 佔用 bus 10 ns，每 64 ms 要全部 refresh 一次。</p>
 <p>64 ms 內被佔用 <span class="arithmatex">\(1000\times10\text{ ns}=10\ \mu\text{s}\)</span>，使用率 <span class="arithmatex">\(=\frac{10\ \mu\text{s}}{64\text{ ms}}\approx0.016\%\)</span>。</p>
 <p>數字很小，但記憶體越大，列數越多（考題常是 <span class="arithmatex">\(2^{19}\)</span> 列以上），使用率就跟著變大到好幾 %，而且 bank 被佔用時讀寫都要等。</p>
 <p><strong>考試技巧</strong>：數字留成 2 的次方和 10 的次方，例如 <span class="arithmatex">\(64\text{ ms}=2^6\times10^6\)</span> ns，就能約分不用計算機。</p>
-<h4 id="_17">資料重用：同一個東西多久會再用到</h4>
+<h4 id="_19">資料重用：同一個東西多久會再用到</h4>
 <p>SRAM／cache 很小，只能留住「很快又會用到」的資料。</p>
 <pre class="highlight"><code class="language-text">for i in 0..2:
   for j in 0..2:
@@ -1972,7 +2116,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://safari.ethz.ch/architecture/fall2022/doku.php?id=exams">ETH 計算機結構考古題（附詳解）</a>，可以找 DRAM refresh 相關的題目練習。</li>
 </ul>
 </div>
-<h4 id="_18">換你試試</h4>
+<h4 id="_20">換你試試</h4>
 <p><strong>T-1.</strong> 4 個 bank × 1024 列，每次 refresh 佔 bus 5 ns，64 ms 一輪，使用率？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2042,7 +2186,7 @@ BNE  ...</code></pre>
 <section class="unit" data-unit="u8">
 <h2 id="u8">單元 8：平行與微架構</h2>
 <h3 id="u8-0">8.0 觀念課：同時做好幾件事的三種方式</h3>
-<h4 id="_19">平行化的上限</h4>
+<h4 id="_21">平行化的上限</h4>
 <p>90% 可以平行的程式，用 <span class="arithmatex">\(N\)</span> 個處理器：</p>
 <table>
 <thead>
@@ -2069,7 +2213,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>處理器加倍，speedup 卻越加越少，因為那 10% 不能平行的部分變成主要的時間。再加上處理器之間要溝通，實際上更低。</p>
-<h4 id="_20">三種平行</h4>
+<h4 id="_22">三種平行</h4>
 <table>
 <thead>
 <tr>
@@ -2097,7 +2241,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>從比喻就能回答 114 Q6：VLIW 比 superscalar 簡單（硬體不用排程）、superscalar 可能更快（現場能應變 cache miss）、VLIW 比 array 彈性（每個槽可以做不同事）、array 最簡單（只要一份指令和控制）。</p>
-<h4 id="_21">記憶體一致性：把指令洗成一疊牌</h4>
+<h4 id="_23">記憶體一致性：把指令洗成一疊牌</h4>
 <p>兩個處理器同時跑（x、y 一開始都是 0）：</p>
 <table>
 <thead>
@@ -2120,7 +2264,7 @@ BNE  ...</code></pre>
 <p><strong>Sequential consistency（SC）</strong> 的意思是：最後的結果，必須等於把兩邊的指令<strong>洗成一疊</strong>（各自的順序不能變）後依序執行的結果。</p>
 <p>把所有洗法列出來，(r1, r2) 只可能是 (0,1)、(1,0)、(1,1)。<strong>(0,0) 不可能</strong>：r1＝0 代表 P1 讀 y 時 P2 還沒寫 y；r2＝0 代表 P2 讀 x 時 P1 還沒寫 x。但兩邊都是「先寫再讀」，一定有一邊的寫入比另一邊的讀取早，矛盾。</p>
 <p>112 Q5 的三個處理器版本，用的就是同一個推理：把「讀到 0」換成「某個讀取在某個寫入之前」，看會不會繞成一個圈。</p>
-<h4 id="_22">頻寬撐不撐得住</h4>
+<h4 id="_24">頻寬撐不撐得住</h4>
 <p>運算再快，資料送不進來也沒用。需要的頻寬 ＝ 每秒運算次數 × 每次運算要從記憶體讀幾個 byte。這個值超過記憶體頻寬，運算單元就會空等。</p>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
@@ -2129,7 +2273,7 @@ BNE  ...</code></pre>
 <li><strong>英文文章</strong>：Russ Cox〈<a href="https://research.swtch.com/hwmm">Hardware Memory Models</a>〉用 litmus test（就是這節 P1、P2 那種小程式）解釋 sequential consistency，例子寫得非常清楚。</li>
 </ul>
 </div>
-<h4 id="_23">換你試試</h4>
+<h4 id="_25">換你試試</h4>
 <p><strong>T-1.</strong> 95% 可平行，處理器無限多，speedup 上限？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2238,7 +2382,7 @@ BNE  ...</code></pre>
 <p><strong>為什麼「反相再加 1」就是取負</strong>：<span class="arithmatex">\(x\)</span> 和 <span class="arithmatex">\(\sim x\)</span> 每一位都相反，加起來是 1111，也就是 −1。所以 <span class="arithmatex">\(x+\sim x=-1\)</span>，移項得 <span class="arithmatex">\(-x=\sim x+1\)</span>。</p>
 <p>例：<span class="arithmatex">\(-3\)</span>：<span class="arithmatex">\(3=0011\)</span>，反相 1100，加 1 得 <strong>1101</strong>。</p>
 <p><strong>溢位</strong>：兩個正數相加得到負數（或兩個負數相加得到正數），結果就超出範圍了。例：<span class="arithmatex">\(5+4=1001\)</span>，讀起來是 −7，溢位。</p>
-<h4 id="_24">浮點數：二進位的科學記號</h4>
+<h4 id="_26">浮點數：二進位的科學記號</h4>
 <div class="arithmatex">\[(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})\]</div>
 <p><strong>每一部分的意思</strong>：</p>
 <ul>
@@ -2271,7 +2415,7 @@ BNE  ...</code></pre>
 <li><strong>英文</strong>：〈<a href="https://teaching.idallen.com/cst8214/08w/notes/ieee754_conversions.txt">IEEE 754 conversions</a>〉一步一步手算十進位和 IEEE 754 互換，適合練習。</li>
 </ul>
 </div>
-<h4 id="_25">換你試試</h4>
+<h4 id="_27">換你試試</h4>
 <p><strong>T-1.</strong> 用 4 位元二補數算 <span class="arithmatex">\(6+3\)</span>，結果是什麼？有沒有溢位？</p>
 <details class="quiz">
 <summary>看答案</summary>

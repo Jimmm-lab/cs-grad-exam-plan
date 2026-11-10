@@ -215,45 +215,98 @@ CPU 要一筆資料時，先看書桌：
 
 剛用過的書很可能等一下又要用（迴圈一直用同一個變數），所以放在書桌上不急著收，這叫**時間區域性**。cache 就是靠這兩種區域性才有用。
 
-#### 最關鍵的問題：某個 block 在 cache 裡要放哪一格？
+#### 第一步：書桌有幾個抽屜，每本書放哪個抽屜
+
+把書桌想成有 **4 個抽屜**，編號 0–3，這個編號叫 **index**。圖書館的書照順序編號：block 0、1、2、3、…。最簡單的規定是：
+
+> **第 $n$ 號 block 只能放進第 $n \bmod 4$ 號抽屜。**
+
+| 抽屜（index） | 0 | 1 | 2 | 3 |
+|---|---|---|---|---|
+| 可能放進來的 block | 0、4、8、12… | 1、5、9、13… | 2、6、10、14… | 3、7、11、15… |
+| 這些 block 的 tag | 0、1、2、3… | 0、1、2、3… | 0、1、2、3… | 0、1、2、3… |
+
+問題來了：0、4、8、12 號都要擠 0 號抽屜，**光看抽屜號碼不知道裡面放的是哪一本**。所以每個抽屜外面貼一張標籤，寫「現在裡面是第幾輪的那本」，也就是 $n\div4$ 的商。這張標籤就是 **tag**。例如 0 號抽屜貼著 tag 2，裡面就是 block $2\times4+0=8$。
+
+這種「每個 block 只有一個抽屜可以放」的 cache 叫 **direct-mapped**。
+
+#### 第二步：用十進位算出 offset、index、tag
+
+位址是「第幾個 byte」。假設 **block 4 bytes、cache 有 4 個抽屜**，CPU 要讀位址 45：
+
+1. **在第幾個 block、block 裡的第幾個 byte**：$45\div4=11$ 餘 $1$ → 在 **block 11**，block 裡的第 **1** 個 byte（從 0 數），這個「第幾個 byte」叫 **offset**。
+2. **放哪個抽屜**：$11\bmod4=3$ → **index 3**。
+3. **標籤寫什麼**：$11\div4=2$（取商）→ **tag 2**。
+
+寫成公式：
+
+$$\text{block 號碼}=\left\lfloor\frac{\text{位址}}{\text{block 大小}}\right\rfloor,\qquad \text{offset}=\text{位址}\bmod\text{block 大小}$$
+
+$$\text{index}=\text{block 號碼}\bmod\text{set 數},\qquad \text{tag}=\left\lfloor\frac{\text{block 號碼}}{\text{set 數}}\right\rfloor$$
+
+（抽屜正式的名稱是 **set**；direct-mapped 時一個 set 只有一格。）
+
+#### 第三步：換成二進位，其實是同一件事
+
+block 大小和 set 數都是 2 的次方。**除以 4 就是把二進位往右切掉 2 位，餘數就是被切掉的那 2 位**。所以：
+
+- 最右邊 $\log_2(\text{block 大小})$ 位是 offset，
+- 再往左 $\log_2(\text{set 數})$ 位是 index，
+- 剩下的全部是 tag。
+
+位址 45 ＝ `0010 1101`（8 位元位址）：
+
+| tag | index | offset |
+|---|---|---|
+| `0010` ＝ 2 | `11` ＝ 3 | `01` ＝ 1 |
+
+跟十進位算的一模一樣。**考試時：幾個位元用 $\log_2$ 算；某個位址的 tag、index 用十進位除法算，比較不會切錯。**
+
+#### 第四步：cache 裡面實際存了什麼
+
+每一格（每個抽屜）存三樣東西。讀完位址 45 之後，cache 長這樣：
+
+| index | valid | tag | data（整個 block，4 bytes） |
+|---|---|---|---|
+| 0 | 0 | – | – |
+| 1 | 0 | – | – |
+| 2 | 0 | – | – |
+| 3 | 1 | 2 | 位址 44、45、46、47 的內容 |
+
+- **valid**：這格有沒有放東西。開機時全部是 0，所以每一格第一次用一定 miss。
+- **tag**：放的是哪一個 block。tag 和 index 合起來就是 block 號碼：$2\times4+3=11$。
+- **data**：整個 block 的資料。位址 45 只要 1 個 byte，但搬進來的是 44–47 一整塊。
+
+#### 第五步：查一次 cache 的四個動作
+
+1. 用 **index** 找到那一格。
+2. 看 **valid** 是不是 1。
+3. 比對格子裡存的 **tag** 跟位址算出來的 tag 一不一樣。
+4. valid 是 1 **而且** tag 一樣 → **hit**，用 **offset** 從 data 裡取出那個 byte。否則 → **miss**：去記憶體把整個 block 搬進來，寫入新的 tag、把 valid 設成 1。
+
+所以讀完 45 之後，再讀 44、46、47 都是 hit（同一個 block，只差 offset）；讀 48 就是 miss（block 12，放 0 號抽屜）。
+
+#### 搶抽屜：conflict miss
+
+再看位址 109：$109\div4=27$ 餘 1 → block 27 → index $27\bmod4=3$、tag $27\div4=6$。它也要用 **3 號抽屜**，只是 tag 不同（二進位 `0110 1101`，index 一樣是 `11`）。
+
+依序讀 45、109、45：
+
+1. 45：3 號格是空的（valid 0）→ miss，放入 tag 2
+2. 109：3 號格的 tag 是 2，不是 6 → miss，把 45 的 block 踢掉，換成 tag 6
+3. 45：3 號格的 tag 是 6，不是 2 → 又 miss
+
+其他三格明明都空著，卻一直 miss，這叫 **conflict miss**。解決方法是讓一個抽屜可以放不只一本：
 
 | 規則 | 比喻 | 名稱 |
 |---|---|---|
 | 每個 block 只能放固定的一格 | 對號入座 | direct-mapped（1-way） |
-| 每個 block 只能放某一區，但區裡哪格都可以 | 分區自由座 | $n$-way set-associative |
+| 每個 block 只能放某一區，區裡哪格都可以 | 分區自由座 | $n$-way set-associative |
 | 每個 block 哪一格都可以放 | 全部自由座 | fully associative |
 
-「區」就叫 **set**。direct-mapped 是每個 set 只有 1 格；fully associative 是整個 cache 只有 1 個 set。
+「區」就是 **set**。容量一樣是 4 格時，改成 **2-way**：只剩 2 個 set，每個 set 有 2 格。index ＝ block 號碼 mod **2**：45（block 11）和 109（block 27）都在 set 1，但 set 1 有兩格，可以**同時放**，第三次讀 45 就 hit 了。
 
-#### 位址怎麼決定放哪裡：一個 8 位元的小例子
-
-假設：位址 8 位元、block 4 bytes、cache 有 4 個 set、direct-mapped。
-
-**第一步：offset**。一個 block 有 4 個 byte，要分出「這是 block 裡的第幾個 byte」需要 2 位元（00、01、10、11）。所以**最右邊 2 位元是 offset**。
-
-**第二步：index**。有 4 個 set，要 2 位元決定「放第幾格」。所以**再往左 2 位元是 index**。
-
-**第三步：tag**。剩下的 4 位元。很多不同的 block 都會被分到同一格，tag 用來記「現在這格放的是哪一個 block」。
-
-例子：位址 45 ＝ `0010 1101`
-
-| tag | index | offset |
-|---|---|---|
-| `0010` | `11` | `01` |
-
-讀法：去 3 號格（index `11`），看那格存的 tag 是不是 `0010`。是 → hit，取那個 block 的第 1 個 byte（offset `01`）；不是或那格是空的 → miss。
-
-再看位址 109 ＝ `0110 1101`：index 也是 `11`，但 tag 是 `0110`。所以 45 和 109 **搶同一格**。
-
-依序讀 45、109、45：
-
-1. 45：3 號格是空的 → miss，放入 tag `0010`
-2. 109：3 號格是 `0010` 不是 `0110` → miss，把 45 的 block 踢掉，換成 `0110`
-3. 45：3 號格是 `0110` → 又 miss
-
-其他三格明明都空著，卻一直 miss，這叫 **conflict miss**。改成 2-way（每個 set 有 2 格），45 和 109 就能同時放在同一個 set 裡，第三次就 hit 了。
-
-下面是這個例子的動畫。看完以後把「set 數」改成 2、「每個 set 幾格」改成 2（容量一樣是 4 個 block），再按重播，第三次就變成 hit。位址序列也可以換成任何考題的數字：
+下面是這個例子的動畫，每一步都會顯示 index、tag 和比對結果。看完以後把「set 數」改成 2、「每個 set 幾格」改成 2（容量一樣是 4 個 block），再按重播，第三次就變成 hit。位址序列也可以換成任何考題的數字：
 
 <div class="viz" data-viz="cache" data-addrs="45,109,45" data-unit="byte" data-block="4" data-sets="4" data-ways="1"></div>
 
@@ -276,11 +329,27 @@ $$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
 
 hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles。miss rate 只有 5%，平均時間卻是 hit 的 6 倍，所以降低 miss rate 這麼重要。
 
+!!! trap "最常見的五個錯"
+    1. **set-associative 的 index 要用 set 數，不是 block 數**。4096 個 block、4-way → $4096\div4=1024$ 個 set → index 10 位元，不是 12。
+    2. **word address 和 byte address**：題目給 word address 時，offset 用「block 有幾個 word」算；給 byte address 時用 byte 數算。
+    3. **「cache 容量 16 KB」通常只算 data**，不含 tag、valid；題目問「總位元數」時才把 tag、valid（write-back 再加 dirty）加上去。
+    4. **hit 要兩個條件同時成立**：valid 是 1，**而且** tag 一樣。開機時 valid 全是 0，第一次用到一定 miss。
+    5. **只差 offset 的位址在同一個 block**：讀過 44，再讀 45、46、47 都是 hit；但 48 已經是下一個 block。
+
 !!! read "還不懂？看別人怎麼講"
     - **中文筆記（資工所考生整理）**：[容量大且速度快的記憶體](https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter06.html)：區域性、direct-mapped、**快取位元計算**（valid ＋ tag ＋ data，跟 2.2 一樣）、寫入策略、快取效能。
     - **影片**：[清大黃婷婷・計算機結構](https://ocw.nthu.edu.tw/courses/13) 第 7 週 Large and fast: exploiting memory hierarchy。
 
 #### 換你試試
+
+**T-0.** block 8 bytes、4 個 set、direct-mapped（byte address）。位址 100 在第幾個 block？offset、index、tag 是多少？先用十進位算，再用二進位對答案。
+
+??? quiz "看答案"
+    **十進位**：$100\div8=12$ 餘 $4$ → block 12、**offset 4**；index $=12\bmod4=$ **0**；tag $=12\div4=$ **3**。
+
+    **二進位對答案**：100 ＝ `0110 0100`。offset 是最右 $\log_2 8=3$ 位 `100` ＝ 4；index 是接著 $\log_2 4=2$ 位 `00` ＝ 0；tag 是剩下的 `011` ＝ 3。兩種算法一樣。
+
+    **意思是**：位址 100 在 block 12 的第 4 個 byte；block 12 放在 0 號格，格子的標籤寫 3（$3\times4+0=12$）。
 
 **T-1.** 8 位元位址、block 2 bytes、8 個 set、direct-mapped。offset、index、tag 各幾位元？位址 90 的 tag、index、offset 是多少？
 

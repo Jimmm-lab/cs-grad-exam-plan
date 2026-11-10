@@ -16,6 +16,12 @@ window.CGEP_ICON = (function () {
     zoomIn: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/><path d="M10.5 8v5M8 10.5h5"/>',
     zoomOut: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/><path d="M8 10.5h5"/>',
     extend: '<path d="M5 4.5h14"/><path d="M12 8.5v11"/><path d="M8 15.5l4 4 4-4"/>',
+    shrink: '<path d="M5 4.5h14"/><path d="M12 19.5v-11"/><path d="M8 12.5l4-4 4 4"/>',
+    // 四種筆：直的畫好再整個斜 40 度，筆尖朝左下
+    penFountain: '<g transform="rotate(40 12 12)"><path d="M9.5 2.5h5v5h-5z"/><path d="M8.5 7.5h7L12 21.5z"/><path d="M12 14.5v4"/><circle cx="12" cy="12.6" r="1"' + F + '/></g>',
+    penBall: '<g transform="rotate(40 12 12)"><path d="M10 2.5h4v13h-4z"/><path d="M10 15.5l2 5 2-5"/><path d="M14 4.5h1.6v5.5"/></g>',
+    pencil: '<g transform="rotate(40 12 12)"><path d="M10 4.5h4v11h-4z"/><path d="M10 2.5h4v2h-4z"/><path d="M10 15.5l2 5.5 2-5.5"/><path d="M11.2 18.6h1.6"/></g>',
+    highlighter: '<g transform="rotate(40 12 12)"><path d="M9 2.5h6v8.5H9z"/><path d="M9.5 11h5l-1 5h-3z"/><path d="M10.5 16h3l-.8 3.5h-1.4z"' + F + '/></g>',
     trash: '<path d="M4.5 7h15"/><path d="M9.5 7V4.8h5V7"/><path d="M6.5 7l1 12.5h9l1-12.5"/><path d="M10 11v5M14 11v5"/>',
     image: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="15.5" cy="9.5" r="1.5"/><path d="M3.5 16.5l5-5 4 4 2.5-2.5 5.5 5.5"/>',
     top: '<path d="M5 4.5h14"/><path d="M12 20V9"/><path d="M7 13.5l5-5 5 5"/>',

@@ -120,6 +120,35 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .ink-tools button:disabled { opacity: .4; cursor: default; }
 .ink-tools .ink-sw { padding: 0; display: inline-grid; place-items: center; }
 .ink-sw span { display: block; width: 18px; height: 18px; border-radius: 50%; }
+/* 筆的種類：圖示＋小字，一眼分得出來 */
+.ink-tools .ink-tool { flex-direction: column; gap: 2px; width: 54px; min-height: 50px; padding: 4px 0 3px; font: 500 11px/1.1 var(--font-body); }
+.ink-tools .ink-tool .ico { width: 20px; height: 20px; }
+/* 「● 數字」：現在這支筆的顏色和粗細，按了打開設定 */
+.ink-tools .ink-cur { gap: 6px; padding: 0 10px; min-width: 52px; }
+.ink-cur i { display: block; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+.ink-cur b { font: 600 12px/1 var(--font-mono); }
+.ink-cur[aria-expanded="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+/* 粗細和顏色的設定面板（在工具列下面展開） */
+.ink-cfg { display: grid; gap: 12px; padding: 12px; border-bottom: 1px solid var(--line); background: var(--card); }
+.ink-cfg[hidden] { display: none; }
+.ink-cfg-head { display: flex; align-items: center; gap: 8px; }
+.ink-cfg-head b { font: 700 14.5px/1.3 var(--font-body); }
+.ink-cfg-head span { font-size: 12.5px; color: var(--muted); }
+.ink-cfg-x { margin-left: auto; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.ink-cfg-x .ico { width: 16px; height: 16px; }
+.ink-w { display: grid; grid-template-columns: auto 1fr 2.6em; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
+.ink-w input { width: 100%; min-height: 32px; accent-color: var(--ink); }
+.ink-w output { font: 600 13px/1 var(--font-mono); color: var(--ink); text-align: right; }
+.ink-prev { display: block; width: 100%; height: 48px; border: 1px dashed var(--line); border-radius: 8px; background: var(--card); }
+.ink-pal { display: grid; grid-template-columns: 4em 1fr; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.ink-pal > div { display: flex; flex-wrap: wrap; gap: 4px; }
+.ink-pal button { width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; background: none; cursor: pointer; }
+.ink-pal button span { display: block; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+.ink-pal button[aria-pressed="true"] span { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--ink); }
+.ink-custom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; font-size: 13px; color: var(--muted); }
+.ink-custom label { display: inline-flex; align-items: center; gap: 8px; }
+.ink-custom input[type="color"] { width: 46px; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; }
+.ink-custom button { border: 0; padding: 6px 0; background: none; color: var(--muted); font: 400 12.5px/1.4 var(--font-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .ink-canvas { display: block; width: 100%; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; background-color: var(--card); }
 .ink-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; color: var(--muted); }
 .ink-pen { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }

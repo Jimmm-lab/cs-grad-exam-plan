@@ -6,6 +6,13 @@
  * - 存在這台裝置瀏覽器的 IndexedDB（notes/assets/inkdb.js），key 是「頁面:題目 id」。
  *   側欄可以把全部筆跡匯出成一個 JSON 檔，換裝置時再匯入；登入 Supabase 後會自動同步（sync.js）。
  * - 觸控筆模式：只有筆會寫字，一指拖曳是捲動頁面（第一次偵測到觸控筆時自動開啟）。
+ * - 四種筆：鋼筆（預設，壓力越大越粗）、原子筆（粗細穩定）、鉛筆（淡一點、有筆觸）、螢光筆（半透明，畫在字的下面）。
+ *   每種筆各自記住粗細和顏色（工具列的「● 數字」按鈕打開設定，有推薦色系和自訂顏色）。
+ * - 「加長」一次多一段紙；「縮短」一次收回一段，但不會切到筆跡、也不會比原本短；兩個都可以「復原」。
+ *
+ * 一筆的資料：{ p: [x, y, 壓力, ...], c: 顏色, sw: 粗細, t: 筆的種類, pen: 是否觸控筆, k: 縮放倒數 }
+ *   c 是數字 0–3 時是會跟著深色模式變的黑紅藍綠（舊資料都是這種），字串則是固定的色碼。
+ *   舊資料用 w（0–2，細中粗）代替 sw、沒有 t（＝鋼筆），照樣能畫。
  */
 (function () {
   "use strict";
@@ -16,12 +23,28 @@
   var W = 1000;                       // 紙的邏輯寬度
   var DEFAULT_H = 900, STEP_H = 600, MAX_H = 6000;
   var GRID = 50, ZMAX = 4;
-  var SIZES = [3.5, 6, 10];           // 細、中、粗（邏輯單位，縮放 100% 時）
-  var SIZE_NAMES = ["細", "中", "粗"];
+  var SIZES = [3.5, 6, 10];           // 舊資料的細、中、粗（邏輯單位，縮放 100% 時）
   var COLOR_VARS = ["--pen-ink", "--pen-red", "--pen-blue", "--pen-green"];
-  var COLOR_NAMES = ["黑", "紅", "藍", "綠"];
   var LIGHT = ["#1a2130", "#d0343f", "#2d5fd3", "#2f7d3b"];   // 存成圖片時用白底配色
   var PREF_KEY = "cgep:ink:pref";
+  // 筆的種類。粗細範圍是紙寬 1000 時的單位
+  var PENS = {
+    fountain: { name: "鋼筆", icon: "penFountain", min: 1, max: 20, step: 0.5 },
+    ball: { name: "原子筆", icon: "penBall", min: 1, max: 16, step: 0.5 },
+    pencil: { name: "鉛筆", icon: "pencil", min: 1, max: 16, step: 0.5 },
+    hl: { name: "螢光筆", icon: "highlighter", min: 8, max: 48, step: 1 }
+  };
+  var PEN_ORDER = ["fountain", "ball", "pencil", "hl"];
+  // 推薦色系：數字 0–3 是黑紅藍綠（深色模式會自動變亮），其他是固定色碼
+  var PALETTES = [
+    { name: "經典", colors: [0, 1, 2, 3, "#e8590c", "#7048e8", "#8d5524", "#868e96"] },
+    { name: "螢光", colors: ["#ffd43b", "#8ce99a", "#ffa8d4", "#74c0fc", "#ffc078", "#d0bfff"] },
+    { name: "低飽和", colors: ["#5f6b7a", "#b0566a", "#4f7396", "#5f8a68", "#a8834a", "#7a6a9c"] }
+  ];
+  var QUICK = { pen: [0, 1, 2, 3], hl: ["#ffd43b", "#8ce99a", "#ffa8d4", "#74c0fc"] };
+  var COLOR_NAME = { 0: "黑", 1: "紅", 2: "藍", 3: "綠", "#e8590c": "橘", "#7048e8": "紫", "#8d5524": "棕", "#868e96": "灰",
+    "#ffd43b": "黃", "#8ce99a": "淺綠", "#ffa8d4": "粉紅", "#74c0fc": "淺藍", "#ffc078": "淺橘", "#d0bfff": "淺紫",
+    "#5f6b7a": "灰藍", "#b0566a": "玫瑰", "#4f7396": "霧藍", "#5f8a68": "灰綠", "#a8834a": "卡其", "#7a6a9c": "灰紫" };
 
   function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
 
@@ -43,6 +66,33 @@
   var pref = loadPref();
   function savePref() { try { localStorage.setItem(PREF_KEY, JSON.stringify(pref)); } catch (e) {} }
 
+  /* ---------- 每種筆的粗細和顏色 ---------- */
+  function penType() { return PENS[pref.pen] ? pref.pen : "fountain"; }
+  // 預設值：鋼筆沿用原本的設定（以前選的顏色和細中粗），其他筆各有適合的預設
+  function penDefault(tp) {
+    if (tp === "hl") return { c: "#ffd43b", sw: 22 };
+    if (tp === "ball") return { c: 0, sw: 4 };
+    if (tp === "pencil") return { c: 0, sw: 3.5 };
+    return { c: pref.color || 0, sw: SIZES[pref.size == null ? 1 : pref.size] || 6 };
+  }
+  function penCfg(tp) {
+    var d = penDefault(tp), v = (pref.tools && pref.tools[tp]) || {};
+    return { c: v.c != null ? v.c : d.c, sw: v.sw != null ? v.sw : d.sw };
+  }
+  function setPenCfg(patch) {
+    var tp = penType();
+    pref.tools = pref.tools || {};
+    var v = penCfg(tp);
+    for (var k in patch) v[k] = patch[k];
+    pref.tools[tp] = v;
+    savePref();
+  }
+  function parseColor(v) { return /^\d+$/.test(v) ? +v : String(v).toLowerCase(); }
+  function sameColor(a, b) { return String(a).toLowerCase() === String(b).toLowerCase(); }
+  function colorName(c) { return COLOR_NAME[String(c).toLowerCase()] || "自訂顏色 " + c; }
+  function swatchCss(c) { return typeof c === "number" ? "var(" + (COLOR_VARS[c] || COLOR_VARS[0]) + ")" : c; }
+  function hexOf(c) { return typeof c === "number" ? LIGHT[c] || LIGHT[0] : c; }
+
   /* ---------- 觸控筆偵測 ---------- */
   var openPads = [];
   var lastPen = 0;
@@ -63,8 +113,25 @@
     var cs = getComputedStyle(document.documentElement);
     return COLOR_VARS.map(function (v, i) { return cs.getPropertyValue(v).trim() || LIGHT[i]; });
   }
+  // 深色模式：很暗的自訂顏色（例如黑色）在深色紙上看不到，畫的時候改用亮的墨水色
+  var darkNow = false;
+  function lum(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(hex || "");
+    if (!m) return 1;
+    var n = parseInt(m[1], 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  }
+  function isDark() { return lum(getComputedStyle(document.documentElement).getPropertyValue("--card").trim()) < 0.3; }
   // s.k：寫這一筆時的縮放倒數。放大時寫的字，線條在紙上會比較細，看起來跟 100% 時一樣粗
-  function widthAt(s, pr) { return SIZES[s.w] * (s.k || 1) * (s.pen ? 0.35 + (pr / 100) * 1.3 : 1); }
+  function baseW(s) { return (s.sw != null ? s.sw : SIZES[s.w] || SIZES[1]) * (s.k || 1); }
+  // 觸控筆的壓力：鋼筆變化最大、鉛筆中等、原子筆幾乎不變；手指和滑鼠一律固定粗細
+  function widthAt(s, pr) {
+    var b = baseW(s), t = s.t || "fountain";
+    if (!s.pen || t === "hl") return b;
+    if (t === "ball") return b * (0.8 + (pr / 100) * 0.4);
+    if (t === "pencil") return b * (0.55 + (pr / 100) * 0.9);
+    return b * (0.35 + (pr / 100) * 1.3);
+  }
   // 畫第 k 段：從 (k-2,k-1) 的中點到 (k-1,k) 的中點，以第 k-1 點為控制點，線條才會圓滑
   function seg(ctx, s, k) {
     var p = s.p, i = 3 * k;
@@ -86,19 +153,44 @@
     ctx.lineWidth = widthAt(s, p[i + 2]);
     ctx.stroke();
   }
+  function colorOf(s, pal) {
+    if (typeof s.c !== "string") return pal[s.c] || pal[0];
+    if (pal !== LIGHT && darkNow && s.t !== "hl" && lum(s.c) < 0.16) return pal[0];
+    return s.c;
+  }
+  // 鉛筆半透明一點（線段重疊的地方比較深，像石墨的筆觸）；螢光筆更透明
   function setColor(ctx, s, pal) {
-    ctx.strokeStyle = ctx.fillStyle = pal[s.c] || pal[0];
+    ctx.strokeStyle = ctx.fillStyle = colorOf(s, pal);
+    ctx.globalAlpha = s.t === "hl" ? (darkNow && pal !== LIGHT ? 0.42 : 0.34) : s.t === "pencil" ? 0.82 : 1;
     ctx.lineCap = "round"; ctx.lineJoin = "round";
+  }
+  // 螢光筆整筆一次畫成一條路徑（分段畫的話，半透明的接縫會一節一節變深）
+  function hlPath(ctx, s) {
+    var p = s.p, n = p.length / 3;
+    ctx.beginPath();
+    ctx.moveTo(p[0], p[1]);
+    if (n === 1) ctx.lineTo(p[0] + 0.01, p[1]);
+    for (var k = 1; k < n; k++) {
+      var i = 3 * k;
+      ctx.quadraticCurveTo(p[i - 3], p[i - 2], (p[i - 3] + p[i]) / 2, (p[i - 2] + p[i + 1]) / 2);
+    }
+    if (n > 1) ctx.lineTo(p[3 * n - 3], p[3 * n - 2]);
+    ctx.lineWidth = baseW(s);
+    ctx.stroke();
   }
   function drawStroke(ctx, s, pal) {
     setColor(ctx, s, pal);
     var n = s.p.length / 3;
-    if (n === 1) {
-      ctx.beginPath(); ctx.arc(s.p[0], s.p[1], widthAt(s, s.p[2]) / 2, 0, Math.PI * 2); ctx.fill();
-      return;
-    }
-    for (var k = 1; k < n; k++) seg(ctx, s, k);
-    tail(ctx, s);
+    if (s.t === "hl") hlPath(ctx, s);
+    else if (n === 1) { ctx.beginPath(); ctx.arc(s.p[0], s.p[1], widthAt(s, s.p[2]) / 2, 0, Math.PI * 2); ctx.fill(); }
+    else { for (var k = 1; k < n; k++) seg(ctx, s, k); tail(ctx, s); }
+    ctx.globalAlpha = 1;
+  }
+  // 螢光筆先畫（在下面），其他筆畫在上面，劃重點不會蓋住字
+  function drawAll(ctx, strokes, pal) {
+    var i;
+    for (i = 0; i < strokes.length; i++) if (strokes[i].t === "hl") drawStroke(ctx, strokes[i], pal);
+    for (i = 0; i < strokes.length; i++) if (strokes[i].t !== "hl") drawStroke(ctx, strokes[i], pal);
   }
   function distSeg(px, py, ax, ay, bx, by) {
     var dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy, t = 0;
@@ -135,23 +227,21 @@
     this.z = 1; this.ox = 0; this.oy = 0; this.raf = 0;
     this.saveTimer = 0; this.persist = true;
 
-    var colors = COLOR_NAMES.map(function (n, i) {
-      return '<button type="button" class="ink-sw" data-color="' + i + '" aria-label="' + n + '色" title="' + n + '"><span style="background:var(' + COLOR_VARS[i] + ')"></span></button>';
-    }).join("");
-    var sizes = SIZE_NAMES.map(function (n, i) {
-      return '<button type="button" data-size="' + i + '" aria-label="' + n + '筆">' + n + "</button>";
-    }).join("");
+    var pens = PEN_ORDER.map(function (tp) {
+      return '<button type="button" class="ink-tool" data-tool="pen" data-pen="' + tp + '">' + I(PENS[tp].icon) + "<span>" + PENS[tp].name + "</span></button>";
+    }).join("") + '<button type="button" class="ink-tool" data-tool="eraser">' + I("eraser") + "<span>橡皮擦</span></button>";
     var panel = this.panel = el("div", "ink-panel");
     panel.hidden = true;
     panel.innerHTML =
       '<div class="ink-tools" role="toolbar" aria-label="手寫工具">' +
-        '<div class="ink-grp"><button type="button" data-tool="pen">' + I("pen") + '<span>筆</span></button><button type="button" data-tool="eraser">' + I("eraser") + "<span>橡皮擦</span></button></div>" +
-        '<div class="ink-grp">' + colors + "</div>" +
-        '<div class="ink-grp">' + sizes + "</div>" +
+        '<div class="ink-grp">' + pens + "</div>" +
+        '<div class="ink-grp ink-colors"></div>' +
         '<div class="ink-grp"><button type="button" data-act="undo" aria-label="復原" title="復原">' + I("undo") + '</button><button type="button" data-act="redo" aria-label="重做" title="重做">' + I("redo") + "</button></div>" +
         '<div class="ink-grp"><button type="button" data-act="zout" aria-label="縮小紙張" title="縮小">' + I("zoomOut") + '</button><button type="button" data-act="zreset" class="ink-zl" aria-label="恢復 100%" title="恢復 100%">100%</button><button type="button" data-act="zin" aria-label="放大紙張" title="放大">' + I("zoomIn") + "</button></div>" +
-        '<div class="ink-grp"><button type="button" data-act="more">' + I("extend") + '<span>加長</span></button><button type="button" data-act="clear">' + I("trash") + '<span>清除</span></button><button type="button" data-act="png">' + I("image") + "<span>存成圖片</span></button></div>" +
+        '<div class="ink-grp"><button type="button" data-act="more" title="紙張加長一段">' + I("extend") + '<span>加長</span></button><button type="button" data-act="less" title="收回一段（不會切到筆跡）">' + I("shrink") + '<span>縮短</span></button></div>' +
+        '<div class="ink-grp"><button type="button" data-act="clear">' + I("trash") + '<span>清除</span></button><button type="button" data-act="png">' + I("image") + "<span>存成圖片</span></button></div>" +
       "</div>" +
+      '<div class="ink-cfg" hidden></div>' +
       '<div class="ink-sheet"><canvas class="ink-canvas" aria-label="手寫區"></canvas></div>' +
       '<div class="ink-foot">' +
         '<label class="ink-pen"><input type="checkbox"> 觸控筆模式（只有筆會寫，一指拖曳是捲動）</label>' +
@@ -164,6 +254,8 @@
     this.penBox = panel.querySelector(".ink-pen input");
     this.statusEl = panel.querySelector(".ink-status");
     this.zLabel = panel.querySelector(".ink-zl");
+    this.swBox = panel.querySelector(".ink-colors");
+    this.cfgBox = panel.querySelector(".ink-cfg");
     this.bindTools();
     this.bindPointer();
     this.syncTools();
@@ -249,6 +341,8 @@
   Pad.prototype.redraw = function () {
     var ctx = this.ctx;
     if (!ctx) return;
+    darkNow = isDark();
+    ctx.globalAlpha = 1;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.setView();
@@ -260,20 +354,81 @@
     ctx.lineWidth = 1 / (this.scale * this.z);
     ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim() || "#e9ecf2";
     ctx.stroke();
-    var pal = palette(false);
-    for (var i = 0; i < this.strokes.length; i++) drawStroke(ctx, this.strokes[i], pal);
+    drawAll(ctx, this.strokes, palette(false));
   };
 
   Pad.prototype.status = function (t) { this.statusEl.textContent = t; };
 
   Pad.prototype.syncTools = function () {
-    var self = this, color = pref.color || 0, size = pref.size == null ? 1 : pref.size;
-    this.panel.querySelectorAll("[data-tool]").forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.tool === self.tool)); });
-    this.panel.querySelectorAll("[data-color]").forEach(function (b) { b.setAttribute("aria-pressed", String(+b.dataset.color === color)); });
-    this.panel.querySelectorAll("[data-size]").forEach(function (b) { b.setAttribute("aria-pressed", String(+b.dataset.size === size)); });
+    var self = this, tp = penType(), cfg = penCfg(tp), pen = this.tool === "pen";
+    this.panel.querySelectorAll("[data-tool]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.tool === "eraser" ? !pen : pen && b.dataset.pen === tp));
+    });
+    // 快速選色：一般的筆是黑紅藍綠，螢光筆是四個螢光色；最後一顆「● 數字」打開粗細和顏色的設定
+    var quick = tp === "hl" ? QUICK.hl : QUICK.pen;
+    var dot = Math.max(6, Math.min(18, cfg.sw * (tp === "hl" ? 0.5 : 1.4)));
+    this.swBox.innerHTML = quick.map(function (c) {
+      return '<button type="button" class="ink-sw" data-color="' + c + '" aria-label="' + colorName(c) + '" title="' + colorName(c) + '" aria-pressed="' + (pen && sameColor(cfg.c, c)) + '"><span style="background:' + swatchCss(c) + '"></span></button>';
+    }).join("") +
+      '<button type="button" class="ink-cur" data-act="cfg" aria-expanded="' + !this.cfgBox.hidden + '" aria-label="' + PENS[tp].name + "的粗細和顏色" + '" title="粗細和顏色">' +
+      '<i style="width:' + dot + "px;height:" + dot + "px;background:" + swatchCss(cfg.c) + (tp === "hl" ? ";opacity:.6" : "") + '"></i><b>' + cfg.sw + "</b></button>";
     this.panel.querySelector('[data-act="undo"]').disabled = !this.hist.length;
     this.panel.querySelector('[data-act="redo"]').disabled = !this.fut.length;
+    this.panel.querySelector('[data-act="more"]').disabled = this.H >= MAX_H;
+    this.panel.querySelector('[data-act="less"]').disabled = this.H <= DEFAULT_H;
     this.canvas.style.cursor = this.tool === "eraser" ? "cell" : "crosshair";
+    if (!this.cfgBox.hidden) this.syncCfg();
+  };
+  // 粗細和顏色的設定（套用在現在選的那種筆）
+  Pad.prototype.openCfg = function (open) {
+    this.cfgBox.hidden = !open;
+    if (open) this.renderCfg();
+    this.syncTools();
+  };
+  Pad.prototype.renderCfg = function () {
+    var tp = penType(), P = PENS[tp], cfg = penCfg(tp);
+    this.cfgFor = tp;
+    this.cfgBox.innerHTML =
+      '<div class="ink-cfg-head"><b>' + P.name + "</b><span>粗細和顏色</span>" +
+      '<button type="button" class="ink-cfg-x" data-cfg="close" aria-label="關閉設定">' + I("close") + "</button></div>" +
+      '<label class="ink-w"><span>粗細</span><input type="range" min="' + P.min + '" max="' + P.max + '" step="' + P.step + '" value="' + cfg.sw + '"><output>' + cfg.sw + "</output></label>" +
+      '<canvas class="ink-prev" aria-hidden="true"></canvas>' +
+      PALETTES.map(function (g) {
+        return '<div class="ink-pal"><span>' + g.name + "</span><div>" + g.colors.map(function (c) {
+          return '<button type="button" data-pc="' + c + '" aria-label="' + colorName(c) + '" title="' + colorName(c) + '"><span style="background:' + swatchCss(c) + '"></span></button>';
+        }).join("") + "</div></div>";
+      }).join("") +
+      '<div class="ink-custom"><label>自訂顏色 <input type="color" value="' + hexOf(cfg.c) + '"></label>' +
+      '<button type="button" data-cfg="reset">恢復這支筆的預設</button></div>';
+    this.syncCfg();
+  };
+  Pad.prototype.syncCfg = function () {
+    var tp = penType();
+    if (this.cfgFor !== tp) { this.renderCfg(); return; }
+    var cfg = penCfg(tp), box = this.cfgBox;
+    var r = box.querySelector("input[type=range]");
+    if (document.activeElement !== r) r.value = cfg.sw;
+    box.querySelector("output").textContent = cfg.sw;
+    box.querySelectorAll("[data-pc]").forEach(function (b) { b.setAttribute("aria-pressed", String(sameColor(b.dataset.pc, cfg.c))); });
+    var ci = box.querySelector("input[type=color]");
+    if (document.activeElement !== ci) ci.value = hexOf(cfg.c);
+    this.preview(cfg, tp);
+  };
+  // 預覽：用現在的粗細和顏色畫一條波浪線（跟紙上 100% 時一樣粗）
+  Pad.prototype.preview = function (cfg, tp) {
+    var cv = this.cfgBox.querySelector(".ink-prev"), w = cv.clientWidth, h = cv.clientHeight;
+    if (!w) return;
+    var r = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(w * r); cv.height = Math.round(h * r);
+    var x = cv.getContext("2d"), sc = this.scale || w / W;
+    x.setTransform(r, 0, 0, r, 0, 0);
+    darkNow = isDark();
+    var s = { c: cfg.c, sw: cfg.sw * sc, t: tp === "fountain" ? undefined : tp, pen: true, p: [] };
+    for (var i = 0; i <= 40; i++) {
+      var t = i / 40, px = 14 + t * (w - 28), py = h / 2 + Math.sin(t * Math.PI * 2) * (h / 2 - 12) * 0.6;
+      s.p.push(px, py, 35 + 40 * Math.sin(t * Math.PI));
+    }
+    drawStroke(x, s, palette(false));
   };
   Pad.prototype.syncPenOnly = function () { this.penBox.checked = pref.penOnly === true; };
 
@@ -283,18 +438,41 @@
       var b = e.target.closest("button");
       if (!b) return;
       var a = b.dataset.act;
-      if (b.dataset.tool) self.tool = b.dataset.tool;
-      else if (b.dataset.color) { pref.color = +b.dataset.color; self.tool = "pen"; savePref(); syncAll(); }
-      else if (b.dataset.size) { pref.size = +b.dataset.size; self.tool = "pen"; savePref(); syncAll(); }
+      if (b.dataset.pen) { pref.pen = b.dataset.pen; self.tool = "pen"; savePref(); syncAll(); }
+      else if (b.dataset.tool) self.tool = b.dataset.tool;
+      else if (b.dataset.color != null) { setPenCfg({ c: parseColor(b.dataset.color) }); self.tool = "pen"; syncAll(); }
+      else if (a === "cfg") { self.tool = "pen"; self.openCfg(self.cfgBox.hidden); return; }
       else if (a === "undo") self.undo();
       else if (a === "redo") self.redo();
       else if (a === "zin") self.zoomBy(1.5);
       else if (a === "zout") self.zoomBy(1 / 1.5);
       else if (a === "zreset") { self.z = 1; self.ox = self.oy = 0; self.requestDraw(); self.syncZoom(); }
       else if (a === "more") self.extend();
+      else if (a === "less") self.shrink();
       else if (a === "clear") self.clear();
       else if (a === "png") self.png();
       self.syncTools();
+    });
+    // 設定面板：拖粗細的滑桿時即時預覽，放開才存；點顏色、自訂顏色、恢復預設
+    var box = this.cfgBox;
+    box.addEventListener("input", function (e) {
+      if (e.target.type === "range") {
+        var v = +e.target.value;
+        box.querySelector("output").textContent = v;
+        self.preview({ c: penCfg(penType()).c, sw: v }, penType());
+      } else if (e.target.type === "color") {
+        setPenCfg({ c: e.target.value.toLowerCase() }); syncAll();
+      }
+    });
+    box.addEventListener("change", function (e) {
+      if (e.target.type === "range") { setPenCfg({ sw: +e.target.value }); syncAll(); }
+    });
+    box.addEventListener("click", function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.pc != null) { setPenCfg({ c: parseColor(b.dataset.pc) }); syncAll(); }
+      else if (b.dataset.cfg === "reset") { if (pref.tools) delete pref.tools[penType()]; savePref(); syncAll(); }
+      else if (b.dataset.cfg === "close") self.openCfg(false);
     });
     this.penBox.addEventListener("change", function () {
       pref.penOnly = self.penBox.checked; savePref();
@@ -367,7 +545,9 @@
         self.eraseAt(q[0], q[1], act);
         return;
       }
-      var s = { c: pref.color || 0, w: pref.size == null ? 1 : pref.size, pen: isPen, p: [q[0], q[1], pres(e)] };
+      var tp = penType(), cfg = penCfg(tp);
+      var s = { c: cfg.c, sw: cfg.sw, pen: isPen, p: [q[0], q[1], pres(e)] };
+      if (tp !== "fountain") s.t = tp;
       if (self.z > 1.001) s.k = Math.round(100 / self.z) / 100;
       self.strokes.push(s);
       self.busy = true;
@@ -392,9 +572,13 @@
         var p = act.s.p, n = p.length;
         if (Math.hypot(q[0] - p[n - 3], q[1] - p[n - 2]) < 0.6 / self.z) continue;
         p.push(q[0], q[1], pres(list[i]));
+        if (act.s.t === "hl") continue;
         setColor(self.ctx, act.s, act.pal);
         seg(self.ctx, act.s, p.length / 3 - 1);
+        self.ctx.globalAlpha = 1;
       }
+      // 螢光筆是半透明的整條路徑，邊畫邊整張重畫（才會畫在字的下面、接縫不會變深）
+      if (act.mode === "draw" && act.s.t === "hl") self.requestDraw();
     });
 
     function end(e) {
@@ -406,8 +590,9 @@
       act = null;
       self.busy = false;
       if (a.mode === "draw") {
-        if (a.s.p.length === 3) drawStroke(self.ctx, a.s, a.pal);
-        else { setColor(self.ctx, a.s, a.pal); tail(self.ctx, a.s); }
+        if (a.s.t === "hl") self.requestDraw();
+        else if (a.s.p.length === 3) drawStroke(self.ctx, a.s, a.pal);
+        else { setColor(self.ctx, a.s, a.pal); tail(self.ctx, a.s); self.ctx.globalAlpha = 1; }
         self.push({ t: "add", s: a.s });
       } else if (a.mode === "erase" && a.removed.length) {
         self.push({ t: "del", items: a.removed });
@@ -434,7 +619,7 @@
     var hit = false, R = 14 / this.z;
     for (var i = this.strokes.length - 1; i >= 0; i--) {
       var s = this.strokes[i];
-      if (near(s, x, y, R + SIZES[s.w] * (s.k || 1))) { a.removed.push([i, s]); this.strokes.splice(i, 1); hit = true; }
+      if (near(s, x, y, R + baseW(s))) { a.removed.push([i, s]); this.strokes.splice(i, 1); hit = true; }
     }
     if (hit) this.redraw();
   };
@@ -446,6 +631,7 @@
     if (h.t === "add") this.strokes.splice(this.strokes.lastIndexOf(h.s), 1);
     else if (h.t === "del") for (var i = h.items.length - 1; i >= 0; i--) this.strokes.splice(h.items[i][0], 0, h.items[i][1]);
     else if (h.t === "clear") this.strokes = h.items.slice();
+    else if (h.t === "h") this.setH(h.from);
     this.fut.push(h); this.redraw(); this.changed();
   };
   Pad.prototype.redo = function () {
@@ -454,6 +640,7 @@
     if (h.t === "add") this.strokes.push(h.s);
     else if (h.t === "del") for (var i = 0; i < h.items.length; i++) this.strokes.splice(h.items[i][0], 1);
     else if (h.t === "clear") this.strokes = [];
+    else if (h.t === "h") this.setH(h.to);
     this.hist.push(h); this.redraw(); this.changed();
   };
   Pad.prototype.clear = function () {
@@ -462,10 +649,32 @@
     this.hist.push({ t: "clear", items: this.strokes.slice() });
     this.fut = []; this.strokes = []; this.redraw(); this.changed();
   };
+  /* 紙張長度：加長一次多 600；縮短一次收回 600，但停在最後一筆的下面、不會比原本的 900 短。都可以復原 */
+  Pad.prototype.setH = function (h) { this.H = h; this.clampView(); this.layout(); };
+  Pad.prototype.minH = function () {
+    var maxY = 0;
+    this.strokes.forEach(function (s) {
+      var r = baseW(s) / 2;
+      for (var i = 1; i < s.p.length; i += 3) if (s.p[i] + r > maxY) maxY = s.p[i] + r;
+    });
+    return Math.max(DEFAULT_H, Math.ceil((maxY + 40) / GRID) * GRID);
+  };
   Pad.prototype.extend = function () {
     if (this.H >= MAX_H) { this.status("已經是最長了"); return; }
-    this.H = Math.min(MAX_H, this.H + STEP_H);
-    this.layout(); this.changed();
+    var from = this.H, to = Math.min(MAX_H, from + STEP_H);
+    this.setH(to);
+    this.push({ t: "h", from: from, to: to });
+    this.status("紙張加長了一段；用不到的話按「縮短」收回");
+  };
+  Pad.prototype.shrink = function () {
+    var from = this.H, to = Math.max(from - STEP_H, this.minH());
+    if (to >= from) {
+      this.status(from <= DEFAULT_H ? "已經是原本的長度了" : "下面還有筆跡，先把最下面的字擦掉才能再縮短");
+      return;
+    }
+    this.setH(to);
+    this.push({ t: "h", from: from, to: to });
+    this.status(to > from - STEP_H ? "縮短到最後一筆的下面（再往上會切到筆跡）" : to <= DEFAULT_H ? "回到原本的長度了" : "收回了一段");
   };
 
   Pad.prototype.changed = function () {
@@ -493,8 +702,7 @@
     var x = cv.getContext("2d");
     x.fillStyle = "#ffffff"; x.fillRect(0, 0, cv.width, cv.height);
     x.setTransform(k, 0, 0, k, 0, 0);
-    var pal = palette(true);
-    this.strokes.forEach(function (s) { drawStroke(x, s, pal); });
+    drawAll(x, this.strokes, palette(true));
     var name = this.key.replace(/[^\w-]+/g, "_") + ".png";
     cv.toBlob(function (b) { if (b) download(name, b); }, "image/png");
   };
