@@ -342,6 +342,8 @@ hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles
 
 #### 換你試試
 
+<div data-qid="u2-0-t0" markdown="1">
+
 **T-0.** block 8 bytes、4 個 set、direct-mapped（byte address）。位址 100 在第幾個 block？offset、index、tag 是多少？先用十進位算，再用二進位對答案。
 
 ??? quiz "看答案"
@@ -350,6 +352,8 @@ hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles
     **二進位對答案**：100 ＝ `0110 0100`。offset 是最右 $\log_2 8=3$ 位 `100` ＝ 4；index 是接著 $\log_2 4=2$ 位 `00` ＝ 0；tag 是剩下的 `011` ＝ 3。兩種算法一樣。
 
     **意思是**：位址 100 在 block 12 的第 4 個 byte；block 12 放在 0 號格，格子的標籤寫 3（$3\times4+0=12$）。
+
+</div>
 
 **T-1.** 8 位元位址、block 2 bytes、8 個 set、direct-mapped。offset、index、tag 各幾位元？位址 90 的 tag、index、offset 是多少？
 
@@ -385,9 +389,31 @@ fully associative 沒有 index（只有 1 個 set）；direct-mapped 是 1-way�
 
 ### 2.2 Cache 總位元數 {#u2-2}
 
-每個 block 需要：**data + tag + valid**，write-back 再加 **dirty**，set-associative 用 LRU 再加 **LRU 位元**（2-way 每個 set 1 個位元）。
+題目說「16 KB 的 cache」，通常只算 **data**。但硬體裡每一格還要存幾個「管理用」的欄位，題目問**總位元數**時要全部加起來。
 
-$$\text{總位元數}=\text{block 數}\times(\text{data}+\text{tag}+\text{valid}+\text{dirty})+\text{LRU 位元}$$
+#### 每一格存了哪些東西
+
+| 欄位 | 幾個位元 | 做什麼用 |
+|---|---|---|
+| **valid** | 1 | 這格有沒有放有效的資料。開機時全部是 0，所以第一次用到一定 miss |
+| **dirty** | 1（只有 write-back 才有） | 這個 block 搬進 cache 之後有沒有被**改過**。被踢出去時，dirty＝1 才要寫回主記憶體（[2.5](#u2-write)） |
+| **tag** | 位址位元 − index − offset | 這格現在放的是**哪一個 block** |
+| **data** | block 大小 × 8 | block 本身的內容 |
+
+set-associative 用 **LRU** 時，每個 **set** 還要幾個位元記錄「誰最久沒用」（[2.6](#u2-repl)）。2-way 的 set 只有兩格，**1 個位元**就夠：0 表示下次踢第 0 格、1 表示踢第 1 格。
+
+#### 為什麼不用存 index 和 offset
+
+!!! key "位置本身就是答案"
+    - **index 不用存**：第幾列本身就是 index。就像抽屜的號碼刻在書桌上，不用另外寫在標籤上。查詢時，硬體把位址的 index 接到**解碼器**，直接打開那一列。
+    - **offset 不用存**：block 裡的 byte 本來就照順序排好，offset 只是用來從整個 block 裡**挑出第幾個 byte**（接到多工器 MUX），不用存下來。
+    - **只有 tag 一定要存**：同一列可能放過很多不同的 block（0、4、8、12 都擠 0 號抽屜），只能靠存下來的 tag 比對「現在是不是我要的那一塊」。
+
+所以總位元數是「每一格都要存的」加上「每個 set 共用的」：
+
+$$\begin{aligned}\text{總位元數}=\;&\text{block 數}\times(\text{data}+\text{tag}+\text{valid}+\text{dirty})\\&+\text{set 數}\times\text{每個 set 的 LRU 位元}\end{aligned}$$
+
+LRU 加在最後面，是因為它跟著 **set** 走，不是跟著 block 走：2-way 的一個 set 裡兩格共用 1 個位元。direct-mapped 每個 set 只有一格、沒得選，**不需要 LRU**。4-way 以上要記完整的先後順序，位元數依做法不同，考試會給條件。
 
 !!! example "111 P3（25%）：32-bit 位址、16 KB data、write-back、LRU"
     16 KB ＝ 4K words。每個 block 加 valid 和 dirty 各 1 位元。
@@ -475,7 +501,67 @@ $$\text{CPI}_{\text{實際}}=\text{CPI}_{\text{base}}+\frac{\text{記憶體存�
 
     (2) associativity 增加只減少 **conflict miss**，但：比較器變多、要多一層 mux 選出命中的 way → **hit time 變長**（甚至拖慢整顆 CPU 的時脈）；面積和功耗增加；而且 8-way 以上 miss rate 幾乎不再下降（剩下的是 compulsory、capacity miss）。hit time 的成本最後超過 miss rate 的收益。
 
-### 2.5 觀念題 {#u2-5}
+### 2.5 寫入策略：write-through 與 write-back {#u2-write}
+
+讀資料只要找得到就好；**寫資料**比較麻煩：cache 和主記憶體各有一份，改了 cache 那份，主記憶體那份怎麼辦？分成兩個情況：要寫的 block 在 cache 裡（**write hit**）、不在 cache 裡（**write miss**）。
+
+#### write hit：什麼時候把新的值寫回主記憶體
+
+| | write-through（寫穿） | write-back（寫回） |
+|---|---|---|
+| 做法 | 改 cache 的**同時**也寫主記憶體 | 只改 cache；等這個 block **被踢出去時**才寫回主記憶體 |
+| 需要 dirty 位元？ | 不需要：主記憶體永遠是最新的 | **需要**：記這塊有沒有被改過，沒改過的被踢掉時不用寫回 |
+| 優點 | 簡單；主記憶體隨時是最新的 | 同一塊改很多次，最後只寫回一次，省頻寬 |
+| 缺點 | 每次寫都要等慢的主記憶體 | 比較複雜；被踢的 block 要先寫回，才能放新的 |
+| 常見搭配 | **write buffer**；write miss 用 no-write-allocate | write miss 用 write-allocate |
+
+**write buffer**：CPU 把要寫的資料丟進一個小緩衝區就繼續做事，由緩衝區慢慢寫進主記憶體。這樣 write-through 就不用每次停下來等。
+
+**一個例子**：迴圈把 `a[0]`～`a[3]`（同一個 16-byte block）各加 1，之後這個 block 被踢掉。
+
+- write-through：寫 4 次，**主記憶體也被寫 4 次**（每次 4 bytes）。
+- write-back：4 次都只改 cache，dirty 變成 1；被踢掉時**整個 block 寫回 1 次**（16 bytes）。
+
+同一塊改越多次，write-back 省越多。
+
+#### write miss：要不要先把 block 搬進 cache
+
+- **write-allocate**：先把整個 block 從主記憶體搬進 cache，再在 cache 裡寫，之後再讀寫這塊就會 hit。通常搭配 **write-back**。
+- **no-write-allocate**：不搬進 cache，直接寫主記憶體。通常搭配 **write-through**：反正每次都要寫主記憶體，搬進來也省不了寫入。
+
+!!! key "考試常問"
+    - **為什麼 write-back 需要 dirty、write-through 不需要？** write-through 的主記憶體永遠是最新的，block 被踢掉時直接丟掉就好；write-back 的主記憶體可能是舊的，要靠 dirty 知道踢掉前要不要寫回。
+    - **為什麼 write-through 要 write buffer？** 不然每次寫都要停下來等主記憶體（約 100 個 cycle）。
+    - **多層 cache**：L1 常用 write-through（L2 隨時有最新資料），L2／L3 用 write-back（減少寫主記憶體的流量），見 [2.7 的 111 P1](#u2-5)。
+
+### 2.6 替換策略：LRU 與 FIFO {#u2-repl}
+
+direct-mapped 每個 block 只有一個位置，被佔用就直接換掉，沒得選。**set-associative 和 fully associative** 的 set 滿了，就要決定踢掉誰：
+
+| 策略 | 踢掉誰 | hit 時要更新順序嗎 | 想法 |
+|---|---|---|---|
+| **LRU**（least recently used） | **最久沒被用到**的那一格 | **要**：被用到的變成「最近用過」 | 時間區域性：最近用過的，等一下很可能又用 |
+| **FIFO**（first in, first out） | **最早放進來**的那一格 | **不用**：只看放進來的先後 | 簡單，硬體只要記放進來的順序 |
+| **Random** | 隨便挑一格 | 不用 | 最簡單；cache 大的時候表現跟 LRU 差不多 |
+
+#### 同一串存取，LRU 和 FIFO 結果不同
+
+只有 1 個 set、2 格（2-way），依序存取 block A、B、A、C、A。中括號裡寫在前面的是「下一個要被踢的」：
+
+| 存取 | A | B | A | C | A |
+|---|---|---|---|---|---|
+| **LRU** 的 set | [A] | [A, B] | [B, A]（A 變成最近用過） | [A, C]（踢最久沒用的 B） | [C, A] |
+| LRU 結果 | M | M | **H** | M | **H** |
+| **FIFO** 的 set | [A] | [A, B] | [A, B]（順序不變） | [B, C]（踢最早放進來的 A） | [C, A]（踢 B） |
+| FIFO 結果 | M | M | **H** | M | M |
+
+LRU 2 次 hit、FIFO 1 次。差別在第三步：A 被用到了，**LRU 會記得**「A 剛用過」，所以第四步踢 B；**FIFO 不管**，只看 A 最早進來，就把 A 踢掉，第五步又要 miss。LRU 也不是永遠比較好，[2.8 的 C-4](#u2-concept) 有一個 FIFO 反而贏的例子。
+
+下面的動畫是同一串存取（A＝位址 0、B＝4、C＝8，block 4 bytes、1 個 set、2 格）。先用 LRU 看一次，再把「set 滿了踢誰」改成 FIFO 重播：
+
+<div class="viz" data-viz="cache" data-addrs="0,4,0,8,0" data-unit="byte" data-block="4" data-sets="1" data-ways="2" data-policy="lru" data-title="LRU 和 FIFO：同一串存取，結果不同"></div>
+
+### 2.7 考古題的觀念題 {#u2-5}
 
 !!! example "111 P1（10%）：五個觀念題"
     - **多層 cache 寫入策略**：L1 常用 write-through（簡單、L2 隨時有最新資料，方便維持一致性），L2／L3 用 write-back（減少寫入主記憶體的流量）。寫入時用 write buffer 避免停頓。
@@ -493,6 +579,148 @@ $$\text{CPI}_{\text{實際}}=\text{CPI}_{\text{base}}+\frac{\text{記憶體存�
     3. **LRU 或 FIFO**：序列 3 的 0 是否被保留，取決於序列 2 末段有沒有「再用到」某個 block 而改變它的順序。
 
     把每組參數都模擬一遍，唯一符合三個 hit rate 的是 **64 B block、4-way、8 KB、LRU**。考試時要把模擬的 cache 狀態畫出來當理由。
+
+### 2.8 觀念小考 {#u2-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。答對、答錯都會記在「本頁小考」。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 哪一種寫入策略，每一格需要 dirty 位元？
+
+1. write-through
+2. write-back
+3. 兩種都需要
+4. 兩種都不需要
+
+??? quiz "看解析"
+    **B. write-back**。write-back 只改 cache，主記憶體那份可能是舊的，所以要用 dirty 記「這塊改過沒」，被踢掉時 dirty＝1 才寫回。write-through 每次都同時寫主記憶體，主記憶體永遠是最新的，不需要 dirty。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-2.** direct-mapped cache 為什麼不需要 LRU 位元？
+
+1. direct-mapped 不會發生 miss
+2. LRU 的資訊已經存在 tag 裡
+3. 每個 block 只有一個位置可以放，被佔用就直接換掉，沒得選
+4. direct-mapped 一定搭配 write-through
+
+??? quiz "看解析"
+    **C**。LRU 是用來在「同一個 set 的好幾格」裡挑一格踢掉。direct-mapped 每個 set 只有一格，新的 block 來了只能放那一格，不用挑，所以不需要 LRU。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-3.** 計算 cache 總位元數時，為什麼不用加 index 的位元？
+
+1. index 只有幾個位元，可以忽略
+2. 格子的位置本身就是 index，硬體用它經過解碼器直接選到那一列
+3. index 已經算在 data 裡
+4. 只有 fully associative 才不用加
+
+??? quiz "看解析"
+    **B**。第幾列本身就代表 index，不用另外存；offset 也一樣，只是用來從 block 裡挑 byte。只有 tag 要存，因為同一列可能放過很多不同的 block。（D 錯在：不只 fully associative，所有 cache 都不用存 index；fully associative 是根本沒有 index。）
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** 1 個 set、2 格，依序存取 A、B、A、C、B。LRU 和 FIFO 各有幾次 hit？
+
+1. LRU 2 次、FIFO 1 次
+2. 都是 1 次
+3. 都是 2 次
+4. LRU 1 次、FIFO 2 次
+
+??? quiz "看解析"
+    **D**。前三步都一樣：A miss、B miss、A hit。
+
+    - **LRU**：A 剛用過，所以 C 來的時候踢 B → [A, C]；接著 B 來，最久沒用的是 A → 踢 A，**B miss**。共 1 次 hit。
+    - **FIFO**：C 來的時候踢最早進來的 A → [B, C]；接著 B 還在，**B hit**。共 2 次 hit。
+
+    LRU 不保證比較好，它賭的是「最近用過的等一下還會用」。這串存取剛好相反，所以 FIFO 贏。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-5.** 一個 block 被寫了 10 次之後才被踢出 cache。write-through（不考慮 write buffer）和 write-back 各要寫主記憶體幾次？
+
+1. write-through 10 次、write-back 1 次
+2. write-through 1 次、write-back 10 次
+3. 都是 10 次
+4. 都是 1 次
+
+??? quiz "看解析"
+    **A**。write-through 每寫一次 cache 就同時寫主記憶體，共 10 次。write-back 這 10 次都只改 cache，dirty 變成 1，被踢掉時把整個 block 寫回 1 次。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-6.** 容量和 block 大小都不變，把 direct-mapped 改成 4-way set-associative，主要會減少哪一種 miss？
+
+1. compulsory miss
+2. capacity miss
+3. conflict miss
+4. 三種都不會變
+
+??? quiz "看解析"
+    **C**。conflict miss 是「cache 還有空位，卻因為搶同一格被踢掉」。4-way 讓同一個 set 可以同時放 4 個 block，搶位置的情況變少。compulsory miss（第一次用到）和 capacity miss（cache 整個裝不下）跟 associativity 無關。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-7.** write miss 時採用 write-allocate，意思是？
+
+1. 不把 block 搬進 cache，直接寫主記憶體
+2. 先把整個 block 搬進 cache，再在 cache 裡寫
+3. 把資料丟進 write buffer 後就不管了
+4. 把那一格的 dirty 設成 0
+
+??? quiz "看解析"
+    **B**。allocate 就是「在 cache 裡配一格給它」。A 是 no-write-allocate。write-allocate 通常搭配 write-back：搬進來之後，接下來對這塊的寫入都只改 cache。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-8.** 下面哪一種情況，某一格的 valid 位元是 0？
+
+1. 那一格的資料被修改過
+2. 位址的 tag 跟那一格存的 tag 不一樣
+3. 剛剛發生 hit
+4. 開機之後，這一格還沒有放過任何 block
+
+??? quiz "看解析"
+    **D**。valid 只表示「這格有沒有放有效的資料」。A 是 dirty 的意思；B 是 miss 的原因之一，但那一格的 valid 可能是 1（只是放的是別的 block）；C 發生 hit 時 valid 一定是 1。
+
+</div>
+
+**W-1.** 用自己的話說明：為什麼 cache 每一格要存 tag，卻不用存 index 和 offset？
+
+??? quiz "看參考答案"
+    - **index**：每一格在第幾列，本身就是 index，硬體用位址的 index 直接選到那一列，不用另外存。
+    - **offset**：只是用來從 block 裡挑出第幾個 byte，block 的資料本來就照順序排好，不用存。
+    - **tag**：同一列會輪流放很多不同的 block（index 相同、tag 不同），只有把 tag 存下來，才能比對「現在放的是不是我要的那一塊」。
+
+    **自我檢查**：你的答案有沒有提到「同一格會放很多不同的 block」？這是一定要存 tag 的原因。
+
+**W-2.** write-back 的 block 被踢出 cache 時，一定要寫回主記憶體嗎？什麼情況可以不用？
+
+??? quiz "看參考答案"
+    **不一定**。看 dirty 位元：dirty＝1 表示搬進 cache 之後被改過，主記憶體那份是舊的，要先寫回；dirty＝0 表示沒被改過，主記憶體那份跟 cache 一樣，直接丟掉就好。這就是 write-back 需要 dirty 位元的原因。
+
+**W-3.** 1 個 set、2 格，依序存取 A、B、C、A、B，用 LRU。每一次是 hit 還是 miss？為什麼表現這麼差？換成 FIFO 會比較好嗎？
+
+??? quiz "看參考答案"
+    LRU：A M、B M、C M（踢 A）、A M（踢 B）、B M（踢 C）→ **5 次全 miss**。FIFO 這串的踢法剛好一樣，也是全 miss。
+
+    原因：三個 block 輪流用，但 set 只有兩格。每次要用的，剛好就是上一步被踢掉的那個，這種情況叫 **thrashing**。換替換策略救不了，要讓 set 裝得下正在輪流用的 block，例如改成 3 格以上（提高 associativity），或調整存取順序。
 
 ### 單元 2 小考 {#u2-quiz}
 

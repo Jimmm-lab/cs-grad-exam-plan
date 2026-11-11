@@ -103,6 +103,23 @@ details.quiz[open] > summary { margin-bottom: 8px; }
 div.arithmatex { padding: 4px 0; }
 mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
 /* 手寫作答板 */
+/* 選擇題：選項是一顆顆按鈕，選了馬上顯示對錯 */
+.mcq { margin: 18px 0; padding: 14px 16px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.mcq > p:first-child { margin-top: 0; }
+.mcq ol { list-style: none; margin: 10px 0 4px; padding: 0; display: grid; gap: 8px; }
+.mcq ol li { margin: 0; }
+.mcq-opt { display: flex; align-items: flex-start; gap: 10px; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; line-height: 1.6; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+.mcq-opt:hover { border-color: var(--muted); }
+.mcq-k { flex: none; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font: 700 12px/1 var(--font-mono); color: var(--muted); background: var(--card); }
+.mcq-opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.mcq-opt.right .mcq-k { background: var(--ok); border-color: var(--ok); color: #fff; }
+.mcq-opt.wrong { border-color: var(--accent); background: var(--accent-soft); }
+.mcq-opt.wrong .mcq-k { background: var(--accent); border-color: var(--accent); color: #fff; }
+.mcq-res { margin: 6px 0 4px; font-weight: 700; }
+.mcq-res:empty { display: none; }
+.mcq-res.ok { color: var(--ok); }
+.mcq-res.no { color: var(--accent); }
+.mcq .judge { display: none; }
 .ink { margin: 12px 0 0; }
 .ink + details.quiz { margin-top: 8px; }
 .ink-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ex); font: 500 14px/1 var(--font-body); cursor: pointer; }
@@ -121,7 +138,17 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .ink-tools .ink-sw { padding: 0; display: inline-grid; place-items: center; }
 .ink-sw span { display: block; width: 18px; height: 18px; border-radius: 50%; }
 /* 筆的種類：圖示＋小字，一眼分得出來 */
-.ink-tools .ink-tool { flex-direction: column; gap: 2px; width: 54px; min-height: 50px; padding: 4px 0 3px; font: 500 11px/1.1 var(--font-body); }
+.ink-tools .ink-tool { flex-direction: column; gap: 2px; width: 48px; min-width: 48px; min-height: 50px; padding: 4px 0 3px; font: 500 11px/1.1 var(--font-body); }
+/* 選取後浮在選取範圍旁邊的操作列 */
+.ink-sheet { position: relative; }
+.ink-selbar { position: absolute; z-index: 3; left: 0; top: 0; display: flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); box-shadow: 0 6px 18px rgba(10, 15, 30, .18); transition: opacity .12s; }
+.ink-selbar[hidden] { display: none; }
+.ink-selbar.dragging { opacity: 0; pointer-events: none; }
+.ink-selinfo { padding: 0 6px; font: 700 12.5px/1 var(--font-body); color: var(--muted); white-space: nowrap; }
+.ink-selbar button { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; min-width: 36px; justify-content: center; padding: 0 9px; border-radius: 7px; border: 0; background: none; color: var(--ink); font: 500 13px/1 var(--font-body); white-space: nowrap; cursor: pointer; }
+.ink-selbar button:hover { background: var(--paper); }
+.ink-selbar button[data-sel="del"] { color: var(--accent); }
+.ink-selbar .ico { width: 17px; height: 17px; }
 .ink-tools .ink-tool .ico { width: 20px; height: 20px; }
 /* 「● 數字」：現在這支筆的顏色和粗細，按了打開設定 */
 .ink-tools .ink-cur { gap: 6px; padding: 0 10px; min-width: 52px; }
@@ -911,6 +938,7 @@ window.MathJax = {
 </ul>
 </div>
 <h4 id="_8">換你試試</h4>
+<div data-qid="u2-0-t0">
 <p><strong>T-0.</strong> block 8 bytes、4 個 set、direct-mapped（byte address）。位址 100 在第幾個 block？offset、index、tag 是多少？先用十進位算，再用二進位對答案。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -918,6 +946,7 @@ window.MathJax = {
 <p><strong>二進位對答案</strong>：100 ＝ <code>0110 0100</code>。offset 是最右 <span class="arithmatex">\(\log_2 8=3\)</span> 位 <code>100</code> ＝ 4；index 是接著 <span class="arithmatex">\(\log_2 4=2\)</span> 位 <code>00</code> ＝ 0；tag 是剩下的 <code>011</code> ＝ 3。兩種算法一樣。</p>
 <p><strong>意思是</strong>：位址 100 在 block 12 的第 4 個 byte；block 12 放在 0 號格，格子的標籤寫 3（<span class="arithmatex">\(3\times4+0=12\)</span>）。</p>
 </details>
+</div>
 <p><strong>T-1.</strong> 8 位元位址、block 2 bytes、8 個 set、direct-mapped。offset、index、tag 各幾位元？位址 90 的 tag、index、offset 是多少？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -948,8 +977,52 @@ window.MathJax = {
 <p><strong>注意單位</strong>：題目給 word address 時，offset 是「block 裡第幾個 word」，用 word 數算；給 byte address 時用 byte 數算。一個 word 通常是 4 bytes。</p>
 <p>fully associative 沒有 index（只有 1 個 set）；direct-mapped 是 1-way。</p>
 <h3 id="u2-2">2.2 Cache 總位元數</h3>
-<p>每個 block 需要：<strong>data + tag + valid</strong>，write-back 再加 <strong>dirty</strong>，set-associative 用 LRU 再加 <strong>LRU 位元</strong>（2-way 每個 set 1 個位元）。</p>
-<div class="arithmatex">\[\text{總位元數}=\text{block 數}\times(\text{data}+\text{tag}+\text{valid}+\text{dirty})+\text{LRU 位元}\]</div>
+<p>題目說「16 KB 的 cache」，通常只算 <strong>data</strong>。但硬體裡每一格還要存幾個「管理用」的欄位，題目問<strong>總位元數</strong>時要全部加起來。</p>
+<h4 id="_9">每一格存了哪些東西</h4>
+<table>
+<thead>
+<tr>
+<th>欄位</th>
+<th>幾個位元</th>
+<th>做什麼用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>valid</strong></td>
+<td>1</td>
+<td>這格有沒有放有效的資料。開機時全部是 0，所以第一次用到一定 miss</td>
+</tr>
+<tr>
+<td><strong>dirty</strong></td>
+<td>1（只有 write-back 才有）</td>
+<td>這個 block 搬進 cache 之後有沒有被<strong>改過</strong>。被踢出去時，dirty＝1 才要寫回主記憶體（<a href="#u2-write">2.5</a>）</td>
+</tr>
+<tr>
+<td><strong>tag</strong></td>
+<td>位址位元 − index − offset</td>
+<td>這格現在放的是<strong>哪一個 block</strong></td>
+</tr>
+<tr>
+<td><strong>data</strong></td>
+<td>block 大小 × 8</td>
+<td>block 本身的內容</td>
+</tr>
+</tbody>
+</table>
+<p>set-associative 用 <strong>LRU</strong> 時，每個 <strong>set</strong> 還要幾個位元記錄「誰最久沒用」（<a href="#u2-repl">2.6</a>）。2-way 的 set 只有兩格，<strong>1 個位元</strong>就夠：0 表示下次踢第 0 格、1 表示踢第 1 格。</p>
+<h4 id="index-offset">為什麼不用存 index 和 offset</h4>
+<div class="admonition key">
+<p class="admonition-title">位置本身就是答案</p>
+<ul>
+<li><strong>index 不用存</strong>：第幾列本身就是 index。就像抽屜的號碼刻在書桌上，不用另外寫在標籤上。查詢時，硬體把位址的 index 接到<strong>解碼器</strong>，直接打開那一列。</li>
+<li><strong>offset 不用存</strong>：block 裡的 byte 本來就照順序排好，offset 只是用來從整個 block 裡<strong>挑出第幾個 byte</strong>（接到多工器 MUX），不用存下來。</li>
+<li><strong>只有 tag 一定要存</strong>：同一列可能放過很多不同的 block（0、4、8、12 都擠 0 號抽屜），只能靠存下來的 tag 比對「現在是不是我要的那一塊」。</li>
+</ul>
+</div>
+<p>所以總位元數是「每一格都要存的」加上「每個 set 共用的」：</p>
+<div class="arithmatex">\[\begin{aligned}\text{總位元數}=\;&amp;\text{block 數}\times(\text{data}+\text{tag}+\text{valid}+\text{dirty})\\&amp;+\text{set 數}\times\text{每個 set 的 LRU 位元}\end{aligned}\]</div>
+<p>LRU 加在最後面，是因為它跟著 <strong>set</strong> 走，不是跟著 block 走：2-way 的一個 set 裡兩格共用 1 個位元。direct-mapped 每個 set 只有一格、沒得選，<strong>不需要 LRU</strong>。4-way 以上要記完整的先後順序，位元數依做法不同，考試會給條件。</p>
 <div class="admonition example">
 <p class="admonition-title">111 P3（25%）：32-bit 位址、16 KB data、write-back、LRU</p>
 <p>16 KB ＝ 4K words。每個 block 加 valid 和 dirty 各 1 位元。</p>
@@ -1145,7 +1218,150 @@ window.MathJax = {
 <p>(1) <span class="arithmatex">\(1+0.02\times100=3\)</span> cycles。</p>
 <p>(2) associativity 增加只減少 <strong>conflict miss</strong>，但：比較器變多、要多一層 mux 選出命中的 way → <strong>hit time 變長</strong>（甚至拖慢整顆 CPU 的時脈）；面積和功耗增加；而且 8-way 以上 miss rate 幾乎不再下降（剩下的是 compulsory、capacity miss）。hit time 的成本最後超過 miss rate 的收益。</p>
 </div>
-<h3 id="u2-5">2.5 觀念題</h3>
+<h3 id="u2-write">2.5 寫入策略：write-through 與 write-back</h3>
+<p>讀資料只要找得到就好；<strong>寫資料</strong>比較麻煩：cache 和主記憶體各有一份，改了 cache 那份，主記憶體那份怎麼辦？分成兩個情況：要寫的 block 在 cache 裡（<strong>write hit</strong>）、不在 cache 裡（<strong>write miss</strong>）。</p>
+<h4 id="write-hit">write hit：什麼時候把新的值寫回主記憶體</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>write-through（寫穿）</th>
+<th>write-back（寫回）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>做法</td>
+<td>改 cache 的<strong>同時</strong>也寫主記憶體</td>
+<td>只改 cache；等這個 block <strong>被踢出去時</strong>才寫回主記憶體</td>
+</tr>
+<tr>
+<td>需要 dirty 位元？</td>
+<td>不需要：主記憶體永遠是最新的</td>
+<td><strong>需要</strong>：記這塊有沒有被改過，沒改過的被踢掉時不用寫回</td>
+</tr>
+<tr>
+<td>優點</td>
+<td>簡單；主記憶體隨時是最新的</td>
+<td>同一塊改很多次，最後只寫回一次，省頻寬</td>
+</tr>
+<tr>
+<td>缺點</td>
+<td>每次寫都要等慢的主記憶體</td>
+<td>比較複雜；被踢的 block 要先寫回，才能放新的</td>
+</tr>
+<tr>
+<td>常見搭配</td>
+<td><strong>write buffer</strong>；write miss 用 no-write-allocate</td>
+<td>write miss 用 write-allocate</td>
+</tr>
+</tbody>
+</table>
+<p><strong>write buffer</strong>：CPU 把要寫的資料丟進一個小緩衝區就繼續做事，由緩衝區慢慢寫進主記憶體。這樣 write-through 就不用每次停下來等。</p>
+<p><strong>一個例子</strong>：迴圈把 <code>a[0]</code>～<code>a[3]</code>（同一個 16-byte block）各加 1，之後這個 block 被踢掉。</p>
+<ul>
+<li>write-through：寫 4 次，<strong>主記憶體也被寫 4 次</strong>（每次 4 bytes）。</li>
+<li>write-back：4 次都只改 cache，dirty 變成 1；被踢掉時<strong>整個 block 寫回 1 次</strong>（16 bytes）。</li>
+</ul>
+<p>同一塊改越多次，write-back 省越多。</p>
+<h4 id="write-miss-block-cache">write miss：要不要先把 block 搬進 cache</h4>
+<ul>
+<li><strong>write-allocate</strong>：先把整個 block 從主記憶體搬進 cache，再在 cache 裡寫，之後再讀寫這塊就會 hit。通常搭配 <strong>write-back</strong>。</li>
+<li><strong>no-write-allocate</strong>：不搬進 cache，直接寫主記憶體。通常搭配 <strong>write-through</strong>：反正每次都要寫主記憶體，搬進來也省不了寫入。</li>
+</ul>
+<div class="admonition key">
+<p class="admonition-title">考試常問</p>
+<ul>
+<li><strong>為什麼 write-back 需要 dirty、write-through 不需要？</strong> write-through 的主記憶體永遠是最新的，block 被踢掉時直接丟掉就好；write-back 的主記憶體可能是舊的，要靠 dirty 知道踢掉前要不要寫回。</li>
+<li><strong>為什麼 write-through 要 write buffer？</strong> 不然每次寫都要停下來等主記憶體（約 100 個 cycle）。</li>
+<li><strong>多層 cache</strong>：L1 常用 write-through（L2 隨時有最新資料），L2／L3 用 write-back（減少寫主記憶體的流量），見 <a href="#u2-5">2.7 的 111 P1</a>。</li>
+</ul>
+</div>
+<h3 id="u2-repl">2.6 替換策略：LRU 與 FIFO</h3>
+<p>direct-mapped 每個 block 只有一個位置，被佔用就直接換掉，沒得選。<strong>set-associative 和 fully associative</strong> 的 set 滿了，就要決定踢掉誰：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>踢掉誰</th>
+<th>hit 時要更新順序嗎</th>
+<th>想法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LRU</strong>（least recently used）</td>
+<td><strong>最久沒被用到</strong>的那一格</td>
+<td><strong>要</strong>：被用到的變成「最近用過」</td>
+<td>時間區域性：最近用過的，等一下很可能又用</td>
+</tr>
+<tr>
+<td><strong>FIFO</strong>（first in, first out）</td>
+<td><strong>最早放進來</strong>的那一格</td>
+<td><strong>不用</strong>：只看放進來的先後</td>
+<td>簡單，硬體只要記放進來的順序</td>
+</tr>
+<tr>
+<td><strong>Random</strong></td>
+<td>隨便挑一格</td>
+<td>不用</td>
+<td>最簡單；cache 大的時候表現跟 LRU 差不多</td>
+</tr>
+</tbody>
+</table>
+<h4 id="lru-fifo">同一串存取，LRU 和 FIFO 結果不同</h4>
+<p>只有 1 個 set、2 格（2-way），依序存取 block A、B、A、C、A。中括號裡寫在前面的是「下一個要被踢的」：</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>A</th>
+<th>B</th>
+<th>A</th>
+<th>C</th>
+<th>A</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LRU</strong> 的 set</td>
+<td>[A]</td>
+<td>[A, B]</td>
+<td>[B, A]（A 變成最近用過）</td>
+<td>[A, C]（踢最久沒用的 B）</td>
+<td>[C, A]</td>
+</tr>
+<tr>
+<td>LRU 結果</td>
+<td>M</td>
+<td>M</td>
+<td><strong>H</strong></td>
+<td>M</td>
+<td><strong>H</strong></td>
+</tr>
+<tr>
+<td><strong>FIFO</strong> 的 set</td>
+<td>[A]</td>
+<td>[A, B]</td>
+<td>[A, B]（順序不變）</td>
+<td>[B, C]（踢最早放進來的 A）</td>
+<td>[C, A]（踢 B）</td>
+</tr>
+<tr>
+<td>FIFO 結果</td>
+<td>M</td>
+<td>M</td>
+<td><strong>H</strong></td>
+<td>M</td>
+<td>M</td>
+</tr>
+</tbody>
+</table>
+<p>LRU 2 次 hit、FIFO 1 次。差別在第三步：A 被用到了，<strong>LRU 會記得</strong>「A 剛用過」，所以第四步踢 B；<strong>FIFO 不管</strong>，只看 A 最早進來，就把 A 踢掉，第五步又要 miss。LRU 也不是永遠比較好，<a href="#u2-concept">2.8 的 C-4</a> 有一個 FIFO 反而贏的例子。</p>
+<p>下面的動畫是同一串存取（A＝位址 0、B＝4、C＝8，block 4 bytes、1 個 set、2 格）。先用 LRU 看一次，再把「set 滿了踢誰」改成 FIFO 重播：</p>
+<div class="viz" data-viz="cache" data-addrs="0,4,0,8,0" data-unit="byte" data-block="4" data-sets="1" data-ways="2" data-policy="lru" data-title="LRU 和 FIFO：同一串存取，結果不同"></div>
+
+<h3 id="u2-5">2.7 考古題的觀念題</h3>
 <div class="admonition example">
 <p class="admonition-title">111 P1（10%）：五個觀念題</p>
 <ul>
@@ -1166,6 +1382,138 @@ window.MathJax = {
 </ol>
 <p>把每組參數都模擬一遍，唯一符合三個 hit rate 的是 <strong>64 B block、4-way、8 KB、LRU</strong>。考試時要把模擬的 cache 狀態畫出來當理由。</p>
 </div>
+<h3 id="u2-concept">2.8 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。答對、答錯都會記在「本頁小考」。</p>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 哪一種寫入策略，每一格需要 dirty 位元？</p>
+<ol>
+<li>write-through</li>
+<li>write-back</li>
+<li>兩種都需要</li>
+<li>兩種都不需要</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. write-back</strong>。write-back 只改 cache，主記憶體那份可能是舊的，所以要用 dirty 記「這塊改過沒」，被踢掉時 dirty＝1 才寫回。write-through 每次都同時寫主記憶體，主記憶體永遠是最新的，不需要 dirty。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-2.</strong> direct-mapped cache 為什麼不需要 LRU 位元？</p>
+<ol>
+<li>direct-mapped 不會發生 miss</li>
+<li>LRU 的資訊已經存在 tag 裡</li>
+<li>每個 block 只有一個位置可以放，被佔用就直接換掉，沒得選</li>
+<li>direct-mapped 一定搭配 write-through</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。LRU 是用來在「同一個 set 的好幾格」裡挑一格踢掉。direct-mapped 每個 set 只有一格，新的 block 來了只能放那一格，不用挑，所以不需要 LRU。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-3.</strong> 計算 cache 總位元數時，為什麼不用加 index 的位元？</p>
+<ol>
+<li>index 只有幾個位元，可以忽略</li>
+<li>格子的位置本身就是 index，硬體用它經過解碼器直接選到那一列</li>
+<li>index 已經算在 data 裡</li>
+<li>只有 fully associative 才不用加</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。第幾列本身就代表 index，不用另外存；offset 也一樣，只是用來從 block 裡挑 byte。只有 tag 要存，因為同一列可能放過很多不同的 block。（D 錯在：不只 fully associative，所有 cache 都不用存 index；fully associative 是根本沒有 index。）</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-4.</strong> 1 個 set、2 格，依序存取 A、B、A、C、B。LRU 和 FIFO 各有幾次 hit？</p>
+<ol>
+<li>LRU 2 次、FIFO 1 次</li>
+<li>都是 1 次</li>
+<li>都是 2 次</li>
+<li>LRU 1 次、FIFO 2 次</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。前三步都一樣：A miss、B miss、A hit。</p>
+<ul>
+<li><strong>LRU</strong>：A 剛用過，所以 C 來的時候踢 B → [A, C]；接著 B 來，最久沒用的是 A → 踢 A，<strong>B miss</strong>。共 1 次 hit。</li>
+<li><strong>FIFO</strong>：C 來的時候踢最早進來的 A → [B, C]；接著 B 還在，<strong>B hit</strong>。共 2 次 hit。</li>
+</ul>
+<p>LRU 不保證比較好，它賭的是「最近用過的等一下還會用」。這串存取剛好相反，所以 FIFO 贏。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-5.</strong> 一個 block 被寫了 10 次之後才被踢出 cache。write-through（不考慮 write buffer）和 write-back 各要寫主記憶體幾次？</p>
+<ol>
+<li>write-through 10 次、write-back 1 次</li>
+<li>write-through 1 次、write-back 10 次</li>
+<li>都是 10 次</li>
+<li>都是 1 次</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。write-through 每寫一次 cache 就同時寫主記憶體，共 10 次。write-back 這 10 次都只改 cache，dirty 變成 1，被踢掉時把整個 block 寫回 1 次。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-6.</strong> 容量和 block 大小都不變，把 direct-mapped 改成 4-way set-associative，主要會減少哪一種 miss？</p>
+<ol>
+<li>compulsory miss</li>
+<li>capacity miss</li>
+<li>conflict miss</li>
+<li>三種都不會變</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。conflict miss 是「cache 還有空位，卻因為搶同一格被踢掉」。4-way 讓同一個 set 可以同時放 4 個 block，搶位置的情況變少。compulsory miss（第一次用到）和 capacity miss（cache 整個裝不下）跟 associativity 無關。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-7.</strong> write miss 時採用 write-allocate，意思是？</p>
+<ol>
+<li>不把 block 搬進 cache，直接寫主記憶體</li>
+<li>先把整個 block 搬進 cache，再在 cache 裡寫</li>
+<li>把資料丟進 write buffer 後就不管了</li>
+<li>把那一格的 dirty 設成 0</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。allocate 就是「在 cache 裡配一格給它」。A 是 no-write-allocate。write-allocate 通常搭配 write-back：搬進來之後，接下來對這塊的寫入都只改 cache。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-8.</strong> 下面哪一種情況，某一格的 valid 位元是 0？</p>
+<ol>
+<li>那一格的資料被修改過</li>
+<li>位址的 tag 跟那一格存的 tag 不一樣</li>
+<li>剛剛發生 hit</li>
+<li>開機之後，這一格還沒有放過任何 block</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。valid 只表示「這格有沒有放有效的資料」。A 是 dirty 的意思；B 是 miss 的原因之一，但那一格的 valid 可能是 1（只是放的是別的 block）；C 發生 hit 時 valid 一定是 1。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用自己的話說明：為什麼 cache 每一格要存 tag，卻不用存 index 和 offset？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ul>
+<li><strong>index</strong>：每一格在第幾列，本身就是 index，硬體用位址的 index 直接選到那一列，不用另外存。</li>
+<li><strong>offset</strong>：只是用來從 block 裡挑出第幾個 byte，block 的資料本來就照順序排好，不用存。</li>
+<li><strong>tag</strong>：同一列會輪流放很多不同的 block（index 相同、tag 不同），只有把 tag 存下來，才能比對「現在放的是不是我要的那一塊」。</li>
+</ul>
+<p><strong>自我檢查</strong>：你的答案有沒有提到「同一格會放很多不同的 block」？這是一定要存 tag 的原因。</p>
+</details>
+<p><strong>W-2.</strong> write-back 的 block 被踢出 cache 時，一定要寫回主記憶體嗎？什麼情況可以不用？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>不一定</strong>。看 dirty 位元：dirty＝1 表示搬進 cache 之後被改過，主記憶體那份是舊的，要先寫回；dirty＝0 表示沒被改過，主記憶體那份跟 cache 一樣，直接丟掉就好。這就是 write-back 需要 dirty 位元的原因。</p>
+</details>
+<p><strong>W-3.</strong> 1 個 set、2 格，依序存取 A、B、C、A、B，用 LRU。每一次是 hit 還是 miss？為什麼表現這麼差？換成 FIFO 會比較好嗎？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>LRU：A M、B M、C M（踢 A）、A M（踢 B）、B M（踢 C）→ <strong>5 次全 miss</strong>。FIFO 這串的踢法剛好一樣，也是全 miss。</p>
+<p>原因：三個 block 輪流用，但 set 只有兩格。每次要用的，剛好就是上一步被踢掉的那個，這種情況叫 <strong>thrashing</strong>。換替換策略救不了，要讓 set 裝得下正在輪流用的 block，例如改成 3 格以上（提高 associativity），或調整存取順序。</p>
+</details>
 <h3 id="u2-quiz">單元 2 小考</h3>
 <p><strong>2-1.</strong> 32-bit 位址、64 KB direct-mapped、16 B block、write-through：offset、index、tag 各幾位元？總位元數？</p>
 <details class="quiz">
@@ -1237,7 +1585,7 @@ window.MathJax = {
 <p>虛擬位址 ＝ <strong>VPN | page offset</strong>。page offset 由 page 大小決定，直接搬到實體位址；VPN 查 TLB 或 page table 換成 PPN。</p>
 </div>
 <h3 id="u3-0">3.0 觀念課：每個程式都以為自己擁有整棟大樓</h3>
-<h4 id="_9">比喻：門牌對照表</h4>
+<h4 id="_10">比喻：門牌對照表</h4>
 <p>每個程式都以為自己住在一整棟大樓裡，房號從 0 開始（<strong>虛擬位址</strong>）。實際上作業系統只分給它幾個真實的房間（<strong>實體記憶體的 frame</strong>），不常用的東西放在倉庫（<strong>磁碟</strong>）。</p>
 <p>要找東西時，查一張「虛擬房號 → 實體房號」的對照表，這張表就是 <strong>page table</strong>。</p>
 <p><strong>為什麼要這樣做</strong>：</p>
@@ -1292,7 +1640,7 @@ window.MathJax = {
 <li><strong>作業系統角度</strong>：<a href="https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&amp;cid=141&amp;id=999">清大周志遠・作業系統講義</a> Ch8 Memory Management、Ch9 Virtual Memory。這一單元和 OS 的記憶體單元可以一起讀。</li>
 </ul>
 </div>
-<h4 id="_10">換你試試</h4>
+<h4 id="_11">換你試試</h4>
 <p>用上面的 page table（VPN 0→2、VPN 5→0）。</p>
 <p><strong>T-1.</strong> 虛擬位址 0x07 的實體位址？</p>
 <details class="quiz">
@@ -1434,14 +1782,14 @@ window.MathJax = {
 <p>pipeline 讓<strong>吞吐量</strong>變高，但單一指令的<strong>延遲</strong>不會變短。週期時間由最慢的那一級決定。</p>
 </div>
 <h3 id="u4-0">4.0 觀念課：洗衣服的流水線</h3>
-<h4 id="_11">比喻：洗、烘、摺</h4>
+<h4 id="_12">比喻：洗、烘、摺</h4>
 <p>洗衣服有三步：洗 30 分、烘 30 分、摺 30 分。有 4 批衣服：</p>
 <ul>
 <li><strong>一批做完才做下一批</strong>：<span class="arithmatex">\(4\times90=360\)</span> 分鐘</li>
 <li><strong>流水線</strong>：第一批洗完拿去烘的同時，第二批開始洗。總時間 <span class="arithmatex">\((3+3)\times30=180\)</span> 分鐘</li>
 </ul>
 <p>每一批從頭到尾還是要 90 分鐘（<strong>延遲沒變</strong>），但每 30 分鐘就有一批完成（<strong>吞吐量變高</strong>）。</p>
-<h4 id="_12">指令的五個步驟</h4>
+<h4 id="_13">指令的五個步驟</h4>
 <table>
 <thead>
 <tr>
@@ -1566,7 +1914,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>影片</strong>：<a href="https://ocw.nthu.edu.tw/courses/13">清大黃婷婷・計算機結構</a> 第 6 週 Enhancing performance with pipelining。</li>
 </ul>
 </div>
-<h4 id="_13">換你試試</h4>
+<h4 id="_14">換你試試</h4>
 <p><strong>T-1.</strong> 10 條指令、5 級 pipeline、每級 200 ps。pipeline 和非 pipeline（每條 1000 ps）各要多久？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1729,7 +2077,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p>猜錯一次要丟掉「branch 決定之前已經進來的指令」。penalty 由<strong>在第幾級決定</strong>決定，pipeline 越深 penalty 越大。</p>
 </div>
 <h3 id="u5-0">5.0 觀念課：還不知道要跳去哪，只好先猜</h3>
-<h4 id="_14">問題在哪</h4>
+<h4 id="_15">問題在哪</h4>
 <p><code>beq</code> 要比較完兩個暫存器，才知道要跳還是不跳。假設在 EX（第 3 級）結束時才知道結果：</p>
 <table>
 <thead>
@@ -1767,7 +2115,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 </table>
 <p>在知道結果之前，pipeline 已經抓了 2 條指令進來。猜對了沒事；<strong>猜錯了，這 2 條要丟掉</strong>，浪費 2 個 cycle。這就是 misprediction penalty：</p>
 <div class="arithmatex">\[\text{penalty}=\text{決定 branch 的那一級}-1\]</div>
-<h4 id="_15">平均多花多少</h4>
+<h4 id="_16">平均多花多少</h4>
 <p>100 條指令裡有 20 條 branch，猜對率 75%：猜錯 <span class="arithmatex">\(20\times0.25=5\)</span> 次，每次 2 cycle，多花 10 cycle。理想 CPI 1 變成 <span class="arithmatex">\(\frac{100+10}{100}=1.1\)</span>。</p>
 <div class="arithmatex">\[\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty}\]</div>
 <h4 id="2-bit-1-bit">2-bit 預測器為什麼比 1-bit 好</h4>
@@ -1783,7 +2131,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>英文</strong>：<a href="https://safari.ethz.ch/ddca/spring2025/doku.php?id=start">ETH Digital Design &amp; Computer Architecture 2025</a> 的 superscalar 與 branch prediction 講次。114 Q3（dual-path、confidence estimator）就是這門課的題型。</li>
 </ul>
 </div>
-<h4 id="_16">換你試試</h4>
+<h4 id="_17">換你試試</h4>
 <p><strong>T-1.</strong> 30% 是 branch、準確率 80%、penalty 3，CPI？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2032,7 +2380,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf">MIT 6.823 Problem Set 10</a>（<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf">解答</a>）有跟 112 Q3、114 Q5 一樣的 fixed／data-dependent switching 題目。</li>
 </ul>
 </div>
-<h4 id="_17">換你試試</h4>
+<h4 id="_18">換你試試</h4>
 <p>同樣的迴圈，LD 改成 6 個 cycle。</p>
 <p><strong>T-1.</strong> 固定輪流需要幾個 thread？</p>
 <details class="quiz">
@@ -2092,13 +2440,13 @@ BNE  ...</code></pre>
 <li>refresh 的命令要佔用<strong>命令匯流排</strong>（command bus）一段時間，這段時間不能送別的命令。</li>
 <li>正在 refresh 的那個 <strong>bank</strong> 不能被讀寫。</li>
 </ul>
-<h4 id="_18">使用率怎麼算</h4>
+<h4 id="_19">使用率怎麼算</h4>
 <div class="arithmatex">\[\text{使用率}=\frac{\text{這段時間內被 refresh 佔用的總時間}}{\text{這段時間}}\]</div>
 <p><strong>小例子</strong>：1 個 bank、1000 列，每次 refresh 佔用 bus 10 ns，每 64 ms 要全部 refresh 一次。</p>
 <p>64 ms 內被佔用 <span class="arithmatex">\(1000\times10\text{ ns}=10\ \mu\text{s}\)</span>，使用率 <span class="arithmatex">\(=\frac{10\ \mu\text{s}}{64\text{ ms}}\approx0.016\%\)</span>。</p>
 <p>數字很小，但記憶體越大，列數越多（考題常是 <span class="arithmatex">\(2^{19}\)</span> 列以上），使用率就跟著變大到好幾 %，而且 bank 被佔用時讀寫都要等。</p>
 <p><strong>考試技巧</strong>：數字留成 2 的次方和 10 的次方，例如 <span class="arithmatex">\(64\text{ ms}=2^6\times10^6\)</span> ns，就能約分不用計算機。</p>
-<h4 id="_19">資料重用：同一個東西多久會再用到</h4>
+<h4 id="_20">資料重用：同一個東西多久會再用到</h4>
 <p>SRAM／cache 很小，只能留住「很快又會用到」的資料。</p>
 <pre class="highlight"><code class="language-text">for i in 0..2:
   for j in 0..2:
@@ -2116,7 +2464,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://safari.ethz.ch/architecture/fall2022/doku.php?id=exams">ETH 計算機結構考古題（附詳解）</a>，可以找 DRAM refresh 相關的題目練習。</li>
 </ul>
 </div>
-<h4 id="_20">換你試試</h4>
+<h4 id="_21">換你試試</h4>
 <p><strong>T-1.</strong> 4 個 bank × 1024 列，每次 refresh 佔 bus 5 ns，64 ms 一輪，使用率？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2186,7 +2534,7 @@ BNE  ...</code></pre>
 <section class="unit" data-unit="u8">
 <h2 id="u8">單元 8：平行與微架構</h2>
 <h3 id="u8-0">8.0 觀念課：同時做好幾件事的三種方式</h3>
-<h4 id="_21">平行化的上限</h4>
+<h4 id="_22">平行化的上限</h4>
 <p>90% 可以平行的程式，用 <span class="arithmatex">\(N\)</span> 個處理器：</p>
 <table>
 <thead>
@@ -2213,7 +2561,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>處理器加倍，speedup 卻越加越少，因為那 10% 不能平行的部分變成主要的時間。再加上處理器之間要溝通，實際上更低。</p>
-<h4 id="_22">三種平行</h4>
+<h4 id="_23">三種平行</h4>
 <table>
 <thead>
 <tr>
@@ -2241,7 +2589,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>從比喻就能回答 114 Q6：VLIW 比 superscalar 簡單（硬體不用排程）、superscalar 可能更快（現場能應變 cache miss）、VLIW 比 array 彈性（每個槽可以做不同事）、array 最簡單（只要一份指令和控制）。</p>
-<h4 id="_23">記憶體一致性：把指令洗成一疊牌</h4>
+<h4 id="_24">記憶體一致性：把指令洗成一疊牌</h4>
 <p>兩個處理器同時跑（x、y 一開始都是 0）：</p>
 <table>
 <thead>
@@ -2264,7 +2612,7 @@ BNE  ...</code></pre>
 <p><strong>Sequential consistency（SC）</strong> 的意思是：最後的結果，必須等於把兩邊的指令<strong>洗成一疊</strong>（各自的順序不能變）後依序執行的結果。</p>
 <p>把所有洗法列出來，(r1, r2) 只可能是 (0,1)、(1,0)、(1,1)。<strong>(0,0) 不可能</strong>：r1＝0 代表 P1 讀 y 時 P2 還沒寫 y；r2＝0 代表 P2 讀 x 時 P1 還沒寫 x。但兩邊都是「先寫再讀」，一定有一邊的寫入比另一邊的讀取早，矛盾。</p>
 <p>112 Q5 的三個處理器版本，用的就是同一個推理：把「讀到 0」換成「某個讀取在某個寫入之前」，看會不會繞成一個圈。</p>
-<h4 id="_24">頻寬撐不撐得住</h4>
+<h4 id="_25">頻寬撐不撐得住</h4>
 <p>運算再快，資料送不進來也沒用。需要的頻寬 ＝ 每秒運算次數 × 每次運算要從記憶體讀幾個 byte。這個值超過記憶體頻寬，運算單元就會空等。</p>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
@@ -2273,7 +2621,7 @@ BNE  ...</code></pre>
 <li><strong>英文文章</strong>：Russ Cox〈<a href="https://research.swtch.com/hwmm">Hardware Memory Models</a>〉用 litmus test（就是這節 P1、P2 那種小程式）解釋 sequential consistency，例子寫得非常清楚。</li>
 </ul>
 </div>
-<h4 id="_25">換你試試</h4>
+<h4 id="_26">換你試試</h4>
 <p><strong>T-1.</strong> 95% 可平行，處理器無限多，speedup 上限？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2382,7 +2730,7 @@ BNE  ...</code></pre>
 <p><strong>為什麼「反相再加 1」就是取負</strong>：<span class="arithmatex">\(x\)</span> 和 <span class="arithmatex">\(\sim x\)</span> 每一位都相反，加起來是 1111，也就是 −1。所以 <span class="arithmatex">\(x+\sim x=-1\)</span>，移項得 <span class="arithmatex">\(-x=\sim x+1\)</span>。</p>
 <p>例：<span class="arithmatex">\(-3\)</span>：<span class="arithmatex">\(3=0011\)</span>，反相 1100，加 1 得 <strong>1101</strong>。</p>
 <p><strong>溢位</strong>：兩個正數相加得到負數（或兩個負數相加得到正數），結果就超出範圍了。例：<span class="arithmatex">\(5+4=1001\)</span>，讀起來是 −7，溢位。</p>
-<h4 id="_26">浮點數：二進位的科學記號</h4>
+<h4 id="_27">浮點數：二進位的科學記號</h4>
 <div class="arithmatex">\[(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})\]</div>
 <p><strong>每一部分的意思</strong>：</p>
 <ul>
@@ -2415,7 +2763,7 @@ BNE  ...</code></pre>
 <li><strong>英文</strong>：〈<a href="https://teaching.idallen.com/cst8214/08w/notes/ieee754_conversions.txt">IEEE 754 conversions</a>〉一步一步手算十進位和 IEEE 754 互換，適合練習。</li>
 </ul>
 </div>
-<h4 id="_27">換你試試</h4>
+<h4 id="_28">換你試試</h4>
 <p><strong>T-1.</strong> 用 4 位元二補數算 <span class="arithmatex">\(6+3\)</span>，結果是什麼？有沒有溢位？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2502,14 +2850,21 @@ BNE  ...</code></pre>
   var seen = {};
   quizzes.forEach(function (d, i) {
     var label = "Q" + (i + 1);
-    var prev = d.previousElementSibling;
+    // 選擇題整題包在 .mcq 裡：題號從外框的第一段拿，往前找標題也從外框開始
+    var box = d.closest(".mcq");
+    var prev = box ? box.querySelector("p") : d.previousElementSibling;
     if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
-    // 穩定的 id：前一個有 id 的標題 + 在該標題下的第幾題（之後插入新內容也不會打亂舊紀錄）
-    var h = d.previousElementSibling;
-    while (h && !(/^H[23]$/.test(h.tagName) && h.id)) h = h.previousElementSibling;
-    var base = h ? h.id : "top";
-    seen[base] = (seen[base] || 0) + 1;
-    var id = "q-" + base + "-" + seen[base];
+    // 穩定的 id：前一個有 id 的標題 + 在該標題下的第幾題（之後插入新內容也不會打亂舊紀錄）。
+    // 後來插進舊題目前面的題目，用 <div data-qid="..."> 給固定的 id，不算進編號，舊題目的 id 就不會變
+    var fixed = d.closest("[data-qid]"), id;
+    if (fixed) id = "q-" + fixed.dataset.qid;
+    else {
+      var h = (box || d).previousElementSibling;
+      while (h && !(/^H[23]$/.test(h.tagName) && h.id)) h = h.previousElementSibling;
+      var base = h ? h.id : "top";
+      seen[base] = (seen[base] || 0) + 1;
+      id = "q-" + base + "-" + seen[base];
+    }
     d.id = id; d.dataset.label = label;
     var bar = document.createElement("div");
     bar.className = "judge";
@@ -2534,9 +2889,51 @@ BNE  ...</code></pre>
     document.getElementById("qb-txt").textContent = "已作答，答錯 " + wrong.length + " 題";
     document.getElementById("qb-wrong").innerHTML = wrong.map(function (d) { return '<a href="#' + d.id + '">' + d.dataset.label + "</a>"; }).join("");
   }
-  document.getElementById("qb-reset").addEventListener("click", function () { rec = {}; save(rec); paint(); });
+  // 選擇題：.mcq 裡的編號清單變成可以點的選項，選了馬上對答案，並記成「答對／答錯」（跟小考紀錄一樣）
+  var mcqs = [];
+  Array.prototype.forEach.call(document.querySelectorAll(".mcq"), function (box) {
+    var d = box.querySelector("details.quiz"), ol = box.querySelector("ol");
+    if (!d || !ol) return;
+    var ans = +box.dataset.ans, opts = Array.prototype.slice.call(ol.children);
+    var res = document.createElement("p");
+    res.className = "mcq-res";
+    res.setAttribute("aria-live", "polite");
+    ol.parentNode.insertBefore(res, ol.nextSibling);
+    opts.forEach(function (li, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "mcq-opt";
+      b.innerHTML = '<span class="mcq-k">' + "ABCDEFGH".charAt(i) + "</span><span>" + li.innerHTML + "</span>";
+      li.innerHTML = "";
+      li.appendChild(b);
+      b.addEventListener("click", function () {
+        var ok = i + 1 === ans;
+        rec[d.id] = ok ? 1 : 0; save(rec); paint();
+        show(i + 1);
+        res.textContent = ok ? "答對了！" : "答錯了，正確答案是 " + "ABCDEFGH".charAt(ans - 1) + "，看下面的解析。";
+        res.className = "mcq-res " + (ok ? "ok" : "no");
+        d.open = true;
+      });
+    });
+    // chosen：剛選的選項；0 表示「之前已經作答過」，只標出正確答案
+    function show(chosen) {
+      opts.forEach(function (li, i) {
+        var b = li.firstChild, n = i + 1;
+        b.classList.toggle("right", chosen != null && n === ans);
+        b.classList.toggle("wrong", chosen != null && n === chosen && n !== ans);
+        b.setAttribute("aria-pressed", String(n === chosen));
+      });
+    }
+    function restore() {
+      res.textContent = ""; res.className = "mcq-res";
+      show(rec[d.id] !== undefined ? 0 : null);
+    }
+    restore();
+    mcqs.push(restore);
+  });
+  document.getElementById("qb-reset").addEventListener("click", function () { rec = {}; save(rec); paint(); mcqs.forEach(function (f) { f(); }); });
   // 雲端同步下來新的紀錄，或換了帳號
-  document.addEventListener("cgep:state-remote", function (e) { if (e.detail.wiped || (e.detail.keys || []).indexOf(KEY) >= 0) { rec = load(); paint(); } });
+  document.addEventListener("cgep:state-remote", function (e) { if (e.detail.wiped || (e.detail.keys || []).indexOf(KEY) >= 0) { rec = load(); paint(); mcqs.forEach(function (f) { f(); }); } });
   paint();
 })();
 </script>

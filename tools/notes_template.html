@@ -103,6 +103,23 @@ details.quiz[open] > summary { margin-bottom: 8px; }
 div.arithmatex { padding: 4px 0; }
 mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
 /* 手寫作答板 */
+/* 選擇題：選項是一顆顆按鈕，選了馬上顯示對錯 */
+.mcq { margin: 18px 0; padding: 14px 16px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.mcq > p:first-child { margin-top: 0; }
+.mcq ol { list-style: none; margin: 10px 0 4px; padding: 0; display: grid; gap: 8px; }
+.mcq ol li { margin: 0; }
+.mcq-opt { display: flex; align-items: flex-start; gap: 10px; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; line-height: 1.6; text-align: left; cursor: pointer; transition: border-color .15s, background .15s; }
+.mcq-opt:hover { border-color: var(--muted); }
+.mcq-k { flex: none; width: 24px; height: 24px; margin-top: 1px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font: 700 12px/1 var(--font-mono); color: var(--muted); background: var(--card); }
+.mcq-opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.mcq-opt.right .mcq-k { background: var(--ok); border-color: var(--ok); color: #fff; }
+.mcq-opt.wrong { border-color: var(--accent); background: var(--accent-soft); }
+.mcq-opt.wrong .mcq-k { background: var(--accent); border-color: var(--accent); color: #fff; }
+.mcq-res { margin: 6px 0 4px; font-weight: 700; }
+.mcq-res:empty { display: none; }
+.mcq-res.ok { color: var(--ok); }
+.mcq-res.no { color: var(--accent); }
+.mcq .judge { display: none; }
 .ink { margin: 12px 0 0; }
 .ink + details.quiz { margin-top: 8px; }
 .ink-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ex); font: 500 14px/1 var(--font-body); cursor: pointer; }
@@ -121,7 +138,17 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .ink-tools .ink-sw { padding: 0; display: inline-grid; place-items: center; }
 .ink-sw span { display: block; width: 18px; height: 18px; border-radius: 50%; }
 /* 筆的種類：圖示＋小字，一眼分得出來 */
-.ink-tools .ink-tool { flex-direction: column; gap: 2px; width: 54px; min-height: 50px; padding: 4px 0 3px; font: 500 11px/1.1 var(--font-body); }
+.ink-tools .ink-tool { flex-direction: column; gap: 2px; width: 48px; min-width: 48px; min-height: 50px; padding: 4px 0 3px; font: 500 11px/1.1 var(--font-body); }
+/* 選取後浮在選取範圍旁邊的操作列 */
+.ink-sheet { position: relative; }
+.ink-selbar { position: absolute; z-index: 3; left: 0; top: 0; display: flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); box-shadow: 0 6px 18px rgba(10, 15, 30, .18); transition: opacity .12s; }
+.ink-selbar[hidden] { display: none; }
+.ink-selbar.dragging { opacity: 0; pointer-events: none; }
+.ink-selinfo { padding: 0 6px; font: 700 12.5px/1 var(--font-body); color: var(--muted); white-space: nowrap; }
+.ink-selbar button { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; min-width: 36px; justify-content: center; padding: 0 9px; border-radius: 7px; border: 0; background: none; color: var(--ink); font: 500 13px/1 var(--font-body); white-space: nowrap; cursor: pointer; }
+.ink-selbar button:hover { background: var(--paper); }
+.ink-selbar button[data-sel="del"] { color: var(--accent); }
+.ink-selbar .ico { width: 17px; height: 17px; }
 .ink-tools .ink-tool .ico { width: 20px; height: 20px; }
 /* 「● 數字」：現在這支筆的顏色和粗細，按了打開設定 */
 .ink-tools .ink-cur { gap: 6px; padding: 0 10px; min-width: 52px; }
@@ -378,14 +405,21 @@ window.MathJax = {
   var seen = {};
   quizzes.forEach(function (d, i) {
     var label = "Q" + (i + 1);
-    var prev = d.previousElementSibling;
+    // 選擇題整題包在 .mcq 裡：題號從外框的第一段拿，往前找標題也從外框開始
+    var box = d.closest(".mcq");
+    var prev = box ? box.querySelector("p") : d.previousElementSibling;
     if (prev) { var s = prev.querySelector("strong"); if (s) label = s.textContent.replace(/[.．。:：]$/, "").slice(0, 16); }
-    // 穩定的 id：前一個有 id 的標題 + 在該標題下的第幾題（之後插入新內容也不會打亂舊紀錄）
-    var h = d.previousElementSibling;
-    while (h && !(/^H[23]$/.test(h.tagName) && h.id)) h = h.previousElementSibling;
-    var base = h ? h.id : "top";
-    seen[base] = (seen[base] || 0) + 1;
-    var id = "q-" + base + "-" + seen[base];
+    // 穩定的 id：前一個有 id 的標題 + 在該標題下的第幾題（之後插入新內容也不會打亂舊紀錄）。
+    // 後來插進舊題目前面的題目，用 <div data-qid="..."> 給固定的 id，不算進編號，舊題目的 id 就不會變
+    var fixed = d.closest("[data-qid]"), id;
+    if (fixed) id = "q-" + fixed.dataset.qid;
+    else {
+      var h = (box || d).previousElementSibling;
+      while (h && !(/^H[23]$/.test(h.tagName) && h.id)) h = h.previousElementSibling;
+      var base = h ? h.id : "top";
+      seen[base] = (seen[base] || 0) + 1;
+      id = "q-" + base + "-" + seen[base];
+    }
     d.id = id; d.dataset.label = label;
     var bar = document.createElement("div");
     bar.className = "judge";
@@ -410,9 +444,51 @@ window.MathJax = {
     document.getElementById("qb-txt").textContent = "已作答，答錯 " + wrong.length + " 題";
     document.getElementById("qb-wrong").innerHTML = wrong.map(function (d) { return '<a href="#' + d.id + '">' + d.dataset.label + "</a>"; }).join("");
   }
-  document.getElementById("qb-reset").addEventListener("click", function () { rec = {}; save(rec); paint(); });
+  // 選擇題：.mcq 裡的編號清單變成可以點的選項，選了馬上對答案，並記成「答對／答錯」（跟小考紀錄一樣）
+  var mcqs = [];
+  Array.prototype.forEach.call(document.querySelectorAll(".mcq"), function (box) {
+    var d = box.querySelector("details.quiz"), ol = box.querySelector("ol");
+    if (!d || !ol) return;
+    var ans = +box.dataset.ans, opts = Array.prototype.slice.call(ol.children);
+    var res = document.createElement("p");
+    res.className = "mcq-res";
+    res.setAttribute("aria-live", "polite");
+    ol.parentNode.insertBefore(res, ol.nextSibling);
+    opts.forEach(function (li, i) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "mcq-opt";
+      b.innerHTML = '<span class="mcq-k">' + "ABCDEFGH".charAt(i) + "</span><span>" + li.innerHTML + "</span>";
+      li.innerHTML = "";
+      li.appendChild(b);
+      b.addEventListener("click", function () {
+        var ok = i + 1 === ans;
+        rec[d.id] = ok ? 1 : 0; save(rec); paint();
+        show(i + 1);
+        res.textContent = ok ? "答對了！" : "答錯了，正確答案是 " + "ABCDEFGH".charAt(ans - 1) + "，看下面的解析。";
+        res.className = "mcq-res " + (ok ? "ok" : "no");
+        d.open = true;
+      });
+    });
+    // chosen：剛選的選項；0 表示「之前已經作答過」，只標出正確答案
+    function show(chosen) {
+      opts.forEach(function (li, i) {
+        var b = li.firstChild, n = i + 1;
+        b.classList.toggle("right", chosen != null && n === ans);
+        b.classList.toggle("wrong", chosen != null && n === chosen && n !== ans);
+        b.setAttribute("aria-pressed", String(n === chosen));
+      });
+    }
+    function restore() {
+      res.textContent = ""; res.className = "mcq-res";
+      show(rec[d.id] !== undefined ? 0 : null);
+    }
+    restore();
+    mcqs.push(restore);
+  });
+  document.getElementById("qb-reset").addEventListener("click", function () { rec = {}; save(rec); paint(); mcqs.forEach(function (f) { f(); }); });
   // 雲端同步下來新的紀錄，或換了帳號
-  document.addEventListener("cgep:state-remote", function (e) { if (e.detail.wiped || (e.detail.keys || []).indexOf(KEY) >= 0) { rec = load(); paint(); } });
+  document.addEventListener("cgep:state-remote", function (e) { if (e.detail.wiped || (e.detail.keys || []).indexOf(KEY) >= 0) { rec = load(); paint(); mcqs.forEach(function (f) { f(); }); } });
   paint();
 })();
 </script>

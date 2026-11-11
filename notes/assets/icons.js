@@ -17,6 +17,8 @@ window.CGEP_ICON = (function () {
     zoomOut: '<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/><path d="M8 10.5h5"/>',
     extend: '<path d="M5 4.5h14"/><path d="M12 8.5v11"/><path d="M8 15.5l4 4 4-4"/>',
     shrink: '<path d="M5 4.5h14"/><path d="M12 19.5v-11"/><path d="M8 12.5l4-4 4 4"/>',
+    lasso: '<path d="M12 4.5c4.4 0 8 2.3 8 5.2s-3.6 5.2-8 5.2-8-2.3-8-5.2 3.6-5.2 8-5.2z" stroke-dasharray="3 2.6"/><path d="M7.6 13.8c-1.4 1.2-1.6 3.2-.4 4.4 1.3 1.3 3.6.9 4.2-.9"/>',
+    copy: '<rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a1.5 1.5 0 0 0-1.5-1.5H6A1.5 1.5 0 0 0 4.5 6v8A1.5 1.5 0 0 0 6 15.5h2.5"/>',
     // 四種筆：直的畫好再整個斜 40 度，筆尖朝左下
     penFountain: '<g transform="rotate(40 12 12)"><path d="M9.5 2.5h5v5h-5z"/><path d="M8.5 7.5h7L12 21.5z"/><path d="M12 14.5v4"/><circle cx="12" cy="12.6" r="1"' + F + '/></g>',
     penBall: '<g transform="rotate(40 12 12)"><path d="M10 2.5h4v13h-4z"/><path d="M10 15.5l2 5 2-5"/><path d="M14 4.5h1.6v5.5"/></g>',

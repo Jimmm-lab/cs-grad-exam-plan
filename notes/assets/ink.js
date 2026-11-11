@@ -9,6 +9,7 @@
  * - 四種筆：鋼筆（預設，壓力越大越粗）、原子筆（粗細穩定）、鉛筆（淡一點、有筆觸）、螢光筆（半透明，畫在字的下面）。
  *   每種筆各自記住粗細和顏色（工具列的「● 數字」按鈕打開設定，有推薦色系和自訂顏色）。
  * - 「加長」一次多一段紙；「縮短」一次收回一段，但不會切到筆跡、也不會比原本短；兩個都可以「復原」。
+ * - 「選取」：用筆圈起來（或直接點一筆）選取筆跡，拖框裡面移動、拖右下角的圓點縮放，也可以複製、刪除；都可以「復原」。
  *
  * 一筆的資料：{ p: [x, y, 壓力, ...], c: 顏色, sw: 粗細, t: 筆的種類, pen: 是否觸控筆, k: 縮放倒數 }
  *   c 是數字 0–3 時是會跟著深色模式變的黑紅藍綠（舊資料都是這種），字串則是固定的色碼。
@@ -206,6 +207,15 @@
     }
     return false;
   }
+  // 點在不在圈起來的多邊形裡（射線法）
+  function inPoly(x, y, poly) {
+    var inside = false, n = poly.length / 2;
+    for (var i = 0, j = n - 1; i < n; j = i++) {
+      var xi = poly[2 * i], yi = poly[2 * i + 1], xj = poly[2 * j], yj = poly[2 * j + 1];
+      if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) inside = !inside;
+    }
+    return inside;
+  }
   function el(tag, cls, html) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -229,7 +239,8 @@
 
     var pens = PEN_ORDER.map(function (tp) {
       return '<button type="button" class="ink-tool" data-tool="pen" data-pen="' + tp + '">' + I(PENS[tp].icon) + "<span>" + PENS[tp].name + "</span></button>";
-    }).join("") + '<button type="button" class="ink-tool" data-tool="eraser">' + I("eraser") + "<span>橡皮擦</span></button>";
+    }).join("") + '<button type="button" class="ink-tool" data-tool="eraser">' + I("eraser") + "<span>橡皮擦</span></button>" +
+      '<button type="button" class="ink-tool" data-tool="select">' + I("lasso") + "<span>選取</span></button>";
     var panel = this.panel = el("div", "ink-panel");
     panel.hidden = true;
     panel.innerHTML =
@@ -242,7 +253,14 @@
         '<div class="ink-grp"><button type="button" data-act="clear">' + I("trash") + '<span>清除</span></button><button type="button" data-act="png">' + I("image") + "<span>存成圖片</span></button></div>" +
       "</div>" +
       '<div class="ink-cfg" hidden></div>' +
-      '<div class="ink-sheet"><canvas class="ink-canvas" aria-label="手寫區"></canvas></div>' +
+
+      '<div class="ink-sheet"><canvas class="ink-canvas" aria-label="手寫區"></canvas>' +
+        // 選取後浮在選取範圍旁邊的操作列（不放在紙的上方，免得紙被往下推、筆點歪）
+        '<div class="ink-selbar" role="toolbar" aria-label="選取的筆跡" hidden><span class="ink-selinfo"></span>' +
+          '<button type="button" data-sel="dup">' + I("copy") + "<span>複製</span></button>" +
+          '<button type="button" data-sel="del">' + I("trash") + "<span>刪除</span></button>" +
+          '<button type="button" data-sel="none" aria-label="取消選取">' + I("close") + "</button></div>" +
+      "</div>" +
       '<div class="ink-foot">' +
         '<label class="ink-pen"><input type="checkbox"> 觸控筆模式（只有筆會寫，一指拖曳是捲動）</label>' +
         '<span class="ink-hint">兩指捏合可以縮放、移動紙張；電腦用 Ctrl＋滾輪</span>' +
@@ -256,6 +274,8 @@
     this.zLabel = panel.querySelector(".ink-zl");
     this.swBox = panel.querySelector(".ink-colors");
     this.cfgBox = panel.querySelector(".ink-cfg");
+    this.selBar = panel.querySelector(".ink-selbar");
+    this.sel = []; this.lasso = null; this.xf = null;
     this.bindTools();
     this.bindPointer();
     this.syncTools();
@@ -354,7 +374,142 @@
     ctx.lineWidth = 1 / (this.scale * this.z);
     ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim() || "#e9ecf2";
     ctx.stroke();
-    drawAll(ctx, this.strokes, palette(false));
+    var pal = palette(false), sel = this.sel, xf = this.xf;
+    if (sel.length && xf) {
+      drawAll(ctx, this.strokes.filter(function (st) { return sel.indexOf(st) < 0; }), pal);
+      ctx.save();
+      ctx.translate(xf.ox + xf.dx, xf.oy + xf.dy); ctx.scale(xf.s, xf.s); ctx.translate(-xf.ox, -xf.oy);
+      drawAll(ctx, sel, pal);
+      ctx.restore();
+    } else drawAll(ctx, this.strokes, pal);
+    this.drawOverlay(ctx);
+    if (this.sel.length) this.placeSelBar();
+  };
+
+  /* ---------- 選取：圈選、移動、縮放、複製、刪除 ---------- */
+  // 選取範圍（含線條粗細）；moved＝true 時算上正在拖曳的位移和縮放
+  Pad.prototype.selBox = function (moved) {
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    this.sel.forEach(function (st) {
+      var r = baseW(st) / 2;
+      for (var i = 0; i < st.p.length; i += 3) {
+        x0 = Math.min(x0, st.p[i] - r); x1 = Math.max(x1, st.p[i] + r);
+        y0 = Math.min(y0, st.p[i + 1] - r); y1 = Math.max(y1, st.p[i + 1] + r);
+      }
+    });
+    var pad = 6 / (this.scale * this.z);
+    var b = { x0: x0 - pad, y0: y0 - pad, x1: x1 + pad, y1: y1 + pad };
+    var xf = this.xf;
+    if (moved && xf) {
+      b = { x0: xf.ox + (b.x0 - xf.ox) * xf.s + xf.dx, y0: xf.oy + (b.y0 - xf.oy) * xf.s + xf.dy,
+            x1: xf.ox + (b.x1 - xf.ox) * xf.s + xf.dx, y1: xf.oy + (b.y1 - xf.oy) * xf.s + xf.dy };
+    }
+    return b;
+  };
+  Pad.prototype.drawOverlay = function (ctx) {
+    if (!this.lasso && !this.sel.length) return;
+    var u = 1 / (this.scale * this.z), cs = getComputedStyle(document.documentElement);
+    var accent = cs.getPropertyValue("--accent").trim() || "#c42f3d", card = cs.getPropertyValue("--card").trim() || "#fff";
+    ctx.save();
+    ctx.globalAlpha = 1; ctx.lineWidth = 1.6 * u; ctx.strokeStyle = accent; ctx.setLineDash([6 * u, 5 * u]);
+    var L = this.lasso;
+    if (L && L.length >= 4) {
+      ctx.beginPath(); ctx.moveTo(L[0], L[1]);
+      for (var i = 2; i < L.length; i += 2) ctx.lineTo(L[i], L[i + 1]);
+      ctx.stroke();
+    }
+    if (this.sel.length) {
+      var b = this.selBox(true);
+      ctx.strokeRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0);
+      ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(b.x1, b.y1, 9 * u, 0, Math.PI * 2);
+      ctx.fillStyle = card; ctx.fill(); ctx.lineWidth = 2.4 * u; ctx.stroke();
+    }
+    ctx.restore();
+  };
+  Pad.prototype.setSel = function (list) {
+    this.sel = list; this.xf = null;
+    this.selBar.hidden = !list.length;
+    if (list.length) this.selBar.querySelector(".ink-selinfo").textContent = list.length + " 筆";
+    this.requestDraw();
+  };
+  // 操作列放在選取範圍下面；下面放不下就放上面；拖曳時先藏起來
+  Pad.prototype.placeSelBar = function () {
+    var bar = this.selBar;
+    if (!this.sel.length) return;
+    bar.classList.toggle("dragging", !!this.xf);
+    var b = this.selBox(true), k = this.scale * this.z;
+    var bw = bar.offsetWidth, bh = bar.offsetHeight, sw = this.sheet.clientWidth, sh = this.canvas.clientHeight;
+    var left = (b.x0 - this.ox) * k, top = (b.y1 - this.oy) * k + 10;
+    if (top + bh > sh - 4) top = (b.y0 - this.oy) * k - bh - 10;
+    bar.style.left = clamp(left, 4, Math.max(4, sw - bw - 4)) + "px";
+    bar.style.top = clamp(top, 4, Math.max(4, sh - bh - 4)) + "px";
+  };
+  // 圈完：筆畫有一半以上的點在圈裡就選進來；圈得太小（等於點一下）就選手指下面最上層的那一筆
+  Pad.prototype.finishLasso = function () {
+    var L = this.lasso, found = [];
+    this.lasso = null;
+    var w = 0, h = 0;
+    if (L) {
+      var xs = L.filter(function (v, i) { return i % 2 === 0; }), ys = L.filter(function (v, i) { return i % 2 === 1; });
+      w = Math.max.apply(null, xs) - Math.min.apply(null, xs); h = Math.max.apply(null, ys) - Math.min.apply(null, ys);
+    }
+    var tiny = !L || L.length < 6 || (w < 12 / this.z && h < 12 / this.z);
+    if (tiny && L) {
+      for (var i = this.strokes.length - 1; i >= 0; i--) if (near(this.strokes[i], L[0], L[1], 10 / this.z + baseW(this.strokes[i]) / 2)) { found = [this.strokes[i]]; break; }
+    } else if (L) {
+      this.strokes.forEach(function (st) {
+        var n = st.p.length / 3, k = 0;
+        for (var j = 0; j < st.p.length; j += 3) if (inPoly(st.p[j], st.p[j + 1], L)) k++;
+        if (k && k >= n / 2) found.push(st);
+      });
+    }
+    this.setSel(found);
+    this.status(found.length ? "拖框裡面可以移動，拖右下角的圓點可以縮放" : "沒有選到筆跡：用筆把要選的字圈起來，或直接點一下那一筆");
+  };
+  // 放開時把位移、縮放真的寫進筆畫（可以復原）
+  Pad.prototype.commitXf = function () {
+    var xf = this.xf;
+    this.xf = null;
+    if (!xf || (Math.abs(xf.dx) < 0.5 && Math.abs(xf.dy) < 0.5 && Math.abs(xf.s - 1) < 0.005)) { this.requestDraw(); return; }
+    var items = this.sel.map(function (st) {
+      var it = { s: st, p0: st.p.slice(), sw0: st.sw };
+      for (var i = 0; i < st.p.length; i += 3) {
+        st.p[i] = Math.round((xf.ox + (st.p[i] - xf.ox) * xf.s + xf.dx) * 10) / 10;
+        st.p[i + 1] = Math.round((xf.oy + (st.p[i + 1] - xf.oy) * xf.s + xf.dy) * 10) / 10;
+      }
+      if (xf.s !== 1) st.sw = Math.round((st.sw != null ? st.sw : SIZES[st.w] || SIZES[1]) * xf.s * 100) / 100;
+      it.p1 = st.p.slice(); it.sw1 = st.sw;
+      return it;
+    });
+    this.push({ t: "xf", items: items });
+    this.redraw();
+  };
+  Pad.prototype.dupSel = function () {
+    if (!this.sel.length) return;
+    var self = this, off = 30;
+    var b = this.selBox(false);
+    if (b.y1 + off > this.H) off = -30;
+    var copies = this.sel.map(function (st) {
+      var c = JSON.parse(JSON.stringify(st));
+      for (var i = 0; i < c.p.length; i += 3) { c.p[i] += 30; c.p[i + 1] += off; }
+      self.strokes.push(c);
+      return c;
+    });
+    this.push({ t: "dup", items: copies });
+    this.setSel(copies);
+    this.status("已複製，可以拖到想放的位置");
+  };
+  Pad.prototype.delSel = function () {
+    if (!this.sel.length) return;
+    var removed = [];
+    for (var i = this.strokes.length - 1; i >= 0; i--) {
+      if (this.sel.indexOf(this.strokes[i]) >= 0) { removed.push([i, this.strokes[i]]); this.strokes.splice(i, 1); }
+    }
+    this.setSel([]);
+    this.push({ t: "del", items: removed });
+    this.redraw();
+    this.status("已刪除選取的筆跡（可以按「復原」救回來）");
   };
 
   Pad.prototype.status = function (t) { this.statusEl.textContent = t; };
@@ -362,7 +517,7 @@
   Pad.prototype.syncTools = function () {
     var self = this, tp = penType(), cfg = penCfg(tp), pen = this.tool === "pen";
     this.panel.querySelectorAll("[data-tool]").forEach(function (b) {
-      b.setAttribute("aria-pressed", String(b.dataset.tool === "eraser" ? !pen : pen && b.dataset.pen === tp));
+      b.setAttribute("aria-pressed", String(b.dataset.tool === self.tool && (b.dataset.tool !== "pen" || b.dataset.pen === tp)));
     });
     // 快速選色：一般的筆是黑紅藍綠，螢光筆是四個螢光色；最後一顆「● 數字」打開粗細和顏色的設定
     var quick = tp === "hl" ? QUICK.hl : QUICK.pen;
@@ -376,7 +531,7 @@
     this.panel.querySelector('[data-act="redo"]').disabled = !this.fut.length;
     this.panel.querySelector('[data-act="more"]').disabled = this.H >= MAX_H;
     this.panel.querySelector('[data-act="less"]').disabled = this.H <= DEFAULT_H;
-    this.canvas.style.cursor = this.tool === "eraser" ? "cell" : "crosshair";
+    this.canvas.style.cursor = this.tool === "eraser" ? "cell" : this.tool === "select" ? "default" : "crosshair";
     if (!this.cfgBox.hidden) this.syncCfg();
   };
   // 粗細和顏色的設定（套用在現在選的那種筆）
@@ -439,7 +594,10 @@
       if (!b) return;
       var a = b.dataset.act;
       if (b.dataset.pen) { pref.pen = b.dataset.pen; self.tool = "pen"; savePref(); syncAll(); }
-      else if (b.dataset.tool) self.tool = b.dataset.tool;
+      else if (b.dataset.tool) {
+        self.tool = b.dataset.tool;
+        if (self.tool === "select") self.status("用筆把要選的字圈起來，或直接點一下那一筆");
+      }
       else if (b.dataset.color != null) { setPenCfg({ c: parseColor(b.dataset.color) }); self.tool = "pen"; syncAll(); }
       else if (a === "cfg") { self.tool = "pen"; self.openCfg(self.cfgBox.hidden); return; }
       else if (a === "undo") self.undo();
@@ -451,6 +609,15 @@
       else if (a === "less") self.shrink();
       else if (a === "clear") self.clear();
       else if (a === "png") self.png();
+      if (self.tool !== "select" && self.sel.length) self.setSel([]);
+      self.syncTools();
+    });
+    this.selBar.addEventListener("click", function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.sel === "dup") self.dupSel();
+      else if (b.dataset.sel === "del") self.delSel();
+      else if (b.dataset.sel === "none") { self.setSel([]); self.status(""); }
       self.syncTools();
     });
     // 設定面板：拖粗細的滑桿時即時預覽，放開才存；點顏色、自訂顏色、恢復預設
@@ -539,6 +706,22 @@
       try { c.setPointerCapture(e.pointerId); } catch (err) {}
       var q = pos(e);
       var sideButton = (e.buttons & 32) || (isPen && (e.buttons & 2));
+      if (self.tool === "select" && !sideButton) {
+        self.busy = true;
+        var bb = self.sel.length ? self.selBox(false) : null, tol = 22 / (self.scale * self.z);
+        if (bb && Math.hypot(q[0] - bb.x1, q[1] - bb.y1) <= tol) {
+          act = { id: e.pointerId, mode: "scale", bb: bb };
+        } else if (bb && q[0] >= bb.x0 && q[0] <= bb.x1 && q[1] >= bb.y0 && q[1] <= bb.y1) {
+          act = { id: e.pointerId, mode: "move", start: q, bb: bb };
+        } else {
+          self.setSel([]);
+          self.lasso = [q[0], q[1]];
+          act = { id: e.pointerId, mode: "lasso" };
+          return;
+        }
+        self.xf = { dx: 0, dy: 0, s: 1, ox: bb.x0, oy: bb.y0 };
+        return;
+      }
       if (self.tool === "eraser" || sideButton) {
         act = { id: e.pointerId, mode: "erase", removed: [] };
         self.busy = true;
@@ -564,6 +747,24 @@
       if (e.pointerId !== act.id) return;
       if (act.mode === "scroll") { window.scrollBy(0, act.y - e.clientY); act.y = e.clientY; return; }
       e.preventDefault();
+      if (act.mode === "lasso" || act.mode === "move" || act.mode === "scale") {
+        var q0 = pos(e), b0 = act.bb;
+        if (act.mode === "lasso") {
+          var Ln = self.lasso, m = Ln.length;
+          if (Math.hypot(q0[0] - Ln[m - 2], q0[1] - Ln[m - 1]) > 2 / self.z) Ln.push(q0[0], q0[1]);
+        } else if (act.mode === "move") {
+          // 拖曳：選取框不能拖出紙外
+          self.xf.dx = clamp(q0[0] - act.start[0], -b0.x0, W - b0.x1);
+          self.xf.dy = clamp(q0[1] - act.start[1], -b0.y0, self.H - b0.y1);
+        } else {
+          // 縮放：以左上角為基準，等比例；最小 0.2 倍，最大不超出紙
+          var w0 = Math.max(1, b0.x1 - b0.x0), h0 = Math.max(1, b0.y1 - b0.y0);
+          var sc = Math.max((q0[0] - b0.x0) / w0, (q0[1] - b0.y0) / h0);
+          self.xf.s = clamp(sc, 0.2, Math.min(5, (W - b0.x0) / w0, (self.H - b0.y0) / h0));
+        }
+        self.requestDraw();
+        return;
+      }
       var list = (e.getCoalescedEvents && e.getCoalescedEvents()) || [];
       if (!list.length) list = [e];
       for (var i = 0; i < list.length; i++) {
@@ -596,6 +797,10 @@
         self.push({ t: "add", s: a.s });
       } else if (a.mode === "erase" && a.removed.length) {
         self.push({ t: "del", items: a.removed });
+      } else if (a.mode === "lasso") {
+        self.finishLasso();
+      } else if (a.mode === "move" || a.mode === "scale") {
+        self.commitXf();
       }
     }
     c.addEventListener("pointerup", end);
@@ -628,24 +833,31 @@
   Pad.prototype.undo = function () {
     var h = this.hist.pop();
     if (!h) return;
+    if (this.sel.length) this.setSel([]);
     if (h.t === "add") this.strokes.splice(this.strokes.lastIndexOf(h.s), 1);
     else if (h.t === "del") for (var i = h.items.length - 1; i >= 0; i--) this.strokes.splice(h.items[i][0], 0, h.items[i][1]);
     else if (h.t === "clear") this.strokes = h.items.slice();
     else if (h.t === "h") this.setH(h.from);
+    else if (h.t === "xf") h.items.forEach(function (it) { it.s.p = it.p0.slice(); if (it.sw0 == null) delete it.s.sw; else it.s.sw = it.sw0; });
+    else if (h.t === "dup") { var st = this.strokes; h.items.forEach(function (c) { var at = st.indexOf(c); if (at >= 0) st.splice(at, 1); }); }
     this.fut.push(h); this.redraw(); this.changed();
   };
   Pad.prototype.redo = function () {
     var h = this.fut.pop();
     if (!h) return;
+    if (this.sel.length) this.setSel([]);
     if (h.t === "add") this.strokes.push(h.s);
     else if (h.t === "del") for (var i = 0; i < h.items.length; i++) this.strokes.splice(h.items[i][0], 1);
     else if (h.t === "clear") this.strokes = [];
     else if (h.t === "h") this.setH(h.to);
+    else if (h.t === "xf") h.items.forEach(function (it) { it.s.p = it.p1.slice(); if (it.sw1 == null) delete it.s.sw; else it.s.sw = it.sw1; });
+    else if (h.t === "dup") { var st = this.strokes; h.items.forEach(function (c) { st.push(c); }); }
     this.hist.push(h); this.redraw(); this.changed();
   };
   Pad.prototype.clear = function () {
     if (!this.strokes.length) return;
     if (!window.confirm("清除這一題的所有筆跡？（清除後還可以按「復原」救回來）")) return;
+    if (this.sel.length) this.setSel([]);
     this.hist.push({ t: "clear", items: this.strokes.slice() });
     this.fut = []; this.strokes = []; this.redraw(); this.changed();
   };
@@ -749,6 +961,7 @@
         markToggle(toggles[k], has);
         var pad = padsByKey[k];
         if (!pad || pad.busy) return;
+        if (pad.sel.length) pad.setSel([]);
         pad.strokes = has ? v.s : [];
         pad.H = (v && v.H) || DEFAULT_H;
         pad.hist = []; pad.fut = [];
