@@ -975,10 +975,59 @@ window.MathJax = {
 </ol>
 <p><strong>為什麼是這樣</strong>：<span class="arithmatex">\(k\)</span> 個位元可以表示 <span class="arithmatex">\(2^k\)</span> 種情況。一個 block 有 <span class="arithmatex">\(B\)</span> 個 byte，要分出是第幾個 byte，需要 <span class="arithmatex">\(\log_2B\)</span> 位元；有 <span class="arithmatex">\(S\)</span> 個 set，要選第幾個，需要 <span class="arithmatex">\(\log_2S\)</span> 位元。容量 ÷ block 大小 ＝ 總共幾格，再 ÷ 每個 set 幾格 ＝ set 數。</p>
 <p><strong>注意單位</strong>：題目給 word address 時，offset 是「block 裡第幾個 word」，用 word 數算；給 byte address 時用 byte 數算。一個 word 通常是 4 bytes。</p>
-<p>fully associative 沒有 index（只有 1 個 set）；direct-mapped 是 1-way。</p>
+<h4 id="_9">三種映射方式一次比較</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>direct-mapped（直接映射，1-way）</th>
+<th><span class="arithmatex">\(n\)</span>-way set-associative（<span class="arithmatex">\(n\)</span> 路集合關聯）</th>
+<th>fully associative（全關聯）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>一個 block 可以放哪裡</td>
+<td><strong>唯一固定的一格</strong>：block 號碼 mod 格數</td>
+<td><strong>固定的一個 set</strong>（block 號碼 mod set 數），set 裡哪一格都可以</td>
+<td><strong>任何一格</strong></td>
+</tr>
+<tr>
+<td>index</td>
+<td><strong>最長</strong>：<span class="arithmatex">\(\log_2(\text{格數})\)</span></td>
+<td><span class="arithmatex">\(\log_2(\text{set 數})\)</span></td>
+<td><strong>沒有</strong>（0 位元，只有 1 個 set）</td>
+</tr>
+<tr>
+<td>tag</td>
+<td><strong>最短</strong></td>
+<td>中間</td>
+<td><strong>最長</strong>：整個 block 號碼都是 tag</td>
+</tr>
+<tr>
+<td>查詢時比對幾個 tag</td>
+<td>1 個</td>
+<td><span class="arithmatex">\(n\)</span> 個（同時比）</td>
+<td>全部的格（同時比）</td>
+</tr>
+<tr>
+<td>要不要替換策略（LRU 等）</td>
+<td>不用，位置被佔就直接換掉</td>
+<td>set 滿了才要</td>
+<td>全滿才要</td>
+</tr>
+<tr>
+<td>硬體成本、hit time</td>
+<td>最低、最快</td>
+<td>中間</td>
+<td>最高、最慢</td>
+</tr>
+</tbody>
+</table>
+<p><strong>規律</strong>：容量和 block 大小不變時，associativity 每加倍，set 數就減半 → <strong>index 少 1 位、tag 多 1 位</strong>（offset 不變）。</p>
 <h3 id="u2-2">2.2 Cache 總位元數</h3>
 <p>題目說「16 KB 的 cache」，通常只算 <strong>data</strong>。但硬體裡每一格還要存幾個「管理用」的欄位，題目問<strong>總位元數</strong>時要全部加起來。</p>
-<h4 id="_9">每一格存了哪些東西</h4>
+<h4 id="_10">每一格存了哪些東西</h4>
 <table>
 <thead>
 <tr>
@@ -1025,7 +1074,40 @@ window.MathJax = {
 <p>LRU 加在最後面，是因為它跟著 <strong>set</strong> 走，不是跟著 block 走：2-way 的一個 set 裡兩格共用 1 個位元。direct-mapped 每個 set 只有一格、沒得選，<strong>不需要 LRU</strong>。4-way 以上要記完整的先後順序，位元數依做法不同，考試會給條件。</p>
 <div class="admonition example">
 <p class="admonition-title">111 P3（25%）：32-bit 位址、16 KB data、write-back、LRU</p>
-<p>16 KB ＝ 4K words。每個 block 加 valid 和 dirty 各 1 位元。</p>
+<p><strong>題目條件與前提</strong></p>
+<ul>
+<li>位址 32 位元（虛擬位址、實體位址都是 32 位元）。</li>
+<li>data 容量 16 KB ＝ <span class="arithmatex">\(16\times1024=16384\)</span> bytes。32 位元的系統 1 word ＝ 4 bytes，所以是 <strong>4096 words</strong>（4K words）。</li>
+<li>write-back：每個 block 除了 tag，還要 <strong>valid 1 位元＋dirty 1 位元</strong>，共 2 位元。</li>
+</ul>
+<p><strong>(1) direct-mapped、1-word block</strong></p>
+<ul>
+<li><strong>block 數（4096）</strong>：4096 words ÷ 每塊 1 word。</li>
+<li><strong>offset（2）</strong>：一塊 4 bytes ＝ <span class="arithmatex">\(2^2\)</span>。</li>
+<li><strong>index（12）</strong>：4096 格 ＝ <span class="arithmatex">\(2^{12}\)</span>。</li>
+<li><strong>tag（18）</strong>：<span class="arithmatex">\(32-12-2\)</span>。</li>
+<li><strong>每塊位元（52）</strong>：data 32 ＋ tag 18 ＋ valid／dirty 2。</li>
+<li><strong>總位元數</strong>：<span class="arithmatex">\(4096\times52=212992\)</span>。</li>
+</ul>
+<p><strong>(2) direct-mapped、4-word block</strong></p>
+<ul>
+<li><strong>block 數（1024）</strong>：<span class="arithmatex">\(4096\div4\)</span>。</li>
+<li><strong>offset（4）</strong>：一塊 16 bytes ＝ <span class="arithmatex">\(2^4\)</span>（2 位選第幾個 word ＋ 2 位選 word 裡的第幾個 byte）。</li>
+<li><strong>index（10）</strong>：1024 ＝ <span class="arithmatex">\(2^{10}\)</span>。</li>
+<li><strong>tag（18）</strong>：<span class="arithmatex">\(32-10-4\)</span>。</li>
+<li><strong>每塊位元（148）</strong>：data <span class="arithmatex">\(4\times32=128\)</span> ＋ 18 ＋ 2。</li>
+<li><strong>總位元數</strong>：<span class="arithmatex">\(1024\times148=151552\)</span>。</li>
+</ul>
+<p><strong>(3) 2-way set-associative、4-word block</strong></p>
+<ul>
+<li><strong>block 數 1024、set 數（512）</strong>：每 2 塊一組，<span class="arithmatex">\(1024\div2=512=2^9\)</span>。</li>
+<li><strong>offset（4）</strong>：跟 (2) 一樣。</li>
+<li><strong>index（9）</strong>：用 <strong>set 數</strong>算，<span class="arithmatex">\(\log_2512=9\)</span>。（常見錯誤：用 block 數算成 10）</li>
+<li><strong>tag（19）</strong>：<span class="arithmatex">\(32-9-4\)</span>。index 少 1 位，tag 就多 1 位。</li>
+<li><strong>每塊位元（149）</strong>：128 ＋ 19 ＋ 2。</li>
+<li><strong>LRU（512）</strong>：2-way 每個 set 用 1 位元記誰比較久沒用，512 個 set 共 512 位元。</li>
+<li><strong>總位元數</strong>：<span class="arithmatex">\(1024\times149+512=153088\)</span>。</li>
+</ul>
 <table>
 <thead>
 <tr>
@@ -1034,7 +1116,7 @@ window.MathJax = {
 <th>offset</th>
 <th>index</th>
 <th>tag</th>
-<th>每個 block 位元</th>
+<th>每塊位元</th>
 <th>總位元數</th>
 </tr>
 </thead>
@@ -1045,8 +1127,8 @@ window.MathJax = {
 <td>2</td>
 <td>12</td>
 <td>18</td>
-<td>32+18+2=52</td>
-<td><span class="arithmatex">\(4096\times52=212992\)</span></td>
+<td>52</td>
+<td>212992</td>
 </tr>
 <tr>
 <td>(2) DM、4-word block</td>
@@ -1054,8 +1136,8 @@ window.MathJax = {
 <td>4</td>
 <td>10</td>
 <td>18</td>
-<td>128+18+2=148</td>
-<td><span class="arithmatex">\(1024\times148=151552\)</span></td>
+<td>148</td>
+<td>151552</td>
 </tr>
 <tr>
 <td>(3) 2-way、4-word block</td>
@@ -1063,14 +1145,23 @@ window.MathJax = {
 <td>4</td>
 <td>9</td>
 <td>19</td>
-<td>128+19+2=149</td>
-<td><span class="arithmatex">\(1024\times149+512=153088\)</span></td>
+<td>149</td>
+<td>153088</td>
 </tr>
 </tbody>
 </table>
-<p>(3) 最後的 512 是每個 set 1 個 LRU 位元。direct-mapped 不需要 LRU。</p>
-<p>(4) TLB 10 entries、4 KB page：fully associative，每個 entry 存 VPN（tag）20 位元 ＋ PPN 20 位元（假設實體位址也是 32 位元）＋ valid、dirty、ref 位元，約 <span class="arithmatex">\(10\times43=430\)</span> 位元。</p>
-<p>(5) page table：<span class="arithmatex">\(2^{32}/2^{12}=2^{20}\)</span> 個 entry，每個存 PPN 20 位元＋狀態位元，約 <span class="arithmatex">\(2^{20}\times4\text{ B}=4\text{ MB}\)</span>（假設 PTE 4 bytes）。</p>
+<p><strong>(4) TLB：10 個 entry、4 KB page、fully associative</strong></p>
+<ul>
+<li><strong>page offset（12）</strong>：4 KB ＝ <span class="arithmatex">\(2^{12}\)</span>。</li>
+<li><strong>VPN、PPN（各 20）</strong>：<span class="arithmatex">\(32-12\)</span>。</li>
+<li><strong>每個 entry（43）</strong>：fully associative 沒有 index，整個 VPN 當 tag 存 20 ＋ PPN 20 ＋ valid、dirty、ref 共 3。</li>
+<li><strong>TLB 總共</strong>：<span class="arithmatex">\(10\times43=430\)</span> 位元。</li>
+</ul>
+<p><strong>(5) page table</strong></p>
+<ul>
+<li><strong>entry 數（<span class="arithmatex">\(2^{20}\)</span>）</strong>：VPN 有 20 位元，每個虛擬 page 一個 entry，約一百萬個。</li>
+<li><strong>大小（4 MB）</strong>：每個 PTE 取 4 bytes（PPN 20 位元＋狀態位元，湊成 32 位元），<span class="arithmatex">\(2^{20}\times4\text{ B}=2^{22}\text{ B}=4\text{ MB}\)</span>。</li>
+</ul>
 </div>
 <div class="admonition example">
 <p class="admonition-title">113 Q5.2（6%）：32 KiB data、8-word block、32-bit 位址的 direct-mapped cache 總位元數</p>
@@ -1087,98 +1178,126 @@ window.MathJax = {
 <tr>
 <th>word address</th>
 <th>二進位</th>
+<th>block</th>
 <th>tag</th>
 <th>index</th>
 <th>H/M</th>
+<th>說明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>3</td>
 <td>0000 0011</td>
+<td>1</td>
 <td>0</td>
 <td>1</td>
 <td>M</td>
+<td>搬進 block 1（word 2、3）</td>
 </tr>
 <tr>
 <td>180</td>
 <td>1011 0100</td>
+<td>90</td>
 <td>11</td>
 <td>2</td>
 <td>M</td>
+<td>搬進 block 90（word 180、181）</td>
 </tr>
 <tr>
 <td>43</td>
 <td>0010 1011</td>
+<td>21</td>
 <td>2</td>
 <td>5</td>
 <td>M</td>
+<td>搬進 block 21（word 42、43）</td>
 </tr>
 <tr>
 <td>2</td>
 <td>0000 0010</td>
+<td>1</td>
 <td>0</td>
 <td>1</td>
-<td><strong>H</strong>（和 3 同一個 block）</td>
+<td><strong>H</strong></td>
+<td>和 3 同一塊</td>
 </tr>
 <tr>
 <td>191</td>
 <td>1011 1111</td>
+<td>95</td>
 <td>11</td>
 <td>7</td>
 <td>M</td>
+<td>搬進 block 95（word 190、191）</td>
 </tr>
 <tr>
 <td>88</td>
 <td>0101 1000</td>
+<td>44</td>
 <td>5</td>
 <td>4</td>
 <td>M</td>
+<td>搬進 block 44（word 88、89）</td>
 </tr>
 <tr>
 <td>190</td>
 <td>1011 1110</td>
+<td>95</td>
 <td>11</td>
 <td>7</td>
 <td><strong>H</strong></td>
+<td>和 191 同一塊</td>
 </tr>
 <tr>
 <td>14</td>
 <td>0000 1110</td>
+<td>7</td>
 <td>0</td>
 <td>7</td>
-<td>M（踢掉 190 那塊）</td>
+<td>M</td>
+<td>index 7 被佔：踢掉 block 95，換成 block 7</td>
 </tr>
 <tr>
 <td>181</td>
 <td>1011 0101</td>
+<td>90</td>
 <td>11</td>
 <td>2</td>
 <td><strong>H</strong></td>
+<td>和 180 同一塊</td>
 </tr>
 <tr>
 <td>44</td>
 <td>0010 1100</td>
+<td>22</td>
 <td>2</td>
 <td>6</td>
 <td>M</td>
+<td>搬進 block 22（word 44、45）</td>
 </tr>
 <tr>
 <td>186</td>
 <td>1011 1010</td>
+<td>93</td>
 <td>11</td>
 <td>5</td>
-<td>M（踢掉 43 那塊）</td>
+<td>M</td>
+<td>index 5 被佔：踢掉 block 21（43 那塊）</td>
 </tr>
 <tr>
 <td>253</td>
 <td>1111 1101</td>
+<td>126</td>
 <td>15</td>
 <td>6</td>
 <td>M</td>
+<td>index 6 被佔：踢掉 block 22（44 那塊）</td>
 </tr>
 </tbody>
 </table>
+<p><strong>結果</strong>：hit 3 次（2、190、181），<strong>hit rate ＝ 3/12 ＝ 25%</strong>。</p>
+<p><strong>9 次 miss 都是 compulsory</strong>：每一次 miss 都是第一次用到那個 block。14、186、253 雖然把別的 block 踢掉了，但它們自己也是第一次出現；被踢掉的 block 95、21、22 之後沒再用到，所以這串存取沒有 conflict miss。</p>
 <p><strong>注意</strong>：題目表格的示範列寫「3 → tag 0, index 3」，那是 1-word block 的切法（COD 原題的上一小題）。2-word block 時最低位元是 offset，index 是位元 [3:1]，所以 3 的 index 是 1。考試遇到這種情況，<strong>寫出你的切法並說明</strong>。</p>
 </div>
 <div class="viz" data-viz="cache" data-addrs="3,180,43,2,191,88,190,14,181,44,186,253" data-unit="word" data-block="2" data-sets="8" data-ways="1" data-title="113 Q5.1：一個一個位址看 hit／miss"></div>
@@ -1188,9 +1307,10 @@ window.MathJax = {
 <p>多層：<span class="arithmatex">\(\text{AMAT}=t_{L1}+m_{L1}\times(t_{L2}+m_{L2}\times t_{mem})\)</span>，<span class="arithmatex">\(m_{L2}\)</span> 是 L2 的 local miss rate。</p>
 <p><strong>多層公式怎麼讀</strong>：每次都先查 L1（<span class="arithmatex">\(t_{L1}\)</span>）。L1 miss 的那 <span class="arithmatex">\(m_{L1}\)</span> 比例，要再查 L2（<span class="arithmatex">\(t_{L2}\)</span>）；L2 也 miss 的，再去記憶體（<span class="arithmatex">\(t_{mem}\)</span>）。括號裡就是「L1 miss 之後平均還要多久」，也就是 L1 的 miss penalty。</p>
 <ul>
-<li><strong>local miss rate</strong> <span class="arithmatex">\(m_{L2}\)</span>：L2 被問到的那些存取裡，miss 的比例。</li>
-<li><strong>global miss rate</strong> <span class="arithmatex">\(=m_{L1}\times m_{L2}\)</span>：全部存取裡，一路 miss 到記憶體的比例。題目沒說清楚時要寫出你用哪一種。</li>
+<li><strong>local miss rate</strong> <span class="arithmatex">\(m_{L2}=\dfrac{\text{L2 miss 次數}}{\text{L2 被存取的次數}}\)</span>：分母只算「L1 miss、才來問 L2」的那些存取。</li>
+<li><strong>global miss rate</strong> <span class="arithmatex">\(=\dfrac{\text{L2 miss 次數}}{\text{CPU 全部的記憶體存取次數}}=m_{L1}\times m_{L2}\)</span>：全部存取裡，一路 miss 到主記憶體的比例。</li>
 </ul>
+<p><strong>例子</strong>：CPU 存取 1000 次，L1 miss 40 次（這 40 次去問 L2），L2 又 miss 10 次。L2 的 local miss rate <span class="arithmatex">\(=10/40=25\%\)</span>；global miss rate <span class="arithmatex">\(=10/1000=1\%\)</span>，剛好等於 <span class="arithmatex">\(4\%\times25\%\)</span>。題目沒說清楚時，要寫出你用的是哪一種。</p>
 <p><strong>把 cache miss 算進 CPI</strong>：每條指令平均要等記憶體的 cycle 數 ＝ 每條指令存取幾次 × miss rate × miss penalty，加到原本的 CPI 上：</p>
 <div class="arithmatex">\[\text{CPI}_{\text{實際}}=\text{CPI}_{\text{base}}+\frac{\text{記憶體存取次數}}{\text{指令}}\times\text{miss rate}\times\text{miss penalty（cycle）}\]</div>
 <p>每條指令都要抓指令（I-cache 1 次），load／store 再多 1 次 D-cache。綜合小考 M-1 就是這個公式。</p>
@@ -1373,14 +1493,145 @@ window.MathJax = {
 </div>
 <div class="admonition example">
 <p class="admonition-title">112 Q6（20%）：只知道三組位址序列的 hit rate，反推 cache 參數</p>
-<p>已知 hit rate 依序是 1/2、5/8、1/3，選項是 block 8–128 B、1/2/4/8-way、4 或 8 KB、LRU 或 FIFO。</p>
-<p><strong>思路</strong>：</p>
-<ol>
-<li><strong>block 大小</strong>：序列 1 的 0、4、8、16 若在同一個 block 就會命中。0 之後 4、8 命中，16 也命中，就有 3 次命中＝1/2 → block 至少 32 B；如果 64 命中，block 就要 128 B，hit rate 會超過 1/2。所以 block 是 32 或 64 B，再用序列 2 的 31 與 63 區分：只有 64 B 才會讓 31、63 落在同一個 block。</li>
-<li><strong>associativity 與大小</strong>：序列 2 中 0、4096、8192、16384 這些相隔 4 KB 的倍數會搶同一個 set；看它們能同時留住幾個，就推得出 way 數與容量。</li>
-<li><strong>LRU 或 FIFO</strong>：序列 3 的 0 是否被保留，取決於序列 2 末段有沒有「再用到」某個 block 而改變它的順序。</li>
-</ol>
-<p>把每組參數都模擬一遍，唯一符合三個 hit rate 的是 <strong>64 B block、4-way、8 KB、LRU</strong>。考試時要把模擬的 cache 狀態畫出來當理由。</p>
+<p><strong>題目條件</strong></p>
+<table>
+<thead>
+<tr>
+<th>序列</th>
+<th>存取的位址（byte，由舊到新）</th>
+<th>hit rate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0、4、8、16、64、128</td>
+<td>1/2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>31、8192、63、16384、4096、8192、64、16384</td>
+<td>5/8</td>
+</tr>
+<tr>
+<td>3</td>
+<td>32768、0、129、1024、3072、8192</td>
+<td>1/3</td>
+</tr>
+</tbody>
+</table>
+<p>cache 一開始是空的；三組序列<strong>接著做、中間不清空</strong>。要判斷：block 大小（8／16／32／64／128 B）、associativity（1／2／4／8-way）、容量（4 或 8 KB）、替換策略（LRU 或 FIFO）。</p>
+<p><strong>解題策略</strong>：一次鎖定一個參數。每一步都用「如果是別的選項，hit rate 會變成多少，跟題目矛盾」來排除。（題目寫 Explain to get points，排除的理由一定要寫。）</p>
+<p><strong>6.1 block 大小 ＝ 64 B</strong></p>
+<ul>
+<li>序列 1 共 6 次，要 3 次 hit。0 一定 miss；要湊到 3 次，4、8、16 都得跟 0 在<strong>同一個 block</strong> → block 至少 32 B。</li>
+<li>64、128 要 miss，否則 hit 超過 3 次 → 64 不能跟 0 同一塊 → block 小於 128 B。只剩 32 或 64 B。</li>
+<li>用序列 2 的 63 分辨：64 B 時 0–63 都在 block 0，63 會 hit；32 B 時 63 在另一塊，會 miss。照 64 B 算序列 2：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>位址</th>
+<th>31</th>
+<th>8192</th>
+<th>63</th>
+<th>16384</th>
+<th>4096</th>
+<th>8192</th>
+<th>64</th>
+<th>16384</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>block 號碼</td>
+<td>0</td>
+<td>128</td>
+<td>0</td>
+<td>256</td>
+<td>64</td>
+<td>128</td>
+<td>1</td>
+<td>256</td>
+</tr>
+<tr>
+<td>結果</td>
+<td>H</td>
+<td>M</td>
+<td><strong>H</strong></td>
+<td>M</td>
+<td>M</td>
+<td>H</td>
+<td>H</td>
+<td>H</td>
+</tr>
+</tbody>
+</table>
+<p>31 和 63 都在序列 1 搬進來的 block 0；64 在序列 1 搬進來的 block 1。共 5 次 hit ＝ <strong>5/8</strong> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。換成 32 B，63 會 miss，只剩 4/8，不合。</p>
+<p><strong>6.2 associativity ＝ 4-way（上下界夾擊）</strong></p>
+<ul>
+<li><strong>先看誰搶同一個 set</strong>：block 0、64、128、256 除以 set 數都餘 0（set 數最多 64；只有 1-way 8 KB 有 128 個 set，那時 block 64 會去 set 64，但 0、128、256 還是在 set 0）。</li>
+<li><strong>下界：1-way、2-way 都不行</strong>。序列 2 第 6 步的 8192 要 hit，block 128 就得撐過第 4、5 步放進來的 256 和 64。只有 1 格時，第 4 步的 256 一來就把 128 踢掉；只有 2 格時，LRU 在第 4 步放 256 時就踢掉 128（剛用過的是 0），FIFO 在第 5 步放 64 時踢掉 128。第 6 步都會 miss，hit rate 湊不到 5/8。</li>
+<li><strong>上界：不是 8-way</strong>。8-way 時 set 數只有 16（8 KB）或 8（4 KB），到序列 3 結束，擠進 set 0 的 block 有 0、64、128、256、512，再加上 16、48，最多 7 個，8 格都放得下，永遠不用踢。這樣序列 3 的 0、129、8192 都會 hit ＝ 3/6 ＝ 1/2，不是 1/3。</li>
+</ul>
+<p>所以是 <strong>4-way</strong>。</p>
+<p><strong>6.3 容量 ＝ 8 KB</strong></p>
+<ul>
+<li><strong>4 KB</strong>：<span class="arithmatex">\(4096\div64\div4=16\)</span> 個 set。序列 3 的 1024（block 16）、3072（block 48）除以 16 都餘 0，也擠進 set 0，把之後要用的 block 踢掉，序列 3 只剩 1/6。</li>
+<li><strong>8 KB</strong>：<span class="arithmatex">\(8192\div64\div4=32\)</span> 個 set。block 16、48 都去 set 16，不干擾 set 0 → 符合 1/3。</li>
+</ul>
+<p><strong>6.4 替換策略 ＝ LRU</strong></p>
+<p>進入序列 3 時，set 0 裡有 block 0、64、128、256。最後一次用到：block 0 是序列 2 第 3 步（63）、64 是第 5 步（4096）、128 是第 6 步（8192）、256 是第 8 步（16384）。放進來的先後是 0、128、256、64。</p>
+<table>
+<thead>
+<tr>
+<th>位址</th>
+<th>block（set）</th>
+<th>LRU</th>
+<th>FIFO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>32768</td>
+<td>512（0）</td>
+<td>M，踢 0</td>
+<td>M，踢 0</td>
+</tr>
+<tr>
+<td>0</td>
+<td>0（0）</td>
+<td>M，踢 64</td>
+<td>M，踢 128</td>
+</tr>
+<tr>
+<td>129</td>
+<td>2（2）</td>
+<td>H</td>
+<td>H</td>
+</tr>
+<tr>
+<td>1024</td>
+<td>16（16）</td>
+<td>M</td>
+<td>M</td>
+</tr>
+<tr>
+<td>3072</td>
+<td>48（16）</td>
+<td>M</td>
+<td>M</td>
+</tr>
+<tr>
+<td>8192</td>
+<td>128（0）</td>
+<td><strong>H</strong>（128 還在）</td>
+<td>M（128 被踢了）</td>
+</tr>
+</tbody>
+</table>
+<p>LRU 共 2 次 hit ＝ <strong>1/3</strong> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>；FIFO 只有 1/6，不合。差別在：序列 2 第 6 步剛用過 8192，<strong>LRU 記得它最近用過</strong>，所以留著；FIFO 只看它是第二早放進來的，就踢掉了。</p>
+<p><strong>答案</strong>：64 B、4-way、8 KB、LRU。我也用程式把 <span class="arithmatex">\(5\times4\times2\times2=80\)</span> 種組合全部模擬過，只有這一組三個 hit rate 都符合。</p>
 </div>
 <h3 id="u2-concept">2.8 觀念小考</h3>
 <p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。答對、答錯都會記在「本頁小考」。</p>
@@ -1585,7 +1836,7 @@ window.MathJax = {
 <p>虛擬位址 ＝ <strong>VPN | page offset</strong>。page offset 由 page 大小決定，直接搬到實體位址；VPN 查 TLB 或 page table 換成 PPN。</p>
 </div>
 <h3 id="u3-0">3.0 觀念課：每個程式都以為自己擁有整棟大樓</h3>
-<h4 id="_10">比喻：門牌對照表</h4>
+<h4 id="_11">比喻：門牌對照表</h4>
 <p>每個程式都以為自己住在一整棟大樓裡，房號從 0 開始（<strong>虛擬位址</strong>）。實際上作業系統只分給它幾個真實的房間（<strong>實體記憶體的 frame</strong>），不常用的東西放在倉庫（<strong>磁碟</strong>）。</p>
 <p>要找東西時，查一張「虛擬房號 → 實體房號」的對照表，這張表就是 <strong>page table</strong>。</p>
 <p><strong>為什麼要這樣做</strong>：</p>
@@ -1640,7 +1891,7 @@ window.MathJax = {
 <li><strong>作業系統角度</strong>：<a href="https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&amp;cid=141&amp;id=999">清大周志遠・作業系統講義</a> Ch8 Memory Management、Ch9 Virtual Memory。這一單元和 OS 的記憶體單元可以一起讀。</li>
 </ul>
 </div>
-<h4 id="_11">換你試試</h4>
+<h4 id="_12">換你試試</h4>
 <p>用上面的 page table（VPN 0→2、VPN 5→0）。</p>
 <p><strong>T-1.</strong> 虛擬位址 0x07 的實體位址？</p>
 <details class="quiz">
@@ -1782,14 +2033,14 @@ window.MathJax = {
 <p>pipeline 讓<strong>吞吐量</strong>變高，但單一指令的<strong>延遲</strong>不會變短。週期時間由最慢的那一級決定。</p>
 </div>
 <h3 id="u4-0">4.0 觀念課：洗衣服的流水線</h3>
-<h4 id="_12">比喻：洗、烘、摺</h4>
+<h4 id="_13">比喻：洗、烘、摺</h4>
 <p>洗衣服有三步：洗 30 分、烘 30 分、摺 30 分。有 4 批衣服：</p>
 <ul>
 <li><strong>一批做完才做下一批</strong>：<span class="arithmatex">\(4\times90=360\)</span> 分鐘</li>
 <li><strong>流水線</strong>：第一批洗完拿去烘的同時，第二批開始洗。總時間 <span class="arithmatex">\((3+3)\times30=180\)</span> 分鐘</li>
 </ul>
 <p>每一批從頭到尾還是要 90 分鐘（<strong>延遲沒變</strong>），但每 30 分鐘就有一批完成（<strong>吞吐量變高</strong>）。</p>
-<h4 id="_13">指令的五個步驟</h4>
+<h4 id="_14">指令的五個步驟</h4>
 <table>
 <thead>
 <tr>
@@ -1914,7 +2165,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>影片</strong>：<a href="https://ocw.nthu.edu.tw/courses/13">清大黃婷婷・計算機結構</a> 第 6 週 Enhancing performance with pipelining。</li>
 </ul>
 </div>
-<h4 id="_14">換你試試</h4>
+<h4 id="_15">換你試試</h4>
 <p><strong>T-1.</strong> 10 條指令、5 級 pipeline、每級 200 ps。pipeline 和非 pipeline（每條 1000 ps）各要多久？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2077,7 +2328,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p>猜錯一次要丟掉「branch 決定之前已經進來的指令」。penalty 由<strong>在第幾級決定</strong>決定，pipeline 越深 penalty 越大。</p>
 </div>
 <h3 id="u5-0">5.0 觀念課：還不知道要跳去哪，只好先猜</h3>
-<h4 id="_15">問題在哪</h4>
+<h4 id="_16">問題在哪</h4>
 <p><code>beq</code> 要比較完兩個暫存器，才知道要跳還是不跳。假設在 EX（第 3 級）結束時才知道結果：</p>
 <table>
 <thead>
@@ -2115,7 +2366,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 </table>
 <p>在知道結果之前，pipeline 已經抓了 2 條指令進來。猜對了沒事；<strong>猜錯了，這 2 條要丟掉</strong>，浪費 2 個 cycle。這就是 misprediction penalty：</p>
 <div class="arithmatex">\[\text{penalty}=\text{決定 branch 的那一級}-1\]</div>
-<h4 id="_16">平均多花多少</h4>
+<h4 id="_17">平均多花多少</h4>
 <p>100 條指令裡有 20 條 branch，猜對率 75%：猜錯 <span class="arithmatex">\(20\times0.25=5\)</span> 次，每次 2 cycle，多花 10 cycle。理想 CPI 1 變成 <span class="arithmatex">\(\frac{100+10}{100}=1.1\)</span>。</p>
 <div class="arithmatex">\[\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty}\]</div>
 <h4 id="2-bit-1-bit">2-bit 預測器為什麼比 1-bit 好</h4>
@@ -2131,7 +2382,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>英文</strong>：<a href="https://safari.ethz.ch/ddca/spring2025/doku.php?id=start">ETH Digital Design &amp; Computer Architecture 2025</a> 的 superscalar 與 branch prediction 講次。114 Q3（dual-path、confidence estimator）就是這門課的題型。</li>
 </ul>
 </div>
-<h4 id="_17">換你試試</h4>
+<h4 id="_18">換你試試</h4>
 <p><strong>T-1.</strong> 30% 是 branch、準確率 80%、penalty 3，CPI？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2380,7 +2631,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf">MIT 6.823 Problem Set 10</a>（<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf">解答</a>）有跟 112 Q3、114 Q5 一樣的 fixed／data-dependent switching 題目。</li>
 </ul>
 </div>
-<h4 id="_18">換你試試</h4>
+<h4 id="_19">換你試試</h4>
 <p>同樣的迴圈，LD 改成 6 個 cycle。</p>
 <p><strong>T-1.</strong> 固定輪流需要幾個 thread？</p>
 <details class="quiz">
@@ -2440,13 +2691,13 @@ BNE  ...</code></pre>
 <li>refresh 的命令要佔用<strong>命令匯流排</strong>（command bus）一段時間，這段時間不能送別的命令。</li>
 <li>正在 refresh 的那個 <strong>bank</strong> 不能被讀寫。</li>
 </ul>
-<h4 id="_19">使用率怎麼算</h4>
+<h4 id="_20">使用率怎麼算</h4>
 <div class="arithmatex">\[\text{使用率}=\frac{\text{這段時間內被 refresh 佔用的總時間}}{\text{這段時間}}\]</div>
 <p><strong>小例子</strong>：1 個 bank、1000 列，每次 refresh 佔用 bus 10 ns，每 64 ms 要全部 refresh 一次。</p>
 <p>64 ms 內被佔用 <span class="arithmatex">\(1000\times10\text{ ns}=10\ \mu\text{s}\)</span>，使用率 <span class="arithmatex">\(=\frac{10\ \mu\text{s}}{64\text{ ms}}\approx0.016\%\)</span>。</p>
 <p>數字很小，但記憶體越大，列數越多（考題常是 <span class="arithmatex">\(2^{19}\)</span> 列以上），使用率就跟著變大到好幾 %，而且 bank 被佔用時讀寫都要等。</p>
 <p><strong>考試技巧</strong>：數字留成 2 的次方和 10 的次方，例如 <span class="arithmatex">\(64\text{ ms}=2^6\times10^6\)</span> ns，就能約分不用計算機。</p>
-<h4 id="_20">資料重用：同一個東西多久會再用到</h4>
+<h4 id="_21">資料重用：同一個東西多久會再用到</h4>
 <p>SRAM／cache 很小，只能留住「很快又會用到」的資料。</p>
 <pre class="highlight"><code class="language-text">for i in 0..2:
   for j in 0..2:
@@ -2464,7 +2715,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://safari.ethz.ch/architecture/fall2022/doku.php?id=exams">ETH 計算機結構考古題（附詳解）</a>，可以找 DRAM refresh 相關的題目練習。</li>
 </ul>
 </div>
-<h4 id="_21">換你試試</h4>
+<h4 id="_22">換你試試</h4>
 <p><strong>T-1.</strong> 4 個 bank × 1024 列，每次 refresh 佔 bus 5 ns，64 ms 一輪，使用率？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2534,7 +2785,7 @@ BNE  ...</code></pre>
 <section class="unit" data-unit="u8">
 <h2 id="u8">單元 8：平行與微架構</h2>
 <h3 id="u8-0">8.0 觀念課：同時做好幾件事的三種方式</h3>
-<h4 id="_22">平行化的上限</h4>
+<h4 id="_23">平行化的上限</h4>
 <p>90% 可以平行的程式，用 <span class="arithmatex">\(N\)</span> 個處理器：</p>
 <table>
 <thead>
@@ -2561,7 +2812,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>處理器加倍，speedup 卻越加越少，因為那 10% 不能平行的部分變成主要的時間。再加上處理器之間要溝通，實際上更低。</p>
-<h4 id="_23">三種平行</h4>
+<h4 id="_24">三種平行</h4>
 <table>
 <thead>
 <tr>
@@ -2589,7 +2840,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>從比喻就能回答 114 Q6：VLIW 比 superscalar 簡單（硬體不用排程）、superscalar 可能更快（現場能應變 cache miss）、VLIW 比 array 彈性（每個槽可以做不同事）、array 最簡單（只要一份指令和控制）。</p>
-<h4 id="_24">記憶體一致性：把指令洗成一疊牌</h4>
+<h4 id="_25">記憶體一致性：把指令洗成一疊牌</h4>
 <p>兩個處理器同時跑（x、y 一開始都是 0）：</p>
 <table>
 <thead>
@@ -2612,7 +2863,7 @@ BNE  ...</code></pre>
 <p><strong>Sequential consistency（SC）</strong> 的意思是：最後的結果，必須等於把兩邊的指令<strong>洗成一疊</strong>（各自的順序不能變）後依序執行的結果。</p>
 <p>把所有洗法列出來，(r1, r2) 只可能是 (0,1)、(1,0)、(1,1)。<strong>(0,0) 不可能</strong>：r1＝0 代表 P1 讀 y 時 P2 還沒寫 y；r2＝0 代表 P2 讀 x 時 P1 還沒寫 x。但兩邊都是「先寫再讀」，一定有一邊的寫入比另一邊的讀取早，矛盾。</p>
 <p>112 Q5 的三個處理器版本，用的就是同一個推理：把「讀到 0」換成「某個讀取在某個寫入之前」，看會不會繞成一個圈。</p>
-<h4 id="_25">頻寬撐不撐得住</h4>
+<h4 id="_26">頻寬撐不撐得住</h4>
 <p>運算再快，資料送不進來也沒用。需要的頻寬 ＝ 每秒運算次數 × 每次運算要從記憶體讀幾個 byte。這個值超過記憶體頻寬，運算單元就會空等。</p>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
@@ -2621,7 +2872,7 @@ BNE  ...</code></pre>
 <li><strong>英文文章</strong>：Russ Cox〈<a href="https://research.swtch.com/hwmm">Hardware Memory Models</a>〉用 litmus test（就是這節 P1、P2 那種小程式）解釋 sequential consistency，例子寫得非常清楚。</li>
 </ul>
 </div>
-<h4 id="_26">換你試試</h4>
+<h4 id="_27">換你試試</h4>
 <p><strong>T-1.</strong> 95% 可平行，處理器無限多，speedup 上限？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2730,7 +2981,7 @@ BNE  ...</code></pre>
 <p><strong>為什麼「反相再加 1」就是取負</strong>：<span class="arithmatex">\(x\)</span> 和 <span class="arithmatex">\(\sim x\)</span> 每一位都相反，加起來是 1111，也就是 −1。所以 <span class="arithmatex">\(x+\sim x=-1\)</span>，移項得 <span class="arithmatex">\(-x=\sim x+1\)</span>。</p>
 <p>例：<span class="arithmatex">\(-3\)</span>：<span class="arithmatex">\(3=0011\)</span>，反相 1100，加 1 得 <strong>1101</strong>。</p>
 <p><strong>溢位</strong>：兩個正數相加得到負數（或兩個負數相加得到正數），結果就超出範圍了。例：<span class="arithmatex">\(5+4=1001\)</span>，讀起來是 −7，溢位。</p>
-<h4 id="_27">浮點數：二進位的科學記號</h4>
+<h4 id="_28">浮點數：二進位的科學記號</h4>
 <div class="arithmatex">\[(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})\]</div>
 <p><strong>每一部分的意思</strong>：</p>
 <ul>
@@ -2763,7 +3014,7 @@ BNE  ...</code></pre>
 <li><strong>英文</strong>：〈<a href="https://teaching.idallen.com/cst8214/08w/notes/ieee754_conversions.txt">IEEE 754 conversions</a>〉一步一步手算十進位和 IEEE 754 互換，適合練習。</li>
 </ul>
 </div>
-<h4 id="_28">換你試試</h4>
+<h4 id="_29">換你試試</h4>
 <p><strong>T-1.</strong> 用 4 位元二補數算 <span class="arithmatex">\(6+3\)</span>，結果是什麼？有沒有溢位？</p>
 <details class="quiz">
 <summary>看答案</summary>

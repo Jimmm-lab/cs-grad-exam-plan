@@ -385,7 +385,18 @@ hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles
 
 **注意單位**：題目給 word address 時，offset 是「block 裡第幾個 word」，用 word 數算；給 byte address 時用 byte 數算。一個 word 通常是 4 bytes。
 
-fully associative 沒有 index（只有 1 個 set）；direct-mapped 是 1-way。
+#### 三種映射方式一次比較
+
+| | direct-mapped（直接映射，1-way） | $n$-way set-associative（$n$ 路集合關聯） | fully associative（全關聯） |
+|---|---|---|---|
+| 一個 block 可以放哪裡 | **唯一固定的一格**：block 號碼 mod 格數 | **固定的一個 set**（block 號碼 mod set 數），set 裡哪一格都可以 | **任何一格** |
+| index | **最長**：$\log_2(\text{格數})$ | $\log_2(\text{set 數})$ | **沒有**（0 位元，只有 1 個 set） |
+| tag | **最短** | 中間 | **最長**：整個 block 號碼都是 tag |
+| 查詢時比對幾個 tag | 1 個 | $n$ 個（同時比） | 全部的格（同時比） |
+| 要不要替換策略（LRU 等） | 不用，位置被佔就直接換掉 | set 滿了才要 | 全滿才要 |
+| 硬體成本、hit time | 最低、最快 | 中間 | 最高、最慢 |
+
+**規律**：容量和 block 大小不變時，associativity 每加倍，set 數就減半 → **index 少 1 位、tag 多 1 位**（offset 不變）。
 
 ### 2.2 Cache 總位元數 {#u2-2}
 
@@ -416,19 +427,57 @@ $$\begin{aligned}\text{總位元數}=\;&\text{block 數}\times(\text{data}+\text
 LRU 加在最後面，是因為它跟著 **set** 走，不是跟著 block 走：2-way 的一個 set 裡兩格共用 1 個位元。direct-mapped 每個 set 只有一格、沒得選，**不需要 LRU**。4-way 以上要記完整的先後順序，位元數依做法不同，考試會給條件。
 
 !!! example "111 P3（25%）：32-bit 位址、16 KB data、write-back、LRU"
-    16 KB ＝ 4K words。每個 block 加 valid 和 dirty 各 1 位元。
+    **題目條件與前提**
 
-    | 設計 | block 數 | offset | index | tag | 每個 block 位元 | 總位元數 |
+    - 位址 32 位元（虛擬位址、實體位址都是 32 位元）。
+    - data 容量 16 KB ＝ $16\times1024=16384$ bytes。32 位元的系統 1 word ＝ 4 bytes，所以是 **4096 words**（4K words）。
+    - write-back：每個 block 除了 tag，還要 **valid 1 位元＋dirty 1 位元**，共 2 位元。
+
+    **(1) direct-mapped、1-word block**
+
+    - **block 數（4096）**：4096 words ÷ 每塊 1 word。
+    - **offset（2）**：一塊 4 bytes ＝ $2^2$。
+    - **index（12）**：4096 格 ＝ $2^{12}$。
+    - **tag（18）**：$32-12-2$。
+    - **每塊位元（52）**：data 32 ＋ tag 18 ＋ valid／dirty 2。
+    - **總位元數**：$4096\times52=212992$。
+
+    **(2) direct-mapped、4-word block**
+
+    - **block 數（1024）**：$4096\div4$。
+    - **offset（4）**：一塊 16 bytes ＝ $2^4$（2 位選第幾個 word ＋ 2 位選 word 裡的第幾個 byte）。
+    - **index（10）**：1024 ＝ $2^{10}$。
+    - **tag（18）**：$32-10-4$。
+    - **每塊位元（148）**：data $4\times32=128$ ＋ 18 ＋ 2。
+    - **總位元數**：$1024\times148=151552$。
+
+    **(3) 2-way set-associative、4-word block**
+
+    - **block 數 1024、set 數（512）**：每 2 塊一組，$1024\div2=512=2^9$。
+    - **offset（4）**：跟 (2) 一樣。
+    - **index（9）**：用 **set 數**算，$\log_2512=9$。（常見錯誤：用 block 數算成 10）
+    - **tag（19）**：$32-9-4$。index 少 1 位，tag 就多 1 位。
+    - **每塊位元（149）**：128 ＋ 19 ＋ 2。
+    - **LRU（512）**：2-way 每個 set 用 1 位元記誰比較久沒用，512 個 set 共 512 位元。
+    - **總位元數**：$1024\times149+512=153088$。
+
+    | 設計 | block 數 | offset | index | tag | 每塊位元 | 總位元數 |
     |---|---|---|---|---|---|---|
-    | (1) DM、1-word block | 4096 | 2 | 12 | 18 | 32+18+2=52 | $4096\times52=212992$ |
-    | (2) DM、4-word block | 1024 | 4 | 10 | 18 | 128+18+2=148 | $1024\times148=151552$ |
-    | (3) 2-way、4-word block | 1024（512 sets） | 4 | 9 | 19 | 128+19+2=149 | $1024\times149+512=153088$ |
+    | (1) DM、1-word block | 4096 | 2 | 12 | 18 | 52 | 212992 |
+    | (2) DM、4-word block | 1024 | 4 | 10 | 18 | 148 | 151552 |
+    | (3) 2-way、4-word block | 1024（512 sets） | 4 | 9 | 19 | 149 | 153088 |
 
-    (3) 最後的 512 是每個 set 1 個 LRU 位元。direct-mapped 不需要 LRU。
+    **(4) TLB：10 個 entry、4 KB page、fully associative**
 
-    (4) TLB 10 entries、4 KB page：fully associative，每個 entry 存 VPN（tag）20 位元 ＋ PPN 20 位元（假設實體位址也是 32 位元）＋ valid、dirty、ref 位元，約 $10\times43=430$ 位元。
+    - **page offset（12）**：4 KB ＝ $2^{12}$。
+    - **VPN、PPN（各 20）**：$32-12$。
+    - **每個 entry（43）**：fully associative 沒有 index，整個 VPN 當 tag 存 20 ＋ PPN 20 ＋ valid、dirty、ref 共 3。
+    - **TLB 總共**：$10\times43=430$ 位元。
 
-    (5) page table：$2^{32}/2^{12}=2^{20}$ 個 entry，每個存 PPN 20 位元＋狀態位元，約 $2^{20}\times4\text{ B}=4\text{ MB}$（假設 PTE 4 bytes）。
+    **(5) page table**
+
+    - **entry 數（$2^{20}$）**：VPN 有 20 位元，每個虛擬 page 一個 entry，約一百萬個。
+    - **大小（4 MB）**：每個 PTE 取 4 bytes（PPN 20 位元＋狀態位元，湊成 32 位元），$2^{20}\times4\text{ B}=2^{22}\text{ B}=4\text{ MB}$。
 
 !!! example "113 Q5.2（6%）：32 KiB data、8-word block、32-bit 位址的 direct-mapped cache 總位元數"
     block 32 B → offset 5；block 數 $2^{15}/2^5=1024$ → index 10；tag $=32-10-5=17$。
@@ -442,20 +491,24 @@ LRU 加在最後面，是因為它跟著 **set** 走，不是跟著 block 走：
 
     **用十進位算比切二進位快**：例如 180 → block 位址 $\lfloor180/2\rfloor=90$ → index $90\bmod8=2$、tag $\lfloor90/8\rfloor=11$。這跟把 `1011 0100` 切成 tag `1011`、index `010`、offset `0` 是同一件事。
 
-    | word address | 二進位 | tag | index | H/M |
-    |---|---|---|---|---|
-    | 3 | 0000 0011 | 0 | 1 | M |
-    | 180 | 1011 0100 | 11 | 2 | M |
-    | 43 | 0010 1011 | 2 | 5 | M |
-    | 2 | 0000 0010 | 0 | 1 | **H**（和 3 同一個 block） |
-    | 191 | 1011 1111 | 11 | 7 | M |
-    | 88 | 0101 1000 | 5 | 4 | M |
-    | 190 | 1011 1110 | 11 | 7 | **H** |
-    | 14 | 0000 1110 | 0 | 7 | M（踢掉 190 那塊） |
-    | 181 | 1011 0101 | 11 | 2 | **H** |
-    | 44 | 0010 1100 | 2 | 6 | M |
-    | 186 | 1011 1010 | 11 | 5 | M（踢掉 43 那塊） |
-    | 253 | 1111 1101 | 15 | 6 | M |
+    | word address | 二進位 | block | tag | index | H/M | 說明 |
+    |---|---|---|---|---|---|---|
+    | 3 | 0000 0011 | 1 | 0 | 1 | M | 搬進 block 1（word 2、3） |
+    | 180 | 1011 0100 | 90 | 11 | 2 | M | 搬進 block 90（word 180、181） |
+    | 43 | 0010 1011 | 21 | 2 | 5 | M | 搬進 block 21（word 42、43） |
+    | 2 | 0000 0010 | 1 | 0 | 1 | **H** | 和 3 同一塊 |
+    | 191 | 1011 1111 | 95 | 11 | 7 | M | 搬進 block 95（word 190、191） |
+    | 88 | 0101 1000 | 44 | 5 | 4 | M | 搬進 block 44（word 88、89） |
+    | 190 | 1011 1110 | 95 | 11 | 7 | **H** | 和 191 同一塊 |
+    | 14 | 0000 1110 | 7 | 0 | 7 | M | index 7 被佔：踢掉 block 95，換成 block 7 |
+    | 181 | 1011 0101 | 90 | 11 | 2 | **H** | 和 180 同一塊 |
+    | 44 | 0010 1100 | 22 | 2 | 6 | M | 搬進 block 22（word 44、45） |
+    | 186 | 1011 1010 | 93 | 11 | 5 | M | index 5 被佔：踢掉 block 21（43 那塊） |
+    | 253 | 1111 1101 | 126 | 15 | 6 | M | index 6 被佔：踢掉 block 22（44 那塊） |
+
+    **結果**：hit 3 次（2、190、181），**hit rate ＝ 3/12 ＝ 25%**。
+
+    **9 次 miss 都是 compulsory**：每一次 miss 都是第一次用到那個 block。14、186、253 雖然把別的 block 踢掉了，但它們自己也是第一次出現；被踢掉的 block 95、21、22 之後沒再用到，所以這串存取沒有 conflict miss。
 
     **注意**：題目表格的示範列寫「3 → tag 0, index 3」，那是 1-word block 的切法（COD 原題的上一小題）。2-word block 時最低位元是 offset，index 是位元 [3:1]，所以 3 的 index 是 1。考試遇到這種情況，**寫出你的切法並說明**。
 
@@ -469,8 +522,10 @@ $$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
 
 **多層公式怎麼讀**：每次都先查 L1（$t_{L1}$）。L1 miss 的那 $m_{L1}$ 比例，要再查 L2（$t_{L2}$）；L2 也 miss 的，再去記憶體（$t_{mem}$）。括號裡就是「L1 miss 之後平均還要多久」，也就是 L1 的 miss penalty。
 
-- **local miss rate** $m_{L2}$：L2 被問到的那些存取裡，miss 的比例。
-- **global miss rate** $=m_{L1}\times m_{L2}$：全部存取裡，一路 miss 到記憶體的比例。題目沒說清楚時要寫出你用哪一種。
+- **local miss rate** $m_{L2}=\dfrac{\text{L2 miss 次數}}{\text{L2 被存取的次數}}$：分母只算「L1 miss、才來問 L2」的那些存取。
+- **global miss rate** $=\dfrac{\text{L2 miss 次數}}{\text{CPU 全部的記憶體存取次數}}=m_{L1}\times m_{L2}$：全部存取裡，一路 miss 到主記憶體的比例。
+
+**例子**：CPU 存取 1000 次，L1 miss 40 次（這 40 次去問 L2），L2 又 miss 10 次。L2 的 local miss rate $=10/40=25\%$；global miss rate $=10/1000=1\%$，剛好等於 $4\%\times25\%$。題目沒說清楚時，要寫出你用的是哪一種。
 
 **把 cache miss 算進 CPI**：每條指令平均要等記憶體的 cycle 數 ＝ 每條指令存取幾次 × miss rate × miss penalty，加到原本的 CPI 上：
 
@@ -570,15 +625,60 @@ LRU 2 次 hit、FIFO 1 次。差別在第三步：A 被用到了，**LRU 會記�
     - **TLB 放大後還用 fully associative 嗎**：不一定。entry 多時，全部平行比較的硬體太大、太慢、太耗電，所以大 TLB 通常改用 set-associative（或兩層 TLB：小的 fully associative L1 TLB＋大的 set-associative L2 TLB）。
 
 !!! example "112 Q6（20%）：只知道三組位址序列的 hit rate，反推 cache 參數"
-    已知 hit rate 依序是 1/2、5/8、1/3，選項是 block 8–128 B、1/2/4/8-way、4 或 8 KB、LRU 或 FIFO。
+    **題目條件**
 
-    **思路**：
+    | 序列 | 存取的位址（byte，由舊到新） | hit rate |
+    |---|---|---|
+    | 1 | 0、4、8、16、64、128 | 1/2 |
+    | 2 | 31、8192、63、16384、4096、8192、64、16384 | 5/8 |
+    | 3 | 32768、0、129、1024、3072、8192 | 1/3 |
 
-    1. **block 大小**：序列 1 的 0、4、8、16 若在同一個 block 就會命中。0 之後 4、8 命中，16 也命中，就有 3 次命中＝1/2 → block 至少 32 B；如果 64 命中，block 就要 128 B，hit rate 會超過 1/2。所以 block 是 32 或 64 B，再用序列 2 的 31 與 63 區分：只有 64 B 才會讓 31、63 落在同一個 block。
-    2. **associativity 與大小**：序列 2 中 0、4096、8192、16384 這些相隔 4 KB 的倍數會搶同一個 set；看它們能同時留住幾個，就推得出 way 數與容量。
-    3. **LRU 或 FIFO**：序列 3 的 0 是否被保留，取決於序列 2 末段有沒有「再用到」某個 block 而改變它的順序。
+    cache 一開始是空的；三組序列**接著做、中間不清空**。要判斷：block 大小（8／16／32／64／128 B）、associativity（1／2／4／8-way）、容量（4 或 8 KB）、替換策略（LRU 或 FIFO）。
 
-    把每組參數都模擬一遍，唯一符合三個 hit rate 的是 **64 B block、4-way、8 KB、LRU**。考試時要把模擬的 cache 狀態畫出來當理由。
+    **解題策略**：一次鎖定一個參數。每一步都用「如果是別的選項，hit rate 會變成多少，跟題目矛盾」來排除。（題目寫 Explain to get points，排除的理由一定要寫。）
+
+    **6.1 block 大小 ＝ 64 B**
+
+    - 序列 1 共 6 次，要 3 次 hit。0 一定 miss；要湊到 3 次，4、8、16 都得跟 0 在**同一個 block** → block 至少 32 B。
+    - 64、128 要 miss，否則 hit 超過 3 次 → 64 不能跟 0 同一塊 → block 小於 128 B。只剩 32 或 64 B。
+    - 用序列 2 的 63 分辨：64 B 時 0–63 都在 block 0，63 會 hit；32 B 時 63 在另一塊，會 miss。照 64 B 算序列 2：
+
+    | 位址 | 31 | 8192 | 63 | 16384 | 4096 | 8192 | 64 | 16384 |
+    |---|---|---|---|---|---|---|---|---|
+    | block 號碼 | 0 | 128 | 0 | 256 | 64 | 128 | 1 | 256 |
+    | 結果 | H | M | **H** | M | M | H | H | H |
+
+    31 和 63 都在序列 1 搬進來的 block 0；64 在序列 1 搬進來的 block 1。共 5 次 hit ＝ **5/8** ✓。換成 32 B，63 會 miss，只剩 4/8，不合。
+
+    **6.2 associativity ＝ 4-way（上下界夾擊）**
+
+    - **先看誰搶同一個 set**：block 0、64、128、256 除以 set 數都餘 0（set 數最多 64；只有 1-way 8 KB 有 128 個 set，那時 block 64 會去 set 64，但 0、128、256 還是在 set 0）。
+    - **下界：1-way、2-way 都不行**。序列 2 第 6 步的 8192 要 hit，block 128 就得撐過第 4、5 步放進來的 256 和 64。只有 1 格時，第 4 步的 256 一來就把 128 踢掉；只有 2 格時，LRU 在第 4 步放 256 時就踢掉 128（剛用過的是 0），FIFO 在第 5 步放 64 時踢掉 128。第 6 步都會 miss，hit rate 湊不到 5/8。
+    - **上界：不是 8-way**。8-way 時 set 數只有 16（8 KB）或 8（4 KB），到序列 3 結束，擠進 set 0 的 block 有 0、64、128、256、512，再加上 16、48，最多 7 個，8 格都放得下，永遠不用踢。這樣序列 3 的 0、129、8192 都會 hit ＝ 3/6 ＝ 1/2，不是 1/3。
+
+    所以是 **4-way**。
+
+    **6.3 容量 ＝ 8 KB**
+
+    - **4 KB**：$4096\div64\div4=16$ 個 set。序列 3 的 1024（block 16）、3072（block 48）除以 16 都餘 0，也擠進 set 0，把之後要用的 block 踢掉，序列 3 只剩 1/6。
+    - **8 KB**：$8192\div64\div4=32$ 個 set。block 16、48 都去 set 16，不干擾 set 0 → 符合 1/3。
+
+    **6.4 替換策略 ＝ LRU**
+
+    進入序列 3 時，set 0 裡有 block 0、64、128、256。最後一次用到：block 0 是序列 2 第 3 步（63）、64 是第 5 步（4096）、128 是第 6 步（8192）、256 是第 8 步（16384）。放進來的先後是 0、128、256、64。
+
+    | 位址 | block（set） | LRU | FIFO |
+    |---|---|---|---|
+    | 32768 | 512（0） | M，踢 0 | M，踢 0 |
+    | 0 | 0（0） | M，踢 64 | M，踢 128 |
+    | 129 | 2（2） | H | H |
+    | 1024 | 16（16） | M | M |
+    | 3072 | 48（16） | M | M |
+    | 8192 | 128（0） | **H**（128 還在） | M（128 被踢了） |
+
+    LRU 共 2 次 hit ＝ **1/3** ✓；FIFO 只有 1/6，不合。差別在：序列 2 第 6 步剛用過 8192，**LRU 記得它最近用過**，所以留著；FIFO 只看它是第二早放進來的，就踢掉了。
+
+    **答案**：64 B、4-way、8 KB、LRU。我也用程式把 $5\times4\times2\times2=80$ 種組合全部模擬過，只有這一組三個 hit rate 都符合。
 
 ### 2.8 觀念小考 {#u2-concept}
 
