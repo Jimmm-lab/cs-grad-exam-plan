@@ -262,9 +262,12 @@ block 大小和 set 數都是 2 的次方。**除以 4 就是把二進位往右�
 
 跟十進位算的一模一樣。**考試時：幾個位元用 $\log_2$ 算；某個位址的 tag、index 用十進位除法算，比較不會切錯。**
 
+!!! key "為什麼 offset 在最右邊、index 在中間"
+    相鄰的 byte（例如 44、45、46、47）只差最右邊兩位，所以在**同一個 block**。相鄰的 block（例如 44 和 48）只差 index，所以會放到**不同格**，不會互相搶位置。這樣排，連續讀一整個陣列時，資料會平均分到每一格。
+
 #### 第四步：cache 裡面實際存了什麼
 
-每一格（每個抽屜）存三樣東西。讀完位址 45 之後，cache 長這樣：
+每一格（每個抽屜）存三樣東西（write-back 的 cache 還多一個 dirty，見 [2.2](#u2-2)）。讀完位址 45 之後，cache 長這樣：
 
 | index | valid | tag | data（整個 block，4 bytes） |
 |---|---|---|---|
@@ -296,22 +299,13 @@ block 大小和 set 數都是 2 的次方。**除以 4 就是把二進位往右�
 2. 109：3 號格的 tag 是 2，不是 6 → miss，把 45 的 block 踢掉，換成 tag 6
 3. 45：3 號格的 tag 是 6，不是 2 → 又 miss
 
-其他三格明明都空著，卻一直 miss，這叫 **conflict miss**。解決方法是讓一個抽屜可以放不只一本：
+其他三格明明都空著，卻一直 miss，這叫 **conflict miss**。解決方法是讓一個 set 可以放不只一個 block：direct-mapped 是**對號入座**，$n$-way set-associative 是**分區自由座**（只能坐某一區，區裡哪格都可以），fully associative 是**全部自由座**（[2.1](#u2-1) 有完整比較）。
 
-| 規則 | 比喻 | 名稱 |
-|---|---|---|
-| 每個 block 只能放固定的一格 | 對號入座 | direct-mapped（1-way） |
-| 每個 block 只能放某一區，區裡哪格都可以 | 分區自由座 | $n$-way set-associative |
-| 每個 block 哪一格都可以放 | 全部自由座 | fully associative |
-
-「區」就是 **set**。容量一樣是 4 格時，改成 **2-way**：只剩 2 個 set，每個 set 有 2 格。index ＝ block 號碼 mod **2**：45（block 11）和 109（block 27）都在 set 1，但 set 1 有兩格，可以**同時放**，第三次讀 45 就 hit 了。
+容量一樣是 4 格時，改成 **2-way**：只剩 2 個 set，每個 set 有 2 格。index ＝ block 號碼 mod **2**：45（block 11）和 109（block 27）都在 set 1，但 set 1 有兩格，可以**同時放**，第三次讀 45 就 hit 了。
 
 下面是這個例子的動畫，每一步都會顯示 index、tag 和比對結果。看完以後把「set 數」改成 2、「每個 set 幾格」改成 2（容量一樣是 4 個 block），再按重播，第三次就變成 hit。位址序列也可以換成任何考題的數字：
 
 <div class="viz" data-viz="cache" data-addrs="45,109,45" data-unit="byte" data-block="4" data-sets="4" data-ways="1"></div>
-
-!!! key "為什麼 offset 在最右邊、index 在中間"
-    相鄰的 byte（例如 44、45、46、47）只差最右邊兩位，所以在**同一個 block**。相鄰的 block（例如 44 和 48）只差 index，所以會放到**不同格**，不會互相搶位置。這樣排，讀陣列時就不會一直 conflict。
 
 #### 三種 miss（3C）
 
@@ -320,21 +314,6 @@ block 大小和 set 數都是 2 的次方。**除以 4 就是把二進位往右�
 | compulsory | 第一次用到，cache 裡本來就沒有 | 加大 block（一次多搬一點） |
 | capacity | cache 整個太小，裝不下正在用的資料 | 加大 cache |
 | conflict | cache 還有空位，卻因為搶同一個 set 被踢掉 | 提高 associativity |
-
-#### AMAT 的直覺
-
-平均拿一筆資料要等多久？每次都一定要先看書桌（hit time），如果沒找到，還要再加上跑圖書館的時間（miss penalty），而沒找到的機率是 miss rate：
-
-$$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
-
-hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles。miss rate 只有 5%，平均時間卻是 hit 的 6 倍，所以降低 miss rate 這麼重要。
-
-!!! trap "最常見的五個錯"
-    1. **set-associative 的 index 要用 set 數，不是 block 數**。4096 個 block、4-way → $4096\div4=1024$ 個 set → index 10 位元，不是 12。
-    2. **word address 和 byte address**：題目給 word address 時，offset 用「block 有幾個 word」算；給 byte address 時用 byte 數算。
-    3. **「cache 容量 16 KB」通常只算 data**，不含 tag、valid；題目問「總位元數」時才把 tag、valid（write-back 再加 dirty）加上去。
-    4. **hit 要兩個條件同時成立**：valid 是 1，**而且** tag 一樣。開機時 valid 全是 0，第一次用到一定 miss。
-    5. **只差 offset 的位址在同一個 block**：讀過 44，再讀 45、46、47 都是 hit；但 48 已經是下一個 block。
 
 !!! read "還不懂？看別人怎麼講"
     - **中文筆記（資工所考生整理）**：[容量大且速度快的記憶體](https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter06.html)：區域性、direct-mapped、**快取位元計算**（valid ＋ tag ＋ data，跟 2.2 一樣）、寫入策略、快取效能。
@@ -378,10 +357,10 @@ hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles
 ### 2.1 公式整理：位址切割三步驟 {#u2-1}
 
 1. **offset 位元** $=\log_2(\text{block 大小，byte})$
-2. **set 數** $=\dfrac{\text{cache 容量}}{\text{block 大小}\times\text{associativity}}$，**index 位元** $=\log_2(\text{set 數})$
+2. **set 數** $=\dfrac{\text{cache 容量}}{\text{block 大小}\times\text{associativity}}$，**index 位元** $=\log_2(\text{set 數})$（用 **set 數**，不是 block 數）
 3. **tag 位元** $=\text{位址位元}-\text{index}-\text{offset}$
 
-**為什麼是這樣**：$k$ 個位元可以表示 $2^k$ 種情況。一個 block 有 $B$ 個 byte，要分出是第幾個 byte，需要 $\log_2B$ 位元；有 $S$ 個 set，要選第幾個，需要 $\log_2S$ 位元。容量 ÷ block 大小 ＝ 總共幾格，再 ÷ 每個 set 幾格 ＝ set 數。
+**為什麼是這樣**：$k$ 個位元能分出 $2^k$ 種，所以要分出 $B$ 個 byte 需要 $\log_2B$ 位、選 $S$ 個 set 需要 $\log_2S$ 位。容量 ÷ block 大小 ＝ 總格數，再 ÷ 每個 set 幾格 ＝ set 數。
 
 **注意單位**：題目給 word address 時，offset 是「block 裡第幾個 word」，用 word 數算；給 byte address 時用 byte 數算。一個 word 通常是 4 bytes。
 
@@ -406,12 +385,10 @@ hit time 1、miss rate 5%、miss penalty 100：平均 $1+0.05\times100=6$ cycles
 
 | 欄位 | 幾個位元 | 做什麼用 |
 |---|---|---|
-| **valid** | 1 | 這格有沒有放有效的資料。開機時全部是 0，所以第一次用到一定 miss |
+| **valid** | 1 | 這格有沒有放有效的資料 |
 | **dirty** | 1（只有 write-back 才有） | 這個 block 搬進 cache 之後有沒有被**改過**。被踢出去時，dirty＝1 才要寫回主記憶體（[2.5](#u2-write)） |
 | **tag** | 位址位元 − index − offset | 這格現在放的是**哪一個 block** |
 | **data** | block 大小 × 8 | block 本身的內容 |
-
-set-associative 用 **LRU** 時，每個 **set** 還要幾個位元記錄「誰最久沒用」（[2.6](#u2-repl)）。2-way 的 set 只有兩格，**1 個位元**就夠：0 表示下次踢第 0 格、1 表示踢第 1 格。
 
 #### 為什麼不用存 index 和 offset
 
@@ -424,7 +401,7 @@ set-associative 用 **LRU** 時，每個 **set** 還要幾個位元記錄「誰�
 
 $$\begin{aligned}\text{總位元數}=\;&\text{block 數}\times(\text{data}+\text{tag}+\text{valid}+\text{dirty})\\&+\text{set 數}\times\text{每個 set 的 LRU 位元}\end{aligned}$$
 
-LRU 加在最後面，是因為它跟著 **set** 走，不是跟著 block 走：2-way 的一個 set 裡兩格共用 1 個位元。direct-mapped 每個 set 只有一格、沒得選，**不需要 LRU**。4-way 以上要記完整的先後順序，位元數依做法不同，考試會給條件。
+**LRU 位元**（[2.6](#u2-repl)）記錄同一個 set 裡「誰最久沒用」，所以跟著 **set** 走，不是跟著 block 走。2-way 的 set 只有兩格，**1 個位元**就夠（0 表示下次踢第 0 格、1 表示踢第 1 格）；direct-mapped 每個 set 只有一格、沒得選，**不需要 LRU**；4-way 以上要記完整的先後順序，位元數依做法不同，考試會給條件。
 
 !!! example "111 P3（25%）：32-bit 位址、16 KB data、write-back、LRU"
     **題目條件與前提**
@@ -461,12 +438,6 @@ LRU 加在最後面，是因為它跟著 **set** 走，不是跟著 block 走：
     - **LRU（512）**：2-way 每個 set 用 1 位元記誰比較久沒用，512 個 set 共 512 位元。
     - **總位元數**：$1024\times149+512=153088$。
 
-    | 設計 | block 數 | offset | index | tag | 每塊位元 | 總位元數 |
-    |---|---|---|---|---|---|---|
-    | (1) DM、1-word block | 4096 | 2 | 12 | 18 | 52 | 212992 |
-    | (2) DM、4-word block | 1024 | 4 | 10 | 18 | 148 | 151552 |
-    | (3) 2-way、4-word block | 1024（512 sets） | 4 | 9 | 19 | 149 | 153088 |
-
     **(4) TLB：10 個 entry、4 KB page、fully associative**
 
     - **page offset（12）**：4 KB ＝ $2^{12}$。
@@ -491,20 +462,20 @@ LRU 加在最後面，是因為它跟著 **set** 走，不是跟著 block 走：
 
     **用十進位算比切二進位快**：例如 180 → block 位址 $\lfloor180/2\rfloor=90$ → index $90\bmod8=2$、tag $\lfloor90/8\rfloor=11$。這跟把 `1011 0100` 切成 tag `1011`、index `010`、offset `0` 是同一件事。
 
-    | word address | 二進位 | block | tag | index | H/M | 說明 |
-    |---|---|---|---|---|---|---|
-    | 3 | 0000 0011 | 1 | 0 | 1 | M | 搬進 block 1（word 2、3） |
-    | 180 | 1011 0100 | 90 | 11 | 2 | M | 搬進 block 90（word 180、181） |
-    | 43 | 0010 1011 | 21 | 2 | 5 | M | 搬進 block 21（word 42、43） |
-    | 2 | 0000 0010 | 1 | 0 | 1 | **H** | 和 3 同一塊 |
-    | 191 | 1011 1111 | 95 | 11 | 7 | M | 搬進 block 95（word 190、191） |
-    | 88 | 0101 1000 | 44 | 5 | 4 | M | 搬進 block 44（word 88、89） |
-    | 190 | 1011 1110 | 95 | 11 | 7 | **H** | 和 191 同一塊 |
-    | 14 | 0000 1110 | 7 | 0 | 7 | M | index 7 被佔：踢掉 block 95，換成 block 7 |
-    | 181 | 1011 0101 | 90 | 11 | 2 | **H** | 和 180 同一塊 |
-    | 44 | 0010 1100 | 22 | 2 | 6 | M | 搬進 block 22（word 44、45） |
-    | 186 | 1011 1010 | 93 | 11 | 5 | M | index 5 被佔：踢掉 block 21（43 那塊） |
-    | 253 | 1111 1101 | 126 | 15 | 6 | M | index 6 被佔：踢掉 block 22（44 那塊） |
+    | word address | block | tag | index | H/M | 說明 |
+    |---|---|---|---|---|---|
+    | 3 | 1 | 0 | 1 | M | 搬進 block 1（word 2、3） |
+    | 180 | 90 | 11 | 2 | M | 搬進 block 90（word 180、181） |
+    | 43 | 21 | 2 | 5 | M | 搬進 block 21（word 42、43） |
+    | 2 | 1 | 0 | 1 | **H** | 和 3 同一塊 |
+    | 191 | 95 | 11 | 7 | M | 搬進 block 95（word 190、191） |
+    | 88 | 44 | 5 | 4 | M | 搬進 block 44（word 88、89） |
+    | 190 | 95 | 11 | 7 | **H** | 和 191 同一塊 |
+    | 14 | 7 | 0 | 7 | M | index 7 被佔：踢掉 block 95，換成 block 7 |
+    | 181 | 90 | 11 | 2 | **H** | 和 180 同一塊 |
+    | 44 | 22 | 2 | 6 | M | 搬進 block 22（word 44、45） |
+    | 186 | 93 | 11 | 5 | M | index 5 被佔：踢掉 block 21（43 那塊） |
+    | 253 | 126 | 15 | 6 | M | index 6 被佔：踢掉 block 22（44 那塊） |
 
     **結果**：hit 3 次（2、190、181），**hit rate ＝ 3/12 ＝ 25%**。
 
@@ -516,7 +487,11 @@ LRU 加在最後面，是因為它跟著 **set** 走，不是跟著 block 走：
 
 ### 2.4 AMAT 與含記憶體停頓的 CPU time {#u2-4}
 
+**平均拿一筆資料要等多久**：每次都一定要先查 cache（hit time）；沒找到的機率是 miss rate，沒找到時還要再等 miss penalty：
+
 $$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
+
+hit time 1、miss rate 5%、miss penalty 100：$1+0.05\times100=6$ cycles。miss rate 只有 5%，平均時間卻是 hit 的 6 倍，所以降低 miss rate 這麼重要。
 
 多層：$\text{AMAT}=t_{L1}+m_{L1}\times(t_{L2}+m_{L2}\times t_{mem})$，$m_{L2}$ 是 L2 的 local miss rate。
 
@@ -568,9 +543,8 @@ $$\text{CPI}_{\text{實際}}=\text{CPI}_{\text{base}}+\frac{\text{記憶體存�
 | 需要 dirty 位元？ | 不需要：主記憶體永遠是最新的 | **需要**：記這塊有沒有被改過，沒改過的被踢掉時不用寫回 |
 | 優點 | 簡單；主記憶體隨時是最新的 | 同一塊改很多次，最後只寫回一次，省頻寬 |
 | 缺點 | 每次寫都要等慢的主記憶體 | 比較複雜；被踢的 block 要先寫回，才能放新的 |
-| 常見搭配 | **write buffer**；write miss 用 no-write-allocate | write miss 用 write-allocate |
 
-**write buffer**：CPU 把要寫的資料丟進一個小緩衝區就繼續做事，由緩衝區慢慢寫進主記憶體。這樣 write-through 就不用每次停下來等。
+**write buffer**：CPU 把要寫的資料丟進一個小緩衝區就繼續做事，由緩衝區慢慢寫進主記憶體。這樣 write-through 就不用每次停下來等主記憶體（約 100 個 cycle）。
 
 **一個例子**：迴圈把 `a[0]`～`a[3]`（同一個 16-byte block）各加 1，之後這個 block 被踢掉。
 
@@ -584,10 +558,7 @@ $$\text{CPI}_{\text{實際}}=\text{CPI}_{\text{base}}+\frac{\text{記憶體存�
 - **write-allocate**：先把整個 block 從主記憶體搬進 cache，再在 cache 裡寫，之後再讀寫這塊就會 hit。通常搭配 **write-back**。
 - **no-write-allocate**：不搬進 cache，直接寫主記憶體。通常搭配 **write-through**：反正每次都要寫主記憶體，搬進來也省不了寫入。
 
-!!! key "考試常問"
-    - **為什麼 write-back 需要 dirty、write-through 不需要？** write-through 的主記憶體永遠是最新的，block 被踢掉時直接丟掉就好；write-back 的主記憶體可能是舊的，要靠 dirty 知道踢掉前要不要寫回。
-    - **為什麼 write-through 要 write buffer？** 不然每次寫都要停下來等主記憶體（約 100 個 cycle）。
-    - **多層 cache**：L1 常用 write-through（L2 隨時有最新資料），L2／L3 用 write-back（減少寫主記憶體的流量），見 [2.7 的 111 P1](#u2-5)。
+多層 cache 時，L1 和 L2／L3 常用不同的策略，理由見 [2.7 的 111 P1](#u2-5)。
 
 ### 2.6 替換策略：LRU 與 FIFO {#u2-repl}
 
