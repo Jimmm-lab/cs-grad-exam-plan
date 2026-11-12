@@ -357,9 +357,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   .tbl-stack tr { display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); overflow: hidden; }
   .tbl-stack tr > * { display: grid; grid-template-columns: minmax(4.6em, 30%) minmax(0, 1fr); gap: 4px 10px; align-items: baseline; border: 0; border-top: 1px solid var(--line); padding: 7px 12px; white-space: normal; }
   .tbl-stack tr > :first-child { border-top: 0; background: var(--code); font-weight: 700; }
-  .tbl-stack tr > *::before { content: attr(data-label); font: 700 12.5px/1.6 var(--font-body); color: var(--muted); }
-  .tbl-stack tr > :not([data-label]) { grid-template-columns: minmax(0, 1fr); }
-  .tbl-stack tr > :not([data-label])::before { content: none; }
+  .tbl-stack tr > .nil { display: none; }
+  .tbl-stack .lb { font: 700 12.5px/1.6 var(--font-body); color: var(--muted); }
+  .tbl-stack tr > :not(.has-lb) { grid-template-columns: minmax(0, 1fr); }
 }
 </style>
 <script>

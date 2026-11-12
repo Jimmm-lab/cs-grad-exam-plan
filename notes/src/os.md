@@ -21,15 +21,18 @@
 !!! trap "注意"
     - 題目是英文，填空要填英文名詞。背的時候就背英文。
     - 111 年 OS 計算題出自 Tanenbaum《Modern Operating Systems》的習題，計算模板一樣，不用另外買書。
-    - 103、106、110 年的題目跟 111 年是同一種風格，i-node、磁碟聚集、TLB 命中率這幾種計算題一再出現。下表的題型也出自同一批題目。
+    - 103、106、110 年的題目跟 111 年是同一種風格，i-node、磁碟聚集、TLB 命中率這幾種計算題一再出現；104、105、107 年是另一種風格，OS 多考觀念題（同步、死結、安全）。
 
-**100–110 年還常考的計算題**（108、109 留作模考，不列）：
+**100–110 年還常考的題型**（108、109 留作模考，不列）：
 
 | 題型 | 年份 | 教材 |
 |---|---|---|
 | 磁碟排程（SSTF、SCAN、LOOK 等的移動距離） | 101、102、104、107、110 | [5.4](#u5-sched) |
 | fork、thread、pipe 的程式印出什麼 | 106、110 | [1.3](#u1-fork) |
 | 二維陣列的 page fault、page fault 次數的上下界 | 103、106、110 | [4.4](#u4-pf) |
+| 同步、死結的經典題（priority inversion、哲學家、磁帶機、wait-die） | 100、103、104、105、107 | [2.2](#u2-more)、[3.2](#u3-more) |
+| 記憶體配置（first／best fit、segmentation、buddy） | 100、104、105 | [4.5](#u4-alloc) |
+| 安全的觀念題（MAC、數位簽章、病毒種類、DDoS） | 101、102、105、107 | [6.2](#u6-more) |
 
 **建議讀的順序**：單元 1 行程與排程 → 2 同步 → 3 死結 → 4 記憶體 → 5 儲存與檔案 → 6 保護、安全與其他 → 7 名詞總表。
 
@@ -563,6 +566,96 @@ semaphore 是一個整數，像停車場門口的「剩餘車位」看板：
     - **semaphore**：一個整數計數器，`wait()` 減 1（不夠就等）、`signal()` 加 1。binary semaphore 可當 lock 用；counting semaphore 可以管理 $n$ 份資源或用來做先後順序。
     - **condition variable**：在 monitor（或搭配 mutex）中，讓 thread 等待某個**條件**成立（`wait()`），條件改變時由別人 `signal()` 叫醒。
 
+### 2.2 同步的考古題補充：priority inversion、thread 的同步工具、two-phase locking {#u2-more}
+
+104、105、107 年考過的同步觀念題。
+
+#### priority inversion：低優先權的擋住高優先權的
+
+三個 process，優先權 L ＜ M ＜ H：
+
+1. L 拿到一把 lock R。
+2. H 也要 R，只好等 L 放開。
+3. M 不需要 R，但優先權比 L 高，把 L 搶走（preempt）。
+4. L 跑不了、放不開 R，H 就一直等。**H 實際上被優先權比它低的 M 擋住了。**
+
+1997 年火星探測車 Mars Pathfinder 就因為這個問題一直重開機。
+
+**解法：priority inheritance（優先權繼承）**：L 持有 H 在等的資源時，**暫時繼承 H 的優先權**，M 就搶不走 L；L 放開 R 之後恢復原本的優先權，H 馬上拿到 R。另一種解法是 priority ceiling：拿到某個 lock 的人，優先權直接提高到「所有可能用這個 lock 的人裡最高的」。
+
+!!! example "105 Q1(1)（4%）、107 Q1(5)（2%）：什麼是 priority inversion？什麼時候發生？怎麼解決？"
+    高優先權的 process 在等一個被低優先權 process 持有的資源，而低優先權的又被中優先權的搶走 CPU，結果高優先權的被中優先權的擋住。發生的條件：有共享資源（lock）、搶先式的優先權排程、三個以上不同優先權的 process。解法是 priority inheritance：持有資源的低優先權 process 暫時繼承等待者的高優先權，用完資源再恢復。
+
+!!! example "105 Q1(3)（3%）、107 Q1(3)（3%）：critical-section 問題的解法要滿足哪三個條件？"
+    mutual exclusion、progress、bounded waiting，意思見 [2.0](#u2-0)。
+
+!!! example "104 Q8(1)（6%）：UNIX 裡 thread 存取共享資料的三種同步機制"
+    POSIX threads（Pthreads）提供：
+
+    1. **mutex lock**：`pthread_mutex_lock()`、`pthread_mutex_unlock()`，一次只有一個 thread 能進 critical section。
+    2. **semaphore**：`sem_wait()`、`sem_post()`，計數器，可以管理 n 份資源或控制先後順序。
+    3. **condition variable**：`pthread_cond_wait()`、`pthread_cond_signal()`，搭配 mutex 使用，讓 thread 等某個條件成立（例如 buffer 不空）。
+
+    （也可以提 read-write lock：可以很多人同時讀，但寫的時候只能一個人。）
+
+#### 交易（transaction）與 two-phase locking
+
+**atomic transaction**：一連串的讀寫要嘛**全部完成**（commit），要嘛**全部取消**（abort、rollback），不會只做一半。例：轉帳時「A 扣錢」和「B 加錢」一定要一起成功。
+
+好幾個交易同時跑時，結果要跟「某種一個接一個做」的結果一樣（serializable）。**two-phase locking（2PL）**：
+
+1. **growing phase**：只能拿 lock，不能放。
+2. **shrinking phase**：一旦放了第一把 lock，之後只能放、不能再拿。
+
+遵守 2PL 的排程一定是 **conflict serializable**。缺點：還是可能死結。另一種做法是 [6.1](#u6-1) 的 timestamp-ordering（113 Q7），依 timestamp 決定順序，不用 lock、不會死結，但可能常常 rollback。
+
+!!! example "104 Q8(3)（5%）：two-phase locking 怎麼保證非序列排程的正確性？"
+    每個交易分兩個階段：先只拿 lock（growing），開始放 lock 之後就不能再拿（shrinking）。所有交易都這樣做，衝突的操作順序就會依照每個交易「拿到最後一把 lock」的時間（lock point）排好，所以結果等於依 lock point 順序一個一個執行，是 conflict serializable。
+
+#### 觀念小考
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 下面哪一個情況是 priority inversion？
+
+1. 高優先權的 process 一直搶走低優先權的 CPU
+2. 高優先權的 process 在等低優先權持有的 lock，低優先權的又被中優先權的搶走
+3. 兩個 process 互相等對方的資源
+4. 優先權最低的 process 一直排不到 CPU
+
+??? quiz "看解析"
+    **B**。A 是正常的優先權排程；C 是死結；D 是 starvation（可以用 aging 解決）。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-2.** priority inheritance 怎麼解決 priority inversion？
+
+1. 把高優先權 process 的優先權降低
+2. 不讓中優先權的 process 執行
+3. 持有 lock 的低優先權 process 暫時繼承等待者的高優先權
+4. 讓 lock 可以被搶走
+
+??? quiz "看解析"
+    **C**。L 繼承 H 的優先權後，M 就搶不走 L；L 很快用完 lock 放開，H 馬上拿到。放開後 L 恢復原本的優先權。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** 遵守 two-phase locking 的交易，下面哪一個做法是**不允許**的？
+
+1. 放開 lock A 之後，再拿 lock B
+2. 先拿 lock A、再拿 lock B，最後一起放
+3. 拿 A、拿 B、放 A、放 B
+4. 只拿一把 lock
+
+??? quiz "看解析"
+    **A**。一旦開始放 lock（進入 shrinking phase），就不能再拿新的。
+
+</div>
+
 ### 單元 2 小考 {#u2-quiz}
 
 **2-1.** critical-section 解法的三個條件分別是什麼意思？
@@ -640,6 +733,109 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
     - hold and wait：要求 process 一開始就申請所有資源，或申請新資源前先釋放手上的。
     - no preemption：申請不到時，強制釋放已持有的資源。
     - circular wait：所有資源類型編號，只能**依遞增順序**申請。
+
+### 3.2 死結的考古題補充：哲學家、磁帶機、wait-die {#u3-more}
+
+100、101、103、104、105、107 年考過的死結題：條件和預防、避免的差別，加上三種固定題型。
+
+#### 四個條件是「必要」不是「充分」
+
+四個條件**同時**成立才可能死結，只有其中一個成立不會死結（101 Q2(b)）。102 Q5(2) 的是非題「四個條件中任何一個成立，死結就一定發生」是**錯**的。
+
+#### 預防（prevention）和避免（avoidance）差在哪
+
+| | deadlock prevention | deadlock avoidance |
+|---|---|---|
+| 做法 | 用規則讓四個條件**至少一個永遠不成立**（[3.1](#u3-1) 112 Q8a） | 每次要分配資源時**檢查**：分配後還是 safe state 才給（[3.0](#u3-0) 的 Banker's algorithm） |
+| 需要的資訊 | 不用 | 每個 process **最多需要多少**資源 |
+| 代價 | 限制多，資源用得沒效率 | 每次分配都要計算 |
+
+!!! example "107 Q1(4)（4%）、105 Q1(2)（3%）：deadlock prevention 和 avoidance 有什麼不同？avoidance 怎麼運作？"
+    prevention 事先用規則破壞四個必要條件之一，例如資源依編號申請（破壞 circular wait），系統根本不可能死結。avoidance 不限制申請方式，但要事先知道每個 process 最多需要多少資源；每次有人申請，就假裝先給它，看看是否仍然存在一個順序能讓所有 process 都做完（safe state），是才真的給，否則讓它等。
+
+#### n 個 process 搶 m 份資源
+
+!!! example "103 Q1（10%）：電腦有 6 台磁帶機，n 個 process 在搶，每個 process 最多需要 2 台。n 是多少時保證不會死結？"
+    **最壞的情況**：每個 process 都先拿到 1 台，再等第 2 台。如果 6 台全部被 6 個 process 各拿 1 台，大家都在等，就死結了。
+
+    - **n ≤ 5（不會死結）**：最多 5 個 process 各拿 1 台，還剩至少 1 台。一定有人拿得到第 2 台，做完後放出 2 台，其他人就接著做得完。
+    - **n ≥ 6**：6 個 process 各拿 1 台時就死結。
+
+    **一般公式**：m 份資源、n 個 process、每個最多需要 k 份，不會死結的條件是 $n(k-1)+1\le m$（每個人都只差一份時，還剩一份給某個人）。這題 $n\times1+1\le6$，$n\le5$。
+
+#### 哲學家：筷子放在中間
+
+!!! example "100 Q3（15%）：哲學家用餐問題，筷子放在桌子中間，任何兩支都可以用；每次只要一支。找一個簡單的規則，判斷某個請求能不能給、又不會造成死結"
+    **規則**：哲學家要拿**第一支**筷子時，如果桌上**只剩最後一支**、而且**沒有任何人已經拿著兩支**，就不給；其他情況都可以給。
+
+    **為什麼**：死結只會發生在「每個人手上都只有一支、桌上沒筷子」。
+
+    - 申請**第二支**：拿到就有兩支可以吃，吃完會放回兩支，永遠可以給（只要桌上有）。
+    - 申請**第一支**，桌上還有兩支以上：給了之後桌上至少還有一支，還能讓某個拿著一支的人湊成兩支。
+    - 申請**第一支**，桌上只剩一支：如果有人已經拿著兩支，他吃完會放回來，可以給；如果沒有人拿著兩支，把最後一支給出去，大家都只有一支、桌上沒了，就死結，所以不給。
+
+#### wait-die 與 wound-wait：用 timestamp 避免死結
+
+每個 process 有一個 timestamp（越小越老）。process 要的資源被別人拿著時：
+
+| | 老的要年輕的手上的資源 | 年輕的要老的手上的資源 |
+|---|---|---|
+| **wait-die**（不搶，nonpreemptive） | 老的**等** | 年輕的**死**（rollback） |
+| **wound-wait**（搶，preemptive） | 老的**打傷**年輕的：年輕的 rollback，資源給老的 | 年輕的**等** |
+
+記法：兩種都是「**老的有特權**」，等待永遠只會是單一方向（wait-die 只有老等年輕、wound-wait 只有年輕等老），不會形成循環，所以不會死結。被 rollback 的 process **保留原本的 timestamp** 重來，總有一天會變成最老的，所以不會 starvation。
+
+!!! example "104 Q8(2)（4%）：P1、P2、P3 的 timestamp 是 17、25、30；P2 持有一個資源，P1 和 P3 都在要它。wait-die 和 wound-wait 的結果？"
+    P1（17）比 P2（25）老，P3（30）比 P2 年輕。
+
+    - **wait-die**：P1 老 → **P1 等**；P3 年輕 → **P3 rollback**（die）。
+    - **wound-wait**：P1 老 → **P2 被 rollback**（wound），資源給 P1；P3 年輕 → **P3 等**。
+
+    107 Q7(9) 的是非題「wait-die 是 preemptive 的死結預防方法」是**錯**的：wait-die 不搶別人的資源，搶的是 wound-wait。
+
+#### 觀念小考
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** 10 份資源、n 個 process，每個最多需要 3 份。n 最大是多少時保證不會死結？
+
+1. 3
+2. 5
+3. 4
+4. 10
+
+??? quiz "看解析"
+    **C. 4**。條件 $n(k-1)+1\le m$：$2n+1\le10$，$n\le4.5$，所以 $n=4$。驗算：4 個 process 各拿 2 份，用掉 8 份，還剩 2 份，至少一個人能湊到 3 份做完。5 個 process 各拿 2 份就用光 10 份，死結。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** wait-die 中，年輕的 process 要老的手上的資源，會怎樣？
+
+1. 年輕的 rollback，之後用原本的 timestamp 重來
+2. 年輕的等
+3. 老的被 rollback
+4. 兩個都 rollback
+
+??? quiz "看解析"
+    **A**。wait-die 只讓老的等年輕的；年輕的遇到老的就「死」（rollback）。保留原本的 timestamp，重來幾次後會變成相對老的，不會一直被 rollback。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** deadlock avoidance 和 prevention 最大的不同是？
+
+1. avoidance 允許死結發生再處理
+2. prevention 需要知道每個 process 最多要多少資源
+3. 兩個一樣
+4. avoidance 每次分配前檢查會不會進入 unsafe state，prevention 是事先破壞某個必要條件
+
+??? quiz "看解析"
+    **D**。A 說的是 detection and recovery；B 剛好相反，需要事先知道最大需求的是 avoidance（Banker's algorithm）。
+
+</div>
 
 ### 單元 3 小考 {#u3-quiz}
 
@@ -935,6 +1131,159 @@ $n\times n$ 的陣列裡，A[i][j] 是第幾個元素（從 0 數）：row-major
     順序相反時，內層迴圈每走一步就跳到另一頁，走一圈會碰到很多不同的頁（103 Q2 是 200 頁）。陣列只有 2 個 frame，等到下一圈回到同一頁時，它早就被後面的頁換掉了，所以每次都要重新載入。
 
     **自我檢查**：有沒有比較「內層一圈碰到幾頁」和「可用的 frame 數」？前者比較多，才會每次都 fault。
+
+### 4.5 記憶體配置：連續配置、segmentation、buddy system {#u4-alloc}
+
+100、104、105 年考過：first／best／worst fit、內部和外部碎片、segment table 的位址轉換、buddy system、為什麼 stack algorithm 不會有 Belady's anomaly。
+
+#### 連續配置：每個 process 佔一整段
+
+最簡單的做法是每個 process 放在一段**連續**的記憶體，用兩個暫存器檢查和轉換：
+
+- **relocation register**（base）：這段記憶體從哪裡開始。實體位址 ＝ 邏輯位址 ＋ base。
+- **limit register**：這段有多長，邏輯位址超過就 trap（存取違規）。
+
+102 Q5(3) 的是非題「relocation register 是 1877、邏輯位址 123，實體位址是 2000」是**對**的。
+
+#### 有一堆空洞時，要放哪一個
+
+process 來來去去，記憶體裡會有很多大小不一的空洞（hole）。新的 process 要放進去：
+
+| 方法 | 選哪一個洞 | 特點 |
+|---|---|---|
+| **first fit** | 第一個夠大的 | 最快 |
+| **best fit** | 夠大的裡面**最小**的 | 剩下的碎片最小，但要找遍全部 |
+| **worst fit** | **最大**的 | 剩下的洞比較大、比較可能再利用，但實際效果通常最差 |
+
+**例子**（恐龍書習題）：空洞依序 100K、500K、200K、300K、600K，依序來 212K、417K、112K、426K：
+
+| 要求 | first fit | best fit | worst fit |
+|---|---|---|---|
+| 212K | 500K（剩 288K） | 300K（剩 88K） | 600K（剩 388K） |
+| 417K | 600K（剩 183K） | 500K（剩 83K） | 500K（剩 83K） |
+| 112K | 288K（剩 176K） | 200K（剩 88K） | 388K（剩 276K） |
+| 426K | **放不下，要等** | 600K（剩 174K） | **放不下，要等** |
+
+這一組 best fit 最好，四個都放得下。用程式模擬過。
+
+#### 兩種碎片
+
+| | 外部碎片（external fragmentation） | 內部碎片（internal fragmentation） |
+|---|---|---|
+| 是什麼 | 空的記憶體加起來夠，但**不連續**，放不下 | 分配的區塊比要的大，**多出來的那一點**浪費在區塊裡面 |
+| 什麼時候出現 | 連續配置、segmentation | paging（最後一頁沒用滿）、buddy system |
+| 解法 | compaction（把 process 搬在一起）、改用 paging | 用比較小的分配單位（代價是表變大） |
+
+#### segmentation：照程式的邏輯切段
+
+程式是由好幾段組成的：程式碼、全域變數、stack、heap……每一段（segment）各自連續放，**邏輯位址 ＝（段號 s, 段內位移 d）**：
+
+1. 查 segment table 第 s 列，得到 base 和 limit。
+2. 檢查 $d<\text{limit}$，否則 **trap**（定址錯誤）。
+3. 實體位址 ＝ base ＋ d。
+
+!!! example "100 Q4（15%）：用下面的 segment table 算實體位址"
+    | segment | base | length |
+    |---|---|---|
+    | 0 | 219 | 700 |
+    | 1 | 2315 | 15 |
+    | 2 | 100 | 90 |
+    | 3 | 1327 | 580 |
+    | 4 | 1917 | 100 |
+
+    | 邏輯位址 | 檢查 | 實體位址 |
+    |---|---|---|
+    | (a) 段 4、位移 50 | 50 ＜ 100 | 1917 ＋ 50 ＝ **1967** |
+    | (b) 段 1、位移 20 | 20 ≥ 15 | **trap**（超出這一段） |
+    | (c) 段 3、位移 500 | 500 ＜ 580 | 1327 ＋ 500 ＝ **1827** |
+    | (d) 段 2、位移 400 | 400 ≥ 90 | **trap** |
+    | (e) 段 0、位移 112 | 112 ＜ 700 | 219 ＋ 112 ＝ **331** |
+
+    **注意**：位移等於 length 也要 trap，因為合法的位移是 0 到 length − 1。
+
+#### buddy system：都切成 2 的次方
+
+kernel 自己要記憶體時常用 buddy system：
+
+- 從一大塊（例如 256 KB）開始，要求來了就**對半切**，切到「再切一半就不夠」為止。切出來的兩半互為 **buddy**。
+- 例：要 21 KB → 256 切成 128＋128 → 128 切成 64＋64 → 64 切成 32＋32 → 給 **32 KB**（再切成 16 KB 就不夠了）。
+- 釋放時，如果它的 buddy 也是空的，就**合併**回大的一塊，一路往上合併。
+
+**優點**：合併很快（buddy 的位址一算就知道）。**缺點**：大小都是 2 的次方，會有內部碎片（要 21 KB 給 32 KB，浪費 11 KB）。
+
+!!! example "105 Q3（15%）：(1) 動態記憶體配置的三種常見做法 (2) MMU 和 TLB 的用途 (3) 證明 stack algorithm 不會有 Belady's anomaly (4) buddy system 怎麼配置 kernel 記憶體"
+    **(1)** first fit、best fit、worst fit（上面的表）。
+
+    **(2)** **MMU**（memory-management unit）：執行時把邏輯位址轉成實體位址，並檢查權限（越界就 trap）。**TLB**：page table 的快取，存最近用過的 page → frame 對應，大部分轉換不用再去記憶體查 page table。
+
+    **(3)** **stack algorithm** 的定義：任何時刻，n 個 frame 時記憶體裡的 page 集合，一定是 n＋1 個 frame 時的集合的**子集合**。
+
+    LRU 是 stack algorithm：n 個 frame 時記憶體裡放的是「最近用過的 n 個不同 page」，n＋1 個 frame 時是「最近用過的 n＋1 個」，前者一定包含在後者裡。
+
+    所以 n 個 frame 時會 hit 的存取，n＋1 個 frame 時也一定 hit；frame 變多，page fault 不會變多，不會有 Belady's anomaly。∎ FIFO 不是 stack algorithm，所以可能發生（[4.0](#u4-0) 的例子）。
+
+    **(4)** buddy system：見上面。
+
+!!! example "104 Q7(2)（4%）：外部碎片和內部碎片的差別"
+    外部碎片：空的記憶體總量夠，但被切成很多不連續的小洞，放不下新的要求。內部碎片：分配出去的區塊比實際需要的大，多出來的部分在區塊裡面沒用到、別人也不能用。
+
+#### 觀念小考
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 空洞依序是 50K、300K、120K，要放 100K。best fit 會放在哪裡？
+
+1. 50K
+2. 120K
+3. 300K
+4. 放不下
+
+??? quiz "看解析"
+    **B. 120K**。夠大的有 300K、120K，best fit 挑裡面最小的 120K（剩 20K）。first fit 會挑第一個夠大的 300K，worst fit 也挑 300K。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-2.** paging 會產生哪一種碎片？
+
+1. 只有外部碎片
+2. 兩種都有
+3. 都沒有
+4. 只有內部碎片
+
+??? quiz "看解析"
+    **D**。每個 frame 大小一樣，任何空的 frame 都能用，沒有外部碎片；但最後一頁通常沒用滿，有內部碎片。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** buddy system 中，從 128 KB 開始，要 17 KB，會分到多大？
+
+1. 32 KB
+2. 17 KB
+3. 64 KB
+4. 16 KB
+
+??? quiz "看解析"
+    **A. 32 KB**。128 → 64 → 32，再切成 16 KB 就不夠 17 KB，所以給 32 KB，內部碎片 15 KB。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-4.** segment table 第 2 列是 base 1400、length 300。邏輯位址（2, 300）的結果是？
+
+1. 1700
+2. 1400
+3. trap
+4. 300
+
+??? quiz "看解析"
+    **C. trap**。合法的位移是 0～299，300 已經超出這一段，MMU 會產生 trap。
+
+</div>
 
 ### 單元 4 小考 {#u4-quiz}
 
@@ -1281,7 +1630,7 @@ i-node 像一本書的**目錄頁**：前面幾格直接寫「第 1 章在第幾
 
 #### 最小權限
 
-**need-to-know** 和 principle of least privilege 是同一個想法：每個行程、每個使用者只拿到**完成目前工作需要**的權限。出事時，損害才會被限制在小範圍。
+**principle of least privilege**（最小權限）和 **need-to-know** 是同一類想法：每個行程、每個使用者只拿到**完成目前工作需要**的權限和資源。出事時，損害才會被限制在小範圍。兩者在恐龍書裡的說法有一點差別，是非題考過，見 [6.2](#u6-more)。
 
 #### 存取矩陣：誰能對什麼做什麼
 
@@ -1350,6 +1699,134 @@ i-node 像一本書的**目錄頁**：前面幾格直接寫「第 1 章在第幾
     - 否則執行，設 $\text{W-timestamp}(Q)=TS(T_i)$。
 
     這樣保證所有衝突操作都依 timestamp 順序執行，所以排程是 conflict serializable。
+
+### 6.2 安全的考古題補充：認證、數位簽章、攻擊手法 {#u6-more}
+
+101、102、105、107 年考過的保護與安全觀念題。
+
+#### 最小權限和 need-to-know 不完全一樣
+
+兩個是同一類想法，但恐龍書的說法不同，是非題會考這個差別（102 Q5(1)）：
+
+| 原則 | 恐龍書的說法 |
+|---|---|
+| **principle of least privilege** | 程式、使用者、甚至系統，只給**剛好夠完成工作的權限**（privilege） |
+| **need-to-know** | process 在任何時刻只能存取**目前工作需要的資源**（object） |
+
+#### 保護網域（protection domain）怎麼實作
+
+domain 是「一組 <object, 權限> 的集合」，process 在某個 domain 裡執行，就有那些權限。恐龍書列出三種實作方式，以及什麼時候會**切換 domain**：
+
+| domain 對應到 | 什麼時候切換 |
+|---|---|
+| 每個**使用者** | 換使用者時（登出、另一個人登入） |
+| 每個 **process** | 一個 process 送訊息給另一個並等它回應時 |
+| 每個**程序**（procedure） | 呼叫另一個程序時 |
+
+UNIX 的 **setuid**：執行檔設了 setuid 位元，任何人執行它時都暫時拿到**檔案擁有者**的身分（例如 `passwd` 要改密碼檔，暫時變成 root），這就是一種切換 domain 的方式。
+
+#### 認證：MAC 和數位簽章
+
+| | MAC（message authentication code） | 數位簽章（digital signature） |
+|---|---|---|
+| 金鑰 | 雙方**共用同一把**祕密金鑰（對稱式） | 簽的人用**私鑰**，大家用**公鑰**驗證（非對稱式） |
+| 傳送方 | 算 $\text{MAC}_k(m)$，跟 m 一起送 | 算 $\text{Sign}_{\text{私鑰}}(H(m))$，跟 m 一起送 |
+| 接收方 | 用同一把 k 重算一次，跟收到的比 | 用公鑰驗證簽章跟 $H(m)$ 對得上 |
+| 能證明 | 訊息沒被改、是有 k 的人送的 | 訊息沒被改、是**有私鑰的那個人**送的 |
+| nonrepudiation（不可否認） | **沒有**：雙方都有 k，收方也能偽造 | **有**：只有簽的人有私鑰，事後不能否認 |
+
+$H(m)$ 是 [資結 4.2](ds.html#u4-theory) 的密碼學雜湊函數，先把訊息壓短再簽。
+
+**公鑰怎麼發**（105 Q4(4)）：公鑰可以公開，問題是怎麼確定這把公鑰真的是對方的（不然中間人可以換成自己的）。做法是**數位憑證**（digital certificate）：可信任的憑證機構（CA）用它的私鑰簽署「這把公鑰屬於某某人」，CA 的公鑰事先內建在瀏覽器或作業系統裡。
+
+#### 攻擊手法的名詞
+
+| 名詞 | 意思 |
+|---|---|
+| masquerading（偽裝） | 假裝成別人 |
+| man-in-the-middle（中間人） | 攻擊者夾在通訊的兩方中間，對兩邊都假裝成另一方，可以讀和改傳的資料 |
+| replay attack（重送） | 把截到的合法訊息再送一次（例如重送一筆轉帳） |
+| trap door（後門） | 程式設計者故意留的祕密入口 |
+| DDoS（distributed denial of service） | 很多台被控制的電腦（殭屍網路 botnet）同時對目標送大量要求，耗光它的資源，正常使用者用不了 |
+| polymorphic virus（多型病毒） | 每次感染都改變自己的程式碼（例如換一把金鑰加密自己），**病毒碼（signature）一直變**，比對特徵的防毒軟體認不出來 |
+| tunneling virus（穿隧病毒） | 把自己裝到中斷處理程式、驅動程式那一層，**繞過**防毒軟體監看的地方 |
+
+**偵測入侵的兩種方式**（105 Q4(5)）：
+
+- **signature-based**：比對已知攻擊的特徵。誤報少，但**新的攻擊認不出來**。
+- **anomaly detection**：先學「正常的樣子」，偏離就警告。能抓到沒見過的攻擊，但**誤報比較多**。
+
+!!! example "101 Q5（10%）：MAC 和數位簽章怎麼運作？"
+    **MAC**：雙方事先共用祕密金鑰 k。傳送方用 k 對訊息算出一個短的認證碼 $\text{MAC}_k(m)$，跟訊息一起送；接收方用同一把 k 重算，一樣就表示訊息沒被改、而且是知道 k 的人送的。
+
+    **數位簽章**：傳送方先算訊息的雜湊 $H(m)$，再用自己的**私鑰**簽成簽章，跟訊息一起送；接收方用傳送方的**公鑰**驗證簽章，跟自己算的 $H(m)$ 對得上就通過。因為只有傳送方有私鑰，還能提供 nonrepudiation。
+
+!!! example "105 Q4（15%）：(1) protection domain 的實作與切換時機 (2) language-based protection 的優點 (3) virus 和 worm 的差別 (4) 非對稱加密怎麼發金鑰 (5) signature-based 和 anomaly detection 的差別"
+    - **(1)** 使用者、process、程序三種，切換時機見上表。
+    - **(2) language-based protection**：在程式語言裡宣告保護需求（例如 Java 的型別安全、存取修飾子），由編譯器和執行環境檢查。優點：保護需求用宣告的方式寫，簡單清楚；不依賴特定作業系統的機制；可以做到很細的粒度（例如單一物件、單一方法）。
+    - **(3)** virus 要附在別的程式上、靠那個程式執行來散播；worm 是獨立的程式，自己透過網路複製散播（[6.0](#u6-0) 的表）。
+    - **(4)** 公鑰公開發送，用 CA 簽的數位憑證證明公鑰的主人（見上面）。
+    - **(5)** 見上面「偵測入侵的兩種方式」。
+
+!!! example "107 Q4（15%）：(1) 最小權限是什麼？Solaris 怎麼實作 (2) language-based protection 為什麼可能不安全 (3) polymorphic、tunneling virus 怎麼躲過防毒 (4) 數位簽章怎麼運作 (5) DDoS 怎麼運作"
+    - **(1)** 最小權限：只給剛好夠完成工作的權限。Solaris 10 用 **role-based access control（RBAC）**：把細分的權限（privilege，例如執行某個 system call）指定給**角色**（role），使用者需要時才切換成那個角色、執行特定程式，不用整個變成 root。
+    - **(2)** 它的保護靠**編譯器和執行環境**正確檢查。如果編譯器有漏洞、或程式碼不是經過可信任的編譯器產生的（例如直接改 bytecode），檢查就被繞過。硬體（kernel mode、記憶體保護）強制的保護比較難繞過。
+    - **(3)** polymorphic：每次感染都改變自己的樣子，特徵碼對不上；tunneling：把自己裝到比防毒軟體更底層的地方（中斷處理、驅動程式），防毒軟體看不到它。
+    - **(4)** 數位簽章：見 101 Q5。
+    - **(5)** DDoS：攻擊者控制大量電腦（botnet），同時對目標送大量要求，耗盡頻寬、CPU 或連線數，正常使用者無法使用；流量來自四面八方，很難用封鎖單一來源擋掉。
+
+!!! example "102 Q5（14%，每小題 2%，答錯倒扣）：是非題"
+    1. 「need-to-know 原則：程式、使用者、甚至系統只給剛好夠的權限……」：**錯**。這段話是 principle of **least privilege** 的定義（見上面的表）。
+    2. 「四個條件任一個成立就一定死結」：**錯**，要四個**同時**成立（[3.2](#u3-more)）。
+    3. 「relocation register 是 1877、邏輯位址 123，實體位址 2000」：**對**（[4.5](#u4-alloc)）。
+    4. 「編譯器裡藏了 trap door，仔細檢查被編譯的程式的原始碼還是找得到」：**錯**。後門在**編譯器**裡，被編譯的程式原始碼完全正常，看它的原始碼找不到（Ken Thompson 的〈Reflections on Trusting Trust〉）。
+    5. 「通訊的一方假裝成別人叫 man-in-the-middle」：**錯**，假裝成別人是 **masquerading**；中間人是攻擊者夾在兩方中間。
+    6. 「RAID 0+1 兼顧效能（RAID 0）和可靠度（RAID 1），通常比 RAID 5 快」：**對**。
+    7. 「location transparency 能在不同時間把同一個檔名對應到不同位置，所以比 location independence 強」：**錯**，說反了。能動態改變對應位置的是 **location independence**，它比 location transparency 強。
+
+#### 觀念小考
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 哪一種方法能提供 nonrepudiation（送的人事後不能否認）？
+
+1. MAC
+2. 數位簽章
+3. 對稱式加密
+4. 雜湊函數
+
+??? quiz "看解析"
+    **B**。只有簽的人有私鑰，別人做不出同樣的簽章，所以他不能否認。MAC 的金鑰雙方都有，收方也能自己做出同樣的 MAC，無法證明是誰送的。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-2.** 防毒軟體靠比對特徵碼，哪一種病毒最難被這種方法抓到？
+
+1. boot virus
+2. macro virus
+3. logic bomb
+4. polymorphic virus
+
+??? quiz "看解析"
+    **D**。polymorphic virus 每次感染都改變自己的程式碼，沒有固定的特徵碼可以比對。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** 攻擊者把截到的合法登入訊息再送一次，取得權限，這叫什麼？
+
+1. replay attack
+2. masquerading
+3. DDoS
+4. trap door
+
+??? quiz "看解析"
+    **A**。訊息本身是合法的，只是被重送。對策是在訊息裡加時間戳記或一次性的亂數（nonce），重送的舊訊息就會被拒絕。
+
+</div>
 
 ## 單元 7：名詞填空總表 {#u7}
 

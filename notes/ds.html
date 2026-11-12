@@ -357,9 +357,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   .tbl-stack tr { display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); overflow: hidden; }
   .tbl-stack tr > * { display: grid; grid-template-columns: minmax(4.6em, 30%) minmax(0, 1fr); gap: 4px 10px; align-items: baseline; border: 0; border-top: 1px solid var(--line); padding: 7px 12px; white-space: normal; }
   .tbl-stack tr > :first-child { border-top: 0; background: var(--code); font-weight: 700; }
-  .tbl-stack tr > *::before { content: attr(data-label); font: 700 12.5px/1.6 var(--font-body); color: var(--muted); }
-  .tbl-stack tr > :not([data-label]) { grid-template-columns: minmax(0, 1fr); }
-  .tbl-stack tr > :not([data-label])::before { content: none; }
+  .tbl-stack tr > .nil { display: none; }
+  .tbl-stack .lb { font: 700 12.5px/1.6 var(--font-body); color: var(--muted); }
+  .tbl-stack tr > :not(.has-lb) { grid-template-columns: minmax(0, 1fr); }
 }
 </style>
 <script>
@@ -395,6 +395,7 @@ window.MathJax = {
 <li><a href="#u4">單元 4：雜湊</a></li>
 <li><a href="#u5">單元 5：圖</a></li>
 <li><a href="#u6">單元 6：遞迴計數與 DP</a></li>
+<li><a href="#u7">單元 7：進階資料結構：紅黑樹、B-tree、binomial／Fibonacci heap</a></li>
 <li><a href="#res">資源</a></li>
 </ul>
 </div>
@@ -511,9 +512,24 @@ window.MathJax = {
 <td>101、102</td>
 <td><a href="#u3-huff">3.6</a></td>
 </tr>
+<tr>
+<td>紅黑樹、B-tree、binomial／Fibonacci heap</td>
+<td>101、103、104、105、107</td>
+<td><a href="#u7">單元 7</a></td>
+</tr>
+<tr>
+<td>比較排序的下界、quicksort 的分析</td>
+<td>101、104、105、106、107</td>
+<td><a href="#u2-theory">2.5</a></td>
+</tr>
+<tr>
+<td>雜湊的理論（chaining、universal、perfect hashing）</td>
+<td>103、104、105</td>
+<td><a href="#u4-theory">4.2</a></td>
+</tr>
 </tbody>
 </table>
-<p><strong>建議讀的順序</strong>：單元 1 C 程式追蹤 → 2 排序 → 3 樹 → 4 雜湊 → 5 圖 → 6 遞迴計數與 DP。</p>
+<p><strong>建議讀的順序</strong>：單元 1 C 程式追蹤 → 2 排序 → 3 樹 → 4 雜湊 → 5 圖 → 6 遞迴計數與 DP → 7 進階資料結構。</p>
 
 </section>
 <section class="unit" data-unit="u1">
@@ -1285,6 +1301,131 @@ f(3) 回來，印 3</code></pre>
 </div>
 <div class="viz" data-viz="radix" data-nums="642,374,73,29,284,252" data-title="114 Q2：每個數飛進桶子、再依序收回"></div>
 
+<h3 id="u2-theory">2.5 排序的理論：下界與 quicksort 分析</h3>
+<p>101、104、105、106、107 年都考過：證明比較排序至少要 <span class="arithmatex">\(\Omega(n\log n)\)</span>、分析 quicksort 最好、最壞、好壞交替的時間。</p>
+<h4 id="omeganlog-n">比較排序最快也要 <span class="arithmatex">\(\Omega(n\log n)\)</span></h4>
+<p><strong>比較排序</strong>：只能靠「<span class="arithmatex">\(a_i\le a_j\)</span> 嗎？」這種比較來決定順序（bubble、insertion、merge、heap、quick 都是）。</p>
+<p><strong>決策樹（decision tree）</strong>：把演算法的每一次比較畫成一個節點，答「是」（Y）走左邊、「否」（N）走右邊，每片葉子是一種最後的排列。3 個數 a、b、c 的例子：</p>
+<pre class="highlight"><code class="language-text">                a≤b?
+             Y /    \ N
+           b≤c?      a≤c?
+         Y /  \ N   Y /  \ N
+      a b c   a≤c?  b a c  b≤c?
+            Y /  \ N     Y /  \ N
+         a c b   c a b  b c a   c b a</code></pre>
+<p><strong>證明</strong>：</p>
+<ol>
+<li>n 個數有 <span class="arithmatex">\(n!\)</span> 種可能的輸入順序，每一種都要排對，所以決策樹至少有 <span class="arithmatex">\(n!\)</span> 片葉子。</li>
+<li>高度 h 的二元樹最多 <span class="arithmatex">\(2^h\)</span> 片葉子，所以 <span class="arithmatex">\(2^h\ge n!\)</span>，<span class="arithmatex">\(h\ge\lg(n!)\)</span>。</li>
+<li>最壞情況的比較次數 ＝ 樹高 h。而 <span class="arithmatex">\(n!\ge(\frac n2)^{n/2}\)</span>（後一半的 <span class="arithmatex">\(\frac n2\)</span> 個因數都 <span class="arithmatex">\(\ge\frac n2\)</span>），所以</li>
+</ol>
+<div class="arithmatex">\[h\ge\lg(n!)\ge\frac n2\lg\frac n2=\Omega(n\log n)\]</div>
+<p><strong>3 個數最少要 3 次比較</strong>：<span class="arithmatex">\(3!=6\)</span> 片葉子，<span class="arithmatex">\(2^2=4&lt;6\)</span>，樹高至少 3。</p>
+<p><strong>radix sort、counting sort 為什麼可以更快</strong>：它們不是靠比較，而是直接看數字的位數、大小去分桶，不受這個下界限制（但要假設位數或範圍有限）。</p>
+<h4 id="quicksort">quicksort 的三種情況</h4>
+<p>每一層 partition 要掃過所有元素，花 <span class="arithmatex">\(\Theta(n)\)</span>。時間取決於 pivot 切得平不平均：</p>
+<table>
+<thead>
+<tr>
+<th>情況</th>
+<th>遞迴式</th>
+<th>結果</th>
+<th>什麼時候發生</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>最好：每次切一半</td>
+<td><span class="arithmatex">\(T(n)=2T(n/2)+\Theta(n)\)</span></td>
+<td><span class="arithmatex">\(\Theta(n\log n)\)</span></td>
+<td>pivot 剛好是中位數</td>
+</tr>
+<tr>
+<td>最壞：每次切成 0 和 <span class="arithmatex">\(n-1\)</span></td>
+<td><span class="arithmatex">\(T(n)=T(n-1)+\Theta(n)\)</span></td>
+<td><span class="arithmatex">\(\Theta(n^2)\)</span></td>
+<td>已排好的資料、每次選第一個或最後一個當 pivot</td>
+</tr>
+<tr>
+<td>平均（隨機 pivot）</td>
+<td></td>
+<td><span class="arithmatex">\(\Theta(n\log n)\)</span></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>最好</strong>：遞迴樹有 <span class="arithmatex">\(\lg n\)</span> 層，每層加起來都是 n，總共 <span class="arithmatex">\(n\lg n\)</span>。</li>
+<li><strong>最壞</strong>：<span class="arithmatex">\(n+(n-1)+\cdots+1=\frac{n(n+1)}2=\Theta(n^2)\)</span>。</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">104 Q1（10%）：證明任何比較排序在最壞情況下需要 <span class="arithmatex">\(\Omega(n\lg n)\)</span> 的時間</p>
+<p>寫上面決策樹的三步：(1) 至少 <span class="arithmatex">\(n!\)</span> 片葉子；(2) 高度 h 的二元樹最多 <span class="arithmatex">\(2^h\)</span> 片葉子，<span class="arithmatex">\(h\ge\lg(n!)\)</span>；(3) <span class="arithmatex">\(\lg(n!)\ge\frac n2\lg\frac n2=\Omega(n\lg n)\)</span>。最壞情況的比較次數就是樹高，所以至少 <span class="arithmatex">\(\Omega(n\lg n)\)</span>。∎</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q7（10%）：(a) insertion、merge、heap、quick sort 的最壞與平均時間 (b) 有人說發明了比較排序 Supersort，最壞 <span class="arithmatex">\(O(n)\)</span>，可能嗎？</p>
+<p><strong>(a)</strong> insertion：最壞、平均都是 <span class="arithmatex">\(O(n^2)\)</span>；merge、heap：都是 <span class="arithmatex">\(O(n\lg n)\)</span>；quick：最壞 <span class="arithmatex">\(O(n^2)\)</span>、平均 <span class="arithmatex">\(O(n\lg n)\)</span>（<a href="#u2-1">2.1</a> 的表）。</p>
+<p><strong>(b) 不可能</strong>。比較排序的最壞情況至少 <span class="arithmatex">\(\Omega(n\lg n)\)</span>（104 Q1 的證明），<span class="arithmatex">\(O(n)\)</span> 低於這個下界。除非它不是只靠比較（例如 radix sort），那就不叫比較排序。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">105 Q6(3)（3%）、107 Q5(5)（3%）：證明 quicksort 最好是 <span class="arithmatex">\(O(n\lg n)\)</span>、最壞是 <span class="arithmatex">\(O(n^2)\)</span></p>
+<ul>
+<li><strong>最好</strong>：每次 pivot 剛好切一半，<span class="arithmatex">\(T(n)=2T(n/2)+cn\)</span>。遞迴樹每一層的工作加起來都是 cn，共 <span class="arithmatex">\(\lg n\)</span> 層，<span class="arithmatex">\(T(n)=cn\lg n=O(n\lg n)\)</span>。</li>
+<li><strong>最壞</strong>：每次 pivot 都是最大或最小（例如已排序的資料、選最後一個當 pivot），切成 <span class="arithmatex">\(n-1\)</span> 和 0 個，<span class="arithmatex">\(T(n)=T(n-1)+cn=c(n+(n-1)+\cdots+1)=c\frac{n(n+1)}2=O(n^2)\)</span>。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">106 Q9（10%）：如果每隔一次 pivot 就是最好的（一次最好、一次最壞輪流），quicksort 要多久？</p>
+<p>設 <span class="arithmatex">\(L(n)\)</span> 是「這一層切得好」的時間、<span class="arithmatex">\(U(n)\)</span> 是「這一層切得差」的時間：</p>
+<div class="arithmatex">\[L(n)=2U(n/2)+\Theta(n),\qquad U(n)=L(n-1)+\Theta(n)\]</div>
+<p>把 U 代進 L：<span class="arithmatex">\(L(n)=2\big[L(n/2-1)+\Theta(n/2)\big]+\Theta(n)=2L(n/2-1)+\Theta(n)\)</span>，跟最好情況的遞迴式差不多，<strong>結果還是 <span class="arithmatex">\(\Theta(n\lg n)\)</span></strong>。</p>
+<p><strong>直覺</strong>：切得差的那一層只多花 <span class="arithmatex">\(\Theta(n)\)</span>，下一層切得好時就把它吸收掉了，只是常數變大（大約多一倍的層數），不會變成 <span class="arithmatex">\(n^2\)</span>。</p>
+</div>
+<h4 id="_8">觀念小考</h4>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> 用比較排序排 4 個數，最壞情況至少要幾次比較？</p>
+<ol>
+<li>3</li>
+<li>4</li>
+<li>5</li>
+<li>6</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 5</strong>。<span class="arithmatex">\(4!=24\)</span> 片葉子，<span class="arithmatex">\(2^4=16&lt;24\le32=2^5\)</span>，樹高至少 <span class="arithmatex">\(\lceil\lg24\rceil=5\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-2.</strong> radix sort 為什麼可以比 <span class="arithmatex">\(O(n\log n)\)</span> 快？</p>
+<ol>
+<li>它用了更好的比較方法</li>
+<li>它不是比較排序，不受比較排序的下界限制</li>
+<li>它只能排很少的資料</li>
+<li>它其實也是 <span class="arithmatex">\(O(n\log n)\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(\Omega(n\log n)\)</span> 只限制「只靠比較」的排序。radix sort 直接看每一位的數字分桶，d 位數時是 <span class="arithmatex">\(O(d(n+r))\)</span>，d、r 固定就是線性。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> quicksort 每次都切成 1:9（不平均但比例固定），時間是？</p>
+<ol>
+<li><span class="arithmatex">\(\Theta(n\log n)\)</span></li>
+<li><span class="arithmatex">\(\Theta(n^2)\)</span></li>
+<li><span class="arithmatex">\(\Theta(n)\)</span></li>
+<li><span class="arithmatex">\(\Theta(n^{1.5})\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。比例固定時，遞迴樹的高度是 <span class="arithmatex">\(\log_{10/9}n=\Theta(\log n)\)</span>，每層最多 n，總共 <span class="arithmatex">\(\Theta(n\log n)\)</span>。只有每次切成 0 和 <span class="arithmatex">\(n-1\)</span> 這種「比例越來越差」的情況才會 <span class="arithmatex">\(\Theta(n^2)\)</span>。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用自己的話說明，為什麼比較排序的最壞情況至少要 <span class="arithmatex">\(\lg(n!)\)</span> 次比較。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>每次比較只有兩種結果，k 次比較最多分出 <span class="arithmatex">\(2^k\)</span> 種情況。n 個數有 <span class="arithmatex">\(n!\)</span> 種排列，每種排列需要不同的處理方式（不然一定有一種會排錯），所以 <span class="arithmatex">\(2^k\ge n!\)</span>，<span class="arithmatex">\(k\ge\lg(n!)\)</span>。<span class="arithmatex">\(\lg(n!)\)</span> 約等於 <span class="arithmatex">\(n\lg n\)</span>，所以至少 <span class="arithmatex">\(\Omega(n\log n)\)</span>。</p>
+</details>
 <h3 id="u2-quiz">單元 2 小考</h3>
 <p><strong>2-1.</strong> 5, 1, 4, 2, 3 用 insertion sort 要 swap 幾次？</p>
 <details class="quiz">
@@ -1366,7 +1507,7 @@ f(3) 回來，印 3</code></pre>
 <section class="unit" data-unit="u3">
 <h2 id="u3">單元 3：樹</h2>
 <h3 id="u3-0">3.0 觀念課：三種走訪只差「根」放在哪裡</h3>
-<h4 id="_8">三種走訪</h4>
+<h4 id="_9">三種走訪</h4>
 <p>最小的樹：根 A，左子 B，右子 C。</p>
 <table>
 <thead>
@@ -1398,7 +1539,7 @@ f(3) 回來，印 3</code></pre>
 <p>動畫裡藍色是「現在在哪個節點」，虛線圈是「還沒走完、等著回來的祖先」，綠色是已經輸出的。換一種走訪比較看看，樹也可以自己改（一層一層從左到右寫，<code>#</code> 表示那個位置是空的）：</p>
 <div class="viz" data-viz="traverse" data-tree="A,B,C,D,E,#,F"></div>
 
-<h4 id="_9">為什麼可以由走訪結果重建樹</h4>
+<h4 id="_10">為什麼可以由走訪結果重建樹</h4>
 <ul>
 <li>preorder 的<strong>第一個</strong>、postorder 的<strong>最後一個</strong>一定是根。</li>
 <li>在 inorder 中找到根，<strong>左邊全是左子樹、右邊全是右子樹</strong>。</li>
@@ -1429,7 +1570,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/@erictsai1224tw/AVL_tree">AVL Tree library</a>〉分別寫出 LL、RR、LR、RL 四種情況的旋轉程式碼。</li>
 </ul>
 </div>
-<h4 id="_10">換你試試</h4>
+<h4 id="_11">換你試試</h4>
 <p><strong>T-1.</strong> 樹：A 的左子 B、右子 C；B 的左子 D、右子 E。寫出 preorder、inorder、postorder。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1634,7 +1775,7 @@ f(3) 回來，印 3</code></pre>
 </div>
 <h3 id="u3-expr">3.5 運算式樹：前序、中序、後序式</h3>
 <p>100、102、103、104、106、107 年都考過（六年），題型只有三種：由運算式樹寫出三種式子、中序式轉前序／後序、用 stack 算出後序式（或前序式）的值。</p>
-<h4 id="_11">運算式就是一棵樹</h4>
+<h4 id="_12">運算式就是一棵樹</h4>
 <p>運算子（＋ − × ÷）是內部節點，運算元（數字、變數）是葉子。<span class="arithmatex">\((A+B)\times C\)</span> 的樹：根是 ×，左子樹是 A＋B，右子樹是 C。</p>
 <p>對這棵樹做 <a href="#u3-0">3.0</a> 的三種走訪，就得到三種寫法：</p>
 <table>
@@ -1669,7 +1810,7 @@ f(3) 回來，印 3</code></pre>
 <p>小例子 <code>2 3 4 × +</code>：push 2、3、4；讀到 ×，pop 出 4、3，算 3 × 4 ＝ 12，push；讀到 ＋，pop 出 12、2，算 2 ＋ 12 ＝ 14。</p>
 <p><strong>前序式反過來</strong>：由<strong>右往左</strong>讀，規則一樣，但<strong>先 pop 出來的是左邊的運算元</strong>。</p>
 <p>減法和除法要特別注意左右：後序式 <code>8 5 −</code> 是 8 − 5 ＝ 3，不是 5 − 8。</p>
-<h4 id="_12">中序式轉前序、後序：加括號法最快</h4>
+<h4 id="_13">中序式轉前序、後序：加括號法最快</h4>
 <ol>
 <li>照優先順序（先乘除、後加減；<strong>同優先順序由左往右</strong>）把每一個運算都加上括號。</li>
 <li>後序式：把每個運算子搬到<strong>它那組括號的右括號位置</strong>；前序式：搬到<strong>左括號位置</strong>。</li>
@@ -1804,7 +1945,7 @@ f(3) 回來，印 3</code></pre>
 </ul>
 <p>答案 <strong>A、B、D</strong>。</p>
 </div>
-<h4 id="_13">觀念小考</h4>
+<h4 id="_14">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> 後序式 <code>5 1 2 + 4 × + 3 −</code> 的值是多少？</p>
 <ol>
@@ -1878,7 +2019,7 @@ f(3) 回來，印 3</code></pre>
 </details>
 <h3 id="u3-huff">3.6 Huffman 編碼</h3>
 <p>101、102 年各考一題 10%：給每個符號出現的次數，畫出 Huffman 樹、寫出編碼。</p>
-<h4 id="_14">觀念：常用的字給短的編碼</h4>
+<h4 id="_15">觀念：常用的字給短的編碼</h4>
 <ul>
 <li><strong>固定長度</strong>：6 個符號要 3 位元（<span class="arithmatex">\(2^2=4&lt;6\le8=2^3\)</span>），每個字都用 3 位元。</li>
 <li><strong>變動長度</strong>：常出現的字用短編碼、少見的用長編碼，總長度就變短。摩斯電碼就是這樣：最常用的 E 只有一點。</li>
@@ -1894,7 +2035,7 @@ f(3) 回來，印 3</code></pre>
 <p>用 min-heap（priority queue）挑最小的兩個，n 個符號要 <span class="arithmatex">\(O(n\log n)\)</span>。</p>
 <p><strong>為什麼先合併最小的</strong>：合併一次，等於這兩棵樹底下所有符號的編碼都<strong>多一位</strong>，多出來的總位元數就是新根的頻率。先合併最小的兩個，每次多付的代價最小。</p>
 <p><strong>驗算捷徑</strong>：總位元數 ＝ Σ（頻率 × 編碼長度）＝ <strong>每次合併產生的新頻率全部加起來</strong>。</p>
-<h4 id="_15">考試要注意的規則</h4>
+<h4 id="_16">考試要注意的規則</h4>
 <ul>
 <li>頻率相同時挑哪一個、誰放左邊，會改變<strong>樹的樣子和個別編碼</strong>，但<strong>不會改變總位元數</strong>。</li>
 <li>題目有給規則就照規則（102 Q4）；沒給就寫出自己的規則，例如「頻率小的放左邊，相同時字母小的放左邊」。</li>
@@ -2024,7 +2165,7 @@ f(3) 回來，印 3</code></pre>
 </div>
 <div class="viz" data-viz="huffman" data-freq="A 8, B 15, C 1, D 6, E 15, F 3, G 7" data-left="lex" data-title="102 Q4：照題目的規則合併"></div>
 
-<h4 id="_16">觀念小考</h4>
+<h4 id="_17">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 下面哪一組<strong>不是</strong>前綴碼？</p>
 <ol>
@@ -2112,7 +2253,7 @@ f(3) 回來，印 3</code></pre>
 <section class="unit" data-unit="u4">
 <h2 id="u4">單元 4：雜湊</h2>
 <h3 id="u4-0">4.0 觀念課：依學號尾數分配置物櫃</h3>
-<h4 id="_17">雜湊的想法</h4>
+<h4 id="_18">雜湊的想法</h4>
 <p>有 5 個置物櫃（編號 0–4），每個學號放到「學號 mod 5」那一格。要找人時直接算出櫃子號碼，不用一個個翻，平均 <span class="arithmatex">\(O(1)\)</span>。</p>
 <p><strong>碰撞（collision）</strong>：兩個學號算出同一格，例如 7 和 12 都是 mod 5 ＝ 2。</p>
 <h4 id="linear-probing">linear probing：被佔了就往下一格</h4>
@@ -2160,7 +2301,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/en/hashtable">VisuAlgo Hash Table</a>：linear probing、quadratic probing、double hashing 都能自己輸入 key 看探測路線，可以直接拿 115 Q7 的數字試。</li>
 </ul>
 </div>
-<h4 id="_18">換你試試</h4>
+<h4 id="_19">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7，各放在哪裡？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2262,6 +2403,117 @@ f(3) 回來，印 3</code></pre>
 </div>
 <div class="viz" data-viz="hash" data-keys="11,33,66,7,77" data-m="11" data-method="double" data-r="7" data-title="115 Q7：double hashing"></div>
 
+<h3 id="u4-theory">4.2 雜湊的理論：chaining、universal、perfect hashing</h3>
+<p>103、104、105 年各考一題觀念或證明：chaining 搜尋要多久、universal hashing 的碰撞機率、perfect hashing、用在認證的雜湊函數要有什麼性質。</p>
+<h4 id="chaining">chaining：每一格掛一條串列</h4>
+<p>除了 <a href="#u4-0">4.0</a> 的 open addressing（被佔就往別格放），另一種處理碰撞的方法是 <strong>chaining</strong>：每一格放一條 linked list，算到同一格的 key 全部串在一起。</p>
+<p><strong>simple uniform hashing（簡單均勻雜湊）假設</strong>：每個 key <strong>等機率</strong>落在 m 格中的任一格，而且跟其他 key 落在哪裡<strong>無關</strong>。</p>
+<p>在這個假設下，n 個 key、m 格，每條串列平均長 <span class="arithmatex">\(\alpha=\frac nm\)</span>（load factor）：</p>
+<table>
+<thead>
+<tr>
+<th>搜尋</th>
+<th>要做什麼</th>
+<th>平均時間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>失敗（找不到）</td>
+<td>算出格子，把那一整條串列走完</td>
+<td><span class="arithmatex">\(\Theta(1+\alpha)\)</span></td>
+</tr>
+<tr>
+<td>成功（找得到）</td>
+<td>平均走到串列的一半</td>
+<td><span class="arithmatex">\(\Theta(1+\frac\alpha2)\)</span>，也是 <span class="arithmatex">\(\Theta(1+\alpha)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><span class="arithmatex">\(1\)</span> 是算雜湊值的時間，<span class="arithmatex">\(\alpha\)</span> 是走串列的時間。只要 m 跟 n 成正比，<span class="arithmatex">\(\alpha\)</span> 是常數，搜尋就是 <span class="arithmatex">\(O(1)\)</span>。</p>
+<h4 id="universal-hashing">universal hashing：隨機挑雜湊函數</h4>
+<p>任何一個<strong>固定</strong>的雜湊函數，都有人能故意挑一堆 key 讓它們全部撞在同一格，變成 <span class="arithmatex">\(O(n)\)</span>。解法是準備一<strong>族</strong>雜湊函數 <span class="arithmatex">\(\mathcal H\)</span>，每次執行時<strong>隨機挑一個</strong>。</p>
+<p><strong>universal</strong>：對任何兩個不同的 key <span class="arithmatex">\(x\ne y\)</span>，隨機挑一個 <span class="arithmatex">\(h\in\mathcal H\)</span>，撞在一起的機率 <span class="arithmatex">\(\Pr[h(x)=h(y)]\le\frac1m\)</span>。</p>
+<p>常見的一族：<span class="arithmatex">\(h_{a,b}(k)=((ak+b)\bmod p)\bmod m\)</span>，p 是比所有 key 大的質數，a、b 隨機挑。</p>
+<h4 id="perfect-hashing-o1">perfect hashing：最壞也是 <span class="arithmatex">\(O(1)\)</span></h4>
+<p>key 的集合<strong>固定不變</strong>（例如程式語言的保留字）時，可以做到最壞情況 <span class="arithmatex">\(O(1)\)</span> 的搜尋：</p>
+<ol>
+<li>第一層：用 universal hashing 把 n 個 key 分到 n 格。</li>
+<li>第二層：第 j 格有 <span class="arithmatex">\(n_j\)</span> 個 key，就給它一個大小 <span class="arithmatex">\(n_j^2\)</span> 的小表，再挑一個雜湊函數讓這 <span class="arithmatex">\(n_j\)</span> 個 key <strong>完全不碰撞</strong>（下面 105 Q5 證明隨機挑成功的機率至少一半，試幾次就成功）。</li>
+</ol>
+<p>總空間期望值仍然是 <span class="arithmatex">\(O(n)\)</span>，每次搜尋只算兩次雜湊。</p>
+<h4 id="_20">用在認證的雜湊函數</h4>
+<p>密碼學用的雜湊函數（例如 SHA-256）把任意長的訊息壓成固定長度的摘要，還要滿足：</p>
+<ul>
+<li><strong>單向（one-way）</strong>：知道 <span class="arithmatex">\(h(m)\)</span>，很難找出 m。</li>
+<li><strong>抗碰撞（collision resistant）</strong>：很難找到兩個不同的訊息 <span class="arithmatex">\(m\ne m'\)</span> 使 <span class="arithmatex">\(h(m)=h(m')\)</span>。</li>
+</ul>
+<p>所以傳訊息時附上摘要，對方重算一次比對，訊息被改過就對不上（搭配金鑰就是 <a href="os.html#u6-more">OS 6.2</a> 的 MAC 和數位簽章）。</p>
+<div class="admonition example">
+<p class="admonition-title">104 Q2(3)（3%）：什麼是 simple uniform hashing 假設？m 格放 n 個 key、用 chaining 時，失敗的搜尋平均要多久？</p>
+<p><strong>假設</strong>：每個 key 等機率雜湊到 m 格中的任一格，與其他 key 無關。</p>
+<p><strong>失敗的搜尋（<span class="arithmatex">\(\Theta(1+\alpha)\)</span>，<span class="arithmatex">\(\alpha=\frac nm\)</span>）</strong>：算雜湊值 <span class="arithmatex">\(O(1)\)</span>，再把那一格的串列整條走完。串列的平均長度是 <span class="arithmatex">\(\alpha\)</span>，所以平均 <span class="arithmatex">\(\Theta(1+\alpha)\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">105 Q5(1)（5%）：用 universal hashing 把 n 個 key 放進大小 <span class="arithmatex">\(n^2\)</span> 的表，證明發生碰撞的機率小於 0.5</p>
+<p>n 個 key 共有 <span class="arithmatex">\(\binom n2\)</span> 對。universal 的定義：每一對碰撞的機率 <span class="arithmatex">\(\le\frac1m=\frac1{n^2}\)</span>。令 X ＝ 碰撞的對數，期望值</p>
+<div class="arithmatex">\[E[X]\le\binom n2\cdot\frac1{n^2}=\frac{n(n-1)}{2n^2}&lt;\frac12\]</div>
+<p><strong>Markov 不等式</strong>：X 是非負整數，<span class="arithmatex">\(\Pr[X\ge1]\le E[X]&lt;\frac12\)</span>。所以至少發生一次碰撞的機率小於 0.5。∎</p>
+<p>這就是 perfect hashing 第二層用 <span class="arithmatex">\(n_j^2\)</span> 大小的原因：隨機挑一個雜湊函數，至少一半的機會完全不碰撞。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">103 Q9（10%）：(1) 雜湊函數用在認證時的兩個重要特性 (2) 什麼是碰撞？chaining 怎麼解決？(3) 什麼是 perfect hashing？</p>
+<ol>
+<li><strong>單向</strong>（從摘要推不回訊息）和<strong>抗碰撞</strong>（找不到兩個不同的訊息有相同的摘要）。</li>
+<li><strong>碰撞</strong>：兩個不同的 key 算出同一個雜湊值。<strong>chaining</strong>：每一格掛一條 linked list，撞在同一格的 key 都串在那條串列上，搜尋時走那一條。</li>
+<li><strong>perfect hashing</strong>：key 集合固定時，兩層雜湊，第二層用大小 <span class="arithmatex">\(n_j^2\)</span> 的表讓每一格裡完全沒有碰撞，最壞情況 <span class="arithmatex">\(O(1)\)</span> 搜尋、空間 <span class="arithmatex">\(O(n)\)</span>。</li>
+</ol>
+</div>
+<h4 id="_21">觀念小考</h4>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 用 chaining，m ＝ 100 格放 n ＝ 300 個 key，在 simple uniform hashing 下，失敗的搜尋平均要走多長的串列？</p>
+<ol>
+<li>1</li>
+<li>3</li>
+<li>300</li>
+<li>100</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. 3</strong>。load factor <span class="arithmatex">\(\alpha=\frac{300}{100}=3\)</span>，失敗的搜尋要把一整條串列走完，平均長度就是 3。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-2.</strong> universal hashing 為什麼要「隨機挑」雜湊函數？</p>
+<ol>
+<li>讓雜湊值更大</li>
+<li>讓每次執行結果都一樣</li>
+<li>讓別人沒辦法事先挑出一組會全部碰撞的 key</li>
+<li>讓表的大小可以變小</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。固定的雜湊函數一定有一組「最壞的 key」。隨機挑的話，攻擊者不知道會用哪一個，任何一組 key 的期望表現都很好。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> 用來檢查訊息有沒有被竄改的雜湊函數，最重要的性質是？</p>
+<ol>
+<li>很難找到兩個不同的訊息有相同的雜湊值</li>
+<li>雜湊值越長越好</li>
+<li>計算要很慢</li>
+<li>雜湊值要能還原出訊息</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。抗碰撞：如果找得到另一個訊息有同樣的摘要，攻擊者就能換掉訊息而不被發現。D 剛好相反，雜湊函數應該是單向的。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 105 Q5(1) 的證明裡，為什麼「碰撞次數的期望值小於 1/2」就能推出「發生碰撞的機率小於 1/2」？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>碰撞次數 X 只能是 0, 1, 2, …。<span class="arithmatex">\(E[X]=\sum_k k\Pr[X=k]\ge\sum_{k\ge1}\Pr[X=k]=\Pr[X\ge1]\)</span>，因為每個 <span class="arithmatex">\(k\ge1\)</span> 時 <span class="arithmatex">\(k\Pr[X=k]\ge\Pr[X=k]\)</span>。所以 <span class="arithmatex">\(\Pr[X\ge1]\le E[X]&lt;\frac12\)</span>（這就是 Markov 不等式）。</p>
+</details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h=k\bmod7\)</span>，插入 10, 3, 17, 24 的結果？</p>
 <details class="quiz">
@@ -2363,7 +2615,7 @@ f(3) 回來，印 3</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：圖</h2>
 <h3 id="u5-0">5.0 觀念課：用最少的電線連起所有城市</h3>
-<h4 id="_19">圖怎麼存</h4>
+<h4 id="_22">圖怎麼存</h4>
 <p>三個點 A、B、C，邊 A–B（權重 1）、B–C（權重 2）、A–C（權重 3）：</p>
 <p><strong>鄰接矩陣</strong>（<span class="arithmatex">\(V\times V\)</span> 的表，適合邊很多的圖）：</p>
 <table>
@@ -2417,7 +2669,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/zh/mst">VisuAlgo 最小生成樹（中文）</a>：Kruskal 和 Prim 一步一步加邊，還有 Kruskal 為什麼正確的說明；<a href="https://visualgo.net/en/sssp">VisuAlgo 最短路徑</a>：Dijkstra 的過程。</li>
 </ul>
 </div>
-<h4 id="_20">換你試試</h4>
+<h4 id="_23">換你試試</h4>
 <p>圖：A–B 4、A–C 1、B–C 2、B–D 5、C–D 8。</p>
 <p><strong>T-1.</strong> 從 A 開始用 Prim，依序加入哪些邊？總權重？</p>
 <details class="quiz">
@@ -2594,7 +2846,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>DFS（depth-first search，深度優先）</strong>：一直往下走，走到沒有路才退回上一個岔路換別條，像走迷宮。用 <strong>stack</strong>（或遞迴）。</li>
 </ul>
 <p>BFS 一層一層往外，所以第幾層就是「離起點幾條邊」，<strong>無權重的圖可以用 BFS 找最短路徑</strong>。DFS 走的路不一定是最短的。</p>
-<h4 id="_21">手算規則（照字母順序）</h4>
+<h4 id="_24">手算規則（照字母順序）</h4>
 <p><strong>BFS</strong>：</p>
 <ol>
 <li>起點標成「發現了」，放進 queue。</li>
@@ -2866,7 +3118,7 @@ f(3) 回來，印 3</code></pre>
    b   g      n      a</code></pre>
 <p>驗算：一層一層讀是 i｜c e o｜d l m f h j｜b g n a <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>；preorder 是 i c d b g l e m n o f h a j <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。用程式試過所有可能的樹，只有這一棵兩個序列都對得上。</p>
 </div>
-<h4 id="_22">觀念小考</h4>
+<h4 id="_25">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> BFS 用哪一種資料結構，記住接下來要拜訪的點？</p>
 <ol>
@@ -3000,7 +3252,7 @@ f(3) 回來，印 3</code></pre>
 <p>先看直接遞迴的呼叫樹（橘色是「之前算過、又重算一次」的），再把寫法切換成「算過就記在表裡」比較：</p>
 <div class="viz" data-viz="calltree" data-n="5"></div>
 
-<h4 id="_23">寫遞迴式的四步</h4>
+<h4 id="_26">寫遞迴式的四步</h4>
 <ol>
 <li><strong>定義狀態</strong>：用一句話說清楚 <span class="arithmatex">\(g(i,j)\)</span> 是什麼，例如「只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊出 <span class="arithmatex">\(j\)</span> 元的方法數」。</li>
 <li><strong>看最後一步（或第一步）分類</strong>：「有沒有用到第 <span class="arithmatex">\(i\)</span> 種硬幣」。</li>
@@ -3052,7 +3304,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10221988">談硬幣問題的文章</a>（面額 1、2、5 湊 11 元）。注意它算的是「最少幾枚硬幣」，這節和 112 Q4 算的是「有幾種組合」，遞迴式不一樣，可以兩個對照著看。</li>
 </ul>
 </div>
-<h4 id="_24">換你試試</h4>
+<h4 id="_27">換你試試</h4>
 <p><strong>T-1.</strong> 用 1、2、3 元湊 4 元（不計順序），有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3275,6 +3527,465 @@ f(3) 回來，印 3</code></pre>
 <details class="quiz">
 <summary>看答案</summary>
 <p>最右邊一張直放 → <span class="arithmatex">\(a_{n-1}\)</span>；兩張橫放疊在一起 → <span class="arithmatex">\(a_{n-2}\)</span>。<span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}\)</span>，<span class="arithmatex">\(a_1=1\)</span>、<span class="arithmatex">\(a_2=2\)</span>（費氏數列）。</p>
+</details>
+
+</section>
+<section class="unit" data-unit="u7">
+<h2 id="u7">單元 7：進階資料結構：紅黑樹、B-tree、binomial／Fibonacci heap</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>103、104、105、107 年每年都有 15–30% 考這幾種 CLRS 課本的結構（111–115 年沒考）。題目多半是<strong>定義、性質、證明</strong>，少數要手畫操作（B-tree 插入、heap 的 extract-min、decrease-key）。先背每種結構「解決什麼問題」和它的性質，證明照課本的套路寫。</p>
+</div>
+<h3 id="u7-0">7.0 觀念課：為什麼需要這些結構</h3>
+<table>
+<thead>
+<tr>
+<th>結構</th>
+<th>解決什麼問題</th>
+<th>主要操作的時間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>紅黑樹（red-black tree）</td>
+<td>普通 BST 會長歪變成 <span class="arithmatex">\(O(n)\)</span>；用顏色規則讓高度保持 <span class="arithmatex">\(O(\log n)\)</span></td>
+<td>搜尋、插入、刪除 <span class="arithmatex">\(O(\log n)\)</span></td>
+</tr>
+<tr>
+<td>B-tree</td>
+<td>資料放在磁碟上，讀一次磁碟要幾毫秒；每個節點放很多 key，讓樹很矮、讀很少次磁碟</td>
+<td>讀 <span class="arithmatex">\(O(\log_tn)\)</span> 個節點</td>
+</tr>
+<tr>
+<td>binomial heap</td>
+<td>兩個 heap 要<strong>合併</strong>（union）；普通的 binary heap 合併要 <span class="arithmatex">\(O(n)\)</span></td>
+<td>插入、extract-min、合併 <span class="arithmatex">\(O(\log n)\)</span></td>
+</tr>
+<tr>
+<td>Fibonacci heap</td>
+<td>很多次 decrease-key（Dijkstra、Prim）</td>
+<td>插入、合併、decrease-key 均攤 <span class="arithmatex">\(O(1)\)</span>；extract-min 均攤 <span class="arithmatex">\(O(\log n)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>B-tree 有多矮</strong>：每個節點放 1000 個 key（1001 個孩子），高度 2 的 B-tree 就能放超過 10 億個 key，找任何一個最多讀 3 次磁碟。</p>
+<p><strong>樹的兩個基本性質</strong>（105 Q7(1)）：(1) 有一個特別的節點叫根；(2) 其他節點分成 <span class="arithmatex">\(n\ge0\)</span> 個互不相交的集合，每一個也是一棵樹（子樹）。用圖論的說法就是<strong>連通、沒有環</strong>（<a href="discrete.html#u10-0">離散 10.0</a>）。</p>
+<h3 id="u7-1">7.1 紅黑樹</h3>
+<h4 id="clrs">五個性質（CLRS 的定義）</h4>
+<ol>
+<li>每個節點是紅色或黑色。</li>
+<li>根是黑色。</li>
+<li>每片葉子（NIL，空指標）是黑色。</li>
+<li><strong>紅色節點的兩個孩子都是黑色</strong>（不能有兩個紅色連在一起）。</li>
+<li>從任何一個節點往下走到每片葉子，經過的<strong>黑色節點數都一樣</strong>（叫這個節點的 black-height，<span class="arithmatex">\(bh(x)\)</span>）。</li>
+</ol>
+<p>題目說「除了每個點是紅或黑之外，還有哪四個性質」（103 Q6(1)、107 Q5(4)），就是 2～5。</p>
+<p><strong>為什麼這樣就平衡</strong>：性質 5 讓每條路徑的黑色一樣多；性質 4 讓紅色最多跟黑色一樣多（紅黑交錯）。所以<strong>最長的路徑最多是最短的兩倍</strong>，樹不會長歪。</p>
+<h4 id="2lgn1">高度最多 <span class="arithmatex">\(2\lg(n+1)\)</span></h4>
+<div class="admonition example">
+<p class="admonition-title">105 Q7(2)（10%）：證明有 k 個內部節點的紅黑樹，高度不超過 <span class="arithmatex">\(2\lg(k+1)\)</span></p>
+<p><strong>第一步：以 x 為根的子樹至少有 <span class="arithmatex">\(2^{bh(x)}-1\)</span> 個內部節點</strong>。對 x 的高度做歸納：</p>
+<ul>
+<li>x 是葉子（NIL）：<span class="arithmatex">\(bh(x)=0\)</span>，<span class="arithmatex">\(2^0-1=0\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+<li>否則 x 的每個孩子的 black-height 至少是 <span class="arithmatex">\(bh(x)-1\)</span>（孩子是紅色時一樣，是黑色時少 1），由歸納假設每個孩子的子樹至少 <span class="arithmatex">\(2^{bh(x)-1}-1\)</span> 個內部節點。加上 x 自己：</li>
+</ul>
+<div class="arithmatex">\[\ge2\left(2^{bh(x)-1}-1\right)+1=2^{bh(x)}-1\]</div>
+<p><strong>第二步：<span class="arithmatex">\(bh(\text{root})\ge\frac h2\)</span></strong>。性質 4：任何一條從根到葉子的路徑上，紅色不能連續，所以至少一半是黑色。</p>
+<p><strong>合起來</strong>：<span class="arithmatex">\(k\ge2^{h/2}-1\)</span>，移項 <span class="arithmatex">\(h\le2\lg(k+1)\)</span>。∎</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">103 Q6（10%）：(1) 四個性質 (2) 7 個內部節點時，最大高度？搜尋一個值、找最大值要多久？(3) 紅黑樹算平衡嗎？</p>
+<p><strong>(1)</strong> 性質 2～5（見上面）。</p>
+<p><strong>(2)</strong> 套公式 <span class="arithmatex">\(h\le2\lg(7+1)=6\)</span>，這是<strong>上界</strong>。實際上 7 個點的紅黑樹最高只有 <strong>4 層</strong>（用程式列出所有 7 個點的紅黑樹確認過），例如：</p>
+<pre class="highlight"><code class="language-text">20(B)
++-- 10(B)
+|   +-- 5(R)
+`-- 30(R)
+    +-- 25(B)
+    `-- 40(B)
+        +-- 35(R)</code></pre>
+<p>每條路徑上的黑色都是 2 個（不算 NIL），紅色的孩子都是黑色，20 → 30 → 40 → 35 共 4 層。考試寫「由定理 <span class="arithmatex">\(h\le2\lg(n+1)=6\)</span>」也合理，能補上實際最多 4 層更好。</p>
+<p>搜尋一個值、找最大值（一直往右走）都是 <span class="arithmatex">\(O(\lg n)\)</span>，因為高度是 <span class="arithmatex">\(O(\lg n)\)</span>。</p>
+<p><strong>(3) 算平衡</strong>：最長的路徑不超過最短的兩倍，高度 <span class="arithmatex">\(O(\lg n)\)</span>。它沒有 AVL 那麼嚴格（AVL 左右高度差 ≤ 1），所以搜尋稍慢，但插入、刪除需要的旋轉比較少（插入最多 2 次、刪除最多 3 次）。</p>
+</div>
+<p><strong>插入的大概</strong>（考題沒考過細節，知道流程就好）：照 BST 插入，新節點塗<strong>紅色</strong>（不改變 black-height）；如果它的父親也是紅色，看叔叔：叔叔紅 → 父親和叔叔改黑、祖父改紅，問題往上推；叔叔黑 → 旋轉一次或兩次再改色。</p>
+<h3 id="u7-2">7.2 B-tree 與它的變形</h3>
+<h4 id="minimum-degree-t-2">定義（minimum degree t ≥ 2）</h4>
+<ul>
+<li>每個節點最多 <span class="arithmatex">\(2t-1\)</span> 個 key（最多 <span class="arithmatex">\(2t\)</span> 個孩子）。</li>
+<li>根以外的節點至少 <span class="arithmatex">\(t-1\)</span> 個 key（內部節點至少 t 個孩子）；根至少 1 個 key。</li>
+<li>節點裡的 key 由小到大排好，孩子夾在 key 之間（左邊的都比較小、右邊的都比較大）。</li>
+<li><strong>所有葉子在同一層</strong>。</li>
+</ul>
+<h4 id="_28">插入：滿了就從中間切開</h4>
+<p>CLRS 的做法是<strong>往下走的時候，遇到滿的節點（<span class="arithmatex">\(2t-1\)</span> 個 key）就先切開</strong>：中間那個 key 往上搬到父親，左右各剩 <span class="arithmatex">\(t-1\)</span> 個。這樣插到葉子時一定有空位，也不用再往回調整。根滿了切開時，樹就長高一層。</p>
+<div class="admonition example">
+<p class="admonition-title">101 Q9（10%）：minimum degree t ＝ 3 的 B-tree，依序插入 B、Q、L、F</p>
+<p>原本的樹（這就是 CLRS 課本 B-tree 那一章的範例）：</p>
+<pre class="highlight"><code class="language-text">[G M P X]
++-- [A C D E]
++-- [J K]
++-- [N O]
++-- [R S T U V]
+`-- [Y Z]</code></pre>
+<p><strong>(a) 每個節點能放幾個 key（2～5 個）</strong>：<span class="arithmatex">\(t-1=2\)</span> 到 <span class="arithmatex">\(2t-1=5\)</span>；根可以只有 1 個。</p>
+<p><strong>(b) 插入 B</strong>：往下走到 [A C D E]，只有 4 個沒滿，直接放進去 → <strong>[A B C D E]</strong>。</p>
+<p><strong>(c) 插入 Q</strong>：根 [G M P X] 有 4 個，沒滿。Q 在 P 和 X 之間，要往 [R S T U V] 走，它有 5 個（滿了），先切開：中間的 <strong>T 往上</strong>，切成 [R S] 和 [U V]；Q 放進 [R S]。</p>
+<pre class="highlight"><code class="language-text">[G M P T X]
++-- [A B C D E]
++-- [J K]
++-- [N O]
++-- [Q R S]
++-- [U V]
+`-- [Y Z]</code></pre>
+<p><strong>(d) 插入 L</strong>：根 [G M P T X] 滿了，先切開：<strong>P 往上變成新的根</strong>，左 [G M]、右 [T X]，樹長高一層。L 往左走，放進 [J K]。</p>
+<pre class="highlight"><code class="language-text">[P]
++-- [G M]
+|   +-- [A B C D E]
+|   +-- [J K L]
+|   `-- [N O]
+`-- [T X]
+    +-- [Q R S]
+    +-- [U V]
+    `-- [Y Z]</code></pre>
+<p><strong>(e) 插入 F</strong>：往左走到 [G M]（沒滿），F 要去 [A B C D E]，它滿了，先切開：<strong>C 往上</strong>到 [G M] 變成 [C G M]，切成 [A B] 和 [D E]；F 放進 [D E]。</p>
+<pre class="highlight"><code class="language-text">[P]
++-- [C G M]
+|   +-- [A B]
+|   +-- [D E F]
+|   +-- [J K L]
+|   `-- [N O]
+`-- [T X]
+    +-- [Q R S]
+    +-- [U V]
+    `-- [Y Z]</code></pre>
+<p>用程式照 CLRS 的插入演算法跑過一遍，四步的結果都一樣。</p>
+</div>
+<h4 id="_29">高度上界</h4>
+<div class="admonition example">
+<p class="admonition-title">107 Q6(1)（8%）：n 個 key、minimum degree t 的 B-tree，高度最多多少？證明</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(h\le\log_t\frac{n+1}2\)</span>。</p>
+<p><strong>證明</strong>：要讓樹盡量高，每個節點都放最少的 key。根至少 1 個 key、2 個孩子；第 1 層至少 2 個節點，之後每個節點至少 t 個孩子，所以第 i 層（<span class="arithmatex">\(i\ge1\)</span>）至少 <span class="arithmatex">\(2t^{i-1}\)</span> 個節點，每個至少 <span class="arithmatex">\(t-1\)</span> 個 key：</p>
+<div class="arithmatex">\[n\ge1+(t-1)\sum_{i=1}^{h}2t^{i-1}=1+2(t-1)\cdot\frac{t^h-1}{t-1}=2t^h-1\]</div>
+<p>所以 <span class="arithmatex">\(t^h\le\frac{n+1}2\)</span>，<span class="arithmatex">\(h\le\log_t\frac{n+1}2\)</span>。∎</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q4(3)（5%）：B-tree 為什麼能減少讀磁碟的成本？</p>
+<p>讀磁碟的時間主要花在 seek 和 rotational latency（<a href="os.html#u5-0">OS 5.0</a>），一次讀一整個區塊（page），讀幾個 byte 和讀一整頁差不多慢。B-tree 的一個節點就是一頁，放很多 key，所以<strong>分支數很大、樹很矮</strong>（<span class="arithmatex">\(\log_tn\)</span>），找一個 key 只要讀很少頁。讀進記憶體之後，在節點裡找 key 很快。</p>
+</div>
+<h4 id="_30">三種變形</h4>
+<div class="admonition example">
+<p class="admonition-title">105 Q7(3)（3%）、107 Q6(2)（2%）：B⁺-tree、B*-tree、2-3-4 tree</p>
+<ul>
+<li><strong>B⁺-tree</strong>：所有資料都放在<strong>葉子</strong>，內部節點只放 key 的副本當索引（分支數更大）；葉子用指標串成一條，<strong>範圍查詢、依序讀取</strong>很快。資料庫和檔案系統最常用。</li>
+<li>**B<em>-tree</em><strong>節點至少要</strong>*2/3 滿**（一般 B-tree 是 1/2）。節點滿了先把 key 分給旁邊的兄弟，兩個都滿了才把兩個節點切成三個。空間利用率比較高、樹比較矮。</li>
+<li><strong>2-3-4 tree</strong>：<span class="arithmatex">\(t=2\)</span> 的 B-tree，每個節點 1～3 個 key、2～4 個孩子。它跟紅黑樹可以互相轉換：一個 2-3-4 節點 ＝ 一個黑色節點加上最多兩個紅色孩子。</li>
+</ul>
+</div>
+<h3 id="u7-3">7.3 binomial heap</h3>
+<h4 id="binomial-tree-b_k">binomial tree <span class="arithmatex">\(B_k\)</span></h4>
+<p><span class="arithmatex">\(B_0\)</span> 是一個點；<span class="arithmatex">\(B_k\)</span> 是兩棵 <span class="arithmatex">\(B_{k-1}\)</span> 連起來：其中一棵的根變成另一棵的根的<strong>最左邊的孩子</strong>。</p>
+<div class="admonition example">
+<p class="admonition-title">104 Q4(1)（5%）：binomial tree <span class="arithmatex">\(B_k\)</span> 的五個性質</p>
+<ol>
+<li>有 <span class="arithmatex">\(2^k\)</span> 個節點。</li>
+<li>高度是 k。</li>
+<li>深度 i 的地方剛好有 <span class="arithmatex">\(\binom ki\)</span> 個節點。</li>
+<li>根的度數是 k，比其他節點都大。</li>
+<li>根的孩子從左到右依序是 <span class="arithmatex">\(B_{k-1},B_{k-2},\dots,B_0\)</span> 的根。</li>
+</ol>
+</div>
+<div class="admonition example">
+<p class="admonition-title">107 Q6(3)（5%）：證明 <span class="arithmatex">\(B_k\)</span> 在深度 i 剛好有 <span class="arithmatex">\(\binom ki\)</span> 個節點</p>
+<p>令 <span class="arithmatex">\(D(k,i)\)</span> 是 <span class="arithmatex">\(B_k\)</span> 在深度 i 的節點數，對 k 做歸納。<span class="arithmatex">\(B_0\)</span>：<span class="arithmatex">\(D(0,0)=1=\binom00\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
+<p><span class="arithmatex">\(B_k\)</span> 由兩棵 <span class="arithmatex">\(B_{k-1}\)</span> 組成：當根的那一棵，深度 i 的節點還在深度 i；接在下面的那一棵，所有節點都往下移一層，它原本深度 <span class="arithmatex">\(i-1\)</span> 的節點現在在深度 i。所以</p>
+<div class="arithmatex">\[D(k,i)=D(k-1,i)+D(k-1,i-1)=\binom{k-1}i+\binom{k-1}{i-1}=\binom ki\]</div>
+<p>最後一步是 Pascal 恆等式（<a href="discrete.html#u1-6">離散 1.6</a>）。∎</p>
+</div>
+<h4 id="binomial-heap">binomial heap</h4>
+<p>一群 binomial tree，滿足兩個性質（103 Q10(2)）：</p>
+<ol>
+<li>每一棵都是 <strong>min-heap</strong>（父親 ≤ 孩子）。</li>
+<li>每種度數<strong>最多一棵</strong>。</li>
+</ol>
+<p>所以 n 個節點的 binomial heap，有哪幾棵樹就看 n 的<strong>二進位</strong>：13 ＝ 1101₂，就是 <span class="arithmatex">\(B_3\)</span>、<span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_0\)</span> 各一棵，最多 <span class="arithmatex">\(\lfloor\lg n\rfloor+1\)</span> 棵。</p>
+<ul>
+<li><strong>合併（union）</strong>：把兩邊的根照度數排好，度數一樣的兩棵就連起來（key 小的當根），像二進位加法的進位。有 <span class="arithmatex">\(n_1\)</span>、<span class="arithmatex">\(n_2\)</span> 個節點時是 <span class="arithmatex">\(O(\lg n)\)</span>，<span class="arithmatex">\(n=n_1+n_2\)</span>（103 Q10(3)）。</li>
+<li><strong>extract-min</strong>：最小值一定在某個根，找出來拿掉；它的孩子（倒過來排）自己形成一個 heap，再跟剩下的 union，<span class="arithmatex">\(O(\lg n)\)</span>。</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">105 Q5(2)（5%）：對下面的 binomial heap 做 extract-min</p>
+<p>原本的 heap（三棵：<span class="arithmatex">\(B_1\)</span>、<span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_4\)</span>）：</p>
+<pre class="highlight"><code class="language-text">head: 40 -&gt; 13 -&gt; 4
+40
+`-- 44
+13
++-- 31
+|   `-- 80
+`-- 16
+4
++-- 9
+|   +-- 11
+|   |   +-- 14
+|   |   |   `-- 30
+|   |   `-- 20
+|   +-- 17
+|   |   `-- 41
+|   `-- 32
++-- 19
+|   +-- 29
+|   |   `-- 45
+|   `-- 26
++-- 15
+|   `-- 21
+`-- 28</code></pre>
+<p><strong>1. 找最小（4）</strong>：最小值一定在根，40、13、4 裡最小是 4。</p>
+<p><strong>2. 拿掉 4</strong>：它的孩子倒過來排，成為新的 heap：28（<span class="arithmatex">\(B_0\)</span>）、15（<span class="arithmatex">\(B_1\)</span>）、19（<span class="arithmatex">\(B_2\)</span>）、9（<span class="arithmatex">\(B_3\)</span>）。</p>
+<p><strong>3. union</strong>：兩邊照度數排在一起：28（<span class="arithmatex">\(B_0\)</span>）、40（<span class="arithmatex">\(B_1\)</span>）、15（<span class="arithmatex">\(B_1\)</span>）、13（<span class="arithmatex">\(B_2\)</span>）、19（<span class="arithmatex">\(B_2\)</span>）、9（<span class="arithmatex">\(B_3\)</span>）。</p>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>度數一樣的</th>
+<th>做什麼</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>40、15（<span class="arithmatex">\(B_1\)</span>）</td>
+<td>15 比較小，40 接到 15 下面</td>
+<td>15 變成 <span class="arithmatex">\(B_2\)</span></td>
+</tr>
+<tr>
+<td>2</td>
+<td>15、13、19（三棵 <span class="arithmatex">\(B_2\)</span>）</td>
+<td>CLRS 的規則：三棵一樣時留下第一棵，連後面兩棵；13 比較小，19 接到 13 下面</td>
+<td>13 變成 <span class="arithmatex">\(B_3\)</span></td>
+</tr>
+<tr>
+<td>3</td>
+<td>13、9（<span class="arithmatex">\(B_3\)</span>）</td>
+<td>9 比較小，13 接到 9 下面</td>
+<td>9 變成 <span class="arithmatex">\(B_4\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>結果</strong>：head: 28 → 15 → 9。</p>
+<pre class="highlight"><code class="language-text">28
+15
++-- 40
+|   `-- 44
+`-- 21
+9
++-- 13
+|   +-- 19
+|   |   +-- 29
+|   |   |   `-- 45
+|   |   `-- 26
+|   +-- 31
+|   |   `-- 80
+|   `-- 16
++-- 11
+|   +-- 14
+|   |   `-- 30
+|   `-- 20
++-- 17
+|   `-- 41
+`-- 32</code></pre>
+<p>驗算：21 個節點 ＝ 1＋4＋16，<span class="arithmatex">\(21=10101_2\)</span>，剛好是 <span class="arithmatex">\(B_0\)</span>、<span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_4\)</span>。用程式照 CLRS 的 union 演算法跑過，結果一樣。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">103 Q10（10%）：binomial heap 是什麼？它的兩個性質？合併 <span class="arithmatex">\(n_1\)</span>、<span class="arithmatex">\(n_2\)</span> 個節點的兩個 heap，最壞要多久？Fibonacci heap 是什麼？</p>
+<ul>
+<li><strong>binomial heap</strong>：一群 binomial tree 組成的 heap，支援快速合併。</li>
+<li><strong>兩個性質</strong>：每棵都是 min-heap；每種度數最多一棵。</li>
+<li><strong>合併</strong>：<span class="arithmatex">\(O(\lg n)\)</span>，<span class="arithmatex">\(n=n_1+n_2\)</span>（每邊最多 <span class="arithmatex">\(\lg n\)</span> 棵樹，照度數走一遍、進位）。</li>
+<li><strong>Fibonacci heap</strong>：見 7.4，一群 min-heap 樹，比 binomial heap 更「懶」，插入、合併、decrease-key 均攤 <span class="arithmatex">\(O(1)\)</span>。</li>
+</ul>
+</div>
+<h3 id="u7-4">7.4 Fibonacci heap</h3>
+<ul>
+<li>一群 min-heap 樹，根串成一條（root list），有一個指標指向最小的根。</li>
+<li><strong>很懶</strong>：插入只是把新節點丟進 root list，合併只是把兩條 root list 接起來，都是 <span class="arithmatex">\(O(1)\)</span>。整理（把度數一樣的樹連起來）留到 extract-min 才做。</li>
+<li>每個節點有一個 <strong>mark</strong>：它當了別人的孩子之後，有沒有失去過孩子。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>binary heap</th>
+<th>binomial heap</th>
+<th>Fibonacci heap（均攤）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>insert</td>
+<td><span class="arithmatex">\(O(\lg n)\)</span></td>
+<td><span class="arithmatex">\(O(\lg n)\)</span></td>
+<td><span class="arithmatex">\(O(1)\)</span></td>
+</tr>
+<tr>
+<td>find-min</td>
+<td><span class="arithmatex">\(O(1)\)</span></td>
+<td><span class="arithmatex">\(O(\lg n)\)</span></td>
+<td><span class="arithmatex">\(O(1)\)</span></td>
+</tr>
+<tr>
+<td>extract-min</td>
+<td><span class="arithmatex">\(O(\lg n)\)</span></td>
+<td><span class="arithmatex">\(O(\lg n)\)</span></td>
+<td><span class="arithmatex">\(O(\lg n)\)</span></td>
+</tr>
+<tr>
+<td>union</td>
+<td><span class="arithmatex">\(O(n)\)</span></td>
+<td><span class="arithmatex">\(O(\lg n)\)</span></td>
+<td><span class="arithmatex">\(O(1)\)</span></td>
+</tr>
+<tr>
+<td>decrease-key</td>
+<td><span class="arithmatex">\(O(\lg n)\)</span></td>
+<td><span class="arithmatex">\(O(\lg n)\)</span></td>
+<td><span class="arithmatex">\(O(1)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Dijkstra、Prim 要做很多次 decrease-key，用 Fibonacci heap 可以做到 <span class="arithmatex">\(O(E+V\lg V)\)</span>。</p>
+<h4 id="decrease-key-root-list">decrease-key：剪下來放到 root list</h4>
+<p>把 x 的 key 改小之後，如果比父親 y 還小（違反 heap 順序）：</p>
+<ol>
+<li><strong>cut</strong>：把 x 從 y 剪下來，放到 root list，x 的 mark 清掉。</li>
+<li><strong>cascading cut</strong>：看 y——y 是根就停；y 沒被 mark → mark 它（記住它失去過一個孩子）；y 已經被 mark → 把 y 也剪到 root list，再對 y 的父親做同樣的事。</li>
+<li>更新最小值的指標。</li>
+</ol>
+<p><strong>為什麼要 mark</strong>：一個節點失去兩個孩子就被剪掉，樹才不會變得太稀疏，度數才能保持 <span class="arithmatex">\(O(\lg n)\)</span>。</p>
+<div class="admonition example">
+<p class="admonition-title">104 Q4(2)（5%）：下面的 Fibonacci heap，先把 48 改成 17，再把 37 改成 7</p>
+<p>原本（root list：9、20、40，最小 9；圖上沒有被 mark 的節點）：</p>
+<pre class="highlight"><code class="language-text">9
++-- 26
+|   +-- 28
+|   |   `-- 37
+|   `-- 48
++-- 19
+|   `-- 32
+`-- 25
+20
++-- 23
+|   `-- 54
+`-- 41
+40
+`-- 43</code></pre>
+<p><strong>48 → 17</strong>：17 比父親 26 小 → 把 17 剪到 root list。26 不是根、還沒被 mark → <strong>mark 26</strong>。</p>
+<p><strong>37 → 7</strong>：7 比父親 28 小 → 把 7 剪到 root list。28 不是根、還沒被 mark → <strong>mark 28</strong>。最小值改成 <strong>7</strong>。</p>
+<p><strong>結果</strong>（root list：9、20、40、17、7，min 指向 7；* 是被 mark 的節點）：</p>
+<pre class="highlight"><code class="language-text">9
++-- 26*
+|   `-- 28*
++-- 19
+|   `-- 32
+`-- 25
+20
++-- 23
+|   `-- 54
+`-- 41
+40
+`-- 43
+17
+7   &lt;- min</code></pre>
+<p>如果題目的 26 原本就被 mark 了，第一步還會再把 26 剪到 root list（cascading cut）。用程式照 CLRS 的演算法跑過。</p>
+</div>
+<h3 id="u7-quiz">單元 7 小考</h3>
+<div class="mcq" data-ans="2">
+<p><strong>7-1.</strong> 紅黑樹裡，一條路徑上可以有兩個紅色節點連在一起嗎？</p>
+<ol>
+<li>可以，只要黑色數量一樣</li>
+<li>不可以，紅色節點的孩子一定是黑色</li>
+<li>只有在根附近可以</li>
+<li>只有葉子可以</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。性質 4：紅色節點的兩個孩子都是黑色。這條規則加上「每條路徑黑色一樣多」，最長路徑才不會超過最短的兩倍。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>7-2.</strong> minimum degree <span class="arithmatex">\(t=4\)</span> 的 B-tree，根以外的節點最少、最多各幾個 key？</p>
+<ol>
+<li>2、4</li>
+<li>4、8</li>
+<li>3、7</li>
+<li>1、7</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。最少 <span class="arithmatex">\(t-1=3\)</span>、最多 <span class="arithmatex">\(2t-1=7\)</span>。根可以只有 1 個 key。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>7-3.</strong> binomial tree <span class="arithmatex">\(B_4\)</span> 在深度 2 有幾個節點？</p>
+<ol>
+<li>6</li>
+<li>4</li>
+<li>8</li>
+<li>2</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A. 6</strong>。深度 i 有 <span class="arithmatex">\(\binom ki\)</span> 個，<span class="arithmatex">\(\binom42=6\)</span>。整棵 <span class="arithmatex">\(B_4\)</span>：1、4、6、4、1，共 16 ＝ <span class="arithmatex">\(2^4\)</span> 個。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>7-4.</strong> 13 個節點的 binomial heap 由哪幾棵 binomial tree 組成？</p>
+<ol>
+<li><span class="arithmatex">\(B_3\)</span>、<span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_1\)</span></li>
+<li><span class="arithmatex">\(B_3\)</span>、<span class="arithmatex">\(B_1\)</span>、<span class="arithmatex">\(B_0\)</span></li>
+<li><span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_0\)</span></li>
+<li><span class="arithmatex">\(B_3\)</span>、<span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_0\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。<span class="arithmatex">\(13=8+4+1=1101_2\)</span>，所以是 <span class="arithmatex">\(B_3\)</span>（8 個）、<span class="arithmatex">\(B_2\)</span>（4 個）、<span class="arithmatex">\(B_0\)</span>（1 個）。每種度數最多一棵，所以 C 不可能。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>7-5.</strong> Fibonacci heap 的哪一個操作，均攤時間<strong>不是</strong> <span class="arithmatex">\(O(1)\)</span>？</p>
+<ol>
+<li>insert</li>
+<li>extract-min</li>
+<li>decrease-key</li>
+<li>union</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。extract-min 要把 root list 上度數一樣的樹連起來整理，均攤 <span class="arithmatex">\(O(\lg n)\)</span>。其他三個都很「懶」，只做常數的工作。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>7-6.</strong> 2-3-4 tree 是 minimum degree 多少的 B-tree？</p>
+<ol>
+<li>4</li>
+<li>3</li>
+<li>2</li>
+<li>1</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 2</strong>。<span class="arithmatex">\(t=2\)</span> 時每個節點 <span class="arithmatex">\(t-1=1\)</span> 到 <span class="arithmatex">\(2t-1=3\)</span> 個 key、2 到 4 個孩子，所以叫 2-3-4 tree。</p>
+</details>
+</div>
+<p><strong>7-7.</strong> 用自己的話說明：為什麼紅黑樹的高度是 <span class="arithmatex">\(O(\log n)\)</span>？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>每條從根到葉子的路徑，黑色節點一樣多（假設是 b 個）；紅色不能連續，所以路徑長度最多 2b。另一方面，黑色有 b 層的樹，光是黑色節點就至少有 <span class="arithmatex">\(2^b-1\)</span> 個（每一層都是滿的），所以 <span class="arithmatex">\(n\ge2^b-1\)</span>，<span class="arithmatex">\(b\le\lg(n+1)\)</span>。高度最多 <span class="arithmatex">\(2b\le2\lg(n+1)\)</span>。</p>
+</details>
+<p><strong>7-8.</strong> B-tree 的 minimum degree 通常設得很大（例如幾百），為什麼？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>一個節點對應磁碟的一頁，t 越大，一個節點放越多 key、分支越多，樹就越矮，找一個 key 要讀的頁數（<span class="arithmatex">\(\log_tn\)</span>）越少。讀磁碟是最慢的部分，在節點裡多比較幾個 key 不算什麼。</p>
 </details>
 
 </section>

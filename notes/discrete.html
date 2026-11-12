@@ -357,9 +357,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   .tbl-stack tr { display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); overflow: hidden; }
   .tbl-stack tr > * { display: grid; grid-template-columns: minmax(4.6em, 30%) minmax(0, 1fr); gap: 4px 10px; align-items: baseline; border: 0; border-top: 1px solid var(--line); padding: 7px 12px; white-space: normal; }
   .tbl-stack tr > :first-child { border-top: 0; background: var(--code); font-weight: 700; }
-  .tbl-stack tr > *::before { content: attr(data-label); font: 700 12.5px/1.6 var(--font-body); color: var(--muted); }
-  .tbl-stack tr > :not([data-label]) { grid-template-columns: minmax(0, 1fr); }
-  .tbl-stack tr > :not([data-label])::before { content: none; }
+  .tbl-stack tr > .nil { display: none; }
+  .tbl-stack .lb { font: 700 12.5px/1.6 var(--font-body); color: var(--muted); }
+  .tbl-stack tr > :not(.has-lb) { grid-template-columns: minmax(0, 1fr); }
 }
 </style>
 <script>
@@ -399,6 +399,7 @@ window.MathJax = {
 <li><a href="#u8">單元 8：有限狀態機</a></li>
 <li><a href="#u9">單元 9：機率與期望值</a></li>
 <li><a href="#u10">單元 10：圖論基礎</a></li>
+<li><a href="#u11">單元 11：群、環、體入門</a></li>
 <li><a href="#mix">綜合小考：混合題型</a></li>
 <li><a href="#res">資源</a></li>
 </ul>
@@ -541,12 +542,48 @@ window.MathJax = {
 <p class="admonition-title">讀這張表的方法</p>
 <ul>
 <li><strong>計數＋生成函數＋遞迴</strong>每年都佔一半以上的分數，這是你的第一優先。</li>
-<li><strong>圖論</strong>：111–115 年只有 115 年的 Ramsey，但 100、101、104、105、106 年都考了證明題（106 年一題 30%），所以補了<a href="#u10">單元 10</a>。群、格、偏序 111–115 年沒有出現（102–107 年考過四年），時間不夠時先放掉。</li>
+<li><strong>圖論</strong>：111–115 年只有 115 年的 Ramsey，但 100、101、104、105、106 年都考了證明題（106 年一題 30%），所以補了<a href="#u10">單元 10</a>。群、環、體 111–115 年沒有出現，但 102、103、104、107 年都考過（107 年一份考卷 40%），補在<a href="#u11">單元 11</a>；偏序只考過名詞解釋，在 <a href="#u7-4">7.4</a>。</li>
 <li>115 年格式大改：10 題簡答只寫答案（每題 7 分），3 題計算要寫過程。116 年很可能延續這個格式，所以<strong>答案正確、算得快</strong>變得更重要。</li>
 </ul>
 </div>
-<p><strong>100–110 年的圖論題</strong>（108、109 留作模考，不列）：100 Q4、Q6，101 Q3、Q4、Q8，104 Q6，105 Q6，106 Q4，全部在<a href="#u10">單元 10</a> 有詳解。</p>
-<p><strong>建議讀的順序</strong>：單元 1 計數 → 2 排容 → 3 生成函數 → 4 遞迴 → 5 數論 → 6 鴿籠 → 7 關係與邏輯 → 8 有限狀態機 → 9 機率 → 10 圖論。前四個單元環環相扣，一定要照順序。</p>
+<p><strong>100–110 年還考過的題型</strong>（108、109 留作模考，不列）：</p>
+<table>
+<thead>
+<tr>
+<th>題型</th>
+<th>年份</th>
+<th>教材</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>圖論（樹、二分圖、平面圖、證明）</td>
+<td>100、101、104、105、106</td>
+<td><a href="#u10">單元 10</a></td>
+</tr>
+<tr>
+<td>群、環、體（生成元、Euler 定理、同構）</td>
+<td>102、103、104、107</td>
+<td><a href="#u11">單元 11</a></td>
+</tr>
+<tr>
+<td>鴿籠的經典構造</td>
+<td>100、101、105、106、110</td>
+<td><a href="#u6-4">6.4</a></td>
+</tr>
+<tr>
+<td>二項式係數的證明</td>
+<td>100、106</td>
+<td><a href="#u1-6">1.6</a></td>
+</tr>
+<tr>
+<td>等價關係與分割</td>
+<td>100、104</td>
+<td><a href="#u7-4">7.4</a></td>
+</tr>
+</tbody>
+</table>
+<p><strong>建議讀的順序</strong>：單元 1 計數 → 2 排容 → 3 生成函數 → 4 遞迴 → 5 數論 → 6 鴿籠 → 7 關係與邏輯 → 8 有限狀態機 → 9 機率 → 10 圖論 → 11 群、環、體。前四個單元環環相扣，一定要照順序。</p>
 
 </section>
 <section class="unit" data-unit="u1">
@@ -1230,6 +1267,123 @@ window.MathJax = {
 </table>
 <p>例：<span class="arithmatex">\(f(2,2)=f(1,2)+f(2,1)+f(1,1)=1+1+1=3\)</span>（右上一步、先右再上、先上再右）。</p>
 </div>
+<h3 id="u1-6">1.6 二項式係數的恆等式與證明</h3>
+<p>100、106 年考了三題證明（100 Q8、106 Q3、106 Q7，每題 10–20%）。題目會說「Show that」或「Give combinatorial explanation」，要寫的是推理過程，不是算出數字。</p>
+<h4 id="_14">兩種證明方法</h4>
+<ol>
+<li><strong>代數證明</strong>：把 <span class="arithmatex">\(\binom nk=\frac{n!}{k!(n-k)!}\)</span> 代進去，通分、化簡。</li>
+<li><strong>組合證明（combinatorial proof）</strong>：講一個「數東西」的故事，<strong>用兩種方法數同一件事</strong>，所以兩邊相等。題目寫 combinatorial explanation 就是要這種。</li>
+</ol>
+<h4 id="pascal-binom-nkbinomn-1kbinomn-1k-1">Pascal 恆等式：<span class="arithmatex">\(\binom nk=\binom{n-1}k+\binom{n-1}{k-1}\)</span></h4>
+<p><strong>組合證明</strong>：從 n 個人裡選 k 個。盯著其中一個人小明：</p>
+<ul>
+<li>小明<strong>沒被選</strong>：從其他 <span class="arithmatex">\(n-1\)</span> 人裡選 k 個 → <span class="arithmatex">\(\binom{n-1}k\)</span></li>
+<li>小明<strong>被選</strong>：從其他 <span class="arithmatex">\(n-1\)</span> 人裡再選 <span class="arithmatex">\(k-1\)</span> 個 → <span class="arithmatex">\(\binom{n-1}{k-1}\)</span></li>
+</ul>
+<p>兩種情況不重疊、合起來是全部，相加就是 <span class="arithmatex">\(\binom nk\)</span>。</p>
+<p><strong>代數證明</strong>：</p>
+<div class="arithmatex">\[\binom{n-1}{k}+\binom{n-1}{k-1}=\frac{(n-1)!}{k!\,(n-1-k)!}+\frac{(n-1)!}{(k-1)!\,(n-k)!}=\frac{(n-1)!}{k!\,(n-k)!}\big[(n-k)+k\big]=\binom nk\]</div>
+<p>這就是 Pascal 三角形「每個數等於左上和右上相加」的原因。</p>
+<h4 id="_15">常用的恆等式和它們的故事</h4>
+<table>
+<thead>
+<tr>
+<th>恆等式</th>
+<th>組合故事</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\binom nk=\binom n{n-k}\)</span></td>
+<td>選 k 個留下 ＝ 選 <span class="arithmatex">\(n-k\)</span> 個淘汰</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\sum_{k=0}^n\binom nk=2^n\)</span></td>
+<td>每個人「選或不選」兩種，共 <span class="arithmatex">\(2^n\)</span> 種子集合</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(k\binom nk=n\binom{n-1}{k-1}\)</span></td>
+<td>選 k 人的委員會再挑一個主席 ＝ 先挑主席，再從其他 <span class="arithmatex">\(n-1\)</span> 人選 <span class="arithmatex">\(k-1\)</span> 個</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\sum_{i=k}^{n}\binom ik=\binom{n+1}{k+1}\)</span>（曲棍球棒）</td>
+<td>從 <span class="arithmatex">\(1,\dots,n+1\)</span> 選 <span class="arithmatex">\(k+1\)</span> 個數，照<strong>最大的那個數</strong>分類</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\binom{m+n}k=\sum_i\binom mi\binom n{k-i}\)</span>（Vandermonde）</td>
+<td>男生 m 人、女生 n 人選 k 人，照男生選幾個分類</td>
+</tr>
+</tbody>
+</table>
+<p>曲棍球棒就是 <a href="#u1-5">1.5</a> 迴圈計數題（114 Q1）背後的公式：<span class="arithmatex">\(\sum_{i=1}^{n}i=\sum_{i=1}^{n}\binom i1=\binom{n+1}2\)</span>。</p>
+<div class="admonition example">
+<p class="admonition-title">106 Q3（10%）：證明 <span class="arithmatex">\(\binom nk=\binom{n-1}k+\binom{n-1}{k-1}\)</span>，並給組合解釋</p>
+<p>寫上面的代數證明，再加上「小明被選、沒被選」的組合解釋。兩個都寫最保險：題目要求 show that 和 combinatorial explanation 兩件事。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">100 Q8、106 Q7（各 20%）：(a) n 是質數時，對所有 <span class="arithmatex">\(1\le i&lt;n\)</span>，n 整除 <span class="arithmatex">\(\binom ni\)</span> (b) n 是合數時，存在 <span class="arithmatex">\(1\le i&lt;n\)</span> 使 n 不整除 <span class="arithmatex">\(\binom ni\)</span></p>
+<p><strong>(a)</strong> 把公式改寫成乘法：</p>
+<div class="arithmatex">\[i!\,(n-i)!\,\binom ni=n!\]</div>
+<p>n 整除右邊的 <span class="arithmatex">\(n!\)</span>。左邊的 <span class="arithmatex">\(i!\)</span> 和 <span class="arithmatex">\((n-i)!\)</span> 裡每個因數都 <span class="arithmatex">\(\le n-1\)</span>（因為 <span class="arithmatex">\(1\le i\le n-1\)</span>），質數 n 不整除其中任何一個，所以 n 不整除 <span class="arithmatex">\(i!\,(n-i)!\)</span>。質數整除一個乘積，就一定整除其中一個因數，所以 n 整除 <span class="arithmatex">\(\binom ni\)</span>。∎</p>
+<p><strong>(b)</strong> 取 n 的一個質因數 p（n 是合數，所以 <span class="arithmatex">\(p&lt;n\)</span>）。設 n 裡剛好有 a 個 p（<span class="arithmatex">\(p^a\mid n\)</span>、<span class="arithmatex">\(p^{a+1}\nmid n\)</span>）。看 <span class="arithmatex">\(i=p\)</span>：</p>
+<div class="arithmatex">\[\binom np=\frac{n(n-1)(n-2)\cdots(n-p+1)}{p!}\]</div>
+<ul>
+<li><strong>分子有幾個 p</strong>：n 有 a 個；<span class="arithmatex">\(n-1,\dots,n-p+1\)</span> 都不是 p 的倍數（n 是 p 的倍數，往下減 1 到 <span class="arithmatex">\(p-1\)</span> 就不是了）。共 a 個。</li>
+<li><strong>分母有幾個 p</strong>：<span class="arithmatex">\(p!\)</span> 裡只有 p 本身，1 個。</li>
+</ul>
+<p>所以 <span class="arithmatex">\(\binom np\)</span> 裡只有 <span class="arithmatex">\(a-1\)</span> 個 p，<span class="arithmatex">\(p^a\nmid\binom np\)</span>，因此 <span class="arithmatex">\(n\nmid\binom np\)</span>。∎</p>
+<p><strong>例子</strong>：<span class="arithmatex">\(n=4\)</span>、<span class="arithmatex">\(p=2\)</span>：<span class="arithmatex">\(\binom42=6\)</span>，4 不整除 6。<span class="arithmatex">\(n=9\)</span>、<span class="arithmatex">\(p=3\)</span>：<span class="arithmatex">\(\binom93=84\)</span>，9 不整除 84。用程式檢查過 4～39 所有合數，取最小的質因數都成立。</p>
+</div>
+<h4 id="_16">觀念小考</h4>
+<div class="mcq" data-ans="1" markdown="1">
+<p><strong>C-1.</strong> <span class="arithmatex">\(\binom93+\binom92\)</span> 等於哪一個？</p>
+<ol>
+<li><span class="arithmatex">\(\binom{10}3\)</span></li>
+<li><span class="arithmatex">\(\binom{10}2\)</span></li>
+<li><span class="arithmatex">\(\binom95\)</span></li>
+<li><span class="arithmatex">\(\binom{18}5\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。Pascal 恆等式 <span class="arithmatex">\(\binom{n-1}k+\binom{n-1}{k-1}=\binom nk\)</span>，<span class="arithmatex">\(n=10\)</span>、<span class="arithmatex">\(k=3\)</span>。數字驗算：<span class="arithmatex">\(84+36=120=\binom{10}3\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-2.</strong> <span class="arithmatex">\(\binom60+\binom61+\cdots+\binom66\)</span> 是多少？</p>
+<ol>
+<li>36</li>
+<li>720</li>
+<li>64</li>
+<li>63</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 64</strong>。6 個人每人選或不選，<span class="arithmatex">\(2^6=64\)</span> 種子集合，就是把選 0 個、1 個……6 個的方法全部加起來。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-3.</strong> 下面哪一個 i 可以說明「8 不整除 <span class="arithmatex">\(\binom8i\)</span>」？</p>
+<ol>
+<li><span class="arithmatex">\(i=1\)</span></li>
+<li><span class="arithmatex">\(i=2\)</span></li>
+<li><span class="arithmatex">\(i=7\)</span></li>
+<li>不存在，8 整除所有 <span class="arithmatex">\(\binom8i\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。照 (b) 的方法取 8 的質因數 <span class="arithmatex">\(p=2\)</span>：<span class="arithmatex">\(\binom82=28\)</span>，8 不整除 28。<span class="arithmatex">\(i=1\)</span>、<span class="arithmatex">\(i=7\)</span> 都是 <span class="arithmatex">\(\binom81=\binom87=8\)</span>，被 8 整除。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用組合證明說明 <span class="arithmatex">\(k\binom nk=n\binom{n-1}{k-1}\)</span>。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>數「從 n 人裡選出 k 人的委員會，再從委員裡指定一位主席」有幾種方法：</p>
+<ul>
+<li><strong>先選委員會再選主席</strong>：<span class="arithmatex">\(\binom nk\)</span> 種委員會，每種有 k 個人可以當主席，共 <span class="arithmatex">\(k\binom nk\)</span>。</li>
+<li><strong>先選主席再補委員</strong>：主席有 n 種選法，再從其他 <span class="arithmatex">\(n-1\)</span> 人選 <span class="arithmatex">\(k-1\)</span> 個委員，共 <span class="arithmatex">\(n\binom{n-1}{k-1}\)</span>。</li>
+</ul>
+<p>兩種方法數的是同一件事，所以相等。∎</p>
+</details>
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> 12 顆相同的球放進 4 個不同的箱子，每箱至少一顆，有幾種放法？</p>
 <details class="quiz">
@@ -1310,7 +1464,7 @@ window.MathJax = {
 <p>「至少一個」「或」「上限限制」這三種字眼，幾乎都是排容。算「不要的」比算「要的」簡單時，就用排容。</p>
 </div>
 <h3 id="u2-0">2.0 觀念課：為什麼「或」要扣掉重疊</h3>
-<h4 id="_14">從一個班級開始</h4>
+<h4 id="_17">從一個班級開始</h4>
 <p>班上 10 人，6 人會英文、5 人會日文、3 人兩種都會。<strong>至少會一種的有幾人？</strong></p>
 <p>直接相加 <span class="arithmatex">\(6+5=11\)</span>，比全班還多，一定哪裡錯了。原因是兩種都會的 3 個人，在「會英文」裡數了一次、在「會日文」裡又數了一次，<strong>被數了兩次</strong>。</p>
 <p>把人分成不重疊的三塊就清楚了：</p>
@@ -1341,7 +1495,7 @@ window.MathJax = {
 </tbody>
 </table>
 <p>也就是 <span class="arithmatex">\(|A\cup B|=|A|+|B|-|A\cap B|=6+5-3=8\)</span>。<strong>加起來，再把重複數的扣掉</strong>，這就是排容原理。</p>
-<h4 id="_15">三個集合時，為什麼最後要加回來</h4>
+<h4 id="_18">三個集合時，為什麼最後要加回來</h4>
 <div class="arithmatex">\[|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|A\cap C|-|B\cap C|+|A\cap B\cap C|\]</div>
 <p>檢查一個人被算了幾次。如果他<strong>剛好屬於 <span class="arithmatex">\(k\)</span> 個集合</strong>：</p>
 <table>
@@ -1379,7 +1533,7 @@ window.MathJax = {
 </tbody>
 </table>
 <p>屬於三個集合的人，加了 3 次又扣了 3 次，變成 0 次，所以最後要<strong>加回 1 次</strong>。不管屬於幾個集合，排容公式都讓每個人剛好被算 1 次。</p>
-<h4 id="_16">「都不是」用補集算</h4>
+<h4 id="_19">「都不是」用補集算</h4>
 <p>「1 到 30 中，<strong>不能</strong>被 2 也不能被 3 整除的有幾個？」</p>
 <p>先算「能被 2 <strong>或</strong> 3 整除」：<span class="arithmatex">\(15+10-5=20\)</span>（同時被 2 和 3 整除＝被 6 整除，有 5 個）。</p>
 <p>所以都不能整除的有 <span class="arithmatex">\(30-20=10\)</span> 個：1、5、7、11、13、17、19、23、25、29 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
@@ -1407,7 +1561,7 @@ window.MathJax = {
 <li><strong>中文文章</strong>：數學傳播〈<a href="https://web.math.sinica.edu.tw/media/pdf/d333/33304.pdf">排容原理</a>〉（張福春、洪偉誠），從來源講到各種應用。</li>
 </ul>
 </div>
-<h4 id="_17">換你試試</h4>
+<h4 id="_20">換你試試</h4>
 <p><strong>T-1.</strong> 1 到 20 中能被 2 或 5 整除的有幾個？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1632,7 +1786,7 @@ window.MathJax = {
 <p>生成函數把「每個變數可以取哪些值」寫成一個多項式，<strong>相乘之後某一項的係數就是答案</strong>。沒有順序用一般生成函數（OGF），有順序（排列、字串）用指數生成函數（EGF）。</p>
 </div>
 <h3 id="u3-0">3.0 觀念課：多項式乘法會自動幫你數</h3>
-<h4 id="_18">從買水果開始</h4>
+<h4 id="_21">從買水果開始</h4>
 <p>蘋果最多拿 2 個，香蕉拿 0 或 1 個。<strong>總共拿 2 個水果</strong>有幾種拿法？</p>
 <p>把每種水果「可以拿幾個」寫成一個多項式，<span class="arithmatex">\(x\)</span> 的次方代表拿幾個：</p>
 <ul>
@@ -1643,7 +1797,7 @@ window.MathJax = {
 <div class="arithmatex">\[(1+x+x^2)(1+x)=1+2x+2x^2+x^3\]</div>
 <p><span class="arithmatex">\(x^2\)</span> 的係數是 2，<strong>就是答案</strong>：(蘋果 2、香蕉 0)、(蘋果 1、香蕉 1)。</p>
 <p>為什麼會這樣？乘開時，每一項都是「蘋果選一項 × 香蕉選一項」，例如 <span class="arithmatex">\(x^1\cdot x^1=x^2\)</span>。<strong>次方相加剛好是總個數</strong>，而次方一樣的項合併時，係數就是「有幾種選法得到這個總數」。多項式乘法把所有組合都列出來、而且自動分類好了。</p>
-<h4 id="_19">沒有上限、有限制時怎麼寫</h4>
+<h4 id="_22">沒有上限、有限制時怎麼寫</h4>
 <table>
 <thead>
 <tr>
@@ -1699,7 +1853,7 @@ window.MathJax = {
 <li><strong>影片</strong>：<a href="https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288">清大趙啟超・離散數學</a> 第 14R–17R 講 Generating Functions。</li>
 </ul>
 </div>
-<h4 id="_20">換你試試</h4>
+<h4 id="_23">換你試試</h4>
 <p><strong>T-1.</strong> 兩種糖，每種最多拿 2 顆，總共拿 2 顆有幾種？寫出生成函數，看 <span class="arithmatex">\(x^2\)</span> 的係數。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1928,7 +2082,7 @@ window.MathJax = {
 <p><strong>建立遞迴</strong>：看「最後一步」有幾種可能。<strong>解遞迴</strong>：特徵方程求根，再用初始值解係數。</p>
 </div>
 <h3 id="u4-0">4.0 觀念課：把大問題拆成小問題</h3>
-<h4 id="_21">從爬樓梯開始</h4>
+<h4 id="_24">從爬樓梯開始</h4>
 <p>每次可以走 1 階或 2 階，爬 4 階有幾種走法？全部列出來：</p>
 <p>1+1+1+1、1+1+2、1+2+1、2+1+1、2+2，共 <strong>5 種</strong>。</p>
 <p>換一個角度：<strong>看最後一步</strong>。</p>
@@ -1965,7 +2119,7 @@ window.MathJax = {
 <li>依「最後一步（或第一步）」分類，每一類對應一個較小的 <span class="arithmatex">\(a_k\)</span>。</li>
 <li>寫初始值，<strong>用小的 <span class="arithmatex">\(n\)</span> 全部列出來驗證</strong>。</li>
 </ol>
-<h4 id="_22">為什麼解遞迴要用特徵方程</h4>
+<h4 id="_25">為什麼解遞迴要用特徵方程</h4>
 <p><span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}\)</span> 這種數列大概是<strong>等比成長</strong>的，所以猜 <span class="arithmatex">\(a_n=r^n\)</span>，代進去：</p>
 <div class="arithmatex">\[r^n=r^{n-1}+r^{n-2}\ \Rightarrow\ r^2=r+1\]</div>
 <p>這就是特徵方程。解出兩個根 <span class="arithmatex">\(r_1,r_2\)</span>，兩個都滿足遞迴；而且遞迴是線性的，所以 <span class="arithmatex">\(Ar_1^n+Br_2^n\)</span> 也滿足。最後用初始值解出 <span class="arithmatex">\(A,B\)</span>。</p>
@@ -1979,7 +2133,7 @@ window.MathJax = {
 <h4 id="n_1">重根時為什麼要乘 <span class="arithmatex">\(n\)</span></h4>
 <p><span class="arithmatex">\(a_n=4a_{n-1}-4a_{n-2}\)</span> 的特徵方程是 <span class="arithmatex">\((r-2)^2=0\)</span>，只有一個根 2。只有 <span class="arithmatex">\(A\cdot2^n\)</span> 一個式子，配不出兩個初始值，需要第二個解。</p>
 <p>試 <span class="arithmatex">\(n\cdot2^n\)</span>：<span class="arithmatex">\(4(n-1)2^{n-1}-4(n-2)2^{n-2}=2^n[2(n-1)-(n-2)]=n\cdot2^n\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>，它也滿足。所以重根時通解是 <span class="arithmatex">\((A+Bn)r^n\)</span>。</p>
-<h4 id="_23">右邊多一項（非齊次）：河內塔</h4>
+<h4 id="_26">右邊多一項（非齊次）：河內塔</h4>
 <p><span class="arithmatex">\(a_n=2a_{n-1}+1\)</span>，<span class="arithmatex">\(a_0=0\)</span>（<span class="arithmatex">\(n\)</span> 個盤子的河內塔步數）。</p>
 <ol>
 <li><strong>先找一個特解</strong>：右邊是常數，猜 <span class="arithmatex">\(a_n=c\)</span>：<span class="arithmatex">\(c=2c+1\)</span>，<span class="arithmatex">\(c=-1\)</span>。</li>
@@ -2001,7 +2155,7 @@ window.MathJax = {
 <li><strong>影片</strong>：<a href="https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288">清大趙啟超・離散數學</a> 第 12R–13R 講 Recurrence Relations。</li>
 </ul>
 </div>
-<h4 id="_24">換你試試</h4>
+<h4 id="_27">換你試試</h4>
 <p><strong>T-1.</strong> 每次可以走 1、2 或 3 階，寫出遞迴與 <span class="arithmatex">\(a_1,a_2,a_3\)</span>，再算 <span class="arithmatex">\(a_4\)</span>。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2241,7 +2395,7 @@ window.MathJax = {
 <p><strong>關鍵事實</strong>：如果 <span class="arithmatex">\(d\)</span> 同時整除 <span class="arithmatex">\(a\)</span> 和 <span class="arithmatex">\(b\)</span>，那 <span class="arithmatex">\(d\)</span> 一定整除 <span class="arithmatex">\(ax+by\)</span>（任何整數 <span class="arithmatex">\(x,y\)</span>）。</p>
 <p>理由：<span class="arithmatex">\(a=dp\)</span>、<span class="arithmatex">\(b=dq\)</span>，所以 <span class="arithmatex">\(ax+by=d(px+qy)\)</span>。</p>
 <p>這給了證明「互質」的標準方法：<strong>湊出 <span class="arithmatex">\(ax+by=1\)</span></strong>。任何公因數都要整除 1，所以只能是 1。</p>
-<h4 id="_25">歐幾里得演算法為什麼對</h4>
+<h4 id="_28">歐幾里得演算法為什麼對</h4>
 <p><span class="arithmatex">\(a\bmod b=a-qb\)</span> 也是 <span class="arithmatex">\(a,b\)</span> 的線性組合，所以 <span class="arithmatex">\((a,b)\)</span> 和 <span class="arithmatex">\((b,a\bmod b)\)</span> 的公因數完全一樣，gcd 也一樣。數字一直變小，最後餘數是 0 時，另一個數就是 gcd。</p>
 <p><span class="arithmatex">\(\gcd(48,18)\)</span>：</p>
 <table>
@@ -2266,7 +2420,7 @@ window.MathJax = {
 </tr>
 </tbody>
 </table>
-<h4 id="_26">往回代：求模反元素</h4>
+<h4 id="_29">往回代：求模反元素</h4>
 <p>求 <span class="arithmatex">\(7^{-1}\bmod10\)</span>，也就是找 <span class="arithmatex">\(x\)</span> 使 <span class="arithmatex">\(7x\equiv1\pmod{10}\)</span>。</p>
 <ol>
 <li>歐幾里得：<span class="arithmatex">\(10=1\times7+3\)</span>、<span class="arithmatex">\(7=2\times3+1\)</span>。</li>
@@ -2274,7 +2428,7 @@ window.MathJax = {
 <li>兩邊 mod 10：<span class="arithmatex">\(3\times7\equiv1\)</span>，所以 <span class="arithmatex">\(7^{-1}\equiv3\)</span>。驗算 <span class="arithmatex">\(21=2\times10+1\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
 </ol>
 <p><strong>往回代的訣竅</strong>：每一步都把「餘數」換成「上一行的被除數 − 商 × 除數」，只保留兩個原始數字。</p>
-<h4 id="_27">同餘：時鐘上的算術</h4>
+<h4 id="_30">同餘：時鐘上的算術</h4>
 <p><span class="arithmatex">\(a\equiv b\pmod n\)</span> 就是「<span class="arithmatex">\(a\)</span> 和 <span class="arithmatex">\(b\)</span> 除以 <span class="arithmatex">\(n\)</span> 餘數一樣」，像時鐘上 13 點和 1 點是同一個位置（mod 12）。</p>
 <ul>
 <li>加、減、乘都可以直接 mod：<span class="arithmatex">\((a\times b)\bmod n=((a\bmod n)\times(b\bmod n))\bmod n\)</span></li>
@@ -2289,7 +2443,7 @@ window.MathJax = {
 <li><strong>中文筆記</strong>：<a href="https://hackmd.io/@LeeShoWhaodian/2024-number-theory">數論（模逆元、費馬小定理、歐幾里得、裴蜀定理）</a>，偏程式競賽，證明寫得完整；<a href="https://hackmd.io/@NTNUCSIE112/DM109-2_3">歐幾里得演算法為什麼正確</a>（師大離散筆記）。</li>
 </ul>
 </div>
-<h4 id="_28">換你試試</h4>
+<h4 id="_31">換你試試</h4>
 <p><strong>T-1.</strong> 用歐幾里得演算法算 <span class="arithmatex">\(\gcd(84,36)\)</span>。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2418,10 +2572,10 @@ window.MathJax = {
 <p>證明「一定存在」的題目，先想：<strong>鴿子是什麼？籠子是什麼？</strong> 鴿子比籠子多，就有兩隻擠在一起。</p>
 </div>
 <h3 id="u6-0">6.0 觀念課：鴿子比籠子多</h3>
-<h4 id="_29">最基本的形式</h4>
+<h4 id="_32">最基本的形式</h4>
 <p>13 個人裡，一定有 2 個人同一個月生日。<strong>鴿子</strong>是人（13 個），<strong>籠子</strong>是月份（12 個），鴿子比籠子多，一定有一個籠子至少 2 隻。</p>
 <p>推廣：25 個人裡，一定有至少 <span class="arithmatex">\(\lceil25/12\rceil=3\)</span> 個人同一個月生日。如果每個月最多 2 人，全部最多 24 人，不夠 25。</p>
-<h4 id="_30">真正的難點：設計籠子</h4>
+<h4 id="_33">真正的難點：設計籠子</h4>
 <p>題目不會告訴你籠子是什麼，要自己找。</p>
 <p>「任選 4 個整數，一定有兩個的差是 3 的倍數。」</p>
 <ul>
@@ -2463,7 +2617,7 @@ window.MathJax = {
 <li><strong>影片</strong>：<a href="https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288">清大趙啟超・離散數學</a> 第 5R 講 Pigeonhole Principle。</li>
 </ul>
 </div>
-<h4 id="_31">換你試試</h4>
+<h4 id="_34">換你試試</h4>
 <p><strong>T-1.</strong> 至少要幾個人，才保證有 2 人同一天生日（一年以 366 天計）？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2512,6 +2666,176 @@ window.MathJax = {
 <li>如果 B、C、D 兩兩都不認識，他們就是互不認識的三人組。∎</li>
 </ul>
 </div>
+<h3 id="u6-4">6.4 鴿籠的經典構造</h3>
+<p>100、101、105、106、110 年一共考了 7 題（每題 10–20%）。鴿籠原理本身很簡單，難的是<strong>想到籠子是什麼</strong>。下面這幾種構造幾乎涵蓋所有考題，直接背起來。</p>
+<table>
+<thead>
+<tr>
+<th>要證明</th>
+<th>鴿子</th>
+<th>籠子</th>
+<th>考過</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>有一段連續的數，和是 k 的倍數</td>
+<td>前綴和 <span class="arithmatex">\(S_0=0,S_1,\dots,S_k\)</span>（k＋1 個）</td>
+<td>除以 k 的餘數（k 種）</td>
+<td>100 Q2、106 Q1</td>
+</tr>
+<tr>
+<td>選夠多個數，一定有一個整除另一個</td>
+<td>選出來的數</td>
+<td><strong>奇數部分</strong>（<span class="arithmatex">\(2^k\cdot m\)</span> 的 m）</td>
+<td>100 Q7(c)、110 Q3</td>
+</tr>
+<tr>
+<td>選夠多個數，一定有兩個加起來是 n＋1</td>
+<td>選出來的數</td>
+<td>配對 {1, n}、{2, n−1}……</td>
+<td>101 Q7</td>
+</tr>
+<tr>
+<td>存在只由 0、1 組成的 n 的倍數</td>
+<td>1、11、111…（n＋1 個）</td>
+<td>除以 n 的餘數（n 種）</td>
+<td>105 Q1</td>
+</tr>
+<tr>
+<td>正方形裡的點，有兩點很近</td>
+<td>點</td>
+<td>切成小正方形</td>
+<td>106 Q5</td>
+</tr>
+<tr>
+<td>一群人裡有兩人朋友數一樣</td>
+<td>人</td>
+<td>朋友數</td>
+<td>101 Q3（見 <a href="#u10-1">10.1</a>）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>一個規律</strong>：要證明「兩個數的差（或和）有某種性質」，籠子通常是<strong>餘數</strong>；把兩個同籠的相減，就得到要的東西。</p>
+<div class="admonition example">
+<p class="admonition-title">100 Q2、106 Q1（各 10%）：整數數列 <span class="arithmatex">\(x_1,\dots,x_n\)</span>。證明對任何 <span class="arithmatex">\(1\le k\le n\)</span>，都有一段連續的子數列，和是 k 的倍數</p>
+<p>令 <span class="arithmatex">\(S_0=0\)</span>、<span class="arithmatex">\(S_j=x_1+x_2+\cdots+x_j\)</span>。<span class="arithmatex">\(S_0,S_1,\dots,S_k\)</span> 共 <span class="arithmatex">\(k+1\)</span> 個（<span class="arithmatex">\(k\le n\)</span>，所以 <span class="arithmatex">\(S_k\)</span> 存在），除以 k 的餘數只有 k 種。由鴿籠，有 <span class="arithmatex">\(i&lt;j\)</span> 使 <span class="arithmatex">\(S_i\equiv S_j\pmod k\)</span>，相減：</p>
+<div class="arithmatex">\[S_j-S_i=x_{i+1}+x_{i+2}+\cdots+x_j\equiv0\pmod k\]</div>
+<p>這段連續的子數列就是答案。∎</p>
+<p><strong>為什麼要加 <span class="arithmatex">\(S_0=0\)</span></strong>：只有 <span class="arithmatex">\(S_1,\dots,S_k\)</span> 的話是 k 個數、k 種餘數，不一定重複。加了 <span class="arithmatex">\(S_0\)</span> 才有 <span class="arithmatex">\(k+1\)</span> 個；而且如果某個 <span class="arithmatex">\(S_j\)</span> 本身就是 k 的倍數，它就跟 <span class="arithmatex">\(S_0\)</span> 同餘，答案是從頭到 <span class="arithmatex">\(x_j\)</span>。</p>
+<p><strong>小例子</strong>：3, 5, 2, 7、<span class="arithmatex">\(k=4\)</span>。前綴和 0, 3, 8, 10, 17，除以 4 的餘數 0, 3, 0, 2, 1。<span class="arithmatex">\(S_0\equiv S_2\)</span>，所以 <span class="arithmatex">\(x_1+x_2=8\)</span> 是 4 的倍數。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">100 Q7(c)（10%）、110 Q3（20%）：選出夠多的數，一定有一個整除另一個</p>
+<p>每個正整數都能寫成 <span class="arithmatex">\(2^k\cdot m\)</span>（m 是奇數），m 叫它的<strong>奇數部分</strong>。兩個數的奇數部分一樣，就只差一個 2 的次方，小的整除大的。</p>
+<ul>
+<li><strong>100 Q7(c)</strong>：<span class="arithmatex">\(1\sim n\)</span> 裡的奇數部分只有 <span class="arithmatex">\(\lfloor\frac{n+1}2\rfloor\)</span> 種（就是 <span class="arithmatex">\(1\sim n\)</span> 裡奇數的個數）。選 <span class="arithmatex">\(\lfloor\frac{n+1}2\rfloor+1\)</span> 個，一定有兩個奇數部分相同。∎</li>
+<li><strong>110 Q3(a)</strong>：<span class="arithmatex">\(1\sim336\)</span> 有 168 個奇數，選 169 個就一定有 <span class="arithmatex">\(x\mid y\)</span>。</li>
+<li><strong>110 Q3(b) 推廣</strong>：從 <span class="arithmatex">\(\{1,2,\dots,2n\}\)</span> 任選 <span class="arithmatex">\(n+1\)</span> 個數，一定有一個整除另一個。而且 n 個不夠：選 <span class="arithmatex">\(n+1,n+2,\dots,2n\)</span>，最小的兩倍已經超過 2n，誰都不整除誰。</li>
+</ul>
+<p>這也是 <a href="#u7-4">7.4</a> 的等價關係：「奇數部分相同」把 <span class="arithmatex">\(1\sim n\)</span> 分成幾類，每一類裡任兩個數都有整除關係。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q7（10%）：<span class="arithmatex">\(S=\{1,\dots,n\}\)</span>。(a) n 是偶數時，任選 <span class="arithmatex">\(\frac n2+1\)</span> 個數，一定有兩個加起來是 <span class="arithmatex">\(n+1\)</span> (b) 一般的 n，要選幾個才保證？</p>
+<p><strong>(a)</strong> 配對 <span class="arithmatex">\(\{1,n\},\{2,n-1\},\dots,\{\frac n2,\frac n2+1\}\)</span>，每對加起來都是 <span class="arithmatex">\(n+1\)</span>，共 <span class="arithmatex">\(\frac n2\)</span> 對（籠子）。選 <span class="arithmatex">\(\frac n2+1\)</span> 個，一定有兩個落在同一對。∎</p>
+<p><strong>(b)</strong> n 是奇數時，中間的 <span class="arithmatex">\(\frac{n+1}2\)</span> 沒有伴（要兩個<strong>不同</strong>的數），自己一個籠子，共 <span class="arithmatex">\(\frac{n-1}2\)</span> 對加 1 個 → <span class="arithmatex">\(\frac{n+1}2\)</span> 個籠子。合起來：</p>
+<div class="arithmatex">\[k=\left\lfloor\frac{n+1}2\right\rfloor+1\]</div>
+<p>而且少一個不行：選 <span class="arithmatex">\(1,2,\dots,\lfloor\frac{n+1}2\rfloor\)</span>，任兩個加起來最多 n，不會是 <span class="arithmatex">\(n+1\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">105 Q1（15 分）：證明對任何正整數 n，都有一個只由 0 和 1 組成的 n 的倍數；用 <span class="arithmatex">\(n=7\)</span>、<span class="arithmatex">\(n=12\)</span> 說明怎麼找</p>
+<p><strong>鴿子</strong>：<span class="arithmatex">\(1, 11, 111,\dots,\underbrace{11\cdots1}_{n+1}\)</span>，共 <span class="arithmatex">\(n+1\)</span> 個。<strong>籠子</strong>：除以 n 的餘數，n 種。有兩個餘數相同，大的減小的 <span class="arithmatex">\(=11\cdots100\cdots0\)</span>，只有 0 和 1，而且是 n 的倍數。∎</p>
+<table>
+<thead>
+<tr>
+<th>幾個 1</th>
+<th>1</th>
+<th>11</th>
+<th>111</th>
+<th>1111</th>
+<th>11111</th>
+<th>111111</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>除以 7 的餘數</td>
+<td>1</td>
+<td>4</td>
+<td>6</td>
+<td>5</td>
+<td>2</td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>除以 12 的餘數</td>
+<td>1</td>
+<td><strong>11</strong></td>
+<td>3</td>
+<td>7</td>
+<td><strong>11</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>n＝7</strong>：111111 的餘數直接是 0，<span class="arithmatex">\(111111=7\times15873\)</span>。</li>
+<li><strong>n＝12</strong>：11 和 11111 的餘數都是 11，<span class="arithmatex">\(11111-11=11100=12\times925\)</span>。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">106 Q5（10 分）：邊長 2 的正方形裡有 5 個點，證明有兩點的距離不超過 <span class="arithmatex">\(\sqrt2\)</span></p>
+<p>把正方形切成 4 個邊長 1 的小正方形（籠子），5 個點（鴿子）裡一定有兩個在同一個小正方形（含邊界）。小正方形裡最遠的兩點是對角，距離 <span class="arithmatex">\(\sqrt{1^2+1^2}=\sqrt2\)</span>。∎</p>
+</div>
+<h4 id="_35">觀念小考</h4>
+<div class="mcq" data-ans="3" markdown="1">
+<p><strong>C-1.</strong> 從 <span class="arithmatex">\(\{1,2,\dots,100\}\)</span> 至少要選幾個數，才保證有一個整除另一個？</p>
+<ol>
+<li>50</li>
+<li>11</li>
+<li>51</li>
+<li>64</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 51</strong>。1～100 有 50 個奇數，奇數部分有 50 種，選 51 個就有兩個奇數部分相同。選 50 個不夠：51～100 這 50 個數誰都不整除誰。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-2.</strong> 從 <span class="arithmatex">\(\{1,2,\dots,9\}\)</span> 至少要選幾個數，才保證有兩個加起來是 10？</p>
+<ol>
+<li>5</li>
+<li>6</li>
+<li>7</li>
+<li>9</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. 6</strong>。籠子：{1,9}、{2,8}、{3,7}、{4,6}、{5}，共 5 個。選 6 個一定有兩個在同一對（5 自己一個籠子，選到它也湊不出 10）。選 5 個不夠，例如 1、2、3、4、5。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> 證明「任選 <span class="arithmatex">\(n+1\)</span> 個整數，一定有兩個的差是 n 的倍數」時，籠子是什麼？</p>
+<ol>
+<li>除以 n 的餘數</li>
+<li>這些數的奇數部分</li>
+<li>數的大小區間</li>
+<li>數的個位數</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。除以 n 的餘數只有 n 種，<span class="arithmatex">\(n+1\)</span> 個數一定有兩個餘數相同，相減就是 n 的倍數。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 證明：任何 5 個整數裡，一定有 3 個的和是 3 的倍數。（提示：看除以 3 的餘數）</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>除以 3 的餘數只有 0、1、2 三種。</p>
+<ul>
+<li><strong>三種餘數都出現</strong>：各挑一個，<span class="arithmatex">\(0+1+2=3\)</span>，和是 3 的倍數。</li>
+<li><strong>最多只出現兩種</strong>：5 個數放進 2 種餘數，由鴿籠，有一種至少 3 個，挑那 3 個，和是 3 × 那個餘數，也是 3 的倍數。∎</li>
+</ul>
+</details>
 <h3 id="u6-quiz">單元 6 小考</h3>
 <p><strong>6-1.</strong> 至少要幾個相異實數，才保證有長度 4 的遞增或遞減子序列？</p>
 <details class="quiz">
@@ -2537,7 +2861,7 @@ window.MathJax = {
 <p>關係計數題就是在數「矩陣裡哪些格子可以自由選」。</p>
 </div>
 <h3 id="u7-0">7.0 觀念課：關係就是一張打勾的表</h3>
-<h4 id="_32">把關係畫成表格</h4>
+<h4 id="_36">把關係畫成表格</h4>
 <p><span class="arithmatex">\(A=\{1,2\}\)</span>。所有有序對是 (1,1)、(1,2)、(2,1)、(2,2)，排成 <span class="arithmatex">\(2\times2\)</span> 的表格。一個「關係」就是在這張表裡<strong>勾選一些格子</strong>。</p>
 <table>
 <thead>
@@ -2561,23 +2885,23 @@ window.MathJax = {
 </tbody>
 </table>
 <p>4 個格子各自可勾可不勾 → 關係共 <span class="arithmatex">\(2^4=16\)</span> 種。<span class="arithmatex">\(|A|=n\)</span> 時有 <span class="arithmatex">\(n^2\)</span> 格，所以有 <span class="arithmatex">\(2^{n^2}\)</span> 種。</p>
-<h4 id="_33">每種性質就是「哪些格子被綁住」</h4>
+<h4 id="_37">每種性質就是「哪些格子被綁住」</h4>
 <ul>
 <li><strong>反身</strong>：對角線 (1,1)、(2,2) 一定要勾 → 只剩 (1,2)、(2,1) 自由 → <span class="arithmatex">\(2^2=4\)</span> 種。</li>
 <li><strong>對稱</strong>：(1,2) 勾了，(2,1) 也一定要勾，兩格綁在一起變成一個選擇 → 自由的是 (1,1)、(2,2)、{(1,2),(2,1)} → <span class="arithmatex">\(2^3=8\)</span> 種。</li>
 <li><strong>反對稱</strong>：(1,2) 和 (2,1) 不能同時勾 → 這一對只有 3 種選法（都不勾、只勾一個、只勾另一個）。</li>
 </ul>
 <p>所以所有關係計數題的做法都一樣：<strong>數「可以自由決定的單位」有幾個、每個單位有幾種選法</strong>，再相乘。</p>
-<h4 id="_34">函數與逆像</h4>
+<h4 id="_38">函數與逆像</h4>
 <p><span class="arithmatex">\(f^{-1}(S)\)</span> 讀作「<strong>哪些元素被送進 <span class="arithmatex">\(S\)</span></strong>」，不是反函數。題目說 <span class="arithmatex">\(f^{-1}(\{4,6\})=\{1,3,7\}\)</span>，意思是：1、3、7 被送到 4 或 6，而且<strong>其他元素都不能</strong>送到 4 或 6。</p>
-<h4 id="_35">二元運算：交換律、結合律</h4>
+<h4 id="_39">二元運算：交換律、結合律</h4>
 <p>把運算想成一張「輸入兩個數、輸出一個數」的表。</p>
 <ul>
 <li><strong>交換律</strong>：<span class="arithmatex">\(f(x,y)=f(y,x)\)</span>，表格沿對角線對稱。</li>
 <li><strong>結合律</strong>：<span class="arithmatex">\(f(f(x,y),z)=f(x,f(y,z))\)</span>。</li>
 </ul>
 <p>判斷「不成立」只要<strong>舉一個反例</strong>；判斷「成立」要<strong>代數展開</strong>證明。先試小的數（0、1、2）找反例最快。</p>
-<h4 id="_36">良序原理和「最小反例」</h4>
+<h4 id="_40">良序原理和「最小反例」</h4>
 <p>良序原理：任何非空的正整數集合都有最小元素。證明題常用：假設有反例，取<strong>最小的反例</strong> <span class="arithmatex">\(m\)</span>，再證明比 <span class="arithmatex">\(m\)</span> 小的某個數也是反例，矛盾。</p>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
@@ -2586,7 +2910,7 @@ window.MathJax = {
 <li><strong>中文筆記</strong>：師大離散〈<a href="https://hackmd.io/@NTNUCSIE112/DM109-2_3">遞迴與數學歸納法</a>〉，弱歸納、強歸納的寫法，可以配 114 Q2「用良序原理證明歸納法」一起看。</li>
 </ul>
 </div>
-<h4 id="_37">換你試試</h4>
+<h4 id="_41">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\(A=\{1,2,3\}\)</span> 上的對稱關係有幾個？反身關係呢？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2764,6 +3088,157 @@ window.MathJax = {
 <p><strong>證明</strong>：假設不是，令 <span class="arithmatex">\(S=\{n\in\mathbb Z^+ : P(n)\text{ 不成立}\}\ne\emptyset\)</span>。由良序原理，<span class="arithmatex">\(S\)</span> 有最小元素 <span class="arithmatex">\(m\)</span>。</p>
 <p><span class="arithmatex">\(P(1)\)</span> 成立，所以 <span class="arithmatex">\(m\ne1\)</span>，<span class="arithmatex">\(m-1\ge1\)</span>。<span class="arithmatex">\(m\)</span> 是最小的反例，所以 <span class="arithmatex">\(P(m-1)\)</span> 成立，再由歸納步驟 <span class="arithmatex">\(P(m)\)</span> 成立，矛盾。∎</p>
 </div>
+<h3 id="u7-4">7.4 等價關係與分割</h3>
+<p>100、104 年考過（一共 30%）：證明一個關係是等價關係、寫出等價類、由分割寫出關係、數等價關係的個數。</p>
+<h4 id="_42">等價關係：把東西分類</h4>
+<p>關係 R（記作 <span class="arithmatex">\(x\sim y\)</span>）滿足三個條件，就是<strong>等價關係</strong>（equivalence relation）：</p>
+<table>
+<thead>
+<tr>
+<th>條件</th>
+<th>意思</th>
+<th>「同一班」的例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>反身（reflexive）</td>
+<td>每個 x 都有 <span class="arithmatex">\(x\sim x\)</span></td>
+<td>自己跟自己同班</td>
+</tr>
+<tr>
+<td>對稱（symmetric）</td>
+<td><span class="arithmatex">\(x\sim y\Rightarrow y\sim x\)</span></td>
+<td>你跟我同班，我就跟你同班</td>
+</tr>
+<tr>
+<td>遞移（transitive）</td>
+<td><span class="arithmatex">\(x\sim y\)</span>、<span class="arithmatex">\(y\sim z\Rightarrow x\sim z\)</span></td>
+<td>你跟我同班、我跟他同班，你就跟他同班</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>等價類</strong>（equivalence class）<span class="arithmatex">\([x]=\{y: y\sim x\}\)</span>：x 所在的那一班。</li>
+<li><strong>等價關係和分割是同一件事</strong>：等價類兩兩不相交、合起來是全部，所以是一個分割（partition）；反過來，給一個分割，「在同一塊」就是等價關係。</li>
+<li><strong>由分割算 <span class="arithmatex">\(|R|\)</span></strong>：同一塊裡任兩個（含自己跟自己、有順序）都有關係，所以 <span class="arithmatex">\(|R|=\sum_i|A_i|^2\)</span>。</li>
+<li><strong>等價關係有幾個 ＝ 分割有幾種 ＝ Bell 數 <span class="arithmatex">\(B_n\)</span></strong>（<a href="#u1-stirling">Stirling 數</a> 那節）：<span class="arithmatex">\(B_1,\dots,B_8=1,2,5,15,52,203,877,4140\)</span>。</li>
+</ul>
+<h4 id="_43">偏序：用來比較大小</h4>
+<p><strong>偏序</strong>（partial order）是<strong>反身、反對稱、遞移</strong>的關係。反對稱：<span class="arithmatex">\(x\preceq y\)</span> 且 <span class="arithmatex">\(y\preceq x\)</span> 就一定 <span class="arithmatex">\(x=y\)</span>。例：數的 ≤、集合的 ⊆、正整數的整除。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>反身</th>
+<th>對稱</th>
+<th>反對稱</th>
+<th>遞移</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>等價關係（分類用）</td>
+<td><svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td><svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td></td>
+<td><svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+</tr>
+<tr>
+<td>偏序（比較用）</td>
+<td><svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td></td>
+<td><svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td><svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition example">
+<p class="admonition-title">100 Q7(a)(b)（10%）：<span class="arithmatex">\(S=\{1,\dots,n\}\)</span>，<span class="arithmatex">\(x\sim y\)</span> 若且唯若 <span class="arithmatex">\(x=2^ky\)</span>（k 是整數，可以是負的）。(a) 證明是等價關係 (b) 寫出 <span class="arithmatex">\(n=20\)</span>、<span class="arithmatex">\(n=25\)</span> 的等價類</p>
+<p><strong>(a)</strong></p>
+<ul>
+<li>反身：<span class="arithmatex">\(x=2^0x\)</span>。</li>
+<li>對稱：<span class="arithmatex">\(x=2^ky\Rightarrow y=2^{-k}x\)</span>。</li>
+<li>遞移：<span class="arithmatex">\(x=2^ky\)</span>、<span class="arithmatex">\(y=2^lz\Rightarrow x=2^{k+l}z\)</span>。∎</li>
+</ul>
+<p><strong>(b)</strong> <span class="arithmatex">\(x\sim y\)</span> 就是「奇數部分相同」（<a href="#u6-4">6.4</a>），每一類用它的奇數來代表。</p>
+<ul>
+<li><strong>n＝20（10 類）</strong>：{1, 2, 4, 8, 16}、{3, 6, 12}、{5, 10, 20}、{7, 14}、{9, 18}、{11}、{13}、{15}、{17}、{19}</li>
+<li><strong>n＝25（13 類）</strong>：{1, 2, 4, 8, 16}、{3, 6, 12, 24}、{5, 10, 20}、{7, 14}、{9, 18}、{11, 22}、{13}、{15}、{17}、{19}、{21}、{23}、{25}</li>
+</ul>
+<p>類的個數 ＝ <span class="arithmatex">\(1\sim n\)</span> 的奇數個數 <span class="arithmatex">\(\lfloor\frac{n+1}2\rfloor\)</span>，(c) 就是用這個當籠子。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q2（20%）：<span class="arithmatex">\(A=\{a,b,c,d,e,f,g,h\}\)</span>，R 是 A 上的等價關係</p>
+<p><strong>(a) R 誘導出分割 <span class="arithmatex">\(\{a\}\cup\{b,c\}\cup\{d,e\}\cup\{f,g,h\}\)</span>，R 是什麼？</strong></p>
+<p><span class="arithmatex">\(R=\{(a,a)\}\cup\{b,c\}^2\cup\{d,e\}^2\cup\{f,g,h\}^2\)</span>，寫出來：</p>
+<p>(a,a)；(b,b)、(b,c)、(c,b)、(c,c)；(d,d)、(d,e)、(e,d)、(e,e)；(f,f)、(f,g)、(f,h)、(g,f)、(g,g)、(g,h)、(h,f)、(h,g)、(h,h)。共 <span class="arithmatex">\(1+4+4+9=18\)</span> 個序對。</p>
+<p><strong>(b) 分割成 <span class="arithmatex">\(A_1,\dots,A_n\)</span> 時，<span class="arithmatex">\(|R|\)</span> ＝ ?</strong> <span class="arithmatex">\(|R|=\sum_{i=1}^{n}|A_i|^2\)</span>。</p>
+<p><strong>(c) 滿足 <span class="arithmatex">\(b\in[h]\)</span> 的等價關係有幾個？（877）</strong> b 和 h 一定要在同一類，把它們黏成一個元素，等於數 7 個元素的分割方法：<span class="arithmatex">\(B_7=877\)</span>。用程式列出 8 個元素的所有分割，確認是 877 個。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q1(a)（3%）：什麼是 partial ordering relation？</p>
+<p>集合 A 上反身、反對稱、遞移的關係 R 叫偏序，<span class="arithmatex">\((A,R)\)</span> 叫偏序集（poset）。例：<span class="arithmatex">\((\mathcal P(S),\subseteq)\)</span>、正整數的整除關係。跟全序不同的地方是，不一定任兩個元素都能比較（例如 {1} 和 {2} 誰也不包含誰）。</p>
+</div>
+<h4 id="_44">觀念小考</h4>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> 整數上的關係「<span class="arithmatex">\(x\sim y\)</span> 若且唯若 <span class="arithmatex">\(x-y\)</span> 是 3 的倍數」有幾個等價類？</p>
+<ol>
+<li>1</li>
+<li>2</li>
+<li>3</li>
+<li>無限多</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 3</strong>。<span class="arithmatex">\(x-y\)</span> 是 3 的倍數 ⇔ 除以 3 的餘數相同，所以分成餘 0、餘 1、餘 2 三類。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-2.</strong> <span class="arithmatex">\(\{1,2,3\}\)</span> 上有幾個不同的等價關係？</p>
+<ol>
+<li>3</li>
+<li>5</li>
+<li>8</li>
+<li>27</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. 5</strong>。等價關係 ＝ 分割：{1}{2}{3}、{1,2}{3}、{1,3}{2}、{2,3}{1}、{1,2,3}，共 <span class="arithmatex">\(B_3=5\)</span> 種。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> 分割 <span class="arithmatex">\(\{1,2\}\cup\{3\}\cup\{4,5,6\}\)</span> 對應的等價關係有幾個序對？</p>
+<ol>
+<li>6</li>
+<li>3</li>
+<li>9</li>
+<li>14</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D. 14</strong>。<span class="arithmatex">\(|R|=2^2+1^2+3^2=4+1+9=14\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-4.</strong> 下面哪一個是偏序，但不是等價關係？</p>
+<ol>
+<li>正整數上的「a 整除 b」</li>
+<li>整數上的「除以 5 的餘數相同」</li>
+<li>人群中的「同姓」</li>
+<li>整數上的「a &lt; b」</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。整除是反身（a 整除 a）、反對稱（a 整除 b、b 整除 a ⇒ a＝b）、遞移，是偏序；但不對稱（2 整除 4，4 不整除 2），不是等價關係。B、C 是等價關係。D 不反身（a &lt; a 不成立），連偏序都不是。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 證明：同一個等價關係的兩個等價類，要嘛完全一樣，要嘛完全不相交。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>假設 <span class="arithmatex">\([x]\)</span> 和 <span class="arithmatex">\([y]\)</span> 有共同元素 z：<span class="arithmatex">\(z\sim x\)</span>、<span class="arithmatex">\(z\sim y\)</span>。對任何 <span class="arithmatex">\(w\in[x]\)</span>：<span class="arithmatex">\(w\sim x\)</span>；由對稱 <span class="arithmatex">\(x\sim z\)</span>；由遞移 <span class="arithmatex">\(w\sim z\)</span>，再由 <span class="arithmatex">\(z\sim y\)</span> 得 <span class="arithmatex">\(w\sim y\)</span>，所以 <span class="arithmatex">\(w\in[y]\)</span>。因此 <span class="arithmatex">\([x]\subseteq[y]\)</span>，同理 <span class="arithmatex">\([y]\subseteq[x]\)</span>，兩個一樣。∎</p>
+<p>所以等價類不是完全一樣就是完全不相交，才能把集合「切成」不重疊的幾塊。</p>
+</details>
 <h3 id="u7-quiz">單元 7 小考</h3>
 <p><strong>7-1.</strong> <span class="arithmatex">\(|A|=4\)</span>：反身關係、對稱關係、反身且對稱的關係各有幾個？</p>
 <details class="quiz">
@@ -2817,7 +3292,7 @@ window.MathJax = {
 <p>狀態代表「到目前為止，<strong>為了判斷未來還需要記住什麼</strong>」。辨識「以某字串結尾」的機器，狀態就是「目前末尾吻合了幾個字元」。</p>
 </div>
 <h3 id="u8-0">8.0 觀念課：機器只記住「需要記的事」</h3>
-<h4 id="_38">比喻：自動販賣機</h4>
+<h4 id="_45">比喻：自動販賣機</h4>
 <p>一瓶飲料 15 元，只收 5 元硬幣。販賣機不需要記住你投了哪幾枚硬幣，只需要記住「<strong>目前投了多少錢</strong>」：0、5、10 元三種狀態。投第三枚時就吐出飲料。</p>
 <p>有限狀態機（FSM）就是這樣：<strong>狀態 ＝ 為了判斷未來，需要記住的資訊</strong>。</p>
 <h4 id="01">做一台辨識「以 01 結尾」的機器</h4>
@@ -2892,7 +3367,7 @@ window.MathJax = {
 <li><strong>中文筆記</strong>：〈<a href="https://shihlonchen.gitbooks.io/automata/content/dfa.html">DFA 確定有限自動機</a>〉：轉移表的寫法。</li>
 </ul>
 </div>
-<h4 id="_39">換你試試</h4>
+<h4 id="_46">換你試試</h4>
 <p><strong>T-1.</strong> 畫出辨識「以 11 結尾」的 FSM（輸入、輸出都是 {0,1}）。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3004,7 +3479,7 @@ window.MathJax = {
 <p>離散的機率題就是「好的個數 ÷ 全部個數」，難的是分子，分子用前面的計數和生成函數算。</p>
 </div>
 <h3 id="u9-0">9.0 觀念課：機率就是兩次計數</h3>
-<h4 id="_40">機率 ＝ 好的情況 ÷ 全部情況</h4>
+<h4 id="_47">機率 ＝ 好的情況 ÷ 全部情況</h4>
 <p>前提是每種情況<strong>一樣可能</strong>。擲兩顆骰子，總和是 7 的機率：</p>
 <ul>
 <li>全部情況：<span class="arithmatex">\((\text{第一顆},\text{第二顆})\)</span> 共 <span class="arithmatex">\(6\times6=36\)</span> 種，每種機率相同。</li>
@@ -3012,10 +3487,10 @@ window.MathJax = {
 <li>機率 <span class="arithmatex">\(\frac{6}{36}=\frac16\)</span>。</li>
 </ul>
 <p><strong>為什麼兩顆骰子長得一樣，還要分「第一顆」「第二顆」？</strong> 因為 (3,4) 和 (4,3) 是兩種不同的結果，各有 <span class="arithmatex">\(\frac1{36}\)</span> 的機率。如果把它們當成同一種，各種情況就不再一樣可能，機率會算錯。所以機率題的分母，通常用「有順序、東西都不同」的方式數。</p>
-<h4 id="_41">期望值：加權平均</h4>
+<h4 id="_48">期望值：加權平均</h4>
 <p>擲一顆骰子的期望值 <span class="arithmatex">\(=\frac{1+2+3+4+5+6}{6}=3.5\)</span>。</p>
 <p><strong>線性</strong>：<span class="arithmatex">\(E[X+Y]=E[X]+E[Y]\)</span>，就算 <span class="arithmatex">\(X\)</span>、<span class="arithmatex">\(Y\)</span> 不獨立也成立。擲兩顆骰子總和的期望值直接是 <span class="arithmatex">\(3.5+3.5=7\)</span>。</p>
-<h4 id="_42">賭徒破產：用遞迴算期望值</h4>
+<h4 id="_49">賭徒破產：用遞迴算期望值</h4>
 <p>一共 <span class="arithmatex">\(N\)</span> 元，你有 <span class="arithmatex">\(k\)</span> 元，每局公平地贏 1 元或輸 1 元，到 0 或 <span class="arithmatex">\(N\)</span> 停止。令 <span class="arithmatex">\(E_k\)</span> 為還要玩幾局的期望值：</p>
 <div class="arithmatex">\[E_k=1+\frac12E_{k-1}+\frac12E_{k+1},\quad E_0=E_N=0\]</div>
 <p>意思是：先玩 1 局，之後一半機會變成 <span class="arithmatex">\(k-1\)</span> 元、一半變成 <span class="arithmatex">\(k+1\)</span> 元。</p>
@@ -3032,7 +3507,7 @@ window.MathJax = {
 <li><strong>英文課本</strong>：<a href="https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-spring-2015/">MIT 6.042J</a> 的機率章節（免費 PDF）。</li>
 </ul>
 </div>
-<h4 id="_43">換你試試</h4>
+<h4 id="_50">換你試試</h4>
 <p><strong>T-1.</strong> 擲兩顆骰子，總和是 8 的機率？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3094,7 +3569,7 @@ window.MathJax = {
 <p>111–115 年幾乎沒考圖論，但 100、101、104、105、106 年都有（106 年一題 30%），而且<strong>幾乎都是證明題</strong>。先背熟名詞、握手定理、Euler 公式，再學三種證明套路：看最長的路徑、數度數、反證法。</p>
 </div>
 <h3 id="u10-0">10.0 觀念課：點和線</h3>
-<h4 id="_44">基本名詞</h4>
+<h4 id="_51">基本名詞</h4>
 <table>
 <thead>
 <tr>
@@ -3181,7 +3656,7 @@ window.MathJax = {
 </tbody>
 </table>
 <p><strong>補圖（complement）<span class="arithmatex">\(\bar G\)</span></strong>：同樣的點，原本沒有邊的地方畫上邊、原本有邊的拿掉。所以 <span class="arithmatex">\(|E(G)|+|E(\bar G)|=\binom n2\)</span>。</p>
-<h4 id="_45">握手定理：度數加起來是邊數的兩倍</h4>
+<h4 id="_52">握手定理：度數加起來是邊數的兩倍</h4>
 <div class="arithmatex">\[\sum_{v\in V}\deg(v)=2|E|\]</div>
 <p><strong>為什麼</strong>：一群人握手，每握一次手，兩個人各算一次。每條邊有兩個端點，算度數時被兩端各算一次。</p>
 <p><strong>推論：度數是奇數的點一定有偶數個</strong>。度數總和是偶數，奇數要成對出現加起來才會是偶數。</p>
@@ -3191,14 +3666,14 @@ window.MathJax = {
 <li><strong>連通、沒有環、n−1 條邊</strong>：三個條件任兩個成立，第三個就成立。</li>
 <li>任兩點之間<strong>剛好一條</strong>路徑；拿掉任何一條邊就不連通；加上任何一條邊就有環。</li>
 </ul>
-<h4 id="_46">證明的三種套路</h4>
+<h4 id="_53">證明的三種套路</h4>
 <ol>
 <li><strong>看最長的路徑</strong>：最長路徑的端點，鄰居一定都在這條路徑上，不然路徑還可以再延長。（100 Q6、101 Q4）</li>
 <li><strong>數度數</strong>：握手定理加上不等式。（100 Q6 的第二種證法）</li>
 <li><strong>反證法</strong>：假設不連通（或兩個都是平面圖），算出矛盾。（104 Q6、100 Q4）</li>
 </ol>
 <p>鴿籠也常出現：度數的可能值比點數少，就有兩點度數一樣（101 Q3）。</p>
-<h4 id="_47">換你試試</h4>
+<h4 id="_54">換你試試</h4>
 <p><strong>T-1.</strong> 一個圖有 5 個點，度數分別是 3、3、2、2、1，畫得出來嗎？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3381,6 +3856,356 @@ window.MathJax = {
 <details class="quiz">
 <summary>看參考答案</summary>
 <p><span class="arithmatex">\(K_{3,3}\)</span> 有 6 個點、9 條邊。<span class="arithmatex">\(3v-6=12\ge9\)</span>，沒有超過，<strong>判斷不出來</strong>（這個條件只是必要條件）。但 <span class="arithmatex">\(K_{3,3}\)</span> 是二分圖，沒有三角形，每個面至少被 4 條邊圍住，可以用比較嚴格的 <span class="arithmatex">\(e\le2v-4=8\)</span>。<span class="arithmatex">\(9&gt;8\)</span>，所以不是平面圖。</p>
+</details>
+
+</section>
+<section class="unit" data-unit="u11">
+<h2 id="u11">單元 11：群、環、體入門</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>102、103、104、107 年都考過（107 年一份考卷 40%），111–115 年沒考。題目幾乎都繞著同幾個東西：<span class="arithmatex">\(\mathbb Z_n\)</span> 的加法、<span class="arithmatex">\(\mathbb Z_n^*\)</span> 的乘法、生成元、元素的 order、Euler 函數 <span class="arithmatex">\(\varphi\)</span>、Euler 定理。這些搞懂，大部分分數就拿得到。</p>
+</div>
+<h3 id="u11-0">11.0 觀念課：時鐘上的加法</h3>
+<h4 id="group">群（group）：一個集合加上一種運算</h4>
+<p>時鐘是最好的例子：11 點再過 3 小時是 2 點，也就是 <span class="arithmatex">\(11+3=14\equiv2\pmod{12}\)</span>。<span class="arithmatex">\(\{0,1,\dots,11\}\)</span> 配上「加完除以 12 取餘數」，就是 <span class="arithmatex">\((\mathbb Z_{12},+)\)</span>。</p>
+<p>一個集合 G 和運算 <span class="arithmatex">\(*\)</span> 要滿足四個條件，才叫<strong>群</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>條件</th>
+<th>意思</th>
+<th>時鐘的例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>封閉（closure）</td>
+<td>算出來還在 G 裡</td>
+<td>加完取餘數，還是 0～11</td>
+</tr>
+<tr>
+<td>結合律（associative）</td>
+<td><span class="arithmatex">\((a*b)*c=a*(b*c)\)</span></td>
+<td>加法本來就有</td>
+</tr>
+<tr>
+<td>單位元素（identity）e</td>
+<td><span class="arithmatex">\(a*e=e*a=a\)</span></td>
+<td>0：過 0 小時不變</td>
+</tr>
+<tr>
+<td>反元素（inverse）</td>
+<td>每個 a 都有 <span class="arithmatex">\(a^{-1}\)</span>，<span class="arithmatex">\(a*a^{-1}=e\)</span></td>
+<td>5 的反元素是 7：<span class="arithmatex">\(5+7\equiv0\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>再加上<strong>交換律</strong>（<span class="arithmatex">\(a*b=b*a\)</span>），叫<strong>交換群</strong>（commutative group，又叫 abelian group）。</p>
+<h4 id="_55">兩個最常考的群</h4>
+<table>
+<thead>
+<tr>
+<th>群</th>
+<th>元素</th>
+<th>運算</th>
+<th>單位元素</th>
+<th>a 的反元素</th>
+<th>有幾個元素</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\((\mathbb Z_n,+)\)</span></td>
+<td><span class="arithmatex">\(0,1,\dots,n-1\)</span></td>
+<td>加完 mod n</td>
+<td>0</td>
+<td><span class="arithmatex">\(n-a\)</span>（a＝0 時是 0）</td>
+<td>n</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\((\mathbb Z_n^*,\times)\)</span></td>
+<td>1～n−1 中<strong>跟 n 互質</strong>的</td>
+<td>乘完 mod n</td>
+<td>1</td>
+<td>模反元素（<a href="#u5-2">5.2</a> 用歐幾里得算）</td>
+<td><span class="arithmatex">\(\varphi(n)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>為什麼乘法只留互質的</strong>：<span class="arithmatex">\(\mathbb Z_6\)</span> 裡的 2，乘任何數 mod 6 都是偶數，永遠得不到 1，沒有反元素。跟 n 互質的數才有模反元素，所以 <span class="arithmatex">\(\mathbb Z_n^*\)</span> 只收它們。n 是質數 p 時，1～p−1 全部都跟 p 互質，<span class="arithmatex">\(\mathbb Z_p^*=\{1,\dots,p-1\}\)</span>。</p>
+<h4 id="euler-varphin1n-n">Euler 函數 <span class="arithmatex">\(\varphi(n)\)</span>：1～n 裡跟 n 互質的有幾個</h4>
+<ul>
+<li>質數：<span class="arithmatex">\(\varphi(p)=p-1\)</span></li>
+<li>質數的次方：<span class="arithmatex">\(\varphi(p^k)=p^k-p^{k-1}\)</span>（扣掉 p 的倍數）</li>
+<li>互質的兩數相乘：<span class="arithmatex">\(\varphi(mn)=\varphi(m)\varphi(n)\)</span></li>
+</ul>
+<p>合起來：<span class="arithmatex">\(\varphi(n)=n\prod_{p\mid n}\left(1-\frac1p\right)\)</span>。例：<span class="arithmatex">\(\varphi(8)=4\)</span>（1、3、5、7）；<span class="arithmatex">\(\varphi(196)=196\cdot\frac12\cdot\frac67=84\)</span>；<span class="arithmatex">\(\varphi(385)=\varphi(5)\varphi(7)\varphi(11)=4\cdot6\cdot10=240\)</span>。</p>
+<h4 id="order-generator">元素的 order 和生成元（generator）</h4>
+<ul>
+<li><strong>a 的 order</strong>：最小的 <span class="arithmatex">\(k\ge1\)</span> 使得 a 自己運算 k 次回到單位元素。加法裡就是 <span class="arithmatex">\(ka\equiv0\)</span>；乘法裡就是 <span class="arithmatex">\(a^k\equiv1\)</span>。</li>
+<li>在 <span class="arithmatex">\((\mathbb Z_n,+)\)</span> 裡，<strong>a 的 order ＝ <span class="arithmatex">\(\frac{n}{\gcd(a,n)}\)</span></strong>。例：<span class="arithmatex">\(\mathbb Z_8\)</span> 裡的 6：6、12≡4、18≡2、24≡0，order 是 4 ＝ <span class="arithmatex">\(\frac{8}{\gcd(6,8)}\)</span>。</li>
+<li><strong>生成元</strong>：一直運算下去能得到群裡<strong>每一個</strong>元素，也就是 order 等於群的大小。有生成元的群叫<strong>循環群</strong>（cyclic group）。</li>
+<li><span class="arithmatex">\((\mathbb Z_n,+)\)</span> 裡，a 是生成元 ⇔ <span class="arithmatex">\(\gcd(a,n)=1\)</span>，所以有 <span class="arithmatex">\(\varphi(n)\)</span> 個生成元。<strong>任何 n 個元素的循環群都有 <span class="arithmatex">\(\varphi(n)\)</span> 個生成元。</strong></li>
+<li><span class="arithmatex">\(\mathbb Z_p^*\)</span>（p 是質數）一定是循環群，它的生成元叫<strong>原根</strong>（primitive root），要一個一個試：例如 <span class="arithmatex">\(\mathbb Z_5^*\)</span> 裡 2 的次方是 2、4、3、1，全部都有，所以 2 是生成元。</li>
+</ul>
+<h4 id="lagrange-euler">Lagrange 定理與 Euler 定理</h4>
+<ul>
+<li><strong>子群</strong>（subgroup）H：G 的子集合，自己也是一個群。</li>
+<li><strong>陪集</strong>（coset）：<span class="arithmatex">\(aH=\{a*h: h\in H\}\)</span>（左陪集）。例：<span class="arithmatex">\(G=\mathbb Z_8\)</span>、<span class="arithmatex">\(H=\{0,4\}\)</span>，陪集是 <span class="arithmatex">\(\{0,4\}\)</span>、<span class="arithmatex">\(\{1,5\}\)</span>、<span class="arithmatex">\(\{2,6\}\)</span>、<span class="arithmatex">\(\{3,7\}\)</span>。</li>
+<li>陪集把 G <strong>切成大小一樣的幾塊</strong>（每塊都有 <span class="arithmatex">\(|H|\)</span> 個），所以 <strong><span class="arithmatex">\(|H|\)</span> 整除 <span class="arithmatex">\(|G|\)</span></strong>，這就是 <strong>Lagrange 定理</strong>。元素 a 能生成一個大小 ＝ order(a) 的子群，所以 <strong>order(a) 整除 <span class="arithmatex">\(|G|\)</span></strong>。</li>
+<li>套到 <span class="arithmatex">\(\mathbb Z_n^*\)</span>（大小 <span class="arithmatex">\(\varphi(n)\)</span>）：<strong>Euler 定理</strong> <span class="arithmatex">\(\gcd(a,n)=1\Rightarrow a^{\varphi(n)}\equiv1\pmod n\)</span>。n 是質數時就是 Fermat 小定理（<a href="#u5-3">5.3</a>）。</li>
+</ul>
+<p><strong>算很大的次方 <span class="arithmatex">\(a^e\bmod n\)</span></strong>：</p>
+<ol>
+<li>先把 a 換成 <span class="arithmatex">\(a\bmod n\)</span>。</li>
+<li>如果 <span class="arithmatex">\(\gcd(a,n)=1\)</span>，把 e 換成 <span class="arithmatex">\(e\bmod\varphi(n)\)</span>。</li>
+<li>剩下的用<strong>重複平方</strong>：算 <span class="arithmatex">\(a^2, a^4, a^8,\dots\)</span>，再把 e 拆成 2 的次方相加。</li>
+</ol>
+<h4 id="_56">同態與同構</h4>
+<ul>
+<li><strong>同態</strong>（homomorphism）<span class="arithmatex">\(f:G\to H\)</span>：<span class="arithmatex">\(f(a*b)=f(a)\circ f(b)\)</span>，運算的結果先算再對應、先對應再算都一樣。所以 <span class="arithmatex">\(f(e_G)=e_H\)</span>、<span class="arithmatex">\(f(a^k)=f(a)^k\)</span>。</li>
+<li><strong>同構</strong>（isomorphism）：一對一而且映成的同態。兩個群同構，就是「同一個群換了名字」。</li>
+</ul>
+<h4 id="_57">環與體</h4>
+<ul>
+<li><strong>環</strong>（ring）<span class="arithmatex">\((R,+,\cdot)\)</span>：<span class="arithmatex">\((R,+)\)</span> 是交換群，乘法有結合律，而且有分配律。例：整數 <span class="arithmatex">\(\mathbb Z\)</span>、<span class="arithmatex">\(\mathbb Z_n\)</span>。</li>
+<li><strong>整環</strong>（integral domain）：有乘法單位 1 的交換環，而且<strong>沒有零因子</strong>（<span class="arithmatex">\(ab=0\)</span> 就一定 <span class="arithmatex">\(a=0\)</span> 或 <span class="arithmatex">\(b=0\)</span>）。<span class="arithmatex">\(\mathbb Z_6\)</span> 不是：<span class="arithmatex">\(2\cdot3=0\)</span>。</li>
+<li><strong>體</strong>（field）：每個不是 0 的元素都有乘法反元素。例：有理數 <span class="arithmatex">\(\mathbb Q\)</span>、<span class="arithmatex">\(\mathbb Z_p\)</span>（p 是質數）。<span class="arithmatex">\(\mathbb Z\)</span> 是整環但不是體（2 沒有整數的倒數）。</li>
+</ul>
+<h4 id="_58">換你試試</h4>
+<p><strong>T-1.</strong> <span class="arithmatex">\((\mathbb Z_{12},+)\)</span> 的生成元有哪些？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>跟 12 互質的：<strong>1、5、7、11</strong>，共 <span class="arithmatex">\(\varphi(12)=4\)</span> 個。例如 5：5、10、3、8、1、6、11、4、9、2、7、0，全部都有。</p>
+</details>
+<p><strong>T-2.</strong> 在 <span class="arithmatex">\(\mathbb Z_7^*\)</span> 裡，3 的反元素是多少？3 的 order 是多少？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(3\times5=15\equiv1\)</span>，反元素是 <strong>5</strong>。3 的次方：3、2、6、4、5、1，第 6 次才回到 1，order 是 <strong>6</strong>（等於 <span class="arithmatex">\(|\mathbb Z_7^*|\)</span>），所以 3 是 <span class="arithmatex">\(\mathbb Z_7^*\)</span> 的生成元。</p>
+</details>
+<h3 id="u11-1">11.1 考古題</h3>
+<div class="admonition example">
+<p class="admonition-title">102 Q8（11%）：(a) <span class="arithmatex">\((\mathbb Z_8,+)\)</span> 的所有生成元 (b) <span class="arithmatex">\((\mathbb Z_5-\{0\},\times)\)</span> 的所有生成元 (c) n 個元素的循環群有幾個生成元？</p>
+<ul>
+<li><strong>(a)（1、3、5、7）</strong>：<span class="arithmatex">\((\mathbb Z_n,+)\)</span> 裡 a 是生成元 ⇔ <span class="arithmatex">\(\gcd(a,8)=1\)</span>。例如 3：3、6、1、4、7、2、5、0。</li>
+<li><strong>(b)（2、3）</strong>：一個一個算次方。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>a</th>
+<th>次方（mod 5）</th>
+<th>order</th>
+<th>生成元？</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>否</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2、4、3、1</td>
+<td>4</td>
+<td><strong>是</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>3、4、2、1</td>
+<td>4</td>
+<td><strong>是</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td>4、1</td>
+<td>2</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>(c)（<span class="arithmatex">\(\varphi(n)\)</span> 個）</strong>：設 <span class="arithmatex">\(G=\langle g\rangle\)</span>。<span class="arithmatex">\(g^k\)</span> 的 order 是 <span class="arithmatex">\(\frac{n}{\gcd(k,n)}\)</span>，等於 n ⇔ <span class="arithmatex">\(\gcd(k,n)=1\)</span>。<span class="arithmatex">\(0\le k&lt;n\)</span> 裡跟 n 互質的有 <span class="arithmatex">\(\varphi(n)\)</span> 個。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">107 Q4、Q5（各 10%）：<span class="arithmatex">\((\mathbb Z_8,+)\)</span> 中 6 的 order、所有生成元；<span class="arithmatex">\((\mathbb Z_{196}^*,\cdot)\)</span> 的大小、25 的反元素</p>
+<ul>
+<li><strong>Q4(a) 6 的 order（4）</strong>：6、12≡4、18≡2、24≡0，加 4 次才回到 0；也可以用 <span class="arithmatex">\(\frac{8}{\gcd(6,8)}=4\)</span>。</li>
+<li><strong>Q4(b) 生成元（1、3、5、7）</strong>：同 102 Q8(a)。</li>
+<li><strong>Q5(a) 大小（84）</strong>：<span class="arithmatex">\(|\mathbb Z_{196}^*|=\varphi(196)\)</span>。<span class="arithmatex">\(196=2^2\cdot7^2\)</span>，<span class="arithmatex">\(\varphi(196)=(4-2)(49-7)=2\cdot42=84\)</span>。</li>
+<li>
+<p><strong>Q5(b) 25 的反元素（149）</strong>：用歐幾里得演算法：</p>
+<p><span class="arithmatex">\(196=7\cdot25+21\)</span>，<span class="arithmatex">\(25=1\cdot21+4\)</span>，<span class="arithmatex">\(21=5\cdot4+1\)</span>。</p>
+<p>倒回去：<span class="arithmatex">\(1=21-5\cdot4=21-5(25-21)=6\cdot21-5\cdot25=6(196-7\cdot25)-5\cdot25=6\cdot196-47\cdot25\)</span>。</p>
+<p>所以 <span class="arithmatex">\(25\cdot(-47)\equiv1\)</span>，反元素是 <span class="arithmatex">\(-47+196=149\)</span>。驗算：<span class="arithmatex">\(25\times149=3725=19\times196+1\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
+</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">103 Q7（10%）：算 <span class="arithmatex">\(w=995^{1010}\bmod97\)</span>、<span class="arithmatex">\(x=3866^{2402}\bmod385\)</span>、<span class="arithmatex">\(y=(w-x)\bmod17\)</span>，輸出 (w, x, y)</p>
+<p><strong>w（43）</strong>：97 是質數，<span class="arithmatex">\(995\equiv25\pmod{97}\)</span>。Fermat：<span class="arithmatex">\(25^{96}\equiv1\)</span>，<span class="arithmatex">\(1010=96\times10+50\)</span>，所以只要算 <span class="arithmatex">\(25^{50}\)</span>。重複平方（mod 97）：</p>
+<table>
+<thead>
+<tr>
+<th>次方</th>
+<th><span class="arithmatex">\(25^1\)</span></th>
+<th><span class="arithmatex">\(25^2\)</span></th>
+<th><span class="arithmatex">\(25^4\)</span></th>
+<th><span class="arithmatex">\(25^8\)</span></th>
+<th><span class="arithmatex">\(25^{16}\)</span></th>
+<th><span class="arithmatex">\(25^{32}\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>值</td>
+<td>25</td>
+<td>625≡43</td>
+<td>43²≡6</td>
+<td>36</td>
+<td>1296≡35</td>
+<td>35²≡61</td>
+</tr>
+</tbody>
+</table>
+<p><span class="arithmatex">\(50=32+16+2\)</span>：<span class="arithmatex">\(25^{50}\equiv61\times35\times43\)</span>。<span class="arithmatex">\(61\times35=2135=22\times97+1\equiv1\)</span>，所以 <span class="arithmatex">\(w=43\)</span>。</p>
+<p><strong>x（256）</strong>：<span class="arithmatex">\(385=5\cdot7\cdot11\)</span>，<span class="arithmatex">\(3866\equiv16\pmod{385}\)</span>，<span class="arithmatex">\(\gcd(16,385)=1\)</span>。<span class="arithmatex">\(\varphi(385)=240\)</span>，<span class="arithmatex">\(2402=240\times10+2\)</span>，所以 <span class="arithmatex">\(x=16^2=256\)</span>。</p>
+<p><strong>y（8）</strong>：<span class="arithmatex">\(43-256=-213=-13\times17+8\)</span>，<span class="arithmatex">\(y=8\)</span>。</p>
+<p><strong>答案 (w, x, y) ＝ (43, 256, 8)</strong>。用程式直接算大次方驗算過。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">103 Q8（20%）：p、q 是相異質數，<span class="arithmatex">\(n=pq\)</span>。在 <span class="arithmatex">\(\mathbb Z_p^*\times\mathbb Z_q^*\)</span> 上定義 <span class="arithmatex">\((u_1,v_1)*(u_2,v_2)=(u_1u_2\bmod p,\ v_1v_2\bmod q)\)</span>。(a) 證明它是交換群 (b) 證明它和 <span class="arithmatex">\((\mathbb Z_n^*,\times)\)</span> 同構</p>
+<p><strong>(a)</strong> 每個分量各自在 <span class="arithmatex">\(\mathbb Z_p^*\)</span>、<span class="arithmatex">\(\mathbb Z_q^*\)</span> 裡運算，所以：</p>
+<ul>
+<li>封閉：兩個跟 p 互質的數相乘還是跟 p 互質（q 同理）。</li>
+<li>結合律、交換律：整數乘法本來就有，取餘數不影響。</li>
+<li>單位元素 <span class="arithmatex">\((1,1)\)</span>；反元素 <span class="arithmatex">\((u^{-1}\bmod p,\ v^{-1}\bmod q)\)</span>，模反元素存在因為 u 跟 p 互質。∎</li>
+</ul>
+<p><strong>(b)</strong> 令 <span class="arithmatex">\(f:\mathbb Z_n^*\to\mathbb Z_p^*\times\mathbb Z_q^*\)</span>，<span class="arithmatex">\(f(a)=(a\bmod p,\ a\bmod q)\)</span>。</p>
+<ol>
+<li><strong>對應得過去</strong>：<span class="arithmatex">\(\gcd(a,n)=1\)</span>，所以 p、q 都不整除 a，<span class="arithmatex">\(a\bmod p\in\mathbb Z_p^*\)</span>、<span class="arithmatex">\(a\bmod q\in\mathbb Z_q^*\)</span>。</li>
+<li><strong>同態</strong>：<span class="arithmatex">\(f(ab\bmod n)=(ab\bmod p,\ ab\bmod q)=f(a)*f(b)\)</span>（p 整除 n，先 mod n 再 mod p 跟直接 mod p 一樣）。</li>
+<li><strong>一對一</strong>：<span class="arithmatex">\(f(a)=f(b)\)</span> ⇒ <span class="arithmatex">\(p\mid a-b\)</span> 且 <span class="arithmatex">\(q\mid a-b\)</span> ⇒ <span class="arithmatex">\(pq\mid a-b\)</span>（p、q 是相異質數）⇒ 在 <span class="arithmatex">\(\mathbb Z_n\)</span> 裡 <span class="arithmatex">\(a=b\)</span>。</li>
+<li><strong>映成</strong>：兩邊一樣大，<span class="arithmatex">\(|\mathbb Z_n^*|=\varphi(pq)=(p-1)(q-1)=|\mathbb Z_p^*|\cdot|\mathbb Z_q^*|\)</span>，有限集合之間一對一就是映成。</li>
+</ol>
+<p>所以 f 是同構。∎ 這就是<strong>中國剩餘定理</strong>：知道一個數除以 p、除以 q 的餘數，就能唯一決定它除以 pq 的餘數。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">107 Q6（20%）：<span class="arithmatex">\((\mathbb Z\times\mathbb Z,\oplus)\)</span>，<span class="arithmatex">\((a,b)\oplus(c,d)=(a+c+2,\ b+d-2)\)</span>。(a) <span class="arithmatex">\(3(4,5)\)</span> (b) 單位元素 (c) <span class="arithmatex">\((a,b)\)</span> 的反元素 (d) 同態 h 滿足 <span class="arithmatex">\(h(3,2)=u\)</span>、<span class="arithmatex">\(h(-2,6)=v\)</span>，用 u、v 表示 <span class="arithmatex">\(h(18,22)\)</span></p>
+<ul>
+<li><strong>(a)（16, 11）</strong>：<span class="arithmatex">\((4,5)\oplus(4,5)=(10,8)\)</span>，再 <span class="arithmatex">\(\oplus(4,5)=(16,11)\)</span>。</li>
+<li><strong>(b)（−2, 2）</strong>：要 <span class="arithmatex">\((a+e_1+2,\ b+e_2-2)=(a,b)\)</span>，得 <span class="arithmatex">\(e_1=-2\)</span>、<span class="arithmatex">\(e_2=2\)</span>。</li>
+<li><strong>(c)（−a−4, 4−b）</strong>：要 <span class="arithmatex">\((a+c+2,\ b+d-2)=(-2,2)\)</span>，得 <span class="arithmatex">\(c=-a-4\)</span>、<span class="arithmatex">\(d=4-b\)</span>。</li>
+<li>
+<p><strong>(d)（4u＋5v）</strong>：<strong>換座標</strong>讓 ⊕ 變成普通的加法：令 <span class="arithmatex">\(\phi(a,b)=(a+2,\ b-2)\)</span>，則 <span class="arithmatex">\(\phi((a,b)\oplus(c,d))=(a+c+4,\ b+d-4)=\phi(a,b)+\phi(c,d)\)</span>。</p>
+<p><span class="arithmatex">\(\phi(3,2)=(5,0)\)</span>、<span class="arithmatex">\(\phi(-2,6)=(0,4)\)</span>、<span class="arithmatex">\(\phi(18,22)=(20,20)=4\cdot(5,0)+5\cdot(0,4)\)</span>。</p>
+<p>所以 <span class="arithmatex">\((18,22)=4(3,2)\oplus5(-2,6)\)</span>。同態保持運算：<span class="arithmatex">\(h(18,22)=4u+5v\)</span>（G 是加法群，<span class="arithmatex">\(h(4(3,2))=4h(3,2)=4u\)</span>）。</p>
+<p><strong>驗算</strong>：<span class="arithmatex">\(4(3,2)=(18,2)\)</span>、<span class="arithmatex">\(5(-2,6)=(-2,22)\)</span>，<span class="arithmatex">\((18,2)\oplus(-2,22)=(18-2+2,\ 2+22-2)=(18,22)\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
+</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">102 Q9（10%）：找加密函數 <span class="arithmatex">\(E:\{1,\dots,26\}\to\mathbb Z\)</span>，對所有 <span class="arithmatex">\(m_1,m_2\)</span> 都有 <span class="arithmatex">\(E(m_1)+E(m_2)=E(m_1+m_2)\)</span>；也找出解密函數</p>
+<p>E 要保持加法（同態），所以 <span class="arithmatex">\(E(m)=E(1+1+\cdots+1)=m\cdot E(1)\)</span>，一定是 <span class="arithmatex">\(E(m)=km\)</span> 的形式。</p>
+<ul>
+<li><strong>直接在整數上</strong>：取任何 <span class="arithmatex">\(k\ne0\)</span>，例如 <span class="arithmatex">\(E(m)=3m\)</span>，解密 <span class="arithmatex">\(D(c)=c/3\)</span>。</li>
+<li><strong>把 26 個字母當成 <span class="arithmatex">\(\mathbb Z_{26}\)</span></strong>（<span class="arithmatex">\(m_1+m_2\)</span> 超過 26 時取餘數，比較符合加密的用法）：<span class="arithmatex">\(E(m)=km\bmod26\)</span>，k 必須跟 26 互質才解得回來。例如 <span class="arithmatex">\(k=3\)</span>：<span class="arithmatex">\(3\times9=27\equiv1\)</span>，解密 <span class="arithmatex">\(D(c)=9c\bmod26\)</span>。</li>
+</ul>
+<p>答案寫出一組 E、D，並說明 k 為什麼要跟 26 互質（k 有模反元素才能解密）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q1(c)（4%）：什麼是左陪集（left coset）？</p>
+<p>H 是群 G 的子群、<span class="arithmatex">\(a\in G\)</span>，<strong>左陪集</strong> <span class="arithmatex">\(aH=\{a*h: h\in H\}\)</span>。同一個 H 的左陪集兩兩<strong>不是完全一樣就是完全不相交</strong>，而且大小都是 <span class="arithmatex">\(|H|\)</span>，所以它們把 G 分成大小相同的幾塊（Lagrange 定理的證明就靠這個）。例：<span class="arithmatex">\(\mathbb Z_8\)</span>、<span class="arithmatex">\(H=\{0,4\}\)</span>：<span class="arithmatex">\(1+H=\{1,5\}\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q7（10%）：證明有限的整環一定是體</p>
+<p>D 是有限整環，取任何 <span class="arithmatex">\(a\ne0\)</span>，要找到 a 的乘法反元素。</p>
+<p>看函數 <span class="arithmatex">\(f(x)=ax\)</span>（<span class="arithmatex">\(x\in D\)</span>）：</p>
+<ul>
+<li><strong>一對一</strong>：<span class="arithmatex">\(ax=ay\)</span> ⇒ <span class="arithmatex">\(a(x-y)=0\)</span>。整環沒有零因子、<span class="arithmatex">\(a\ne0\)</span>，所以 <span class="arithmatex">\(x-y=0\)</span>，<span class="arithmatex">\(x=y\)</span>。</li>
+<li><strong>D 是有限集合</strong>，一對一的 <span class="arithmatex">\(f:D\to D\)</span> 一定是映成。所以存在 x 使得 <span class="arithmatex">\(ax=1\)</span>，x 就是 a 的反元素。</li>
+</ul>
+<p>每個不是 0 的元素都有反元素，D 是體。∎ 推論：<span class="arithmatex">\(\mathbb Z_p\)</span>（p 是質數）沒有零因子，又是有限的，所以是體。</p>
+</div>
+<h3 id="u11-quiz">單元 11 小考</h3>
+<div class="mcq" data-ans="2" markdown="1">
+<p><strong>11-1.</strong> <span class="arithmatex">\((\mathbb Z_{10},+)\)</span> 的生成元是？</p>
+<ol>
+<li>1、2、5</li>
+<li>1、3、7、9</li>
+<li>只有 1</li>
+<li>2、4、6、8</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。a 是生成元 ⇔ <span class="arithmatex">\(\gcd(a,10)=1\)</span>，共 <span class="arithmatex">\(\varphi(10)=4\)</span> 個。2 不行：2、4、6、8、0，永遠是偶數。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>11-2.</strong> <span class="arithmatex">\(\varphi(36)\)</span> 是多少？</p>
+<ol>
+<li>6</li>
+<li>18</li>
+<li>12</li>
+<li>24</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 12</strong>。<span class="arithmatex">\(36=2^2\cdot3^2\)</span>，<span class="arithmatex">\(\varphi(36)=36\cdot\frac12\cdot\frac23=12\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>11-3.</strong> <span class="arithmatex">\(3^{100}\bmod7\)</span> 是多少？</p>
+<ol>
+<li>1</li>
+<li>3</li>
+<li>2</li>
+<li>4</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D. 4</strong>。Fermat：<span class="arithmatex">\(3^6\equiv1\pmod7\)</span>。<span class="arithmatex">\(100=6\times16+4\)</span>，所以 <span class="arithmatex">\(3^{100}\equiv3^4=81=11\times7+4\equiv4\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>11-4.</strong> <span class="arithmatex">\(\mathbb Z_6\)</span> 為什麼不是體？</p>
+<ol>
+<li><span class="arithmatex">\(2\cdot3\equiv0\)</span>，2 和 3 是零因子，沒有乘法反元素</li>
+<li><span class="arithmatex">\(\mathbb Z_6\)</span> 沒有加法反元素</li>
+<li><span class="arithmatex">\(\mathbb Z_6\)</span> 是無限集合</li>
+<li><span class="arithmatex">\(\mathbb Z_6\)</span> 的乘法沒有交換律</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。體裡不是 0 的元素都要有乘法反元素。如果 2 有反元素 b，<span class="arithmatex">\(3=3\cdot(2b)=(3\cdot2)b=0\)</span>，矛盾。有零因子就不可能是體（也不是整環）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>11-5.</strong> 在 <span class="arithmatex">\(\mathbb Z_7^*\)</span> 裡，2 的 order 是多少？</p>
+<ol>
+<li>6</li>
+<li>3</li>
+<li>2</li>
+<li>7</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. 3</strong>。2、4、8≡1，第 3 次就回到 1。3 整除 <span class="arithmatex">\(|\mathbb Z_7^*|=6\)</span>，符合 Lagrange 定理。2 不是生成元，3 和 5 才是。</p>
+</details>
+</div>
+<p><strong>11-6.</strong> 證明：在 <span class="arithmatex">\((\mathbb Z_n,+)\)</span> 中，a 是生成元若且唯若 <span class="arithmatex">\(\gcd(a,n)=1\)</span>。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>a 能生成全部 ⇔ 1 在 a 的倍數裡 ⇔ 存在 k 使 <span class="arithmatex">\(ka\equiv1\pmod n\)</span> ⇔ a 在 mod n 下有反元素 ⇔ <span class="arithmatex">\(\gcd(a,n)=1\)</span>（<a href="#u5-2">5.2</a>：<span class="arithmatex">\(ka+tn=1\)</span> 有整數解若且唯若 <span class="arithmatex">\(\gcd(a,n)=1\)</span>）。</p>
+<p>反過來，能得到 1，就能得到 <span class="arithmatex">\(1+1+\cdots\)</span> 也就是每一個元素，所以是生成元。∎</p>
+</details>
+<p><strong>11-7.</strong> 用 Euler 定理算 <span class="arithmatex">\(7^{222}\bmod10\)</span>。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><span class="arithmatex">\(\gcd(7,10)=1\)</span>，<span class="arithmatex">\(\varphi(10)=4\)</span>，<span class="arithmatex">\(7^4\equiv1\)</span>。<span class="arithmatex">\(222=4\times55+2\)</span>，所以 <span class="arithmatex">\(7^{222}\equiv7^2=49\equiv\)</span> <strong>9</strong>。</p>
 </details>
 
 </section>

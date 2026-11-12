@@ -27,7 +27,13 @@
 | 平行、GPU、VLIW／superscalar／array、記憶體一致性 | — | Q5 | Q1, Q2 | Q6 | Q1 | ★★ |
 | ISA 與算術（RISC、PC-relative、二補數、浮點） | P5 | — | — | — | Q3, Q4 | ★ |
 
-**100–110 年還常考**（108、109 留作模考，不列）：**單週期／多週期 datapath 與控制訊號**，100、101、102、103、106 年都有，在 [4.3](#u4-dp)。
+**100–110 年還常考的題型**（108、109 留作模考，不列）：
+
+| 題型 | 年份 | 教材 |
+|---|---|---|
+| 單週期／多週期 datapath、控制訊號 | 100、101、102、103、106 | [4.3](#u4-dp) |
+| 多處理器（cache coherence、互連網路、平行加總） | 101、106、107、110 | [8.4](#u8-mp) |
+| 動態排程與多發（Tomasulo、SIMT、superpipeline） | 100、105、107 | [8.5](#u8-ooo) |
 
 **建議讀的順序**：單元 1 效能 → 2 cache → 3 虛擬記憶體 → 4 pipeline（不熟 datapath 先讀 4.3）→ 5 分支 → 6 多執行緒 → 7 DRAM → 8 平行 → 9 ISA 與算術。前五個單元是每年必考的核心。
 
@@ -1796,6 +1802,305 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
     | {0,1,0} | P2.1 → P2.2 → P1.1 → P1.2 → P3.1 → P3.2 |
     | {1,0,0} | P1.1 → P1.2 → P3.1 → P3.2 → P2.1 → P2.2 |
     | {0,0,1} | P3.1 → P3.2 → P2.1 → P2.2 → P1.1 → P1.2 |
+
+### 8.4 多處理器：cache coherence、UMA／NUMA、互連網路 {#u8-mp}
+
+101、106、107、110 年考過：平行加總的程式要怎麼同步、多顆 CPU 的 cache 怎麼保持一致、上百顆處理器要怎麼連。
+
+#### 共用記憶體的多處理器
+
+**shared-memory multiprocessor**：所有處理器共用**同一個實體位址空間**，用一般的 load、store 溝通。依存取記憶體的時間分成兩種：
+
+| | UMA（uniform memory access） | NUMA（nonuniform memory access） |
+|---|---|---|
+| 存取時間 | 每顆處理器存取任何位址**一樣快** | 存取**自己附近**的記憶體快，別人那邊的慢 |
+| 位址空間 | 共用一個 | 也是共用一個 |
+| 規模 | 小（例如一條 bus 接幾顆） | 可以很大 |
+
+所以「UMA 的所有處理器使用同一個位址空間」是**對**的（106 Q1.5），不過共用位址空間不是 UMA 獨有的，UMA 的重點是**存取時間一樣**。另一種做法是 **message passing**（叢集）：每台各有自己的記憶體，用 send、receive 傳資料。
+
+#### cache coherence：每顆 CPU 都有自己的 cache
+
+P1、P2 都把 X ＝ 0 讀進自己的 cache。P1 把 X 改成 1（write-back，只改自己的 cache），P2 再讀 X，還是讀到自己 cache 裡的 0，兩邊不一致。
+
+| 時間 | 事件 | P1 的 cache | P2 的 cache | 記憶體 |
+|---|---|---|---|---|
+| 1 | P1 讀 X | 0 | | 0 |
+| 2 | P2 讀 X | 0 | 0 | 0 |
+| 3 | P1 寫 X ＝ 1 | 1 | 0 | 0 |
+| 4 | P2 讀 X | 1 | **0（舊的）** | 0 |
+
+**snoopy protocol**：所有 cache 都接在同一條 bus 上，每個 cache controller 都**偷聽（snoop）** bus 上的動作。最常用的是 **write-invalidate**：
+
+- 要寫一個 block 之前，先在 bus 上廣播「我要寫 X」（invalidate 或 write miss）。
+- 其他 cache 聽到了，**把自己的 X 設成 invalid**。
+- 之後它們再讀 X 就會 miss，拿到新的值。
+
+**MSI 三個狀態**：
+
+| 狀態 | 意思 |
+|---|---|
+| M（Modified） | 只有我有，而且改過（記憶體裡是舊的） |
+| S（Shared） | 可能好幾個 cache 都有，跟記憶體一樣，只能讀 |
+| I（Invalid） | 這一格沒用 |
+
+- 自己讀 miss → bus 上發 read miss → 拿到資料變 S（別人是 M 的話，要先寫回、變成 S）。
+- 自己要寫 → bus 上發 invalidate／write miss → 變 M，其他人的變 I。
+
+處理器很多、沒有共用的 bus 時，改用 **directory**：每個 block 記錄哪些 cache 有它，要寫時只通知那幾個。
+
+**coherence miss（第 4 種 miss）**：因為別的處理器寫了這個 block，我的被 invalidate，下次讀才 miss。只有多處理器才有。兩顆 CPU 寫同一個 block 裡**不同的字**也會互相 invalidate，叫 **false sharing**。
+
+#### 互連網路：上百顆處理器怎麼連
+
+N 顆處理器：
+
+| 拓撲 | 線路數 | 最遠要走幾步 | 優點 | 缺點 |
+|---|---|---|---|---|
+| bus | 1 條共用 | 1 | 簡單、便宜，snoopy 很好做 | 一次只能一個人用，處理器一多就塞車，不能擴充 |
+| ring | N | N/2 | 便宜 | 距離長 |
+| 2D mesh（$\sqrt N\times\sqrt N$） | 約 2N | $2(\sqrt N-1)$ | 線路數跟 N 成正比，容易擴充 | 遠的兩點要走很多步，延遲不一樣 |
+| 全連接（point-to-point） | $\frac{N(N-1)}2$ | 1 | 最快 | 線路數 $N^2$ 成長，太貴 |
+| crossbar | $N^2$ 個開關 | 1 | 任兩對可以同時傳 | 成本 $N^2$ |
+
+!!! example "107 Q5（10%）：要連接 625 顆處理器，考慮 bus、point-to-point、25×25 mesh，各說一個缺點；你會選哪一個？"
+    - **(i) 單一 bus**：625 顆處理器共用一條 bus，一次只能一個傳，頻寬被平分，嚴重塞車；電氣負載也太大。
+    - **(ii) point-to-point（全連接）**：要 $\frac{625\times624}2=195{,}000$ 條線，每顆處理器要 624 個埠，成本和佈線都不可行。
+    - **(iii) 25×25 mesh**：最遠的兩顆要走 $2\times(25-1)=48$ 步，延遲長，而且不同位置的延遲不一樣。
+    - **選 mesh**：線路數只跟處理器數成正比，可以擴充，頻寬也隨處理器數增加；延遲的問題可以靠資料擺放、讓常溝通的處理器靠近一點來改善。
+
+#### 平行加總：要先同步再讀
+
+!!! example "101 Q7（15%）：10 顆處理器加總 100,000 個數，再用下面的程式把 10 個部分和加起來。Pn 是處理器編號，half 是每顆處理器自己的變數"
+    ```c
+    half = 10;
+    repeat
+        synch();          /* 等大家的部分和都算完 */
+        if (half % 2 != 0 && Pn == 0)
+            sum[0] = sum[0] + sum[half-1];
+        half = half / 2;
+        if (Pn < half) sum[Pn] = sum[Pn] + sum[Pn+half];
+    until (half == 1);
+    ```
+
+    **為什麼要 synch()**：P0 要讀 sum[5] 之前，P5 必須已經寫好 sum[5]，不然讀到舊的值。synch() 是一道柵欄（barrier），所有處理器都到了才一起往下走。
+
+    | 第幾輪 | 開始時 half | half 是奇數？ | half 變成 | 做加法的 |
+    |---|---|---|---|---|
+    | 1 | 10 | 否 | 5 | P0～P4：sum[Pn] ＝ sum[Pn] ＋ sum[Pn＋5] |
+    | 2 | 5 | 是：P0 先加 sum[4] | 2 | P0、P1：sum[Pn] ＝ sum[Pn] ＋ sum[Pn＋2] |
+    | 3 | 2 | 否 | 1 | P0：sum[0] ＝ sum[0] ＋ sum[1] |
+
+    **表格的答案**：
+
+    - **Pn＝2 第一輪**：sum[2] ＝ sum[2] ＋ sum[7]
+    - **Pn＝2 第二輪**：NOP（half 變成 2，$2<2$ 不成立）
+    - **Pn＝0 第三輪**：sum[0] ＝ sum[0] ＋ sum[1]
+
+    **為什麼要處理奇數**：第二輪 half ＝ 5，5 個部分和兩兩相加會剩一個（sum[4]）沒人加，所以讓 P0 先把它加進 sum[0]。驗算：最後 sum[0] 包含 sum[0]～sum[9] 全部，每個剛好一次。
+
+#### 觀念小考
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-1.** 用 write-invalidate 的 snoopy protocol 時，P2 在 bus 上聽到「P1 要寫 X」（write miss），而 P2 的 cache 裡有 X，P2 要做什麼？（110 Q1.3）
+
+1. 把自己的 X 設成 invalid
+2. 把自己的 X 更新成新的值
+3. 不用理它
+4. 也送一個 write miss 到 bus 上
+
+??? quiz "看解析"
+    **A**。write-invalidate：別人要寫，我的那份就作廢，之後要用再重新讀。聽到別人的 **read** miss 則不用 invalidate（大家都只是讀，可以共用）；B 是 write-update 協定的做法。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-2.** 關於 cache miss，下面哪一個正確？（110 Q1.4）
+
+1. compulsory miss 表示 cache 裝不下程式需要的所有 block
+2. coherence miss 只會發生在多處理器（多核心）系統
+3. block 越大，miss rate 一定越低
+4. 提高 associativity 能減少 compulsory miss
+
+??? quiz "看解析"
+    **B**。coherence miss 是別的處理器寫入造成我的 block 被 invalidate，單處理器不會發生。A 說的是 capacity miss；C 錯在 block 太大時 block 數太少，miss rate 反而上升；D 錯在 associativity 減少的是 conflict miss，compulsory miss 是第一次用到，怎樣都會 miss。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-3.** 16 顆處理器用全連接（每兩顆之間一條線），需要幾條線？
+
+1. 16
+2. 32
+3. 120
+4. 256
+
+??? quiz "看解析"
+    **C**。$\binom{16}2=\frac{16\times15}2=120$。處理器加倍，線路大約變 4 倍，所以全連接不能擴充。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** UMA 和 NUMA 最主要的差別是？
+
+1. UMA 有 cache，NUMA 沒有
+2. UMA 共用位址空間，NUMA 不共用
+3. NUMA 一定比較快
+4. UMA 存取任何位址時間都一樣，NUMA 存取近的記憶體比較快
+
+??? quiz "看解析"
+    **D**。兩種都共用一個位址空間（B 錯）。NUMA 把記憶體分散到各處理器旁邊，近的快、遠的慢，所以能做得很大，但程式要注意資料擺在哪裡。
+
+</div>
+
+**W-1.** 為什麼處理器很多時，snoopy protocol 不好用，要改用 directory？
+
+??? quiz "看參考答案"
+    snoopy 靠 bus 廣播，每一次寫入都要讓**所有** cache 聽到。處理器一多，bus 的頻寬不夠、也很難做出能接上百顆的 bus。directory 記錄每個 block 在哪些 cache 裡，寫的時候只通知那幾個，不用廣播，可以用 mesh 這類可擴充的網路傳訊息。
+
+### 8.5 動態排程：Tomasulo、亂序執行與多發 {#u8-ooo}
+
+100、105、107 年考過：Tomasulo 要幾個比較器、tag 幾位元；SIMD、SIMT、VLIW、superscalar、superpipeline 各是什麼；loop unrolling 為什麼能變快。
+
+#### 為什麼要亂序執行
+
+in-order 的 pipeline 只要有一條指令卡住（例如 lw cache miss 要等 100 個 cycle），後面**不相干**的指令也全部跟著等。亂序執行（out-of-order）的想法是：**運算元一準備好就執行**，不照程式順序。
+
+#### 三種相依：只有一種是真的
+
+| 名稱 | 例子 | 真的要等嗎 | 怎麼解 |
+|---|---|---|---|
+| RAW（read after write，true dependence） | `add r1,r2,r3` → `sub r4,r1,r5` | **要**：sub 需要 add 算出來的值 | forwarding、等值算好 |
+| WAR（write after read，anti-dependence） | `sub r4,r1,r5` → `add r1,r2,r3` | 不用：只是暫存器的名字撞到 | register renaming |
+| WAW（write after write，output dependence） | `add r1,...` → `mul r1,...` | 不用：同上 | register renaming |
+
+**register renaming**：每次寫一個暫存器，就給它一個新的實體名字（tag）。名字不再撞在一起，WAR、WAW 就消失了，只剩下真正的 RAW。
+
+#### Tomasulo 演算法
+
+| 元件 | 做什麼 |
+|---|---|
+| reservation station（RS） | 每個功能單元前面的等待區。指令在這裡等運算元：值已經有了就存值，還沒有就存 **tag**（哪一個 RS 會算出這個值） |
+| register alias table（RAT） | 每個暫存器記「它最新的值由哪一個 RS 產生」（tag），或是值已經好了 |
+| common data bus（CDB） | 功能單元算完，在 bus 上**廣播（tag, 值）**；每個 RS 拿自己在等的 tag 去比，一樣就把值抓進來（wake-up） |
+| reorder buffer（ROB） | 執行可以亂序，但**照程式順序 commit**，才能做精確例外、分支猜錯時回復（[單元 8 小考 8-1](#u8-quiz)） |
+
+!!! example "107 Q6（15%）：Tomasulo；8 個功能單元，每個有自己的 tag＋資料廣播 bus；32 個 64 位元的架構暫存器；每個功能單元 16 個 RS entry；每個 entry 有兩個來源運算元"
+    - **6.1 每個 RS entry 幾個 tag 比較器（16）**：每個來源運算元都要跟 **8 條**廣播 bus 上的 tag 比，兩個來源：$2\times8=16$。
+    - **6.2 整台機器幾個比較器（2048）**：RS entry 共 $8\times16=128$ 個，$128\times16=2048$。
+    - **6.3 tag 最少幾位元（7）**：tag 要能指出是哪一個 RS entry 會產生結果，共 128 個，$\lg128=7$。
+    - **6.4 RAT（前端暫存器檔）最少幾位元（2304）**：每個暫存器存值 64 位元、tag 7 位元、「值是否已經好了」的 valid 1 位元：$32\times(64+7+1)=2304$。
+    - **6.5 整台機器的 tag 儲存最少幾位元（2016）**：RAT 每個暫存器 1 個 tag，每個 RS entry 2 個來源 tag：$7\times(32+2\times128)=7\times288=2016$。
+
+    這題的風格跟 Onur Mutlu（CMU、ETH）計算機結構課的考題一樣，他的考古題有附詳解，可以找同類題練習（見[資源](#res)）。
+
+#### 多發（multiple issue）：一個 cycle 發好幾條指令
+
+| | 誰決定哪幾條一起發 | 例子 |
+|---|---|---|
+| **static multiple issue** | **編譯器**事先排好，包成一條很長的指令 | VLIW（[8.2](#u8-2)） |
+| **dynamic multiple issue** | **硬體**在執行時判斷 | superscalar |
+
+- **superpipeline**：把 pipeline 切得更細、級數更多，每級更短，時脈更快。代價是分支猜錯、hazard 要丟掉或等待的級數更多（[5.1](#u5-1) 的 penalty 會變大）。superscalar 是「變寬」，superpipeline 是「變深」。
+- **SIMD**（single instruction multiple data）：**一條指令**同時對一整排資料做同一個運算。例：Intel 的 SSE、AVX，ARM 的 NEON，一條指令做 8 個浮點加法。
+- **SIMT**（single instruction multiple threads）：GPU（例如 NVIDIA CUDA）的做法。一群 thread（NVIDIA 叫 **warp**，32 個）執行同一條指令，但每個 thread 有自己的暫存器，寫起來像一般的 thread 程式。遇到 if 分岔（divergence）時，走不同路的 thread 要輪流執行，效率下降。
+
+!!! example "105 Q1（20%）：SIMD、SIMT、VLIW、superscalar、superpipeline"
+    - **1.1 SIMD**：一條指令同時處理多筆資料，傳統 CPU 一條指令處理一筆。適合影像、向量運算這種「每筆資料做一樣的事」。例：Intel AVX、ARM NEON、早期的向量電腦。
+    - **1.2 thread 和 process**：process 有自己的位址空間；同一個 process 裡的 thread 共用位址空間，只有自己的暫存器和 stack（[OS 1.3](os.html#u1-fork)）。context switch 可以是換 thread，也可以是換 process；換 process 還要換位址空間（page table、可能要清 TLB），比較貴。
+    - **1.3 SIMT**：GPU 的執行方式，一群 thread 同步執行同一條指令、各自有暫存器。例：NVIDIA 的 GPU（CUDA，以 32 個 thread 的 warp 為單位）。
+    - **1.4 VLIW 屬於 static multiple issue**：哪幾個運算一起發由編譯器決定。
+    - **1.5 superscalar、superpipeline**：superscalar 每個 cycle 由硬體動態發出多條指令（變寬）；superpipeline 把每一級切得更細、級數更多，提高時脈（變深）。
+
+#### loop unrolling：把迴圈攤開
+
+```c
+for (i = 0; i < 100; i++)            /* 原本 */
+    a[i] = a[i] + s;
+for (i = 0; i < 100; i += 4) {       /* 攤開 4 次 */
+    a[i]   = a[i]   + s;
+    a[i+1] = a[i+1] + s;
+    a[i+2] = a[i+2] + s;
+    a[i+3] = a[i+3] + s;
+}
+```
+
+!!! example "100 Q8.2（4%）：loop unrolling 的主要想法？列出兩個能提升效能的地方"
+    **想法**：把迴圈本體複製好幾次、迴圈次數變少。
+
+    1. **少了迴圈的額外指令**：i++、比較、branch 的次數變成 1/4，branch 少了，control hazard 也少。
+    2. **有更多互相獨立的指令可以排**：四次運算彼此不相干，編譯器（或硬體）可以交錯排程，填滿 pipeline 的空檔、讓 VLIW／superscalar 一次發好幾條。
+
+    **代價**：程式碼變大（可能讓 instruction cache miss 變多），需要更多暫存器。
+
+#### 觀念小考
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** register renaming 能消除哪幾種相依？
+
+1. 只有 RAW
+2. RAW 和 WAR
+3. WAR 和 WAW
+4. 三種都可以
+
+??? quiz "看解析"
+    **C**。WAR、WAW 只是暫存器名字撞到，換成不同的實體暫存器就沒事了。RAW 是真的要用前一條的結果，換名字也沒用，只能等（或 forwarding）。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-2.** VLIW 屬於哪一種多發？
+
+1. dynamic multiple issue
+2. static multiple issue
+3. 不是多發
+4. superpipeline
+
+??? quiz "看解析"
+    **B**。VLIW 由編譯器事先決定哪些運算放在同一條長指令裡一起發，所以是 static。superscalar 由硬體在執行時決定，是 dynamic。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** 6 個功能單元、每個 8 個 reservation station entry，Tomasulo 的 tag 最少幾位元？
+
+1. 6
+2. 3
+3. 8
+4. 48
+
+??? quiz "看解析"
+    **A. 6**。tag 要分得出是哪一個 RS entry 會產生結果，共 $6\times8=48$ 個，$\lceil\lg48\rceil=6$。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** superpipeline 的主要代價是？
+
+1. 時脈變慢
+2. 需要更多功能單元
+3. 編譯器要排程
+4. 分支猜錯時要丟掉的指令變多
+
+??? quiz "看解析"
+    **D**。級數變多，branch 要在比較後面的級才知道結果，猜錯時已經進來、要丟掉的指令就更多（penalty 變大）。時脈反而是變快（A 錯）。
+
+</div>
+
+**W-1.** loop unrolling 有什麼好處和代價？
+
+??? quiz "看參考答案"
+    **好處**：(1) 迴圈控制的指令（i++、比較、branch）變少；(2) 迴圈本體變大，有更多互相獨立的指令，可以重新排程來填滿 pipeline 的空檔、讓多發的處理器一次發好幾條。
+
+    **代價**：程式碼變大，可能讓 instruction cache 裝不下；需要更多暫存器存中間結果（暫存器不夠就要存回記憶體）。
 
 ### 單元 8 小考 {#u8-quiz}
 

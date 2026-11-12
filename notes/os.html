@@ -357,9 +357,9 @@ button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px soli
   .tbl-stack tr { display: block; border: 1px solid var(--line); border-radius: 8px; background: var(--card); overflow: hidden; }
   .tbl-stack tr > * { display: grid; grid-template-columns: minmax(4.6em, 30%) minmax(0, 1fr); gap: 4px 10px; align-items: baseline; border: 0; border-top: 1px solid var(--line); padding: 7px 12px; white-space: normal; }
   .tbl-stack tr > :first-child { border-top: 0; background: var(--code); font-weight: 700; }
-  .tbl-stack tr > *::before { content: attr(data-label); font: 700 12.5px/1.6 var(--font-body); color: var(--muted); }
-  .tbl-stack tr > :not([data-label]) { grid-template-columns: minmax(0, 1fr); }
-  .tbl-stack tr > :not([data-label])::before { content: none; }
+  .tbl-stack tr > .nil { display: none; }
+  .tbl-stack .lb { font: 700 12.5px/1.6 var(--font-body); color: var(--muted); }
+  .tbl-stack tr > :not(.has-lb) { grid-template-columns: minmax(0, 1fr); }
 }
 </style>
 <script>
@@ -469,10 +469,10 @@ window.MathJax = {
 <ul>
 <li>題目是英文，填空要填英文名詞。背的時候就背英文。</li>
 <li>111 年 OS 計算題出自 Tanenbaum《Modern Operating Systems》的習題，計算模板一樣，不用另外買書。</li>
-<li>103、106、110 年的題目跟 111 年是同一種風格，i-node、磁碟聚集、TLB 命中率這幾種計算題一再出現。下表的題型也出自同一批題目。</li>
+<li>103、106、110 年的題目跟 111 年是同一種風格，i-node、磁碟聚集、TLB 命中率這幾種計算題一再出現；104、105、107 年是另一種風格，OS 多考觀念題（同步、死結、安全）。</li>
 </ul>
 </div>
-<p><strong>100–110 年還常考的計算題</strong>（108、109 留作模考，不列）：</p>
+<p><strong>100–110 年還常考的題型</strong>（108、109 留作模考，不列）：</p>
 <table>
 <thead>
 <tr>
@@ -496,6 +496,21 @@ window.MathJax = {
 <td>二維陣列的 page fault、page fault 次數的上下界</td>
 <td>103、106、110</td>
 <td><a href="#u4-pf">4.4</a></td>
+</tr>
+<tr>
+<td>同步、死結的經典題（priority inversion、哲學家、磁帶機、wait-die）</td>
+<td>100、103、104、105、107</td>
+<td><a href="#u2-more">2.2</a>、<a href="#u3-more">3.2</a></td>
+</tr>
+<tr>
+<td>記憶體配置（first／best fit、segmentation、buddy）</td>
+<td>100、104、105</td>
+<td><a href="#u4-alloc">4.5</a></td>
+</tr>
+<tr>
+<td>安全的觀念題（MAC、數位簽章、病毒種類、DDoS）</td>
+<td>101、102、105、107</td>
+<td><a href="#u6-more">6.2</a></td>
 </tr>
 </tbody>
 </table>
@@ -1244,6 +1259,88 @@ printf("%d\n", v);</code></pre>
 <li><strong>condition variable</strong>：在 monitor（或搭配 mutex）中，讓 thread 等待某個<strong>條件</strong>成立（<code>wait()</code>），條件改變時由別人 <code>signal()</code> 叫醒。</li>
 </ul>
 </div>
+<h3 id="u2-more">2.2 同步的考古題補充：priority inversion、thread 的同步工具、two-phase locking</h3>
+<p>104、105、107 年考過的同步觀念題。</p>
+<h4 id="priority-inversion">priority inversion：低優先權的擋住高優先權的</h4>
+<p>三個 process，優先權 L ＜ M ＜ H：</p>
+<ol>
+<li>L 拿到一把 lock R。</li>
+<li>H 也要 R，只好等 L 放開。</li>
+<li>M 不需要 R，但優先權比 L 高，把 L 搶走（preempt）。</li>
+<li>L 跑不了、放不開 R，H 就一直等。<strong>H 實際上被優先權比它低的 M 擋住了。</strong></li>
+</ol>
+<p>1997 年火星探測車 Mars Pathfinder 就因為這個問題一直重開機。</p>
+<p><strong>解法：priority inheritance（優先權繼承）</strong>：L 持有 H 在等的資源時，<strong>暫時繼承 H 的優先權</strong>，M 就搶不走 L；L 放開 R 之後恢復原本的優先權，H 馬上拿到 R。另一種解法是 priority ceiling：拿到某個 lock 的人，優先權直接提高到「所有可能用這個 lock 的人裡最高的」。</p>
+<div class="admonition example">
+<p class="admonition-title">105 Q1(1)（4%）、107 Q1(5)（2%）：什麼是 priority inversion？什麼時候發生？怎麼解決？</p>
+<p>高優先權的 process 在等一個被低優先權 process 持有的資源，而低優先權的又被中優先權的搶走 CPU，結果高優先權的被中優先權的擋住。發生的條件：有共享資源（lock）、搶先式的優先權排程、三個以上不同優先權的 process。解法是 priority inheritance：持有資源的低優先權 process 暫時繼承等待者的高優先權，用完資源再恢復。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">105 Q1(3)（3%）、107 Q1(3)（3%）：critical-section 問題的解法要滿足哪三個條件？</p>
+<p>mutual exclusion、progress、bounded waiting，意思見 <a href="#u2-0">2.0</a>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q8(1)（6%）：UNIX 裡 thread 存取共享資料的三種同步機制</p>
+<p>POSIX threads（Pthreads）提供：</p>
+<ol>
+<li><strong>mutex lock</strong>：<code>pthread_mutex_lock()</code>、<code>pthread_mutex_unlock()</code>，一次只有一個 thread 能進 critical section。</li>
+<li><strong>semaphore</strong>：<code>sem_wait()</code>、<code>sem_post()</code>，計數器，可以管理 n 份資源或控制先後順序。</li>
+<li><strong>condition variable</strong>：<code>pthread_cond_wait()</code>、<code>pthread_cond_signal()</code>，搭配 mutex 使用，讓 thread 等某個條件成立（例如 buffer 不空）。</li>
+</ol>
+<p>（也可以提 read-write lock：可以很多人同時讀，但寫的時候只能一個人。）</p>
+</div>
+<h4 id="transaction-two-phase-locking">交易（transaction）與 two-phase locking</h4>
+<p><strong>atomic transaction</strong>：一連串的讀寫要嘛<strong>全部完成</strong>（commit），要嘛<strong>全部取消</strong>（abort、rollback），不會只做一半。例：轉帳時「A 扣錢」和「B 加錢」一定要一起成功。</p>
+<p>好幾個交易同時跑時，結果要跟「某種一個接一個做」的結果一樣（serializable）。<strong>two-phase locking（2PL）</strong>：</p>
+<ol>
+<li><strong>growing phase</strong>：只能拿 lock，不能放。</li>
+<li><strong>shrinking phase</strong>：一旦放了第一把 lock，之後只能放、不能再拿。</li>
+</ol>
+<p>遵守 2PL 的排程一定是 <strong>conflict serializable</strong>。缺點：還是可能死結。另一種做法是 <a href="#u6-1">6.1</a> 的 timestamp-ordering（113 Q7），依 timestamp 決定順序，不用 lock、不會死結，但可能常常 rollback。</p>
+<div class="admonition example">
+<p class="admonition-title">104 Q8(3)（5%）：two-phase locking 怎麼保證非序列排程的正確性？</p>
+<p>每個交易分兩個階段：先只拿 lock（growing），開始放 lock 之後就不能再拿（shrinking）。所有交易都這樣做，衝突的操作順序就會依照每個交易「拿到最後一把 lock」的時間（lock point）排好，所以結果等於依 lock point 順序一個一個執行，是 conflict serializable。</p>
+</div>
+<h4 id="_9">觀念小考</h4>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 下面哪一個情況是 priority inversion？</p>
+<ol>
+<li>高優先權的 process 一直搶走低優先權的 CPU</li>
+<li>高優先權的 process 在等低優先權持有的 lock，低優先權的又被中優先權的搶走</li>
+<li>兩個 process 互相等對方的資源</li>
+<li>優先權最低的 process 一直排不到 CPU</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。A 是正常的優先權排程；C 是死結；D 是 starvation（可以用 aging 解決）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-2.</strong> priority inheritance 怎麼解決 priority inversion？</p>
+<ol>
+<li>把高優先權 process 的優先權降低</li>
+<li>不讓中優先權的 process 執行</li>
+<li>持有 lock 的低優先權 process 暫時繼承等待者的高優先權</li>
+<li>讓 lock 可以被搶走</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。L 繼承 H 的優先權後，M 就搶不走 L；L 很快用完 lock 放開，H 馬上拿到。放開後 L 恢復原本的優先權。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> 遵守 two-phase locking 的交易，下面哪一個做法是<strong>不允許</strong>的？</p>
+<ol>
+<li>放開 lock A 之後，再拿 lock B</li>
+<li>先拿 lock A、再拿 lock B，最後一起放</li>
+<li>拿 A、拿 B、放 A、放 B</li>
+<li>只拿一把 lock</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。一旦開始放 lock（進入 shrinking phase），就不能再拿新的。</p>
+</details>
+</div>
 <h3 id="u2-quiz">單元 2 小考</h3>
 <p><strong>2-1.</strong> critical-section 解法的三個條件分別是什麼意思？</p>
 <details class="quiz">
@@ -1259,7 +1356,7 @@ printf("%d\n", v);</code></pre>
 <p>死結要<strong>四個條件同時成立</strong>：mutual exclusion、hold and wait、no preemption、circular wait。破壞其中一個就不會死結。</p>
 </div>
 <h3 id="u3-0">3.0 觀念課：兩個人各拿一支筷子</h3>
-<h4 id="_9">最小的死結</h4>
+<h4 id="_10">最小的死結</h4>
 <p>P1 拿著資源 R1、在等 R2；P2 拿著 R2、在等 R1。兩人都不放手，永遠等下去。像兩個人吃飯，各拿了一支筷子，都在等對方的那一支。</p>
 <p>把四個必要條件對到這個例子：</p>
 <table>
@@ -1289,7 +1386,7 @@ printf("%d\n", v);</code></pre>
 </tbody>
 </table>
 <p>四個都成立才會死結。<strong>破壞任何一個就不會死結</strong>，這就是 deadlock prevention 的思路，例如「一次把兩支筷子都拿到才開始吃」破壞了 hold and wait。</p>
-<h4 id="_10">避免死結：銀行家只借「還得回來」的錢</h4>
+<h4 id="_11">避免死結：銀行家只借「還得回來」的錢</h4>
 <p>Banker's algorithm 的想法：銀行只在「借出去之後，<strong>仍然存在某個順序</strong>能讓每個客戶都借滿、用完、還錢」時才借。這種狀態叫 <strong>safe state</strong>。</p>
 <p><strong>小例子</strong>：一種資源共 10 份。</p>
 <table>
@@ -1325,7 +1422,7 @@ printf("%d\n", v);</code></pre>
 <li><strong>影片</strong>：<a href="https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ">周志遠・作業系統播放清單</a>的 Deadlocks 單元。</li>
 </ul>
 </div>
-<h4 id="_11">換你試試</h4>
+<h4 id="_12">換你試試</h4>
 <p><strong>T-1.</strong> 「要求行程一開始就申請所有需要的資源」破壞的是哪個條件？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1359,6 +1456,135 @@ printf("%d\n", v);</code></pre>
 <li>circular wait：所有資源類型編號，只能<strong>依遞增順序</strong>申請。</li>
 </ul>
 </div>
+<h3 id="u3-more">3.2 死結的考古題補充：哲學家、磁帶機、wait-die</h3>
+<p>100、101、103、104、105、107 年考過的死結題：條件和預防、避免的差別，加上三種固定題型。</p>
+<h4 id="_13">四個條件是「必要」不是「充分」</h4>
+<p>四個條件<strong>同時</strong>成立才可能死結，只有其中一個成立不會死結（101 Q2(b)）。102 Q5(2) 的是非題「四個條件中任何一個成立，死結就一定發生」是<strong>錯</strong>的。</p>
+<h4 id="preventionavoidance">預防（prevention）和避免（avoidance）差在哪</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>deadlock prevention</th>
+<th>deadlock avoidance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>做法</td>
+<td>用規則讓四個條件<strong>至少一個永遠不成立</strong>（<a href="#u3-1">3.1</a> 112 Q8a）</td>
+<td>每次要分配資源時<strong>檢查</strong>：分配後還是 safe state 才給（<a href="#u3-0">3.0</a> 的 Banker's algorithm）</td>
+</tr>
+<tr>
+<td>需要的資訊</td>
+<td>不用</td>
+<td>每個 process <strong>最多需要多少</strong>資源</td>
+</tr>
+<tr>
+<td>代價</td>
+<td>限制多，資源用得沒效率</td>
+<td>每次分配都要計算</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition example">
+<p class="admonition-title">107 Q1(4)（4%）、105 Q1(2)（3%）：deadlock prevention 和 avoidance 有什麼不同？avoidance 怎麼運作？</p>
+<p>prevention 事先用規則破壞四個必要條件之一，例如資源依編號申請（破壞 circular wait），系統根本不可能死結。avoidance 不限制申請方式，但要事先知道每個 process 最多需要多少資源；每次有人申請，就假裝先給它，看看是否仍然存在一個順序能讓所有 process 都做完（safe state），是才真的給，否則讓它等。</p>
+</div>
+<h4 id="n-process-m">n 個 process 搶 m 份資源</h4>
+<div class="admonition example">
+<p class="admonition-title">103 Q1（10%）：電腦有 6 台磁帶機，n 個 process 在搶，每個 process 最多需要 2 台。n 是多少時保證不會死結？</p>
+<p><strong>最壞的情況</strong>：每個 process 都先拿到 1 台，再等第 2 台。如果 6 台全部被 6 個 process 各拿 1 台，大家都在等，就死結了。</p>
+<ul>
+<li><strong>n ≤ 5（不會死結）</strong>：最多 5 個 process 各拿 1 台，還剩至少 1 台。一定有人拿得到第 2 台，做完後放出 2 台，其他人就接著做得完。</li>
+<li><strong>n ≥ 6</strong>：6 個 process 各拿 1 台時就死結。</li>
+</ul>
+<p><strong>一般公式</strong>：m 份資源、n 個 process、每個最多需要 k 份，不會死結的條件是 <span class="arithmatex">\(n(k-1)+1\le m\)</span>（每個人都只差一份時，還剩一份給某個人）。這題 <span class="arithmatex">\(n\times1+1\le6\)</span>，<span class="arithmatex">\(n\le5\)</span>。</p>
+</div>
+<h4 id="_14">哲學家：筷子放在中間</h4>
+<div class="admonition example">
+<p class="admonition-title">100 Q3（15%）：哲學家用餐問題，筷子放在桌子中間，任何兩支都可以用；每次只要一支。找一個簡單的規則，判斷某個請求能不能給、又不會造成死結</p>
+<p><strong>規則</strong>：哲學家要拿<strong>第一支</strong>筷子時，如果桌上<strong>只剩最後一支</strong>、而且<strong>沒有任何人已經拿著兩支</strong>，就不給；其他情況都可以給。</p>
+<p><strong>為什麼</strong>：死結只會發生在「每個人手上都只有一支、桌上沒筷子」。</p>
+<ul>
+<li>申請<strong>第二支</strong>：拿到就有兩支可以吃，吃完會放回兩支，永遠可以給（只要桌上有）。</li>
+<li>申請<strong>第一支</strong>，桌上還有兩支以上：給了之後桌上至少還有一支，還能讓某個拿著一支的人湊成兩支。</li>
+<li>申請<strong>第一支</strong>，桌上只剩一支：如果有人已經拿著兩支，他吃完會放回來，可以給；如果沒有人拿著兩支，把最後一支給出去，大家都只有一支、桌上沒了，就死結，所以不給。</li>
+</ul>
+</div>
+<h4 id="wait-die-wound-wait-timestamp">wait-die 與 wound-wait：用 timestamp 避免死結</h4>
+<p>每個 process 有一個 timestamp（越小越老）。process 要的資源被別人拿著時：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>老的要年輕的手上的資源</th>
+<th>年輕的要老的手上的資源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>wait-die</strong>（不搶，nonpreemptive）</td>
+<td>老的<strong>等</strong></td>
+<td>年輕的<strong>死</strong>（rollback）</td>
+</tr>
+<tr>
+<td><strong>wound-wait</strong>（搶，preemptive）</td>
+<td>老的<strong>打傷</strong>年輕的：年輕的 rollback，資源給老的</td>
+<td>年輕的<strong>等</strong></td>
+</tr>
+</tbody>
+</table>
+<p>記法：兩種都是「<strong>老的有特權</strong>」，等待永遠只會是單一方向（wait-die 只有老等年輕、wound-wait 只有年輕等老），不會形成循環，所以不會死結。被 rollback 的 process <strong>保留原本的 timestamp</strong> 重來，總有一天會變成最老的，所以不會 starvation。</p>
+<div class="admonition example">
+<p class="admonition-title">104 Q8(2)（4%）：P1、P2、P3 的 timestamp 是 17、25、30；P2 持有一個資源，P1 和 P3 都在要它。wait-die 和 wound-wait 的結果？</p>
+<p>P1（17）比 P2（25）老，P3（30）比 P2 年輕。</p>
+<ul>
+<li><strong>wait-die</strong>：P1 老 → <strong>P1 等</strong>；P3 年輕 → <strong>P3 rollback</strong>（die）。</li>
+<li><strong>wound-wait</strong>：P1 老 → <strong>P2 被 rollback</strong>（wound），資源給 P1；P3 年輕 → <strong>P3 等</strong>。</li>
+</ul>
+<p>107 Q7(9) 的是非題「wait-die 是 preemptive 的死結預防方法」是<strong>錯</strong>的：wait-die 不搶別人的資源，搶的是 wound-wait。</p>
+</div>
+<h4 id="_15">觀念小考</h4>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> 10 份資源、n 個 process，每個最多需要 3 份。n 最大是多少時保證不會死結？</p>
+<ol>
+<li>3</li>
+<li>5</li>
+<li>4</li>
+<li>10</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 4</strong>。條件 <span class="arithmatex">\(n(k-1)+1\le m\)</span>：<span class="arithmatex">\(2n+1\le10\)</span>，<span class="arithmatex">\(n\le4.5\)</span>，所以 <span class="arithmatex">\(n=4\)</span>。驗算：4 個 process 各拿 2 份，用掉 8 份，還剩 2 份，至少一個人能湊到 3 份做完。5 個 process 各拿 2 份就用光 10 份，死結。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> wait-die 中，年輕的 process 要老的手上的資源，會怎樣？</p>
+<ol>
+<li>年輕的 rollback，之後用原本的 timestamp 重來</li>
+<li>年輕的等</li>
+<li>老的被 rollback</li>
+<li>兩個都 rollback</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。wait-die 只讓老的等年輕的；年輕的遇到老的就「死」（rollback）。保留原本的 timestamp，重來幾次後會變成相對老的，不會一直被 rollback。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> deadlock avoidance 和 prevention 最大的不同是？</p>
+<ol>
+<li>avoidance 允許死結發生再處理</li>
+<li>prevention 需要知道每個 process 最多要多少資源</li>
+<li>兩個一樣</li>
+<li>avoidance 每次分配前檢查會不會進入 unsafe state，prevention 是事先破壞某個必要條件</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。A 說的是 detection and recovery；B 剛好相反，需要事先知道最大需求的是 avoidance（Banker's algorithm）。</p>
+</details>
+</div>
 <h3 id="u3-quiz">單元 3 小考</h3>
 <p><strong>3-1.</strong> 為什麼「依編號遞增順序申請資源」能防止死結？</p>
 <details class="quiz">
@@ -1386,7 +1612,7 @@ printf("%d\n", v);</code></pre>
 <li>重新執行剛剛那條指令。</li>
 </ol>
 <p>只在用到時才載入 page，叫 <strong>demand paging</strong>。</p>
-<h4 id="_12">踢誰出去：三種策略</h4>
+<h4 id="_16">踢誰出去：三種策略</h4>
 <p>3 個 frame，存取順序 7, 0, 1, 2, 0, 3, 0, 4：</p>
 <table>
 <thead>
@@ -1525,7 +1751,7 @@ printf("%d\n", v);</code></pre>
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10373783">談 FIFO、LRU、OPT 的文章</a>。</li>
 </ul>
 </div>
-<h4 id="_13">換你試試</h4>
+<h4 id="_17">換你試試</h4>
 <p><strong>T-1.</strong> 3 個 frame，存取 1, 2, 3, 1, 4, 1。FIFO 和 LRU 各幾次 page fault？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1670,7 +1896,7 @@ printf("%d\n", v);</code></pre>
 </div>
 <h3 id="u4-pf">4.4 程式寫法與 page fault：二維陣列、次數的上下界</h3>
 <p>103、110 年各考一題「初始化二維陣列會發生幾次 page fault」（10%），兩題幾乎一樣，只換了數字和存放方式。103、106 年也各考一題 page fault 次數的上下界（10%）。</p>
-<h4 id="_14">陣列在記憶體裡是一長條</h4>
+<h4 id="_18">陣列在記憶體裡是一長條</h4>
 <p>記憶體是一維的，二維陣列要排成一長條，有兩種排法：</p>
 <table>
 <thead>
@@ -1694,13 +1920,13 @@ printf("%d\n", v);</code></pre>
 </tbody>
 </table>
 <p><span class="arithmatex">\(n\times n\)</span> 的陣列裡，A[i][j] 是第幾個元素（從 0 數）：row-major 是 <span class="arithmatex">\(i\times n+j\)</span>，column-major 是 <span class="arithmatex">\(j\times n+i\)</span>。</p>
-<h4 id="_15">迴圈順序要跟著排法走</h4>
+<h4 id="_19">迴圈順序要跟著排法走</h4>
 <p>像書架上的書一排一排放好：照順序一本一本拿，一排拿完才走到下一排；如果每次都換一排只拿一本，每拿一本都要走一趟。</p>
 <ul>
 <li><strong>順序一致</strong>（row-major 用「i 在外、j 在內」；column-major 用「j 在外、i 在內」）：連續存取，一頁的元素全部用完才換下一頁 → <strong>page fault 次數 ＝ 陣列佔幾頁</strong>。</li>
 <li><strong>順序相反</strong>：每次存取都跳到另一頁。內層迴圈一圈會碰到很多頁，frame 卻只有幾個，回到同一頁時它早就被換掉 → <strong>每一次存取都 page fault</strong>。</li>
 </ul>
-<h4 id="_16">解題步驟</h4>
+<h4 id="_20">解題步驟</h4>
 <ol>
 <li><strong>一頁放幾個元素</strong> ＝ page 大小 ÷ 元素大小；<strong>陣列佔幾頁</strong> ＝ 元素總數 ÷ 一頁放幾個。</li>
 <li><strong>程式在 page 0，不會被換掉</strong>：每個指令都要從 page 0 讀，用 LRU 時它永遠是最近用過的。所以三個 frame 裡，陣列只能用 <strong>2 個</strong>。</li>
@@ -1737,7 +1963,7 @@ printf("%d\n", v);</code></pre>
 </ul>
 <p><strong>補充</strong>：如果 <span class="arithmatex">\(p\le m\)</span>，所有 page 都裝得下，不會有任何 page 被換掉，剛好 p 次。上界 n 要在 <span class="arithmatex">\(p&gt;m\)</span> 時才可能發生，例如只有 1 個 frame、reference string 每次都換一個 page。</p>
 </div>
-<h4 id="_17">觀念小考</h4>
+<h4 id="_21">觀念小考</h4>
 <div class="mcq" data-ans="1">
 <p><strong>C-1.</strong> C 語言的 <code>int a[100][100]</code>（row-major），要把整個陣列設成 0，哪一種迴圈順序 page fault 最少？</p>
 <ol>
@@ -1796,6 +2022,265 @@ printf("%d\n", v);</code></pre>
 <p>順序相反時，內層迴圈每走一步就跳到另一頁，走一圈會碰到很多不同的頁（103 Q2 是 200 頁）。陣列只有 2 個 frame，等到下一圈回到同一頁時，它早就被後面的頁換掉了，所以每次都要重新載入。</p>
 <p><strong>自我檢查</strong>：有沒有比較「內層一圈碰到幾頁」和「可用的 frame 數」？前者比較多，才會每次都 fault。</p>
 </details>
+<h3 id="u4-alloc">4.5 記憶體配置：連續配置、segmentation、buddy system</h3>
+<p>100、104、105 年考過：first／best／worst fit、內部和外部碎片、segment table 的位址轉換、buddy system、為什麼 stack algorithm 不會有 Belady's anomaly。</p>
+<h4 id="process">連續配置：每個 process 佔一整段</h4>
+<p>最簡單的做法是每個 process 放在一段<strong>連續</strong>的記憶體，用兩個暫存器檢查和轉換：</p>
+<ul>
+<li><strong>relocation register</strong>（base）：這段記憶體從哪裡開始。實體位址 ＝ 邏輯位址 ＋ base。</li>
+<li><strong>limit register</strong>：這段有多長，邏輯位址超過就 trap（存取違規）。</li>
+</ul>
+<p>102 Q5(3) 的是非題「relocation register 是 1877、邏輯位址 123，實體位址是 2000」是<strong>對</strong>的。</p>
+<h4 id="_22">有一堆空洞時，要放哪一個</h4>
+<p>process 來來去去，記憶體裡會有很多大小不一的空洞（hole）。新的 process 要放進去：</p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>選哪一個洞</th>
+<th>特點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>first fit</strong></td>
+<td>第一個夠大的</td>
+<td>最快</td>
+</tr>
+<tr>
+<td><strong>best fit</strong></td>
+<td>夠大的裡面<strong>最小</strong>的</td>
+<td>剩下的碎片最小，但要找遍全部</td>
+</tr>
+<tr>
+<td><strong>worst fit</strong></td>
+<td><strong>最大</strong>的</td>
+<td>剩下的洞比較大、比較可能再利用，但實際效果通常最差</td>
+</tr>
+</tbody>
+</table>
+<p><strong>例子</strong>（恐龍書習題）：空洞依序 100K、500K、200K、300K、600K，依序來 212K、417K、112K、426K：</p>
+<table>
+<thead>
+<tr>
+<th>要求</th>
+<th>first fit</th>
+<th>best fit</th>
+<th>worst fit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>212K</td>
+<td>500K（剩 288K）</td>
+<td>300K（剩 88K）</td>
+<td>600K（剩 388K）</td>
+</tr>
+<tr>
+<td>417K</td>
+<td>600K（剩 183K）</td>
+<td>500K（剩 83K）</td>
+<td>500K（剩 83K）</td>
+</tr>
+<tr>
+<td>112K</td>
+<td>288K（剩 176K）</td>
+<td>200K（剩 88K）</td>
+<td>388K（剩 276K）</td>
+</tr>
+<tr>
+<td>426K</td>
+<td><strong>放不下，要等</strong></td>
+<td>600K（剩 174K）</td>
+<td><strong>放不下，要等</strong></td>
+</tr>
+</tbody>
+</table>
+<p>這一組 best fit 最好，四個都放得下。用程式模擬過。</p>
+<h4 id="_23">兩種碎片</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>外部碎片（external fragmentation）</th>
+<th>內部碎片（internal fragmentation）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>是什麼</td>
+<td>空的記憶體加起來夠，但<strong>不連續</strong>，放不下</td>
+<td>分配的區塊比要的大，<strong>多出來的那一點</strong>浪費在區塊裡面</td>
+</tr>
+<tr>
+<td>什麼時候出現</td>
+<td>連續配置、segmentation</td>
+<td>paging（最後一頁沒用滿）、buddy system</td>
+</tr>
+<tr>
+<td>解法</td>
+<td>compaction（把 process 搬在一起）、改用 paging</td>
+<td>用比較小的分配單位（代價是表變大）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="segmentation">segmentation：照程式的邏輯切段</h4>
+<p>程式是由好幾段組成的：程式碼、全域變數、stack、heap……每一段（segment）各自連續放，<strong>邏輯位址 ＝（段號 s, 段內位移 d）</strong>：</p>
+<ol>
+<li>查 segment table 第 s 列，得到 base 和 limit。</li>
+<li>檢查 <span class="arithmatex">\(d&lt;\text{limit}\)</span>，否則 <strong>trap</strong>（定址錯誤）。</li>
+<li>實體位址 ＝ base ＋ d。</li>
+</ol>
+<div class="admonition example">
+<p class="admonition-title">100 Q4（15%）：用下面的 segment table 算實體位址</p>
+<table>
+<thead>
+<tr>
+<th>segment</th>
+<th>base</th>
+<th>length</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>219</td>
+<td>700</td>
+</tr>
+<tr>
+<td>1</td>
+<td>2315</td>
+<td>15</td>
+</tr>
+<tr>
+<td>2</td>
+<td>100</td>
+<td>90</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1327</td>
+<td>580</td>
+</tr>
+<tr>
+<td>4</td>
+<td>1917</td>
+<td>100</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>邏輯位址</th>
+<th>檢查</th>
+<th>實體位址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(a) 段 4、位移 50</td>
+<td>50 ＜ 100</td>
+<td>1917 ＋ 50 ＝ <strong>1967</strong></td>
+</tr>
+<tr>
+<td>(b) 段 1、位移 20</td>
+<td>20 ≥ 15</td>
+<td><strong>trap</strong>（超出這一段）</td>
+</tr>
+<tr>
+<td>(c) 段 3、位移 500</td>
+<td>500 ＜ 580</td>
+<td>1327 ＋ 500 ＝ <strong>1827</strong></td>
+</tr>
+<tr>
+<td>(d) 段 2、位移 400</td>
+<td>400 ≥ 90</td>
+<td><strong>trap</strong></td>
+</tr>
+<tr>
+<td>(e) 段 0、位移 112</td>
+<td>112 ＜ 700</td>
+<td>219 ＋ 112 ＝ <strong>331</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>注意</strong>：位移等於 length 也要 trap，因為合法的位移是 0 到 length − 1。</p>
+</div>
+<h4 id="buddy-system-2">buddy system：都切成 2 的次方</h4>
+<p>kernel 自己要記憶體時常用 buddy system：</p>
+<ul>
+<li>從一大塊（例如 256 KB）開始，要求來了就<strong>對半切</strong>，切到「再切一半就不夠」為止。切出來的兩半互為 <strong>buddy</strong>。</li>
+<li>例：要 21 KB → 256 切成 128＋128 → 128 切成 64＋64 → 64 切成 32＋32 → 給 <strong>32 KB</strong>（再切成 16 KB 就不夠了）。</li>
+<li>釋放時，如果它的 buddy 也是空的，就<strong>合併</strong>回大的一塊，一路往上合併。</li>
+</ul>
+<p><strong>優點</strong>：合併很快（buddy 的位址一算就知道）。<strong>缺點</strong>：大小都是 2 的次方，會有內部碎片（要 21 KB 給 32 KB，浪費 11 KB）。</p>
+<div class="admonition example">
+<p class="admonition-title">105 Q3（15%）：(1) 動態記憶體配置的三種常見做法 (2) MMU 和 TLB 的用途 (3) 證明 stack algorithm 不會有 Belady's anomaly (4) buddy system 怎麼配置 kernel 記憶體</p>
+<p><strong>(1)</strong> first fit、best fit、worst fit（上面的表）。</p>
+<p><strong>(2)</strong> <strong>MMU</strong>（memory-management unit）：執行時把邏輯位址轉成實體位址，並檢查權限（越界就 trap）。<strong>TLB</strong>：page table 的快取，存最近用過的 page → frame 對應，大部分轉換不用再去記憶體查 page table。</p>
+<p><strong>(3)</strong> <strong>stack algorithm</strong> 的定義：任何時刻，n 個 frame 時記憶體裡的 page 集合，一定是 n＋1 個 frame 時的集合的<strong>子集合</strong>。</p>
+<p>LRU 是 stack algorithm：n 個 frame 時記憶體裡放的是「最近用過的 n 個不同 page」，n＋1 個 frame 時是「最近用過的 n＋1 個」，前者一定包含在後者裡。</p>
+<p>所以 n 個 frame 時會 hit 的存取，n＋1 個 frame 時也一定 hit；frame 變多，page fault 不會變多，不會有 Belady's anomaly。∎ FIFO 不是 stack algorithm，所以可能發生（<a href="#u4-0">4.0</a> 的例子）。</p>
+<p><strong>(4)</strong> buddy system：見上面。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q7(2)（4%）：外部碎片和內部碎片的差別</p>
+<p>外部碎片：空的記憶體總量夠，但被切成很多不連續的小洞，放不下新的要求。內部碎片：分配出去的區塊比實際需要的大，多出來的部分在區塊裡面沒用到、別人也不能用。</p>
+</div>
+<h4 id="_24">觀念小考</h4>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 空洞依序是 50K、300K、120K，要放 100K。best fit 會放在哪裡？</p>
+<ol>
+<li>50K</li>
+<li>120K</li>
+<li>300K</li>
+<li>放不下</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. 120K</strong>。夠大的有 300K、120K，best fit 挑裡面最小的 120K（剩 20K）。first fit 會挑第一個夠大的 300K，worst fit 也挑 300K。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-2.</strong> paging 會產生哪一種碎片？</p>
+<ol>
+<li>只有外部碎片</li>
+<li>兩種都有</li>
+<li>都沒有</li>
+<li>只有內部碎片</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。每個 frame 大小一樣，任何空的 frame 都能用，沒有外部碎片；但最後一頁通常沒用滿，有內部碎片。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> buddy system 中，從 128 KB 開始，要 17 KB，會分到多大？</p>
+<ol>
+<li>32 KB</li>
+<li>17 KB</li>
+<li>64 KB</li>
+<li>16 KB</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A. 32 KB</strong>。128 → 64 → 32，再切成 16 KB 就不夠 17 KB，所以給 32 KB，內部碎片 15 KB。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-4.</strong> segment table 第 2 列是 base 1400、length 300。邏輯位址（2, 300）的結果是？</p>
+<ol>
+<li>1700</li>
+<li>1400</li>
+<li>trap</li>
+<li>300</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. trap</strong>。合法的位移是 0～299，300 已經超出這一段，MMU 會產生 trap。</p>
+</details>
+</div>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？</p>
 <details class="quiz">
@@ -1825,7 +2310,7 @@ printf("%d\n", v);</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：儲存、檔案與 I/O</h2>
 <h3 id="u5-0">5.0 觀念課：硬碟像一台唱片機</h3>
-<h4 id="_18">讀一個區塊要花三段時間</h4>
+<h4 id="_25">讀一個區塊要花三段時間</h4>
 <p>硬碟是好幾片疊在一起旋轉的碟片，讀寫頭裝在一支可以前後移動的手臂上，像唱片機。</p>
 <table>
 <thead>
@@ -1900,7 +2385,7 @@ printf("%d\n", v);</code></pre>
 <li><strong>練習（英文）</strong>：恐龍書官網的 <a href="https://www.os-book.com/OS10/regular-exercises/PDF-regular-exer-dir/11.pdf">Mass-Storage 習題</a>。</li>
 </ul>
 </div>
-<h4 id="_19">換你試試</h4>
+<h4 id="_26">換你試試</h4>
 <p><strong>T-1.</strong> 10000 RPM 的硬碟，平均 rotational latency？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1978,7 +2463,7 @@ printf("%d\n", v);</code></pre>
 </div>
 <h3 id="u5-sched">5.4 磁碟排程：讀寫頭怎麼移動</h3>
 <p>101、102、104、107、110 年都考過（每次 6–10%）：給一串要求的磁柱（cylinder）編號，照某種演算法排出服務順序、算讀寫頭總共移動多遠。規則固定、只要加減法，是最容易拿的分數。</p>
-<h4 id="_20">觀念：讀寫頭像電梯</h4>
+<h4 id="_27">觀念：讀寫頭像電梯</h4>
 <p>很多要求在等，讀寫頭一次只能停在一個位置。移動越遠，seek time 越長（見 <a href="#u5-0">5.0</a>），所以目標是<strong>總移動距離越短越好</strong>，又不能讓某些要求等太久。</p>
 <table>
 <thead>
@@ -2029,13 +2514,13 @@ printf("%d\n", v);</code></pre>
 </tbody>
 </table>
 <p><strong>為什麼 C-SCAN 比較公平</strong>：SCAN 回頭時，剛掃過的一端要等來回一趟；中間的位置來回各被掃一次。C-SCAN 永遠同一個方向掃，每個位置等的時間差不多。</p>
-<h4 id="_21">題目沒講清楚的，要自己寫假設</h4>
+<h4 id="_28">題目沒講清楚的，要自己寫假設</h4>
 <ol>
 <li><strong>方向</strong>：「前一個要求在 125、現在在 175」代表正往<strong>編號大的</strong>方向走。只給現在位置時，寫「假設往編號大的方向移動」。</li>
 <li><strong>盡頭在哪</strong>：SCAN、C-SCAN 走到磁柱編號的最大值（0–999 就是 999）或 0。</li>
 <li><strong>C-SCAN、C-LOOK 跳回去那一段算不算距離</strong>：回程不服務要求，但手臂確實有移動，各本書算法不同。<strong>兩個都寫最保險</strong>，例如「含跳回 1925，不含 925」。</li>
 </ol>
-<h4 id="_22">算距離的捷徑</h4>
+<h4 id="_29">算距離的捷徑</h4>
 <p>電梯類（SCAN、LOOK）只要算<strong>轉折點</strong>：例如 LOOK 往上走到最大的要求再回頭到最小的要求，距離 ＝（最大 − 起點）＋（最大 − 最小），不用一段一段加。</p>
 <div class="viz" data-viz="disk" data-reqs="98,183,37,122,14,124,65,67" data-head="53" data-dir="down" data-max="199" data-algo="sstf" data-title="102 Q7 的資料：切換演算法和方向，比較總距離"></div>
 
@@ -2195,7 +2680,7 @@ printf("%d\n", v);</code></pre>
 <p><strong>服務順序：F, D, A, H, G, E, B, J, I, C</strong>。</p>
 <p>如果不分批，截止時間又都不一樣，SCAN-EDF 就等於單純的 EDF：F, D, H, A, G, B, J, E, I, C。考試寫出你用的分批方法。</p>
 </div>
-<h4 id="_23">觀念小考</h4>
+<h4 id="_30">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 哪一種演算法可能讓某些要求等非常久（starvation）？</p>
 <ol>
@@ -2320,9 +2805,9 @@ printf("%d\n", v);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_24">最小權限</h4>
-<p><strong>need-to-know</strong> 和 principle of least privilege 是同一個想法：每個行程、每個使用者只拿到<strong>完成目前工作需要</strong>的權限。出事時，損害才會被限制在小範圍。</p>
-<h4 id="_25">存取矩陣：誰能對什麼做什麼</h4>
+<h4 id="_31">最小權限</h4>
+<p><strong>principle of least privilege</strong>（最小權限）和 <strong>need-to-know</strong> 是同一類想法：每個行程、每個使用者只拿到<strong>完成目前工作需要</strong>的權限和資源。出事時，損害才會被限制在小範圍。兩者在恐龍書裡的說法有一點差別，是非題考過，見 <a href="#u6-more">6.2</a>。</p>
+<h4 id="_32">存取矩陣：誰能對什麼做什麼</h4>
 <p>把權限畫成一張表：列是使用者（domain），欄是檔案（object），格子裡是權限。</p>
 <table>
 <thead>
@@ -2352,7 +2837,7 @@ printf("%d\n", v);</code></pre>
 <li>照<strong>欄</strong>存（每個檔案記錄誰能用它）→ <strong>access control list（ACL）</strong></li>
 <li>照<strong>列</strong>存（每個使用者帶著自己能用什麼）→ <strong>capability list</strong></li>
 </ul>
-<h4 id="_26">惡意程式的名詞</h4>
+<h4 id="_33">惡意程式的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -2390,7 +2875,7 @@ printf("%d\n", v);</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/izkd4JwXRwub_ZmhSMTlNw">OS 筆記 Chapter 14: Protection</a>〉：保護的原則、存取矩陣、ACL 與 capability 的實作、權限撤銷，就是這節表格的完整版。</li>
 </ul>
 </div>
-<h4 id="_27">換你試試</h4>
+<h4 id="_34">換你試試</h4>
 <p><strong>T-1.</strong> 有人偷改了資料庫裡的成績，破壞的是 CIA 的哪一項？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2430,6 +2915,213 @@ printf("%d\n", v);</code></pre>
 <li>否則執行，設 <span class="arithmatex">\(\text{W-timestamp}(Q)=TS(T_i)\)</span>。</li>
 </ul>
 <p>這樣保證所有衝突操作都依 timestamp 順序執行，所以排程是 conflict serializable。</p>
+</div>
+<h3 id="u6-more">6.2 安全的考古題補充：認證、數位簽章、攻擊手法</h3>
+<p>101、102、105、107 年考過的保護與安全觀念題。</p>
+<h4 id="need-to-know">最小權限和 need-to-know 不完全一樣</h4>
+<p>兩個是同一類想法，但恐龍書的說法不同，是非題會考這個差別（102 Q5(1)）：</p>
+<table>
+<thead>
+<tr>
+<th>原則</th>
+<th>恐龍書的說法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>principle of least privilege</strong></td>
+<td>程式、使用者、甚至系統，只給<strong>剛好夠完成工作的權限</strong>（privilege）</td>
+</tr>
+<tr>
+<td><strong>need-to-know</strong></td>
+<td>process 在任何時刻只能存取<strong>目前工作需要的資源</strong>（object）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="protection-domain">保護網域（protection domain）怎麼實作</h4>
+<p>domain 是「一組 <object, 權限> 的集合」，process 在某個 domain 裡執行，就有那些權限。恐龍書列出三種實作方式，以及什麼時候會<strong>切換 domain</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>domain 對應到</th>
+<th>什麼時候切換</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>每個<strong>使用者</strong></td>
+<td>換使用者時（登出、另一個人登入）</td>
+</tr>
+<tr>
+<td>每個 <strong>process</strong></td>
+<td>一個 process 送訊息給另一個並等它回應時</td>
+</tr>
+<tr>
+<td>每個<strong>程序</strong>（procedure）</td>
+<td>呼叫另一個程序時</td>
+</tr>
+</tbody>
+</table>
+<p>UNIX 的 <strong>setuid</strong>：執行檔設了 setuid 位元，任何人執行它時都暫時拿到<strong>檔案擁有者</strong>的身分（例如 <code>passwd</code> 要改密碼檔，暫時變成 root），這就是一種切換 domain 的方式。</p>
+<h4 id="mac">認證：MAC 和數位簽章</h4>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>MAC（message authentication code）</th>
+<th>數位簽章（digital signature）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>金鑰</td>
+<td>雙方<strong>共用同一把</strong>祕密金鑰（對稱式）</td>
+<td>簽的人用<strong>私鑰</strong>，大家用<strong>公鑰</strong>驗證（非對稱式）</td>
+</tr>
+<tr>
+<td>傳送方</td>
+<td>算 <span class="arithmatex">\(\text{MAC}_k(m)\)</span>，跟 m 一起送</td>
+<td>算 <span class="arithmatex">\(\text{Sign}_{\text{私鑰}}(H(m))\)</span>，跟 m 一起送</td>
+</tr>
+<tr>
+<td>接收方</td>
+<td>用同一把 k 重算一次，跟收到的比</td>
+<td>用公鑰驗證簽章跟 <span class="arithmatex">\(H(m)\)</span> 對得上</td>
+</tr>
+<tr>
+<td>能證明</td>
+<td>訊息沒被改、是有 k 的人送的</td>
+<td>訊息沒被改、是<strong>有私鑰的那個人</strong>送的</td>
+</tr>
+<tr>
+<td>nonrepudiation（不可否認）</td>
+<td><strong>沒有</strong>：雙方都有 k，收方也能偽造</td>
+<td><strong>有</strong>：只有簽的人有私鑰，事後不能否認</td>
+</tr>
+</tbody>
+</table>
+<p><span class="arithmatex">\(H(m)\)</span> 是 <a href="ds.html#u4-theory">資結 4.2</a> 的密碼學雜湊函數，先把訊息壓短再簽。</p>
+<p><strong>公鑰怎麼發</strong>（105 Q4(4)）：公鑰可以公開，問題是怎麼確定這把公鑰真的是對方的（不然中間人可以換成自己的）。做法是<strong>數位憑證</strong>（digital certificate）：可信任的憑證機構（CA）用它的私鑰簽署「這把公鑰屬於某某人」，CA 的公鑰事先內建在瀏覽器或作業系統裡。</p>
+<h4 id="_35">攻擊手法的名詞</h4>
+<table>
+<thead>
+<tr>
+<th>名詞</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>masquerading（偽裝）</td>
+<td>假裝成別人</td>
+</tr>
+<tr>
+<td>man-in-the-middle（中間人）</td>
+<td>攻擊者夾在通訊的兩方中間，對兩邊都假裝成另一方，可以讀和改傳的資料</td>
+</tr>
+<tr>
+<td>replay attack（重送）</td>
+<td>把截到的合法訊息再送一次（例如重送一筆轉帳）</td>
+</tr>
+<tr>
+<td>trap door（後門）</td>
+<td>程式設計者故意留的祕密入口</td>
+</tr>
+<tr>
+<td>DDoS（distributed denial of service）</td>
+<td>很多台被控制的電腦（殭屍網路 botnet）同時對目標送大量要求，耗光它的資源，正常使用者用不了</td>
+</tr>
+<tr>
+<td>polymorphic virus（多型病毒）</td>
+<td>每次感染都改變自己的程式碼（例如換一把金鑰加密自己），<strong>病毒碼（signature）一直變</strong>，比對特徵的防毒軟體認不出來</td>
+</tr>
+<tr>
+<td>tunneling virus（穿隧病毒）</td>
+<td>把自己裝到中斷處理程式、驅動程式那一層，<strong>繞過</strong>防毒軟體監看的地方</td>
+</tr>
+</tbody>
+</table>
+<p><strong>偵測入侵的兩種方式</strong>（105 Q4(5)）：</p>
+<ul>
+<li><strong>signature-based</strong>：比對已知攻擊的特徵。誤報少，但<strong>新的攻擊認不出來</strong>。</li>
+<li><strong>anomaly detection</strong>：先學「正常的樣子」，偏離就警告。能抓到沒見過的攻擊，但<strong>誤報比較多</strong>。</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">101 Q5（10%）：MAC 和數位簽章怎麼運作？</p>
+<p><strong>MAC</strong>：雙方事先共用祕密金鑰 k。傳送方用 k 對訊息算出一個短的認證碼 <span class="arithmatex">\(\text{MAC}_k(m)\)</span>，跟訊息一起送；接收方用同一把 k 重算，一樣就表示訊息沒被改、而且是知道 k 的人送的。</p>
+<p><strong>數位簽章</strong>：傳送方先算訊息的雜湊 <span class="arithmatex">\(H(m)\)</span>，再用自己的<strong>私鑰</strong>簽成簽章，跟訊息一起送；接收方用傳送方的<strong>公鑰</strong>驗證簽章，跟自己算的 <span class="arithmatex">\(H(m)\)</span> 對得上就通過。因為只有傳送方有私鑰，還能提供 nonrepudiation。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">105 Q4（15%）：(1) protection domain 的實作與切換時機 (2) language-based protection 的優點 (3) virus 和 worm 的差別 (4) 非對稱加密怎麼發金鑰 (5) signature-based 和 anomaly detection 的差別</p>
+<ul>
+<li><strong>(1)</strong> 使用者、process、程序三種，切換時機見上表。</li>
+<li><strong>(2) language-based protection</strong>：在程式語言裡宣告保護需求（例如 Java 的型別安全、存取修飾子），由編譯器和執行環境檢查。優點：保護需求用宣告的方式寫，簡單清楚；不依賴特定作業系統的機制；可以做到很細的粒度（例如單一物件、單一方法）。</li>
+<li><strong>(3)</strong> virus 要附在別的程式上、靠那個程式執行來散播；worm 是獨立的程式，自己透過網路複製散播（<a href="#u6-0">6.0</a> 的表）。</li>
+<li><strong>(4)</strong> 公鑰公開發送，用 CA 簽的數位憑證證明公鑰的主人（見上面）。</li>
+<li><strong>(5)</strong> 見上面「偵測入侵的兩種方式」。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">107 Q4（15%）：(1) 最小權限是什麼？Solaris 怎麼實作 (2) language-based protection 為什麼可能不安全 (3) polymorphic、tunneling virus 怎麼躲過防毒 (4) 數位簽章怎麼運作 (5) DDoS 怎麼運作</p>
+<ul>
+<li><strong>(1)</strong> 最小權限：只給剛好夠完成工作的權限。Solaris 10 用 <strong>role-based access control（RBAC）</strong>：把細分的權限（privilege，例如執行某個 system call）指定給<strong>角色</strong>（role），使用者需要時才切換成那個角色、執行特定程式，不用整個變成 root。</li>
+<li><strong>(2)</strong> 它的保護靠<strong>編譯器和執行環境</strong>正確檢查。如果編譯器有漏洞、或程式碼不是經過可信任的編譯器產生的（例如直接改 bytecode），檢查就被繞過。硬體（kernel mode、記憶體保護）強制的保護比較難繞過。</li>
+<li><strong>(3)</strong> polymorphic：每次感染都改變自己的樣子，特徵碼對不上；tunneling：把自己裝到比防毒軟體更底層的地方（中斷處理、驅動程式），防毒軟體看不到它。</li>
+<li><strong>(4)</strong> 數位簽章：見 101 Q5。</li>
+<li><strong>(5)</strong> DDoS：攻擊者控制大量電腦（botnet），同時對目標送大量要求，耗盡頻寬、CPU 或連線數，正常使用者無法使用；流量來自四面八方，很難用封鎖單一來源擋掉。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">102 Q5（14%，每小題 2%，答錯倒扣）：是非題</p>
+<ol>
+<li>「need-to-know 原則：程式、使用者、甚至系統只給剛好夠的權限……」：<strong>錯</strong>。這段話是 principle of <strong>least privilege</strong> 的定義（見上面的表）。</li>
+<li>「四個條件任一個成立就一定死結」：<strong>錯</strong>，要四個<strong>同時</strong>成立（<a href="#u3-more">3.2</a>）。</li>
+<li>「relocation register 是 1877、邏輯位址 123，實體位址 2000」：<strong>對</strong>（<a href="#u4-alloc">4.5</a>）。</li>
+<li>「編譯器裡藏了 trap door，仔細檢查被編譯的程式的原始碼還是找得到」：<strong>錯</strong>。後門在<strong>編譯器</strong>裡，被編譯的程式原始碼完全正常，看它的原始碼找不到（Ken Thompson 的〈Reflections on Trusting Trust〉）。</li>
+<li>「通訊的一方假裝成別人叫 man-in-the-middle」：<strong>錯</strong>，假裝成別人是 <strong>masquerading</strong>；中間人是攻擊者夾在兩方中間。</li>
+<li>「RAID 0+1 兼顧效能（RAID 0）和可靠度（RAID 1），通常比 RAID 5 快」：<strong>對</strong>。</li>
+<li>「location transparency 能在不同時間把同一個檔名對應到不同位置，所以比 location independence 強」：<strong>錯</strong>，說反了。能動態改變對應位置的是 <strong>location independence</strong>，它比 location transparency 強。</li>
+</ol>
+</div>
+<h4 id="_36">觀念小考</h4>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 哪一種方法能提供 nonrepudiation（送的人事後不能否認）？</p>
+<ol>
+<li>MAC</li>
+<li>數位簽章</li>
+<li>對稱式加密</li>
+<li>雜湊函數</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。只有簽的人有私鑰，別人做不出同樣的簽章，所以他不能否認。MAC 的金鑰雙方都有，收方也能自己做出同樣的 MAC，無法證明是誰送的。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-2.</strong> 防毒軟體靠比對特徵碼，哪一種病毒最難被這種方法抓到？</p>
+<ol>
+<li>boot virus</li>
+<li>macro virus</li>
+<li>logic bomb</li>
+<li>polymorphic virus</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。polymorphic virus 每次感染都改變自己的程式碼，沒有固定的特徵碼可以比對。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> 攻擊者把截到的合法登入訊息再送一次，取得權限，這叫什麼？</p>
+<ol>
+<li>replay attack</li>
+<li>masquerading</li>
+<li>DDoS</li>
+<li>trap door</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。訊息本身是合法的，只是被重送。對策是在訊息裡加時間戳記或一次性的亂數（nonce），重送的舊訊息就會被拒絕。</p>
+</details>
 </div>
 
 </section>

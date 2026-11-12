@@ -203,26 +203,58 @@
     return mj.typesetPromise([el]).then(function () { return true; }, function () { return true; });
   }
   function prepare(el) { return typeset(el).then(function (ok) { if (ok) fitTables(el); return ok; }); }
+  // 收起來的解答（details）裡的表，打開後才量得到寬度；單元還沒排版好就等排版完再一起處理
+  document.addEventListener("toggle", function (e) {
+    var d = e.target;
+    if (!d.open || !d.closest) return;
+    var host = d.closest("section.unit") || d.closest("article");
+    if (host && host.dataset.mj) fitTables(d);
+  }, true);
 
   // 手機上放不下的表格：列數少、欄位多的轉成直的；其他的每一列變成一張卡片
+  // 放得下、但有一格被擠到一行只剩三四個字的表（欄位多、字也多的比較表），也改成卡片
   function fitTables(root) {
     if (!phone.matches || !root) return;
     root.querySelectorAll("table").forEach(function (tb) {
       if (tb.dataset.fit || !tb.offsetParent || tb.closest(".vz")) return;
-      if (tb.scrollWidth <= tb.clientWidth + 2) return;
+      var over = tb.scrollWidth > tb.clientWidth + 2;
+      if (!over && !cramped(tb)) return;
       var rows = Array.prototype.slice.call(tb.rows);
       var cols = Math.max.apply(null, rows.map(function (r) { return r.cells.length; }));
       var merged = tb.querySelector("[rowspan],[colspan]");
       // 格子裡的字都很短（例如時間軸、frame 內容）才轉直的；字多的表轉直了還是太寬，改用卡片
       var longest = 0;
       Array.prototype.forEach.call(tb.tBodies, function (b) { Array.prototype.forEach.call(b.rows, function (r) { Array.prototype.forEach.call(r.cells, function (c, i) { if (i) longest = Math.max(longest, c.textContent.trim().length); }); }); });
-      if (!merged && rows.length <= 4 && cols >= 5 && longest <= 8) {
+      if (over && !merged && rows.length <= 4 && cols >= 5 && longest <= 8) {
         transpose(tb, rows, cols);
         tb.dataset.fit = "t";
         if (tb.scrollWidth <= tb.clientWidth + 2) return;
       }
       if (!tb.dataset.fit) { stack(tb); tb.dataset.fit = "s"; }
     });
+  }
+  // 數一格的文字排成幾行（公式不算）：4 行以上、平均每行 4 個字以下，或 3 行以上、每行 2 個字以下，就算太擠。
+  // 欄位很多的數字表（例如 DP 表）改成卡片反而更難看，不處理
+  function cramped(tb) {
+    var cols = Math.max.apply(null, Array.prototype.map.call(tb.rows, function (r) { return r.cells.length; }));
+    if (cols > 6) return false;
+    var cells = tb.querySelectorAll("tbody td, tbody th");
+    for (var i = 0; i < cells.length; i++) {
+      var tops = [], len = 0, w = document.createTreeWalker(cells[i], NodeFilter.SHOW_TEXT, null);
+      for (var t = w.nextNode(); t; t = w.nextNode()) {
+        var s = t.data.replace(/\s+/g, "");
+        if (!s || (t.parentNode.closest && t.parentNode.closest("mjx-container"))) continue;
+        len += s.length;
+        var r = document.createRange();
+        r.selectNodeContents(t);
+        Array.prototype.forEach.call(r.getClientRects(), function (x) { if (x.width > 0 && x.height > 4) tops.push(x.top); });
+      }
+      tops.sort(function (a, b) { return a - b; });
+      var lines = tops.length ? 1 : 0;
+      for (var k = 1; k < tops.length; k++) if (tops[k] - tops[k - 1] > 8) lines++;
+      if ((lines >= 4 && len <= lines * 4) || (lines >= 3 && len <= lines * 2)) return true;
+    }
+    return false;
   }
   function transpose(tb, rows, cols) {
     var m = rows.map(function (r) { return Array.prototype.slice.call(r.cells); });
@@ -237,16 +269,27 @@
     tb.classList.add("tbl-t");
   }
   function stack(tb) {
-    var heads = tb.tHead && tb.tHead.rows[0] ? Array.prototype.map.call(tb.tHead.rows[0].cells, function (c) { return c.textContent.trim(); }) : [];
+    var heads = tb.tHead && tb.tHead.rows[0] ? Array.prototype.slice.call(tb.tHead.rows[0].cells) : [];
+    var hasMath = function (c) { return !!c.querySelector("mjx-container, img, svg"); };
     Array.prototype.forEach.call(tb.tBodies, function (b) {
       Array.prototype.forEach.call(b.rows, function (r) {
         Array.prototype.forEach.call(r.cells, function (c, i) {
+          // 空的格子在卡片裡只會剩一個欄位名稱，不顯示
+          if (!c.textContent.trim() && !hasMath(c)) { c.classList.add("nil"); return; }
           // 內容包一層，排版時文字和公式才會待在同一格
           var w = document.createElement("span");
           w.className = "cv";
           while (c.firstChild) w.appendChild(c.firstChild);
+          // 欄位名稱整個複製過來（裡面的公式也要，例如 n-way 的 n）
+          var h = heads[i];
+          if (h && (h.textContent.trim() || hasMath(h))) {
+            var lb = document.createElement("span");
+            lb.className = "lb";
+            Array.prototype.forEach.call(h.childNodes, function (n) { lb.appendChild(n.cloneNode(true)); });
+            c.appendChild(lb);
+            c.classList.add("has-lb");
+          }
           c.appendChild(w);
-          if (heads[i]) c.setAttribute("data-label", heads[i]);
         });
       });
     });
