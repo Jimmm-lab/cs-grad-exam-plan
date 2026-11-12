@@ -243,6 +243,10 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-svg .vz-w.skip text { opacity: .4; }
 .vz-svg .vz-hl { fill: var(--trap); font-weight: 800; }
 .vz-svg .vz-dimtxt { fill: var(--muted); opacity: .6; }
+.vz-node.dim { opacity: .45; }
+.vz-node.side2 circle { fill: var(--key-soft); stroke: var(--key); stroke-width: 2.5; }
+.vz-static .vz-form, .vz-static .vz-ctrl, .vz-static .vz-cap:empty { display: none; }
+.vz-static .vz-tag { background: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
   .vz-svg g, .vz-edge path { transition: none; }
 }
@@ -465,8 +469,36 @@ window.MathJax = {
 <ul>
 <li>題目是英文，填空要填英文名詞。背的時候就背英文。</li>
 <li>111 年 OS 計算題出自 Tanenbaum《Modern Operating Systems》的習題，計算模板一樣，不用另外買書。</li>
+<li>103、106、110 年的題目跟 111 年是同一種風格，i-node、磁碟聚集、TLB 命中率這幾種計算題一再出現。下表的題型也出自同一批題目。</li>
 </ul>
 </div>
+<p><strong>100–110 年還常考的計算題</strong>（108、109 留作模考，不列）：</p>
+<table>
+<thead>
+<tr>
+<th>題型</th>
+<th>年份</th>
+<th>教材</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>磁碟排程（SSTF、SCAN、LOOK 等的移動距離）</td>
+<td>101、102、104、107、110</td>
+<td><a href="#u5-sched">5.4</a></td>
+</tr>
+<tr>
+<td>fork、thread、pipe 的程式印出什麼</td>
+<td>106、110</td>
+<td><a href="#u1-fork">1.3</a></td>
+</tr>
+<tr>
+<td>二維陣列的 page fault、page fault 次數的上下界</td>
+<td>103、106、110</td>
+<td><a href="#u4-pf">4.4</a></td>
+</tr>
+</tbody>
+</table>
 <p><strong>建議讀的順序</strong>：單元 1 行程與排程 → 2 同步 → 3 死結 → 4 記憶體 → 5 儲存與檔案 → 6 保護、安全與其他 → 7 名詞總表。</p>
 
 </section>
@@ -762,6 +794,303 @@ window.MathJax = {
 </div>
 <div class="viz" data-viz="sched" data-procs="P1 0 10 3, P2 0 1 1, P3 0 2 3, P4 0 1 4, P5 0 5 2" data-algo="rr" data-q="1" data-title="113 Q6a：切換成 SJF、Priority 對照上面的答案"></div>
 
+<h3 id="u1-fork">1.3 fork、wait、thread、pipe：程式會印出什麼</h3>
+<p>106、110 年各有一題 10% 的「這支 C 程式印出什麼」，考的是行程（process）和執行緒（thread）的系統呼叫。只要記住四條規則，就能一行一行追出答案。</p>
+<h4 id="1fork">規則 1：fork 之後變成兩份，各改各的</h4>
+<p><code>fork()</code> 會複製出一個<strong>子行程</strong>，連記憶體一起整份複製。之後兩個行程都從 fork 的<strong>下一行</strong>繼續跑，變數各有一份，改自己的不會影響對方。</p>
+<p>像影印一份作業：之後在影印本上寫字，原本那份不會變。（實作上用 copy-on-write 省時間，見 <a href="#u4-3">4.3</a>，但結果跟整份複製一樣。）</p>
+<p><strong>怎麼知道自己是誰</strong>：看 fork 的回傳值。</p>
+<table>
+<thead>
+<tr>
+<th>回傳值</th>
+<th>代表</th>
+<th>程式通常寫</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>＞ 0（子行程的 pid）</td>
+<td>我是父行程</td>
+<td><code>if (pid &gt; 0)</code></td>
+</tr>
+<tr>
+<td>0</td>
+<td>我是子行程</td>
+<td><code>else if (pid == 0)</code></td>
+</tr>
+<tr>
+<td>−1</td>
+<td>fork 失敗</td>
+<td><code>else</code></td>
+</tr>
+</tbody>
+</table>
+<pre class="highlight"><code class="language-c">int x = 1;
+if (fork() == 0) {            /* 子行程 */
+    x++;                      /* 改的是自己那份 */
+    printf("child %d\n", x);
+} else {                      /* 父行程 */
+    wait(NULL);
+    printf("parent %d\n", x); /* 還是 1 */
+}</code></pre>
+<p>印出 <code>child 2</code>、<code>parent 1</code>。</p>
+<h4 id="2wait">規則 2：wait 決定誰先印</h4>
+<p>沒有 wait 時，父子誰先跑不一定，輸出順序就不固定。考題會用 <code>waitpid(-1, &amp;status, 0)</code> 讓順序固定：父行程停在這一行，等<strong>任何一個</strong>子行程結束才往下走。</p>
+<p>所以<strong>被等的一定先印完</strong>。畫一棵行程樹，從最底下的行程開始往上印。</p>
+<h4 id="3thread">規則 3：thread 共用記憶體，行程不共用</h4>
+<p><code>pthread_create</code> 開的 thread 在<strong>同一個行程裡</strong>，跟 main 共用變數。把 <code>&amp;value</code> 傳給 thread，thread 改 <code>*param</code>，改到的就是 main 的 value。<code>pthread_join</code> 是等 thread 做完。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>fork（行程）</th>
+<th>pthread_create（執行緒）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>記憶體</td>
+<td>各自一份，改了對方看不到</td>
+<td>共用，改了對方看得到</td>
+</tr>
+<tr>
+<td>等它結束</td>
+<td><code>wait</code>／<code>waitpid</code></td>
+<td><code>pthread_join</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="4pipedupexec">規則 4：pipe、dup、exec 把輸出接到別的行程</h4>
+<ul>
+<li><strong>檔案描述子（file descriptor）</strong>：0 是標準輸入（鍵盤）、1 是標準輸出（螢幕）、2 是標準錯誤。</li>
+<li><strong><code>pipe(fd)</code></strong>：建一條管子，<code>fd[0]</code> 是讀端、<code>fd[1]</code> 是寫端。記法：0 對應 stdin（讀）、1 對應 stdout（寫）。</li>
+<li><strong><code>close(1); dup(fd[1]);</code></strong>：dup 會用「目前最小的空號碼」複製一份。剛關掉 1，所以新的 1 就是 pipe 的寫端。之後寫到標準輸出的東西都流進 pipe，不會出現在螢幕上。（<code>dup2(fd[1], 1)</code> 是一次做完的寫法。）</li>
+<li><strong><code>execl("/bin/echo", ...)</code></strong>：把目前這個行程<strong>換成</strong>另一個程式。execl 成功後，原本程式下面的程式碼<strong>不會再執行</strong>，但已經開好的檔案描述子會留著，所以 echo 的輸出照樣流進 pipe。</li>
+</ul>
+<h4 id="_5">考試的步驟</h4>
+<ol>
+<li><strong>畫行程樹</strong>：每個 fork 分兩支，標 P0、P1、P2……，寫下每個行程自己的變數值。</li>
+<li><strong>標出誰等誰</strong>：有 waitpid 的，子行程先印。</li>
+<li><strong>thread 改的是同一份，fork 之後改的是自己那份。</strong></li>
+<li><strong>注意 <code>--v</code> 和 <code>v--</code></strong>：<code>printf("%d", --v)</code> 先減再印；<code>printf("%d", v--)</code> 先印再減。</li>
+</ol>
+<div class="admonition example">
+<p class="admonition-title">106 Q1（10%）：三層 fork 加上 pthread，印出什麼？</p>
+<pre class="highlight"><code class="language-c">static void *runner(void *param) {
+    (*(int *)param)--;                  /* 把傳進來的變數減 1 */
+    pthread_exit(0);
+}
+int main(int argc, char **argv) {
+    int value = 101;
+    pid_t pid = fork();                 /* 第 17 行 */
+    if (pid &gt; 0) {
+        int status;
+        waitpid(-1, &amp;status, 0);
+        printf("A = %d\n", --value);
+    }
+    else if (pid == 0) {
+        pid_t pid = fork();             /* 第 24 行 */
+        if (pid &gt; 0) {
+            int status;
+            waitpid(-1, &amp;status, 0);
+            printf("B = %d\n", value--);
+        }
+        else if (pid == 0) {
+            pid_t pid = fork();         /* 第 31 行 */
+            pthread_t tid;
+            pthread_create(&amp;tid, NULL, runner, &amp;value);
+            pthread_join(tid, NULL);
+            if (pid &gt; 0) {
+                int status;
+                waitpid(-1, &amp;status, 0);
+                printf("C = %d\n", ++value);
+            }
+            else {
+                printf("D = %d\n", value++);
+            }
+        }
+        else return 1;
+    }
+    else return 1;
+    return 0;
+}</code></pre>
+<p><strong>行程樹（4 個行程）</strong>：P0 在第 17 行 fork 出 P1；P1 在第 24 行 fork 出 P2；P2 在第 31 行 fork 出 P3。每個行程開始時 value 都是 101（fork 的時候複製過去的）。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>走到哪</th>
+<th>value 怎麼變</th>
+<th>印出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P3</td>
+<td>第 31 行拿到 0 → else</td>
+<td>thread 減 1 → 100；<code>value++</code> 先印 <strong>100</strong></td>
+<td>D = 100</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>第 31 行拿到 ＞0</td>
+<td>thread 減 1 → 100；等 P3；<code>++value</code> → <strong>101</strong></td>
+<td>C = 101</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>第 24 行拿到 ＞0</td>
+<td>沒有 thread 改它，還是 101；等 P2；<code>value--</code> 先印 <strong>101</strong></td>
+<td>B = 101</td>
+</tr>
+<tr>
+<td>P0</td>
+<td>第 17 行拿到 ＞0</td>
+<td>101；等 P1；<code>--value</code> → <strong>100</strong></td>
+<td>A = 100</td>
+</tr>
+</tbody>
+</table>
+<p><strong>順序</strong>：P0 等 P1、P1 等 P2、P2 等 P3，所以從最底下的 P3 開始印：</p>
+<pre class="highlight"><code class="language-text">D = 100
+C = 101
+B = 101
+A = 100</code></pre>
+<p><strong>三個陷阱</strong>：</p>
+<ul>
+<li>第 31 行的 fork 在 <code>pthread_create</code> <strong>之前</strong>，所以 P2 和 P3 都會各開一個 thread，各自把<strong>自己的</strong> value 從 101 減成 100。</li>
+<li>P1 和 P0 從頭到尾沒有 thread 改它們的 value，還是 101。</li>
+<li><code>value--</code> 印的是減之前的值（B 印 101），<code>++value</code> 印的是加之後的值（C 印 101）。</li>
+</ul>
+<p>這支程式用 gcc 實際編譯執行過，輸出跟上面一樣。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">110 Q1（10%）：pipe、dup、execl，印出什麼？</p>
+<pre class="highlight"><code class="language-c">int main() {
+    int fd[2];
+    pipe(fd);
+    pid_t pid = fork();
+    if (pid &gt; 0) {                      /* 父行程 */
+        close(fd[1]);
+        close(0);
+        dup(fd[0]);
+        close(fd[0]);
+        int status;
+        waitpid(-1, &amp;status, 0);
+        char buf[128];
+        int n = scanf("%4s", buf);
+        printf("%d:%s\n", n, buf);
+    }
+    else if (pid == 0) {                /* 子行程 */
+        close(fd[0]);
+        close(1);
+        dup(fd[1]);
+        close(fd[1]);
+        execl("/bin/echo", "echo", "hello", "world!", (void *) 0);
+    }
+    else return 1;
+    return 0;
+}</code></pre>
+<ul>
+<li><strong>子行程（把輸出接進 pipe）</strong>：關掉讀端；<code>close(1)</code> 再 <code>dup(fd[1])</code>，標準輸出變成 pipe 的寫端；execl 換成 <code>echo hello world!</code>，把 <code>hello world!</code> 和換行寫進 pipe。這行字<strong>不會出現在螢幕上</strong>。</li>
+<li><strong>父行程（從 pipe 讀）</strong>：關掉寫端；<code>close(0)</code> 再 <code>dup(fd[0])</code>，標準輸入變成 pipe 的讀端；waitpid 等 echo 結束。</li>
+<li><strong><code>scanf("%4s", buf)</code>（buf ＝ hell，n ＝ 1）</strong>：<code>%s</code> 讀一個不含空白的字串，<code>%4</code> 限制最多 4 個字元，所以從 <code>hello</code> 只讀到 <code>hell</code>。scanf 回傳成功讀到幾個項目，讀到 1 個。</li>
+<li><strong>印出（1:hell）</strong>：</li>
+</ul>
+<pre class="highlight"><code class="language-text">1:hell</code></pre>
+<p><strong>為什麼只有一行</strong>：echo 的輸出流進 pipe，被父行程讀走了，螢幕上只看得到父行程的 printf。這支程式也實際執行過，輸出就是 <code>1:hell</code>。</p>
+</div>
+<h4 id="_6">觀念小考</h4>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="1">
+<p><strong>C-1.</strong> 下面的程式，父行程印出什麼？</p>
+<pre class="highlight"><code class="language-c">int x = 5;
+pid_t p = fork();
+if (p == 0) x = 10;
+else { wait(NULL); printf("%d\n", x); }</code></pre>
+<ol>
+<li>5</li>
+<li>10</li>
+<li>不一定，看誰先跑</li>
+<li>15</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A. 5</strong>。fork 之後父子各有一份 x。子行程把<strong>自己的</strong> x 改成 10，父行程那份還是 5。wait 只是讓父行程等子行程結束，不會把子行程的變數帶回來。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-2.</strong> <code>runner</code> 會把傳進來的整數加 3。下面印出什麼？</p>
+<pre class="highlight"><code class="language-c">int v = 5;
+pthread_create(&amp;t, NULL, runner, &amp;v);
+pthread_join(t, NULL);
+printf("%d\n", v);</code></pre>
+<ol>
+<li>5</li>
+<li>8</li>
+<li>不一定，看誰先跑</li>
+<li>3</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. 8</strong>。thread 跟 main 在同一個行程裡，共用 v。thread 把 v 加 3，pthread_join 等它做完，所以印 8。（如果換成 fork，子行程改的是自己那份，父行程會印 5。）</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-3.</strong> <code>fork(); fork(); fork();</code> 連續三行執行完，總共有幾個行程（含原本的）？</p>
+<ol>
+<li>3</li>
+<li>6</li>
+<li>8</li>
+<li>4</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 8</strong>。每一個 fork，<strong>當時存在的每個行程</strong>都會再複製一份，行程數乘以 2：1 → 2 → 4 → 8，也就是 <span class="arithmatex">\(2^3\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-4.</strong> 執行 <code>close(1); dup(fd[1]);</code> 之後（fd 是 pipe），<code>printf</code> 印的東西會去哪裡？</p>
+<ol>
+<li>還是螢幕</li>
+<li>pipe 的寫端，從讀端讀得到</li>
+<li>pipe 的讀端</li>
+<li>消失，因為 1 被關掉了</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。dup 用目前最小的空號碼，剛關掉的 1 就是最小的，所以新的 1 指向 pipe 的寫端。printf 寫到 1（標準輸出），資料就進了 pipe，另一個行程從 <code>fd[0]</code> 讀得到。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> 子行程呼叫 <code>execl("/bin/echo", ...)</code> 成功之後，execl 下一行的程式碼會怎樣？</p>
+<ol>
+<li>等 echo 結束後執行</li>
+<li>不會執行，因為這個行程已經整個換成 echo</li>
+<li>由父行程執行</li>
+<li>只有 echo 失敗時才不執行</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。exec 把行程的程式碼換掉，原本的程式碼已經不在了，不會「回來」。反過來說，<strong>只有 exec 失敗時</strong>，下一行才會執行，所以常見寫法是在 exec 後面接錯誤處理。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用自己的話說明：為什麼 fork 出來的子行程改變數，父行程看不到；thread 改變數，main 卻看得到？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>fork 會<strong>複製</strong>整個行程的記憶體，父子各有一份變數，改的是自己那份。thread 是同一個行程裡的另一條執行路線，<strong>共用</strong>同一份記憶體（全域變數、heap、傳進去的指標指到的變數），所以 thread 改了，main 看得到。</p>
+<p><strong>自我檢查</strong>：你有沒有寫出「複製」和「共用」這兩個關鍵字？</p>
+</details>
+<p><strong>W-2.</strong> 106 Q1 裡，為什麼 B 印 101、C 也印 101？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ul>
+<li><strong>B（P1）</strong>：P1 沒有開 thread，value 一直是 101。<code>value--</code> 是先印再減，所以印 101。</li>
+<li><strong>C（P2）</strong>：P2 開的 thread 把 P2 的 value 減成 100。<code>++value</code> 先加再印，所以印 101。</li>
+</ul>
+<p>兩個都是 101，但原因不同：一個是「沒被減、先印」，一個是「被減了、又加回來」。</p>
+</details>
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> 三個 process 在時間 0 依序到達，burst 6、3、1，FCFS 和 SJF 的平均等待時間？</p>
 <details class="quiz">
@@ -855,7 +1184,7 @@ window.MathJax = {
 <li><strong>progress</strong>：沒人在裡面時，想進去的人不能一直被擋著。</li>
 <li><strong>bounded waiting</strong>：排隊的人等待的次數有上限，不會一直被插隊（不會餓死）。</li>
 </ol>
-<h4 id="_5">硬體怎麼幫忙：不可分割的指令</h4>
+<h4 id="_7">硬體怎麼幫忙：不可分割的指令</h4>
 <p>自己寫「先檢查 lock 是不是空的，再把它設成佔用」不行，因為兩個 thread 可能<strong>同時檢查到空的</strong>，又出現上面那種交錯。</p>
 <p><code>test_and_set</code> 這類指令把「讀舊值、設成 true」<strong>合成一個不可分割的動作</strong>：</p>
 <ul>
@@ -877,7 +1206,7 @@ window.MathJax = {
 <li><strong>影片</strong>：<a href="https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ">周志遠・作業系統播放清單</a>的 Process Synchronization 單元。</li>
 </ul>
 </div>
-<h4 id="_6">換你試試</h4>
+<h4 id="_8">換你試試</h4>
 <p><strong>T-1.</strong> counter ＝ 0，兩個 thread 各做一次 <code>counter++</code>，沒有 lock，最後可能是多少？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -930,7 +1259,7 @@ window.MathJax = {
 <p>死結要<strong>四個條件同時成立</strong>：mutual exclusion、hold and wait、no preemption、circular wait。破壞其中一個就不會死結。</p>
 </div>
 <h3 id="u3-0">3.0 觀念課：兩個人各拿一支筷子</h3>
-<h4 id="_7">最小的死結</h4>
+<h4 id="_9">最小的死結</h4>
 <p>P1 拿著資源 R1、在等 R2；P2 拿著 R2、在等 R1。兩人都不放手，永遠等下去。像兩個人吃飯，各拿了一支筷子，都在等對方的那一支。</p>
 <p>把四個必要條件對到這個例子：</p>
 <table>
@@ -960,7 +1289,7 @@ window.MathJax = {
 </tbody>
 </table>
 <p>四個都成立才會死結。<strong>破壞任何一個就不會死結</strong>，這就是 deadlock prevention 的思路，例如「一次把兩支筷子都拿到才開始吃」破壞了 hold and wait。</p>
-<h4 id="_8">避免死結：銀行家只借「還得回來」的錢</h4>
+<h4 id="_10">避免死結：銀行家只借「還得回來」的錢</h4>
 <p>Banker's algorithm 的想法：銀行只在「借出去之後，<strong>仍然存在某個順序</strong>能讓每個客戶都借滿、用完、還錢」時才借。這種狀態叫 <strong>safe state</strong>。</p>
 <p><strong>小例子</strong>：一種資源共 10 份。</p>
 <table>
@@ -996,7 +1325,7 @@ window.MathJax = {
 <li><strong>影片</strong>：<a href="https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ">周志遠・作業系統播放清單</a>的 Deadlocks 單元。</li>
 </ul>
 </div>
-<h4 id="_9">換你試試</h4>
+<h4 id="_11">換你試試</h4>
 <p><strong>T-1.</strong> 「要求行程一開始就申請所有需要的資源」破壞的是哪個條件？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1057,7 +1386,7 @@ window.MathJax = {
 <li>重新執行剛剛那條指令。</li>
 </ol>
 <p>只在用到時才載入 page，叫 <strong>demand paging</strong>。</p>
-<h4 id="_10">踢誰出去：三種策略</h4>
+<h4 id="_12">踢誰出去：三種策略</h4>
 <p>3 個 frame，存取順序 7, 0, 1, 2, 0, 3, 0, 4：</p>
 <table>
 <thead>
@@ -1196,7 +1525,7 @@ window.MathJax = {
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10373783">談 FIFO、LRU、OPT 的文章</a>。</li>
 </ul>
 </div>
-<h4 id="_11">換你試試</h4>
+<h4 id="_13">換你試試</h4>
 <p><strong>T-1.</strong> 3 個 frame，存取 1, 2, 3, 1, 4, 1。FIFO 和 LRU 各幾次 page fault？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1339,6 +1668,134 @@ window.MathJax = {
 <p>定義 working-set window <span class="arithmatex">\(\Delta\)</span>（最近 <span class="arithmatex">\(\Delta\)</span> 次存取），process <span class="arithmatex">\(i\)</span> 在這段時間用到的 page 集合大小是 <span class="arithmatex">\(WSS_i\)</span>。</p>
 <p>總需求 <span class="arithmatex">\(D=\sum WSS_i\)</span>。如果 <span class="arithmatex">\(D\)</span> 大於可用的 frame 數 <span class="arithmatex">\(m\)</span>，就會 thrashing，OS <strong>暫停（swap out）某個 process</strong>，把它的 frame 分給其他人；<span class="arithmatex">\(D\)</span> 夠小時再載入新的 process。這樣既能避免 thrashing，又能維持最高的 multiprogramming 程度。</p>
 </div>
+<h3 id="u4-pf">4.4 程式寫法與 page fault：二維陣列、次數的上下界</h3>
+<p>103、110 年各考一題「初始化二維陣列會發生幾次 page fault」（10%），兩題幾乎一樣，只換了數字和存放方式。103、106 年也各考一題 page fault 次數的上下界（10%）。</p>
+<h4 id="_14">陣列在記憶體裡是一長條</h4>
+<p>記憶體是一維的，二維陣列要排成一長條，有兩種排法：</p>
+<table>
+<thead>
+<tr>
+<th>排法</th>
+<th>順序</th>
+<th>誰在用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>row-major（列優先）</td>
+<td>一列接一列：A[0][0], A[0][1], …, A[0][n−1], A[1][0], …</td>
+<td>C 語言</td>
+</tr>
+<tr>
+<td>column-major（行優先）</td>
+<td>一行接一行：A[0][0], A[1][0], …, A[n−1][0], A[0][1], …</td>
+<td>Fortran；題目會指定</td>
+</tr>
+</tbody>
+</table>
+<p><span class="arithmatex">\(n\times n\)</span> 的陣列裡，A[i][j] 是第幾個元素（從 0 數）：row-major 是 <span class="arithmatex">\(i\times n+j\)</span>，column-major 是 <span class="arithmatex">\(j\times n+i\)</span>。</p>
+<h4 id="_15">迴圈順序要跟著排法走</h4>
+<p>像書架上的書一排一排放好：照順序一本一本拿，一排拿完才走到下一排；如果每次都換一排只拿一本，每拿一本都要走一趟。</p>
+<ul>
+<li><strong>順序一致</strong>（row-major 用「i 在外、j 在內」；column-major 用「j 在外、i 在內」）：連續存取，一頁的元素全部用完才換下一頁 → <strong>page fault 次數 ＝ 陣列佔幾頁</strong>。</li>
+<li><strong>順序相反</strong>：每次存取都跳到另一頁。內層迴圈一圈會碰到很多頁，frame 卻只有幾個，回到同一頁時它早就被換掉 → <strong>每一次存取都 page fault</strong>。</li>
+</ul>
+<h4 id="_16">解題步驟</h4>
+<ol>
+<li><strong>一頁放幾個元素</strong> ＝ page 大小 ÷ 元素大小；<strong>陣列佔幾頁</strong> ＝ 元素總數 ÷ 一頁放幾個。</li>
+<li><strong>程式在 page 0，不會被換掉</strong>：每個指令都要從 page 0 讀，用 LRU 時它永遠是最近用過的。所以三個 frame 裡，陣列只能用 <strong>2 個</strong>。</li>
+<li><strong>陣列從頁的開頭開始</strong>：A[0][0] 的位置剛好是 page 大小的倍數（例如 200），所以每一頁剛好裝滿一段，不會有半頁。</li>
+<li><strong>判斷迴圈順序</strong>：一致 → 答案 ＝ 陣列頁數；相反 → 看內層迴圈一圈碰到幾頁，比可用的 frame 多，就是每次都 fault，答案 ＝ 元素總數。</li>
+</ol>
+<div class="admonition example">
+<p class="admonition-title">103 Q2（10%）：double A[200][200]，column-major，A[0][0] 在位置 200，page 200 bytes，3 個 frame（frame 0 放程式），LRU</p>
+<p><strong>條件</strong>：double 8 bytes；frame 0 一直放程式（page 0），另外兩個一開始是空的。</p>
+<ul>
+<li><strong>一頁放幾個元素（25）</strong>：200 ÷ 8。</li>
+<li><strong>陣列佔幾頁（1600）</strong>：<span class="arithmatex">\(200\times200=40000\)</span> 個元素 ÷ 25。</li>
+<li><strong>(a) i 在外、j 在內（40000 次）</strong>：column-major 要 j 在外才是連續的，這題相反。內層 j 每加 1，位置跳 200 個元素 ＝ 8 頁；內層一圈碰到 200 個不同的頁，只有 2 個 frame 可以用，回來時早被換掉 → <strong>每次存取都 fault</strong>，共 40000 次。</li>
+<li><strong>(b) j 在外、i 在內（1600 次）</strong>：跟 column-major 一致，連續存取，每頁的 25 個元素用完才換頁 → 每頁 fault 一次，共 1600 次。</li>
+</ul>
+<p>用程式照 LRU 跑過全部 40000 次存取（含每次讀 page 0 的指令），結果是 40000 和 1600。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">110 Q5（10%）：double a[400][400]，row-major，a[0][0] 在位置 400，page 400 bytes，其他條件同 103 Q2</p>
+<ul>
+<li><strong>一頁放幾個元素（50）</strong>：400 ÷ 8。</li>
+<li><strong>陣列佔幾頁（3200）</strong>：<span class="arithmatex">\(400\times400=160000\)</span> 個元素 ÷ 50。</li>
+<li><strong>(a) j 在外、i 在內（160000 次）</strong>：row-major 要 i 在外才連續，這題相反。i 每加 1 跳 400 個元素 ＝ 8 頁，每次都 fault。</li>
+<li><strong>(b) i 在外、j 在內（3200 次）</strong>：連續存取，每頁 fault 一次。</li>
+</ul>
+<p>這題換成 row-major，所以答案跟 103 Q2 的 (a)、(b) 反過來：<strong>哪個順序快要看排法，不是固定的</strong>。</p>
+</div>
+<h4 id="page-fault_1">page fault 次數的上下界</h4>
+<div class="admonition example">
+<p class="admonition-title">103 Q3、106 Q2（各 10%）：m 個 frame（一開始全空），reference string 長度 n、出現 p 個不同的 page。不管用哪一種置換演算法，page fault 次數的下界和上界？</p>
+<ul>
+<li><strong>下界（p）</strong>：一開始記憶體是空的，每個不同的 page 第一次出現時一定不在記憶體裡，所以至少 p 次。</li>
+<li><strong>上界（n）</strong>：最壞的情況是每一次存取都 fault，n 次。</li>
+</ul>
+<p><strong>補充</strong>：如果 <span class="arithmatex">\(p\le m\)</span>，所有 page 都裝得下，不會有任何 page 被換掉，剛好 p 次。上界 n 要在 <span class="arithmatex">\(p&gt;m\)</span> 時才可能發生，例如只有 1 個 frame、reference string 每次都換一個 page。</p>
+</div>
+<h4 id="_17">觀念小考</h4>
+<div class="mcq" data-ans="1">
+<p><strong>C-1.</strong> C 語言的 <code>int a[100][100]</code>（row-major），要把整個陣列設成 0，哪一種迴圈順序 page fault 最少？</p>
+<ol>
+<li><code>for (i…) for (j…) a[i][j] = 0;</code></li>
+<li><code>for (j…) for (i…) a[i][j] = 0;</code></li>
+<li>兩種一樣</li>
+<li>看用哪一種置換演算法</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。C 是 row-major，同一列的元素連在一起。i 在外、j 在內，就是一列一列照記憶體的順序存取，一頁用完才換下一頁。B 每次都跳一整列，容易每次都 fault。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-2.</strong> page 4 KB、int 4 bytes、<code>int a[1024][1024]</code>（row-major），陣列可以用 2 個 frame。用 <code>for (j…) for (i…) a[i][j] = 0;</code>，大約幾次 page fault？</p>
+<ol>
+<li>1024</li>
+<li>1024 × 1024</li>
+<li>2048</li>
+<li>512</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。一列有 1024 個 int ＝ 4 KB，剛好一頁。j 固定時 i 從 0 跑到 1023，每次換一列，就是換一頁；一圈碰到 1024 頁，只有 2 個 frame，每次都 fault，共 <span class="arithmatex">\(1024\times1024\)</span> 次。改成 i 在外、j 在內，只要 1024 次（每列一頁）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-3.</strong> 這類題目中，程式所在的 page 0 為什麼不會被 LRU 換掉？</p>
+<ol>
+<li>作業系統規定程式的 page 不能換</li>
+<li>每個指令都要從 page 0 讀，它永遠是最近用過的</li>
+<li>page 0 是唯讀的</li>
+<li>page 0 在 TLB 裡</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。LRU 換掉「最久沒用」的 page。每執行一個指令都要讀 page 0，所以它永遠是「剛剛用過」，輪不到它。結果就是陣列只能用剩下的 frame。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-4.</strong> 3 個 frame（一開始全空），reference string 是 1, 2, 1, 2, 3, 1。不管用哪一種置換演算法，page fault 幾次？</p>
+<ol>
+<li>3</li>
+<li>6</li>
+<li>4</li>
+<li>不一定</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A. 3</strong>。只有 3 個不同的 page（p ＝ 3），frame 也有 3 個，全部裝得下，不用換掉任何 page。每個 page 只有第一次出現時 fault，共 3 次，剛好等於下界 p。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用自己的話說明：為什麼迴圈順序跟陣列的排法相反時，<strong>每一次</strong>存取都會 page fault？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>順序相反時，內層迴圈每走一步就跳到另一頁，走一圈會碰到很多不同的頁（103 Q2 是 200 頁）。陣列只有 2 個 frame，等到下一圈回到同一頁時，它早就被後面的頁換掉了，所以每次都要重新載入。</p>
+<p><strong>自我檢查</strong>：有沒有比較「內層一圈碰到幾頁」和「可用的 frame 數」？前者比較多，才會每次都 fault。</p>
+</details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？</p>
 <details class="quiz">
@@ -1368,7 +1825,7 @@ window.MathJax = {
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：儲存、檔案與 I/O</h2>
 <h3 id="u5-0">5.0 觀念課：硬碟像一台唱片機</h3>
-<h4 id="_12">讀一個區塊要花三段時間</h4>
+<h4 id="_18">讀一個區塊要花三段時間</h4>
 <p>硬碟是好幾片疊在一起旋轉的碟片，讀寫頭裝在一支可以前後移動的手臂上，像唱片機。</p>
 <table>
 <thead>
@@ -1443,7 +1900,7 @@ window.MathJax = {
 <li><strong>練習（英文）</strong>：恐龍書官網的 <a href="https://www.os-book.com/OS10/regular-exercises/PDF-regular-exer-dir/11.pdf">Mass-Storage 習題</a>。</li>
 </ul>
 </div>
-<h4 id="_13">換你試試</h4>
+<h4 id="_19">換你試試</h4>
 <p><strong>T-1.</strong> 10000 RPM 的硬碟，平均 rotational latency？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1519,6 +1976,301 @@ window.MathJax = {
 <p class="admonition-title">114 Q5b（4%）：interrupt chaining 怎麼運作</p>
 <p>中斷向量表的每一格指向一串<strong>中斷處理程式的串列</strong>。中斷發生時，依序呼叫串列中的處理程式，直到找到能處理這個中斷的那一個。這是「每個裝置都有自己的向量格（表太大）」和「全部共用一個處理程式（要一個個問）」之間的折衷。</p>
 </div>
+<h3 id="u5-sched">5.4 磁碟排程：讀寫頭怎麼移動</h3>
+<p>101、102、104、107、110 年都考過（每次 6–10%）：給一串要求的磁柱（cylinder）編號，照某種演算法排出服務順序、算讀寫頭總共移動多遠。規則固定、只要加減法，是最容易拿的分數。</p>
+<h4 id="_20">觀念：讀寫頭像電梯</h4>
+<p>很多要求在等，讀寫頭一次只能停在一個位置。移動越遠，seek time 越長（見 <a href="#u5-0">5.0</a>），所以目標是<strong>總移動距離越短越好</strong>，又不能讓某些要求等太久。</p>
+<table>
+<thead>
+<tr>
+<th>演算法</th>
+<th>規則</th>
+<th>比喻</th>
+<th>缺點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FCFS</td>
+<td>照到達順序</td>
+<td>排隊</td>
+<td>來回亂跑，距離通常最長</td>
+</tr>
+<tr>
+<td>SSTF（shortest seek time first）</td>
+<td>每次去<strong>離現在最近</strong>的要求</td>
+<td>計程車每次先載最近的客人</td>
+<td>遠的要求可能一直等（starvation）</td>
+</tr>
+<tr>
+<td>SCAN</td>
+<td>往一個方向一路服務到<strong>盡頭</strong>，再回頭</td>
+<td>電梯一定開到頂樓才下來</td>
+<td>剛掃過的那一端要等很久</td>
+</tr>
+<tr>
+<td>LOOK</td>
+<td>跟 SCAN 一樣，但到<strong>最遠的要求</strong>就回頭</td>
+<td>沒人要去頂樓，電梯就不上去</td>
+<td>同上，但少走冤枉路</td>
+</tr>
+<tr>
+<td>C-SCAN（circular SCAN）</td>
+<td>只往一個方向服務，到盡頭後<strong>直接跳回另一端</strong>，回程不服務</td>
+<td>只往上載客的電梯，到頂樓直接降回一樓</td>
+<td>移動距離比 SCAN 長，但等待時間比較平均</td>
+</tr>
+<tr>
+<td>C-LOOK</td>
+<td>C-SCAN 的 LOOK 版：到最遠的要求，就跳回<strong>另一邊最遠的要求</strong></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>為什麼 C-SCAN 比較公平</strong>：SCAN 回頭時，剛掃過的一端要等來回一趟；中間的位置來回各被掃一次。C-SCAN 永遠同一個方向掃，每個位置等的時間差不多。</p>
+<h4 id="_21">題目沒講清楚的，要自己寫假設</h4>
+<ol>
+<li><strong>方向</strong>：「前一個要求在 125、現在在 175」代表正往<strong>編號大的</strong>方向走。只給現在位置時，寫「假設往編號大的方向移動」。</li>
+<li><strong>盡頭在哪</strong>：SCAN、C-SCAN 走到磁柱編號的最大值（0–999 就是 999）或 0。</li>
+<li><strong>C-SCAN、C-LOOK 跳回去那一段算不算距離</strong>：回程不服務要求，但手臂確實有移動，各本書算法不同。<strong>兩個都寫最保險</strong>，例如「含跳回 1925，不含 925」。</li>
+</ol>
+<h4 id="_22">算距離的捷徑</h4>
+<p>電梯類（SCAN、LOOK）只要算<strong>轉折點</strong>：例如 LOOK 往上走到最大的要求再回頭到最小的要求，距離 ＝（最大 − 起點）＋（最大 − 最小），不用一段一段加。</p>
+<div class="viz" data-viz="disk" data-reqs="98,183,37,122,14,124,65,67" data-head="53" data-dir="down" data-max="199" data-algo="sstf" data-title="102 Q7 的資料：切換演算法和方向，比較總距離"></div>
+
+<div class="admonition example">
+<p class="admonition-title">110 Q2（10%）：磁柱 0–1000，正在服務 175、上一個是 125；佇列（FIFO）50, 500, 225, 825, 350, 550, 400, 600, 100；五種演算法的總移動距離</p>
+<p><strong>方向（往大的）</strong>：從 125 移到 175，所以正往編號大的方向走。</p>
+<ul>
+<li><strong>FCFS（2975）</strong>：175 → 50 → 500 → 225 → 825 → 350 → 550 → 400 → 600 → 100，距離 <span class="arithmatex">\(125+450+275+600+475+200+150+200+500\)</span>。</li>
+<li><strong>LOOK（1425）</strong>：往上 225, 350, 400, 500, 550, 600, 825，再回頭 100, 50。距離 <span class="arithmatex">\((825-175)+(825-50)=650+775\)</span>。</li>
+<li><strong>C-LOOK（含跳回 1475，不含 700）</strong>：往上服務到 825，跳回最小的 50，再往上到 100。距離 <span class="arithmatex">\(650+(825-50)+(100-50)=650+775+50\)</span>；不算跳回那段是 <span class="arithmatex">\(650+50\)</span>。</li>
+<li><strong>SCAN（1775）</strong>：往上服務到 825，繼續走到盡頭 1000，回頭 100, 50。距離 <span class="arithmatex">\((1000-175)+(1000-50)=825+950\)</span>。</li>
+<li><strong>C-SCAN（含跳回 1925，不含 925）</strong>：往上走到 1000，跳回 0，再服務 50, 100。距離 <span class="arithmatex">\(825+1000+100\)</span>；不算跳回是 <span class="arithmatex">\(825+100\)</span>。</li>
+</ul>
+</div>
+<div class="viz" data-viz="disk" data-reqs="50,500,225,825,350,550,400,600,100" data-head="175" data-dir="up" data-max="1000" data-algo="look" data-title="110 Q2：五種演算法都可以切換來對答案"></div>
+
+<div class="admonition example">
+<p class="admonition-title">102 Q7（6%）：佇列 98, 183, 37, 122, 14, 124, 65, 67，讀寫頭在 53；SSTF 和 SCAN</p>
+<p>題目沒給最大編號和方向，照恐龍書這個範例的設定：磁柱 0–199，讀寫頭往 0 的方向移動。</p>
+<p><strong>SSTF（236）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>從</th>
+<th>剩下的要求裡最近的</th>
+<th>距離</th>
+<th>累計</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>53</td>
+<td>65</td>
+<td>12</td>
+<td>12</td>
+<td>65 只差 12，37 差 16</td>
+</tr>
+<tr>
+<td>65</td>
+<td>67</td>
+<td>2</td>
+<td>14</td>
+<td></td>
+</tr>
+<tr>
+<td>67</td>
+<td>37</td>
+<td>30</td>
+<td>44</td>
+<td>37 差 30、98 差 31，差一點就去 98</td>
+</tr>
+<tr>
+<td>37</td>
+<td>14</td>
+<td>23</td>
+<td>67</td>
+<td></td>
+</tr>
+<tr>
+<td>14</td>
+<td>98</td>
+<td>84</td>
+<td>151</td>
+<td>小的那一邊沒有要求了</td>
+</tr>
+<tr>
+<td>98</td>
+<td>122</td>
+<td>24</td>
+<td>175</td>
+<td></td>
+</tr>
+<tr>
+<td>122</td>
+<td>124</td>
+<td>2</td>
+<td>177</td>
+<td></td>
+</tr>
+<tr>
+<td>124</td>
+<td>183</td>
+<td>59</td>
+<td>236</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>SCAN（往 0 的方向，236）</strong>：37, 14，走到盡頭 0，回頭 65, 67, 98, 122, 124, 183。距離 <span class="arithmatex">\(53+183=236\)</span>。</p>
+<p>如果假設往編號大的方向：65, 67, 98, 122, 124, 183，走到盡頭 199，回頭 37, 14，距離 <span class="arithmatex">\((199-53)+(199-14)=331\)</span>。方向不同答案就不同，所以<strong>一定要寫出假設</strong>。</p>
+<p><strong>SSTF 不一定最短</strong>：照 37, 14, 65, 67, 98, 122, 124, 183 的順序（往 0 的方向 LOOK）只要 <span class="arithmatex">\((53-14)+(183-14)=208\)</span>，比 SSTF 的 236 少。SSTF 每一步只看最近的（貪心），整體不一定最好。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q6(2)（6%）：磁柱 1–200，讀寫頭在 55；佇列 99, 187, 39, 124, 14, 131, 65, 70；SSTF、SCAN、C-SCAN、C-LOOK</p>
+<p>題目沒給方向，假設往編號大的方向移動。題目只要求「讀寫頭怎麼移動」，寫出順序就夠，距離是順便驗算。</p>
+<ul>
+<li><strong>SSTF</strong>：65, 70, 99, 124, 131, 187, 39, 14（距離 305）。到 131 時，187 差 56、39 差 92，所以先去 187。</li>
+<li><strong>SCAN</strong>：65, 70, 99, 124, 131, 187，走到 200，回頭 39, 14（距離 <span class="arithmatex">\(145+186=331\)</span>）。</li>
+<li><strong>C-SCAN</strong>：65, 70, 99, 124, 131, 187，走到 200，跳回 1，再 14, 39（含跳回 382，不含 183）。</li>
+<li><strong>C-LOOK</strong>：65, 70, 99, 124, 131, 187，跳回 14，再 39（含跳回 330，不含 157）。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">107 Q3(2)（6%）：最大磁柱 200，讀寫頭在 60；佇列 100, 185, 40, 120, 2, 138, 75, 87；SSTF 和 C-LOOK</p>
+<p>假設往編號大的方向移動。</p>
+<ul>
+<li><strong>SSTF</strong>：75, 87, 100, 120, 138, 185, 40, 2（距離 308）。</li>
+<li><strong>C-LOOK</strong>：75, 87, 100, 120, 138, 185，跳回 2，再 40（含跳回 346，不含 163）。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q4（10%）：SCAN-EDF（多媒體系統）；要求（名稱, 截止時間, 磁柱）：(A,150,25)、(B,201,112)、(C,399,95)、(D,94,31)、(E,295,185)、(F,78,85)、(G,165,150)、(H,125,101)、(I,300,85)、(J,210,90)；讀寫頭在 49，往 50 移動</p>
+<p><strong>SCAN-EDF</strong>：多媒體的要求有截止時間（deadline），所以先照<strong>截止時間</strong>排（EDF，earliest deadline first）；截止時間差不多的分成一批，<strong>同一批裡照 SCAN 的順序</strong>服務，省移動距離。</p>
+<p>這組資料就是恐龍書的範例，課本把截止時間每 100 ms 分一批：</p>
+<table>
+<thead>
+<tr>
+<th>批</th>
+<th>截止時間</th>
+<th>要求（磁柱）</th>
+<th>服務順序</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0–99</td>
+<td>D(31)、F(85)</td>
+<td>F → D</td>
+<td>在 49 往上，先遇到 85，再回頭到 31</td>
+</tr>
+<tr>
+<td>2</td>
+<td>100–199</td>
+<td>A(25)、H(101)、G(150)</td>
+<td>A → H → G</td>
+<td>在 31 往下，先到 25，再回頭往上</td>
+</tr>
+<tr>
+<td>3</td>
+<td>200–299</td>
+<td>J(90)、B(112)、E(185)</td>
+<td>E → B → J</td>
+<td>在 150 往上，先到 185，再回頭往下</td>
+</tr>
+<tr>
+<td>4</td>
+<td>300–399</td>
+<td>I(85)、C(95)</td>
+<td>I → C</td>
+<td>在 90 往下，先到 85，再回頭到 95</td>
+</tr>
+</tbody>
+</table>
+<p><strong>服務順序：F, D, A, H, G, E, B, J, I, C</strong>。</p>
+<p>如果不分批，截止時間又都不一樣，SCAN-EDF 就等於單純的 EDF：F, D, H, A, G, B, J, E, I, C。考試寫出你用的分批方法。</p>
+</div>
+<h4 id="_23">觀念小考</h4>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 哪一種演算法可能讓某些要求等非常久（starvation）？</p>
+<ol>
+<li>FCFS</li>
+<li>SSTF</li>
+<li>SCAN</li>
+<li>C-SCAN</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. SSTF</strong>。如果讀寫頭附近一直有新的要求進來，SSTF 會一直先服務附近的，遠處的要求就一直輪不到。FCFS 照順序一定輪得到；SCAN、C-SCAN 一定會掃過每個位置。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> 讀寫頭在 50，往編號大的方向移動，要求是 10、60、90。LOOK 的總移動距離是？</p>
+<ol>
+<li>120</li>
+<li>130</li>
+<li>80</li>
+<li>90</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A. 120</strong>。LOOK 先往上服務 60、90，90 是這個方向最遠的要求，就回頭到 10。距離 <span class="arithmatex">\((90-50)+(90-10)=40+80=120\)</span>。如果是 SCAN 而且盡頭是 99，就要多走到 99 再回頭：<span class="arithmatex">\((99-50)+(99-10)=138\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-3.</strong> LOOK 和 SCAN 差在哪裡？</p>
+<ol>
+<li>LOOK 不會回頭</li>
+<li>LOOK 到最遠的要求就回頭，SCAN 要走到磁碟的盡頭</li>
+<li>LOOK 只往一個方向服務</li>
+<li>兩個完全一樣</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。兩個都像電梯，來回掃。差別只在回頭的地方：SCAN 一定走到盡頭（0 或最大編號），LOOK 看到那個方向已經沒有要求就回頭。只往一個方向服務的是 C-SCAN／C-LOOK。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-4.</strong> SSTF 的總移動距離一定是所有順序裡最短的嗎？</p>
+<ol>
+<li>是，因為每一步都走最近的</li>
+<li>是，只要要求不超過 10 個</li>
+<li>不一定，每一步最近不代表加起來最短</li>
+<li>不一定，只有方向往上時才是最短</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。SSTF 是貪心法，只看下一步。102 Q7 的資料：SSTF 走 236，但先往下到 14 再一路往上（LOOK 往 0 的方向）只要 208。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> 為什麼有人寧願用移動距離比較長的 C-SCAN，而不用 SCAN？</p>
+<ol>
+<li>C-SCAN 比較容易實作</li>
+<li>C-SCAN 每個位置的等待時間比較平均</li>
+<li>C-SCAN 不會有 starvation，SCAN 會</li>
+<li>C-SCAN 的 seek time 比較短</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。SCAN 回頭時，剛掃過的那一端要等手臂走到另一端再回來，等最久；中間的位置則來回各被掃一次。C-SCAN 永遠同方向服務，每個位置大約每一輪被掃一次，等待時間比較平均。SCAN 也不會 starvation，所以 C 錯。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 讀寫頭在 100、往編號小的方向移動，磁柱 0–199，要求是 20、150、80、190。寫出 C-LOOK 的服務順序和距離（跳回那段算或不算都寫）。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>往小的方向：先服務 80、20；20 是這個方向最遠的要求，跳回<strong>另一邊最遠的</strong>要求 190，再往小的方向服務 150。</p>
+<ul>
+<li>順序：<strong>80, 20, 190, 150</strong></li>
+<li>距離：<span class="arithmatex">\((100-20)=80\)</span>，跳回 <span class="arithmatex">\(190-20=170\)</span>，再 <span class="arithmatex">\(190-150=40\)</span>。含跳回 <strong>290</strong>，不含 <strong>120</strong>。</li>
+</ul>
+<p><strong>自我檢查</strong>：C-LOOK 跳回去後，方向還是「往小的」，所以從 190 往下服務到 150，不是從 150 往上到 190。</p>
+</details>
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> i-node 有 12 個直接區塊和 single、double indirect，區塊 4 KB、指標 4 B，最大檔案幾個資料區塊？</p>
 <details class="quiz">
@@ -1568,9 +2320,9 @@ window.MathJax = {
 </tr>
 </tbody>
 </table>
-<h4 id="_14">最小權限</h4>
+<h4 id="_24">最小權限</h4>
 <p><strong>need-to-know</strong> 和 principle of least privilege 是同一個想法：每個行程、每個使用者只拿到<strong>完成目前工作需要</strong>的權限。出事時，損害才會被限制在小範圍。</p>
-<h4 id="_15">存取矩陣：誰能對什麼做什麼</h4>
+<h4 id="_25">存取矩陣：誰能對什麼做什麼</h4>
 <p>把權限畫成一張表：列是使用者（domain），欄是檔案（object），格子裡是權限。</p>
 <table>
 <thead>
@@ -1600,7 +2352,7 @@ window.MathJax = {
 <li>照<strong>欄</strong>存（每個檔案記錄誰能用它）→ <strong>access control list（ACL）</strong></li>
 <li>照<strong>列</strong>存（每個使用者帶著自己能用什麼）→ <strong>capability list</strong></li>
 </ul>
-<h4 id="_16">惡意程式的名詞</h4>
+<h4 id="_26">惡意程式的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -1638,7 +2390,7 @@ window.MathJax = {
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/izkd4JwXRwub_ZmhSMTlNw">OS 筆記 Chapter 14: Protection</a>〉：保護的原則、存取矩陣、ACL 與 capability 的實作、權限撤銷，就是這節表格的完整版。</li>
 </ul>
 </div>
-<h4 id="_17">換你試試</h4>
+<h4 id="_27">換你試試</h4>
 <p><strong>T-1.</strong> 有人偷改了資料庫裡的成績，破壞的是 CIA 的哪一項？</p>
 <details class="quiz">
 <summary>看答案</summary>

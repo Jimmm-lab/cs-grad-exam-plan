@@ -5,6 +5,7 @@
  *
  * 畫面是 SVG，每個方塊／節點都有固定的 key，換下一步時同一個 key 的元素會「移動」過去，
  * 所以交換、旋轉、放進桶子都看得到東西在動。
+ * 加 data-static 就只畫一張圖（沒有輸入欄和播放鍵），例如 data-viz="graph" data-algo="show"。
  */
 (() => {
   "use strict";
@@ -73,6 +74,9 @@
     constructor(host, def) {
       this.host = host; this.def = def; this.map = new Map(); this.i = 0; this.timer = 0; this.frames = [];
       host.classList.add("vz");
+      // data-static：只是一張圖，不要輸入欄和播放鍵
+      const still = host.dataset.static != null;
+      if (still) host.classList.add("vz-static");
       const fields = def.fields.map(f => {
         const v = host.dataset[f.name] != null ? host.dataset[f.name] : f.def;
         f.cur = v;
@@ -82,7 +86,7 @@
         return `<label>${esc(f.label)}<input name="${f.name}" value="${esc(v)}" autocomplete="off" spellcheck="false" inputmode="${f.mode || "text"}"></label>`;
       }).join("");
       host.innerHTML =
-        `<div class="vz-head"><span class="vz-tag">動畫</span>${esc(host.dataset.title || def.title)}</div>` +
+        `<div class="vz-head"><span class="vz-tag">${still ? "圖" : "動畫"}</span>${esc(host.dataset.title || def.title)}</div>` +
         `<form class="vz-form">${fields}<div class="vz-formbtn"><button type="submit">用這些數字重播</button><button type="button" data-a="reset">還原</button></div></form>` +
         `<div class="vz-stage"><svg class="vz-svg" xmlns="${NS}" role="img" aria-label="${esc(def.title)}"><g class="vz-back"></g><g class="vz-front"></g></svg></div>` +
         `<div class="vz-cap" aria-live="polite"></div>` +
@@ -640,7 +644,7 @@
         done.forEach(k => { m[k] = "done"; });
         Object.assign(m, marks);
         const items = treeItems(root, m);
-        out.forEach((k, i) => items.push(box("o" + k, i * STEP, oy, by.get(k).label, "done")));
+        out.forEach((k, i) => items.push(box("o" + k, (i % 8) * STEP, oy + Math.floor(i / 8) * 46, by.get(k).label, "done")));
         items.push(text("ol", 0, oy - 13, "輸出", "vz-sub", "start"));
         F.push({ items: items.concat(extra), cap, info: `輸出：${out.map(k => by.get(k).label).join(" ") || "（還沒有）"}` });
       };
@@ -652,8 +656,8 @@
       snap({}, { pre: "preorder：每到一個節點，先輸出它，再走左子樹、右子樹。", in: "inorder：每到一個節點，先走完左子樹，再輸出它，最後走右子樹。", post: "postorder：每到一個節點，先走完左、右子樹，最後才輸出它。", level: "level order：用 queue，從根開始一層一層、由左到右輸出。" }[v.order]);
       if (v.order === "level") {
         const q = [root];
-        const qItems = () => q.map((n, i) => box("o" + n.k, i * STEP, oy + 80, L(n), "cmp"));
-        const qy = oy + 80;
+        const qy = oy + 34 + Math.ceil(by.size / 8) * 46;
+        const qItems = () => q.map((n, i) => box("o" + n.k, (i % 8) * STEP, qy + Math.floor(i / 8) * 46, L(n), "cmp"));
         snap({ [root.k]: "cmp" }, `把根 ${L(root)} 放進 queue。`, qItems().concat([text("ql", 0, qy - 13, "queue（左邊是前面）", "vz-sub", "start")]));
         while (q.length) {
           const n = q.shift();
@@ -811,40 +815,60 @@
     }
   };
 
-  /* ---------- 圖：Prim / Kruskal / Dijkstra ---------- */
+  /* ---------- 圖：Prim / Kruskal / Dijkstra / BFS / DFS / 二分圖 ---------- */
   defs.graph = {
-    title: "圖：Prim／Kruskal／Dijkstra",
+    title: "圖：Prim／Kruskal／Dijkstra／BFS／DFS",
     fields: [
-      { name: "edges", label: "邊（無向，像 A-B 4 這樣寫，用逗號隔開）", def: "A-B 4, A-C 1, B-C 2, B-D 5, C-D 8" },
-      { name: "algo", label: "演算法", def: "prim", type: "select", options: [["prim", "Prim：最小生成樹，從一點長出去"], ["kruskal", "Kruskal：最小生成樹，邊由小到大挑"], ["dijkstra", "Dijkstra：從起點出發的最短路徑"]] },
-      { name: "start", label: "起點（Prim、Dijkstra 用）", def: "A" }
+      { name: "edges", label: "邊（無向，像 A-B 4 這樣寫；BFS、DFS、二分圖可以不寫權重）", def: "A-B 4, A-C 1, B-C 2, B-D 5, C-D 8" },
+      { name: "algo", label: "演算法", def: "prim", type: "select", options: [["prim", "Prim：最小生成樹，從一點長出去"], ["kruskal", "Kruskal：最小生成樹，邊由小到大挑"], ["dijkstra", "Dijkstra：從起點出發的最短路徑"], ["bfs", "BFS：一層一層往外走（queue）"], ["dfs", "DFS：一路走到底再退回來（stack）"], ["bip", "二分圖檢查：塗兩種顏色"], ["show", "只畫圖"]] },
+      { name: "start", label: "起點（Kruskal 不用）", def: "A" }
     ],
     gen(v, ds) {
       const E = [];
-      const re = /([A-Za-z0-9]+)\s*[-–—]\s*([A-Za-z0-9]+)\s*[:=]?\s*(-?\d+(?:\.\d+)?)/g;
+      const re = /([A-Za-z0-9]+)\s*[-–—]\s*([A-Za-z0-9]+)(?:[ \t]*[:=]?[ \t]*(-?\d+(?:\.\d+)?))?/g;
       let mt;
-      while ((mt = re.exec(v.edges))) E.push({ u: mt[1], v: mt[2], w: Number(mt[3]), id: E.length });
-      if (!E.length) throw new Error("沒有讀到邊，請用「A-B 4」這種格式");
-      if (E.length > 24) throw new Error("邊太多了（最多 24 條）");
+      while ((mt = re.exec(v.edges))) {
+        const u = mt[1], w2 = mt[2];
+        if (u === w2) throw new Error(`${u}-${w2} 是自己連自己，這裡不畫迴圈（loop）`);
+        if (E.some(e => (e.u === u && e.v === w2) || (e.u === w2 && e.v === u))) continue;
+        E.push({ u, v: w2, w: mt[3] == null ? null : Number(mt[3]), id: E.length });
+      }
+      if (!E.length) throw new Error("沒有讀到邊，請用「A-B 4」或「A-B」這種格式");
+      if (E.length > 30) throw new Error("邊太多了（最多 30 條）");
+      const weighted = E.some(e => e.w != null);
+      const needW = v.algo === "prim" || v.algo === "kruskal" || v.algo === "dijkstra";
+      if (needW && E.some(e => e.w == null)) throw new Error("這個演算法每條邊都要有權重，例如 A-B 4");
       const V = [];
       E.forEach(e => { [e.u, e.v].forEach(x => { if (!V.includes(x)) V.push(x); }); });
-      if (V.length > 12) throw new Error("點太多了（最多 12 個）");
+      if (V.length > 14) throw new Error("點太多了（最多 14 個）");
       if (ds.order) {
         const o = toks(ds.order).filter(x => V.includes(x));
         V.sort((a, b) => (o.indexOf(a) + 1 || 99) - (o.indexOf(b) + 1 || 99));
       }
       const s = v.start || V[0];
-      if (v.algo !== "kruskal" && !V.includes(s)) throw new Error(`起點 ${s} 不在圖裡`);
+      if (v.algo !== "kruskal" && v.algo !== "show" && !V.includes(s)) throw new Error(`起點 ${s} 不在圖裡`);
       if (v.algo === "dijkstra" && E.some(e => e.w < 0)) throw new Error("Dijkstra 不能有負的邊");
-      const R = 60 + V.length * 16, P = new Map();
-      V.forEach((x, i) => { const t = -Math.PI / 2 + (2 * Math.PI * i) / V.length; P.set(x, [R + R * Math.cos(t), R + R * Math.sin(t)]); });
+      const P = new Map();
+      if (ds.pos) {
+        const pr = /([A-Za-z0-9]+)\s*:\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)/g;
+        let pm;
+        while ((pm = pr.exec(ds.pos))) P.set(pm[1], [Number(pm[2]) * 90, Number(pm[3]) * 90]);
+      }
+      if (V.some(x => !P.has(x))) {
+        P.clear();
+        const R = 60 + V.length * 16;
+        V.forEach((x, i) => { const t = -Math.PI / 2 + (2 * Math.PI * i) / V.length; P.set(x, [R + R * Math.cos(t), R + R * Math.sin(t)]); });
+      }
       const nm = e => `${e.u}${e.v}`;
+      const cmpS = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+      const nbr = x => E.filter(e => e.u === x || e.v === x).map(e => ({ y: e.u === x ? e.v : e.u, e })).sort((a, b) => cmpS(a.y, b.y));
       const F = [];
       const snap = (st, cap, info) => {
         const items = [];
         E.forEach(e => {
           const [x1, y1] = P.get(e.u), [x2, y2] = P.get(e.v);
           items.push(edge("e" + e.id, x1, y1, x2, y2, st.e[e.id] || ""));
+          if (!weighted || e.w == null) return;
           const mx = (x1 + x2) / 2, my = (y1 + y2) / 2, L = Math.hypot(x2 - x1, y2 - y1) || 1;
           const ox = (-(y2 - y1) / L) * 12, oy = ((x2 - x1) / L) * 12;
           items.push(text("w" + e.id, mx + ox, my + oy, String(e.w), "vz-w" + (st.e[e.id] ? " " + st.e[e.id] : "")));
@@ -852,7 +876,80 @@
         V.forEach(x => items.push(node("n" + x, P.get(x)[0], P.get(x)[1], x, st.n[x] || "", st.note ? st.note[x] : "")));
         F.push({ items, cap, info });
       };
-      if (v.algo === "prim") {
+      if (v.algo === "show") {
+        snap({ e: {}, n: {} }, ds.cap || "", "");
+      } else if (v.algo === "bfs") {
+        const seen = new Set([s]), q = [s], order = [], st = { e: {}, n: { [s]: "cmp" }, note: {} };
+        const info = () => `queue（左邊先出）：<span class="vz-chips">${q.map(x => `<span class="vz-chip">${x}</span>`).join("") || "（空）"}</span>　拜訪順序：${order.join(", ") || "—"}`;
+        snap(st, `從 <b>${s}</b> 開始：${s} 標成「發現了」（橘色）並放進 queue。BFS 每次從 queue <b>前面</b>拿出一個點，把它還沒發現的鄰居<b>照字母順序</b>放到 queue 後面。`, info());
+        while (q.length) {
+          const x = q.shift();
+          order.push(x);
+          st.n[x] = "done"; st.note[x] = String(order.length);
+          const add = [];
+          const nb = nbr(x);
+          nb.forEach(({ y, e }) => { if (!seen.has(y)) { seen.add(y); q.push(y); add.push(y); st.e[e.id] = "on"; st.n[y] = "cmp"; } });
+          snap({ e: st.e, n: { ...st.n, [x]: "cur" }, note: st.note },
+            `拿出 <b>${x}</b>，它是第 ${order.length} 個拜訪的點。鄰居照字母順序：${nb.map(o => o.y).join("、") || "（沒有）"}。` + (add.length ? `還沒發現的 <b>${add.join("、")}</b> 依序放進 queue。` : "鄰居都發現過了，queue 不加東西。"), info());
+        }
+        const miss = V.filter(x => !seen.has(x));
+        snap(st, `queue 空了，完成。BFS 順序：<b>${order.join(", ")}</b>（節點旁的數字）。粗線是 BFS 樹：每個點被誰發現。` + (miss.length ? `${miss.join("、")} 從 ${s} 走不到，不在這次的結果裡。` : ""), info());
+      } else if (v.algo === "dfs") {
+        const seen = new Set([s]), order = [s], stk = [s], st = { e: {}, n: { [s]: "done" }, note: { [s]: "1" } };
+        const info = () => `遞迴的路徑（stack，右邊是 top）：${stk.join(" → ") || "（空）"}　拜訪順序：${order.join(", ")}`;
+        snap({ e: st.e, n: { ...st.n, [s]: "cur" }, note: st.note }, `從 <b>${s}</b> 開始（第 1 個拜訪）。DFS 每到一個點，就走向它<b>字母最小、還沒拜訪</b>的鄰居；沒有可以走的才退回上一個點。`, info());
+        while (stk.length) {
+          const x = stk[stk.length - 1], nb = nbr(x), nx = nb.find(o => !seen.has(o.y));
+          if (nx) {
+            seen.add(nx.y); order.push(nx.y); stk.push(nx.y);
+            st.e[nx.e.id] = "on"; st.n[nx.y] = "done"; st.note[nx.y] = String(order.length);
+            snap({ e: st.e, n: { ...st.n, [nx.y]: "cur" }, note: st.note },
+              `在 ${x}：鄰居照字母順序是 ${nb.map(o => (seen.has(o.y) && o.y !== nx.y ? `<s>${o.y}</s>` : o.y)).join("、")}，還沒拜訪的第一個是 <b>${nx.y}</b> → 走過去（第 ${order.length} 個拜訪）。`, info());
+          } else {
+            stk.pop();
+            const back = stk[stk.length - 1];
+            snap({ e: st.e, n: back ? { ...st.n, [back]: "cur" } : st.n, note: st.note },
+              `在 ${x}：鄰居 ${nb.map(o => o.y).join("、")} 都拜訪過了 → ` + (back ? `退回 <b>${back}</b>，看它還有沒有別的路。` : `退回起點之後也沒有路了，結束。`), info());
+          }
+        }
+        const miss = V.filter(x => !seen.has(x));
+        snap(st, `完成。DFS 順序：<b>${order.join(", ")}</b>。粗線是 DFS 樹。` + (miss.length ? `${miss.join("、")} 從 ${s} 走不到。` : ""), info());
+      } else if (v.algo === "bip") {
+        const col = new Map(), par = new Map(), st = { e: {}, n: {}, note: {} };
+        const side = c => (c ? "Y" : "X"), cls = c => (c ? "side2" : "done");
+        const sets = () => `X ＝ {${V.filter(x => col.get(x) === 0).join(", ")}}　Y ＝ {${V.filter(x => col.get(x) === 1).join(", ")}}`;
+        snap(st, `二分圖檢查：從 <b>${s}</b> 開始塗 X（綠），它的鄰居一定要塗另一邊 Y（藍），一層一層往外塗。只要有一條邊兩端同色，就不是二分圖。`, "");
+        let bad = null;
+        outer: for (const r of [s, ...V.filter(x => x !== s)]) {
+          if (col.has(r)) continue;
+          col.set(r, 0); st.n[r] = cls(0); st.note[r] = "X";
+          if (r !== s) snap({ ...st }, `${r} 跟前面的點不連通，另外從 ${r} 開始塗 X。`, sets());
+          const q = [r];
+          while (q.length) {
+            const x = q.shift(), add = [];
+            for (const { y, e } of nbr(x)) {
+              if (!col.has(y)) { col.set(y, 1 - col.get(x)); par.set(y, { p: x, e }); st.n[y] = cls(col.get(y)); st.note[y] = side(col.get(y)); st.e[e.id] = "on"; q.push(y); add.push(y); }
+              else if (col.get(y) === col.get(x)) { bad = { x, y, e }; break; }
+            }
+            if (bad) break outer;
+            snap({ e: st.e, n: { ...st.n }, note: st.note }, `看 <b>${x}</b>（${side(col.get(x))}）：` + (add.length ? `還沒塗的鄰居 ${add.join("、")} 塗成 ${side(1 - col.get(x))}。` : `鄰居都塗過了，而且都跟 ${x} 不同色。`), sets());
+          }
+        }
+        if (bad) {
+          const up = x => { const p = [x]; while (par.has(p[p.length - 1])) p.push(par.get(p[p.length - 1]).p); return p; };
+          const a = up(bad.x), b = up(bad.y), lca = a.find(z => b.includes(z));
+          const pa = a.slice(0, a.indexOf(lca) + 1), pb = b.slice(0, b.indexOf(lca));
+          const cyc = [...pa, ...pb.reverse()];
+          const ce = { ...st.e };
+          for (let i = 0; i + 1 < pa.length; i++) ce[par.get(pa[i]).e.id] = "bad";
+          b.slice(0, b.indexOf(lca)).forEach(z => { ce[par.get(z).e.id] = "bad"; });
+          ce[bad.e.id] = "bad";
+          snap({ e: ce, n: { ...st.n, [bad.x]: "bad", [bad.y]: "bad" }, note: st.note },
+            `<b>${bad.x}</b> 和 <b>${bad.y}</b> 都是 ${side(col.get(bad.x))}，但它們之間有邊 → <b>不是二分圖</b>。紅色虛線是一個奇數長度的環：${cyc.join(" → ")} → ${cyc[0]}，共 ${cyc.length} 條邊。`, sets());
+        } else {
+          snap(st, `每一條邊的兩端顏色都不同 → <b>是二分圖</b>。`, sets());
+        }
+      } else if (v.algo === "prim") {
         const T = new Set([s]), st = { e: {}, n: { [s]: "done" } }, rows = [];
         let total = 0;
         const tbl = () => rows.length ? `<table class="vz-tbl"><tr><th>步</th><th>邊</th><th>權重</th></tr>${rows.map((r, i) => `<tr><td>${i + 1}</td><td>${r[0]}</td><td>${r[1]}</td></tr>`).join("")}</table>總權重 ${total}` : "";
@@ -861,9 +958,10 @@
           const cand = E.filter(e => T.has(e.u) !== T.has(e.v));
           if (!cand.length) { snap(st, `剩下的點連不到，這張圖不連通。`, tbl()); break; }
           const best = cand.reduce((a, b) => (b.w < a.w ? b : a));
+          const ties = cand.filter(e => e.w === best.w);
           const st2 = { e: { ...st.e }, n: { ...st.n } };
           cand.forEach(e => { st2.e[e.id] = "cand"; });
-          snap(st2, `樹內：{${[...T].join(", ")}}。跨出去的邊（虛線）：${cand.map(e => `${nm(e)} ${e.w}`).join("、")}。最小的是 <b>${nm(best)} ${best.w}</b>。`, tbl());
+          snap(st2, `樹內：{${[...T].join(", ")}}。跨出去的邊（虛線）：${cand.map(e => `${nm(e)} ${e.w}`).join("、")}。最小的是 <b>${nm(best)} ${best.w}</b>。` + (ties.length > 1 ? `（${ties.map(nm).join("、")} 一樣小，挑哪條都可以，總權重相同；這裡挑先列出的。）` : ""), tbl());
           const nx = T.has(best.u) ? best.v : best.u;
           T.add(nx); total += best.w; rows.push([nm(best), best.w]);
           st.e[best.id] = "on"; st.n[nx] = "done";
@@ -1325,6 +1423,295 @@
       const tbl = `<table class="vz-tbl"><tr><th>行程</th><th>完成</th><th>turnaround</th><th>waiting</th><th>response</th></tr>${rows.map(r => `<tr><td>${r.n}</td><td>${r.done}</td><td>${r.ta}</td><td>${r.w}</td><td>${r.rs}</td></tr>`).join("")}<tr><td>平均</td><td></td><td>${f2(avg("ta"))}</td><td><b>${f2(avg("w"))}</b></td><td>${f2(avg("rs"))}</td></tr></table>turnaround ＝ 完成 − 到達；waiting ＝ turnaround − burst；response ＝ 第一次執行 − 到達`;
       snap([], false, `全部做完。平均 waiting time ＝ <b>${f2(avg("w"))}</b>，平均 turnaround ＝ ${f2(avg("ta"))}。`);
       F[F.length - 1].info = tbl;
+      return F;
+    }
+  };
+
+  /* ---------- 磁碟排程 ---------- */
+  defs.disk = {
+    title: "磁碟排程：讀寫頭怎麼移動",
+    fields: [
+      { name: "reqs", label: "要求的磁柱（照到達順序）", def: "98,183,37,122,14,124,65,67" },
+      { name: "head", label: "讀寫頭現在在哪一柱", def: "53", mode: "numeric" },
+      { name: "dir", label: "現在往哪個方向", def: "down", type: "select", options: [["up", "往編號大的方向"], ["down", "往編號小的方向"]] },
+      { name: "max", label: "最大的磁柱編號（最小是 0）", def: "199", mode: "numeric" },
+      { name: "algo", label: "演算法", def: "sstf", type: "select", options: [["fcfs", "FCFS：照到達順序"], ["sstf", "SSTF：每次挑最近的"], ["scan", "SCAN：電梯，走到盡頭才回頭"], ["look", "LOOK：電梯，到最遠的要求就回頭"], ["cscan", "C-SCAN：單向服務，到盡頭跳回另一端"], ["clook", "C-LOOK：單向服務，到最遠的要求就跳回"]] },
+      { name: "ret", label: "C-SCAN／C-LOOK 跳回去那段", def: "count", type: "select", options: [["count", "算進移動距離"], ["skip", "不算"]] }
+    ],
+    gen(v) {
+      const R = nums(v.reqs, "要求", { int: true, max: 16 });
+      const head = Number(v.head), max = Number(v.max);
+      if (!Number.isInteger(head) || head < 0) throw new Error("讀寫頭位置要是非負整數");
+      if (!Number.isInteger(max) || max <= 0) throw new Error("最大磁柱編號要是正整數");
+      if (head > max || R.some(r => r > max)) throw new Error(`磁柱編號不能超過最大值 ${max}`);
+      const up = v.dir === "up", algo = v.algo, cnt = v.ret !== "skip";
+      const dirTxt = d => (d ? "編號大的" : "編號小的");
+      const mv = [];
+      if (algo === "fcfs") R.forEach(c => mv.push({ c, req: true, why: "照到達順序，下一個是" }));
+      else if (algo === "sstf") {
+        const left = R.slice();
+        let pos = head;
+        while (left.length) {
+          let bi = 0;
+          left.forEach((r, i) => {
+            const d = Math.abs(r - pos), bd = Math.abs(left[bi] - pos);
+            if (d < bd || (d === bd && (up ? r > left[bi] : r < left[bi]))) bi = i;
+          });
+          const c = left.splice(bi, 1)[0];
+          mv.push({ c, req: true, why: `剩下的要求（${[c, ...left].sort((a, b) => a - b).join(", ")}）裡離 ${pos} 最近的是` });
+          pos = c;
+        }
+      } else {
+        const a = R.filter(r => (up ? r >= head : r <= head)).sort((x, y) => (up ? x - y : y - x));
+        const b = R.filter(r => (up ? r < head : r > head));
+        a.forEach(c => mv.push({ c, req: true, why: `往${dirTxt(up)}方向，下一個是` }));
+        if (b.length) {
+          if (algo === "scan" || algo === "look") {
+            b.sort((x, y) => (up ? y - x : x - y));
+            if (algo === "scan") mv.push({ c: up ? max : 0, end: true, why: `這個方向沒有要求了，SCAN 還是走到盡頭` });
+            b.forEach((c, i) => mv.push({ c, req: true, why: i ? `往${dirTxt(!up)}方向，下一個是` : `回頭往${dirTxt(!up)}方向，第一個是` }));
+          } else {
+            b.sort((x, y) => (up ? x - y : y - x));
+            if (algo === "cscan") {
+              mv.push({ c: up ? max : 0, end: true, why: `這個方向沒有要求了，C-SCAN 走到盡頭` });
+              mv.push({ c: up ? 0 : max, end: true, jump: true, why: `直接跳回另一端（中間不服務）` });
+              b.forEach(c => mv.push({ c, req: true, why: `一樣往${dirTxt(up)}方向，下一個是` }));
+            } else {
+              b.forEach((c, i) => mv.push({ c, req: true, jump: i === 0, why: i ? `一樣往${dirTxt(up)}方向，下一個是` : `最遠的要求服務完，直接跳到另一邊最${up ? "小" : "大"}的要求（中間不服務）` }));
+            }
+          }
+        }
+      }
+      const W = 480, X = c => (c / max) * W, DY = 32, Y0 = 34;
+      const base = [edge("axis", 0, 0, W, 0)];
+      base.push(text("t0", 0, 18, "0", "vz-sub"), text("tm", W, 18, String(max), "vz-sub"));
+      const rows = [];
+      [...new Set(R)].sort((a, b) => a - b).forEach(c => {
+        let r = 0;
+        while (rows[r] != null && X(c) - rows[r] < 30) r++;
+        rows[r] = X(c);
+        base.push(edge("k" + c, X(c), -5, X(c), 5));
+        base.push(text("l" + c, X(c), -16 - r * 16, String(c), "vz-sub"));
+      });
+      const pts = [{ c: head }];
+      let sum = 0;
+      const F = [], tbl = [];
+      const table = () => `<table class="vz-tbl"><tr><th>步</th><th>移到</th><th>距離</th><th>累計</th></tr>${tbl.map((r, i) => `<tr><td>${i + 1}</td><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("")}</table>`;
+      const snap = (cap, curI) => {
+        const items = base.slice();
+        pts.forEach((p, i) => {
+          const x = X(p.c), y = Y0 + i * DY;
+          if (i) {
+            const q = pts[i - 1];
+            items.push(edge("s" + i, X(q.c), Y0 + (i - 1) * DY, x, y, p.jump ? (cnt ? "cand" : "skip") : i === curI ? "on" : ""));
+          }
+          items.push({ t: "node", k: "p" + i, x, y, r: 7, label: "", cls: i === curI ? "cur" : p.end ? "dim" : i ? "done" : "cmp", note: "" });
+          items.push(text("pl" + i, x + (x > W - 50 ? -12 : 12), y, String(p.c), i === curI ? "vz-hl" : "vz-sub", x > W - 50 ? "end" : "start"));
+        });
+        F.push({ items, cap, info: tbl.length ? table() + `總移動距離 ${sum}` : "" });
+      };
+      const name = { fcfs: "FCFS", sstf: "SSTF", scan: "SCAN", look: "LOOK", cscan: "C-SCAN", clook: "C-LOOK" }[algo];
+      snap(`${name}：讀寫頭在 <b>${head}</b>，往${dirTxt(up)}方向移動（FCFS、SSTF 不管方向）。縱軸往下是時間，每往下一格就移動一次。`, 0);
+      mv.forEach(m => {
+        const from = pts[pts.length - 1].c, d = Math.abs(m.c - from);
+        const add = m.jump && !cnt ? 0 : d;
+        sum += add;
+        pts.push(m);
+        tbl.push([m.c + (m.req ? "" : "（不是要求）"), m.jump && !cnt ? `${d}（不算）` : String(d), sum]);
+        snap(`${m.why} <b>${m.c}</b>：從 ${from} 移到 ${m.c}，距離 ${d}${m.jump ? (cnt ? "（跳回這段照樣算進距離）" : "（這段跳回不算距離）") : ""}，累計 <b>${sum}</b>。`, pts.length - 1);
+      });
+      snap(`完成。服務順序：<b>${mv.filter(m => m.req).map(m => m.c).join(", ")}</b>；總移動距離 <b>${sum}</b>。`, -1);
+      return F;
+    }
+  };
+
+  /* ---------- 運算式：stack 求值、中序轉後序 ---------- */
+  defs.expr = {
+    title: "運算式：用 stack 求值、中序轉後序",
+    fields: [
+      { name: "expr", label: "運算式（數字之間要空白；中序式可以不隔）", def: "8 3 2 + - 4 9 3 / + * 3 * 7 +" },
+      { name: "mode", label: "要做什麼", def: "post", type: "select", options: [["post", "後序式求值（由左往右讀）"], ["pre", "前序式求值（由右往左讀）"], ["in2post", "中序式轉後序式（運算子 stack）"]] }
+    ],
+    gen(v) {
+      const T = String(v.expr).match(/\d+(?:\.\d+)?|[A-Za-z][A-Za-z0-9]*|[-+*/×÷−%^()]/g) || [];
+      if (!T.length) throw new Error("沒有讀到運算式");
+      if (T.length > 25) throw new Error("最多 25 個符號，畫面才放得下");
+      const norm = t => ({ "−": "-", "×": "*", "÷": "/" }[t] || t);
+      const show = t => ({ "*": "×", "/": "÷", "-": "−" }[t] || t);
+      const PREC = { "+": 1, "-": 1, "*": 2, "/": 2, "%": 2, "^": 3 };
+      const isOp = t => PREC[norm(t)] != null;
+      const mode = v.mode;
+      const bw = s => Math.max(BW, Math.min(240, textW(s) + 18));
+      // 一列最多 9 個符號，手機上字才不會太小；stack 橫著放（右邊是 top）
+      const PER = 9, rowsOf = n => Math.max(1, Math.ceil(n / PER));
+      const at = (j, y0) => [(j % PER) * 44, y0 + Math.floor(j / PER) * 46];
+      const inH = rowsOf(T.length) * 46;
+      const hstack = (items, list, y, label, cls, mark) => {
+        let x = 0;
+        const w = list.reduce((a, o) => a + bw(o.s) + 6, 0);
+        items.push(zone("zs", -6, y - 4, Math.max(BW, w) + 8, BH + 8, "", label));
+        list.forEach(o => { items.push(box(o.k, x, y, o.s, mark[o.k] || cls, { w: bw(o.s) })); x += bw(o.s) + 6; });
+      };
+      const F = [];
+      if (mode === "in2post") {
+        const ops = [], out = [];
+        const nOut = T.filter(t => t !== "(" && t !== ")").length;
+        const yOut = inH + 34, yOps = yOut + rowsOf(nOut) * 46 + 40;
+        const snap = (i, cap, mark = {}) => {
+          const items = [text("h1", 0, -18, "中序式", "vz-sub", "start")];
+          T.forEach((t, j) => { const [x, y] = at(j, 0); items.push(box("t" + j, x, y, show(t), j === i ? "cur" : j < i ? "dim" : "", { w: 40 })); });
+          items.push(text("h2", 0, yOut - 16, "輸出（後序式）", "vz-sub", "start"));
+          out.forEach((o, j) => { const [x, y] = at(j, yOut); items.push(box(o.k, x, y, show(o.t), mark[o.k] || "done", { w: 40 })); });
+          hstack(items, ops.map(o => ({ k: o.k, s: show(o.t) })), yOps, "運算子 stack（右邊是 top）", "cmp", mark);
+          F.push({ items, cap, info: `輸出：${out.map(o => show(o.t)).join(" ") || "（還沒有）"}` });
+        };
+        snap(-1, "由左往右讀。<b>運算元直接輸出</b>；運算子先放進 stack，等確定後面沒有更優先的運算子才輸出。");
+        let depth = 0;
+        T.forEach((t, i) => {
+          const k = "x" + i;
+          if (!isOp(t) && t !== "(" && t !== ")") {
+            out.push({ t, k });
+            snap(i, `讀到 <b>${t}</b>：運算元直接輸出。`, { [k]: "cur" });
+          } else if (t === "(") {
+            depth++;
+            ops.push({ t, k });
+            snap(i, "讀到 <b>(</b>：直接 push。它像一道牆，右括號出現前，牆下面的運算子都不會被 pop。", { [k]: "cur" });
+          } else if (t === ")") {
+            if (!depth) throw new Error("右括號比左括號多");
+            depth--;
+            const popped = [];
+            while (ops.length && ops[ops.length - 1].t !== "(") { const o = ops.pop(); out.push(o); popped.push(show(o.t)); }
+            ops.pop();
+            snap(i, `讀到 <b>)</b>：一直 pop 到左括號為止${popped.length ? `，${popped.join("、")} 依序輸出` : ""}；兩個括號都丟掉，不輸出。`, Object.fromEntries(out.slice(out.length - popped.length).map(o => [o.k, "cur"])));
+          } else {
+            const p = PREC[norm(t)], popped = [];
+            const why = [];
+            while (ops.length) {
+              const top = ops[ops.length - 1];
+              if (top.t === "(") break;
+              const q = PREC[norm(top.t)];
+              if (q > p || (q === p && norm(t) !== "^")) { ops.pop(); out.push(top); popped.push(show(top.t)); why.push(`${show(top.t)} 的優先順序${q > p ? "比" : "和"} ${show(t)} ${q > p ? "高" : "一樣（由左往右算，先出現的先算）"} → pop 輸出`); }
+              else { why.push(`top 是 ${show(top.t)}，優先順序比 ${show(t)} 低 → 停`); break; }
+            }
+            ops.push({ t, k });
+            snap(i, `讀到 <b>${show(t)}</b>：` + (why.length ? why.join("；") + "。" : "stack 是空的（或 top 是左括號）。") + `然後 push ${show(t)}。`, { [k]: "cur" });
+          }
+        });
+        if (depth) throw new Error("左括號比右括號多");
+        const rest = [];
+        while (ops.length) { const o = ops.pop(); out.push(o); rest.push(show(o.t)); }
+        snap(T.length, (rest.length ? `讀完了，stack 裡剩下的運算子從 top（右邊）開始依序 pop 輸出：${rest.join("、")}。` : "讀完了。") + `後序式：<b>${out.map(o => show(o.t)).join(" ")}</b>`);
+        return F;
+      }
+      // 求值：後序由左往右、前序由右往左
+      const order = mode === "pre" ? T.map((t, i) => i).reverse() : T.map((t, i) => i);
+      if (T.some(t => t === "(" || t === ")")) throw new Error("前序式、後序式不會有括號");
+      const st = [];
+      let id = 0;
+      const numeric = T.every(t => isOp(t) || /^\d/.test(t));
+      const fmt = x => (Number.isInteger(x) ? String(x) : String(Math.round(x * 1000) / 1000));
+      const snap = (i, cap, mark = {}) => {
+        const items = [text("h1", 0, -18, mode === "pre" ? "前序式（從右往左讀）" : "後序式（從左往右讀）", "vz-sub", "start")];
+        T.forEach((t, j) => {
+          const done = mode === "pre" ? j > i : j < i;
+          const [x, y] = at(j, 0);
+          items.push(box("t" + j, x, y, show(t), j === i ? "cur" : done ? "dim" : "", { w: 40 }));
+        });
+        hstack(items, st, inH + 40, "stack（右邊是 top）", "cmp", mark);
+        F.push({ items, cap, info: st.length ? `stack 裡每一格對應的中序式（從左到右）：${st.map(o => o.in).join("　｜　")}` : "" });
+      };
+      snap(-1, mode === "pre" ? "前序式<b>由右往左</b>讀：運算元 push；遇到運算子就 pop 兩個，<b>先 pop 出來的是左運算元</b>，算完 push 回去。" : "後序式<b>由左往右</b>讀：運算元 push；遇到運算子就 pop 兩個，<b>先 pop 出來的是右運算元</b>，算完 push 回去。");
+      for (const i of order) {
+        const t = T[i];
+        if (!isOp(t)) {
+          const k = "v" + id++;
+          st.push({ k, s: t, val: numeric ? Number(t) : null, in: t });
+          snap(i, `讀到 <b>${t}</b>：運算元，push。`, { [k]: "cur" });
+          continue;
+        }
+        if (st.length < 2) throw new Error(`讀到 ${show(t)} 時 stack 裡不到兩個數，這不是合法的${mode === "pre" ? "前" : "後"}序式`);
+        const x = st.pop(), y = st.pop();
+        const [L, R] = mode === "pre" ? [x, y] : [y, x];
+        const op = norm(t);
+        let val = null;
+        if (numeric) {
+          if ((op === "/" || op === "%") && R.val === 0) throw new Error("除以 0");
+          val = op === "+" ? L.val + R.val : op === "-" ? L.val - R.val : op === "*" ? L.val * R.val : op === "/" ? L.val / R.val : op === "%" ? L.val % R.val : Math.pow(L.val, R.val);
+        }
+        const wrap = o => (o.in.length > 1 && /[-+*/×÷−%^]/.test(o.in) ? `(${o.in})` : o.in);
+        const inf = `${wrap(L)} ${show(t)} ${wrap(R)}`;
+        const k = "v" + id++;
+        const s = numeric ? fmt(val) : inf;
+        st.push({ k, s, val, in: inf });
+        snap(i, `讀到 <b>${show(t)}</b>：pop 出 ${x.s}${mode === "pre" ? "（左）" : "（右）"}、${y.s}${mode === "pre" ? "（右）" : "（左）"}，` + (numeric ? `算 ${L.s} ${show(t)} ${R.s} ＝ <b>${s}</b>，push。` : `組成 ${inf}，push。`), { [k]: "cur" });
+      }
+      if (st.length !== 1) throw new Error(`讀完後 stack 裡有 ${st.length} 個東西（應該剩 1 個），這不是合法的${mode === "pre" ? "前" : "後"}序式`);
+      snap(mode === "pre" ? -1 : T.length, `讀完了，stack 裡剩下的就是答案${numeric ? `：<b>${st[0].s}</b>` : ""}。對應的中序式：${st[0].in}`);
+      return F;
+    }
+  };
+
+  /* ---------- Huffman 編碼 ---------- */
+  defs.huffman = {
+    title: "Huffman：每次合併頻率最小的兩個",
+    fields: [
+      { name: "freq", label: "符號與頻率（像 A 8, B 15 這樣寫）", def: "A 8, B 15, C 1, D 6, E 15, F 3, G 7" },
+      { name: "left", label: "合併時誰放左邊（左邊編 0）", def: "lex", type: "select", options: [["lex", "標籤字母順序小的放左邊"], ["freq", "頻率小的放左邊（一樣大比標籤）"]] }
+    ],
+    gen(v) {
+      const S = [];
+      const re = /([A-Za-z0-9]+)\s*[:：=]?\s*(\d+(?:\.\d+)?)/g;
+      let mt;
+      while ((mt = re.exec(v.freq))) {
+        if (S.some(x => x.label === mt[1])) throw new Error(`${mt[1]} 重複了`);
+        S.push({ k: "s" + mt[1], label: mt[1], f: Number(mt[2]), l: null, r: null });
+      }
+      if (S.length < 2) throw new Error("至少要 2 個符號，像「A 8, B 15」");
+      if (S.length > 12) throw new Error("最多 12 個符號，畫面才放得下");
+      const cmp = (a, b) => a.f - b.f || (a.label < b.label ? -1 : a.label > b.label ? 1 : 0);
+      let forest = S.slice().sort(cmp), nid = 0;
+      const F = [];
+      const snap = (cap, marks = {}, info = "") => {
+        const items = [];
+        let ox = 0;
+        forest.forEach(root => {
+          const pos = layout(root, 38, 64);
+          let x0 = Infinity, x1 = -Infinity;
+          pos.forEach(([x]) => { x0 = Math.min(x0, x); x1 = Math.max(x1, x); });
+          pos.forEach(([x, y], n) => {
+            const X = ox + x - x0;
+            for (const [c, bit] of [[n.l, "0"], [n.r, "1"]]) {
+              if (!c) continue;
+              const [cx, cy] = pos.get(c), CX = ox + cx - x0;
+              items.push(edge("e" + c.k, X, y, CX, cy));
+              items.push(text("b" + c.k, (X + CX) / 2 + (bit === "0" ? -9 : 9), (y + cy) / 2 - 4, bit, "vz-sub"));
+            }
+            items.push(node("n" + n.k, X, y, String(n.f), marks[n.k] || (n.l ? "" : "done"), n.label));
+          });
+          ox += x1 - x0 + 40 + Math.max(0, textW(root.label) - 30);
+        });
+        F.push({ items, cap, info });
+      };
+      snap(`每個符號先自己是一棵樹（圓圈裡是頻率，右上是標籤）。照頻率由小到大排好；每一步拿出<b>最小的兩棵</b>合併成新的一棵，新的根是兩個頻率的和。`);
+      while (forest.length > 1) {
+        const [a, b] = forest;
+        snap(`最小的兩棵：<b>${a.label}（${a.f}）</b>和 <b>${b.label}（${b.f}）</b>` + (forest.length > 2 && forest[2].f === b.f ? `（${b.label} 和 ${forest[2].label} 頻率一樣，照規則挑標籤字母小的 ${b.label}）` : "") + "。", { [a.k]: "cmp", [b.k]: "cmp" });
+        let L = a, R = b;
+        if (v.left === "lex" ? b.label < a.label : cmp(b, a) < 0) { L = b; R = a; }
+        const n = { k: "i" + nid++, label: L.label + R.label, f: a.f + b.f, l: L, r: R };
+        forest = [n, ...forest.slice(2)].sort(cmp);
+        snap(`合併成 <b>${n.label}（${n.f}）</b>：${L.label} 放左邊（編 0）、${R.label} 放右邊（編 1）` + (v.left === "lex" ? "，因為標籤字母順序小的放左邊。" : "，頻率小的放左邊。") + `還剩 ${forest.length} 棵。`, { [n.k]: "cur" });
+      }
+      const codes = [];
+      (function walk(n, c) {
+        if (!n.l) { codes.push([n.label, n.f, c || "0"]); return; }
+        walk(n.l, c + "0"); walk(n.r, c + "1");
+      })(forest[0], "");
+      codes.sort((x, y) => (x[0] < y[0] ? -1 : 1));
+      const total = codes.reduce((s, c) => s + c[1] * c[2].length, 0);
+      const sumF = codes.reduce((s, c) => s + c[1], 0), fixedLen = Math.max(1, Math.ceil(Math.log2(codes.length)));
+      const tbl = `<table class="vz-tbl"><tr><th>符號</th><th>頻率</th><th>編碼</th><th>長度</th><th>頻率×長度</th></tr>${codes.map(c => `<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td>${c[2].length}</td><td>${c[1] * c[2].length}</td></tr>`).join("")}</table>總位元數 ${total}；固定長度要 ${fixedLen} 位元 × ${sumF} ＝ ${fixedLen * sumF}`;
+      snap(`完成。從根往下走，往左寫 0、往右寫 1，走到葉子就是那個符號的編碼。頻率越大的符號越靠近根，編碼越短。總位元數 ＝ Σ 頻率 × 編碼長度 ＝ <b>${total}</b>。`, {}, tbl);
       return F;
     }
   };

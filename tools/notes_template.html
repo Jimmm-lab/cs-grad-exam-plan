@@ -243,6 +243,10 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-svg .vz-w.skip text { opacity: .4; }
 .vz-svg .vz-hl { fill: var(--trap); font-weight: 800; }
 .vz-svg .vz-dimtxt { fill: var(--muted); opacity: .6; }
+.vz-node.dim { opacity: .45; }
+.vz-node.side2 circle { fill: var(--key-soft); stroke: var(--key); stroke-width: 2.5; }
+.vz-static .vz-form, .vz-static .vz-ctrl, .vz-static .vz-cap:empty { display: none; }
+.vz-static .vz-tag { background: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
   .vz-svg g, .vz-edge path { transition: none; }
 }

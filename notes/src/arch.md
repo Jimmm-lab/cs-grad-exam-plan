@@ -27,7 +27,9 @@
 | 平行、GPU、VLIW／superscalar／array、記憶體一致性 | — | Q5 | Q1, Q2 | Q6 | Q1 | ★★ |
 | ISA 與算術（RISC、PC-relative、二補數、浮點） | P5 | — | — | — | Q3, Q4 | ★ |
 
-**建議讀的順序**：單元 1 效能 → 2 cache → 3 虛擬記憶體 → 4 pipeline → 5 分支 → 6 多執行緒 → 7 DRAM → 8 平行 → 9 ISA 與算術。前五個單元是每年必考的核心。
+**100–110 年還常考**（108、109 留作模考，不列）：**單週期／多週期 datapath 與控制訊號**，100、101、102、103、106 年都有，在 [4.3](#u4-dp)。
+
+**建議讀的順序**：單元 1 效能 → 2 cache → 3 虛擬記憶體 → 4 pipeline（不熟 datapath 先讀 4.3）→ 5 分支 → 6 多執行緒 → 7 DRAM → 8 平行 → 9 ISA 與算術。前五個單元是每年必考的核心。
 
 !!! trap "作答習慣"
     - 中山計結題目常寫「不清楚的地方請先寫出假設」。PTE 幾 byte、branch 在哪一級決定、register file 能不能同一 cycle 先寫後讀，**這些假設寫清楚，答案不一樣也能拿分**。
@@ -985,6 +987,8 @@ page table 放在記憶體裡，所以每次存取資料都要**先讀一次記�
 !!! key "一句話重點"
     pipeline 讓**吞吐量**變高，但單一指令的**延遲**不會變短。週期時間由最慢的那一級決定。
 
+4.0 用洗衣服比喻講 pipeline。每種指令實際經過哪些元件（register file、ALU、記憶體、mux），在 [4.3](#u4-dp) 的前半；不熟的話，兩節搭配著讀。
+
 ### 4.0 觀念課：洗衣服的流水線 {#u4-0}
 
 #### 比喻：洗、烘、摺
@@ -1102,6 +1106,237 @@ add 在第 3 個 cycle 結束時其實已經算出 x1 了，只是還沒寫回�
     4.3：設沒 forwarding 時的 NOP 比例為 $x$，要 $(1+x)\times250>300$（forwarding 最好情況 0 個 NOP），得 $x>0.2$，**至少 20%**。
 
     這題是 COD 第 4 章的習題原題。
+
+### 4.3 單週期與多週期 datapath {#u4-dp}
+
+pipeline 之前的兩種 CPU 做法。100、101、102、103、106 年都考過（每次 14–20%）：算每條指令要多久、時脈週期多長、CPI 多少，或填控制訊號。這一節也是看懂 pipeline 五個階段的基礎。
+
+#### 觀念：一條指令會經過哪些元件
+
+datapath 是 CPU 裡資料走的路線，主要元件：
+
+| 元件 | 做什麼 |
+|---|---|
+| instruction memory（I-Mem） | 用 PC 讀出這條指令 |
+| register file（Reg） | 讀兩個暫存器、寫一個暫存器 |
+| ALU | 算數、比大小、算記憶體位址 |
+| data memory（D-Mem） | lw 讀資料、sw 寫資料 |
+| adder | 算 PC＋4、算 branch 的目標位址 |
+| mux（多工器） | 從兩個來源選一個，由控制訊號決定 |
+| sign-extend | 把 16 位元的立即值擴成 32 位元 |
+
+**每種指令經過的元件不同**，所以需要的時間也不同。用 100 Q4 的數字（記憶體 200 ps、ALU 100 ps、暫存器讀或寫 50 ps）：
+
+| 指令 | 經過的元件（照順序） | 時間 |
+|---|---|---|
+| R 型（add、sub、and、or、slt） | I-Mem → 讀 Reg → ALU → 寫 Reg | 200＋50＋100＋50 ＝ 400 ps |
+| lw | I-Mem → 讀 Reg → ALU 算位址 → **讀 D-Mem** → 寫 Reg | 200＋50＋100＋200＋50 ＝ **600 ps** |
+| sw | I-Mem → 讀 Reg → ALU 算位址 → **寫 D-Mem** | 200＋50＋100＋200 ＝ 550 ps |
+| beq | I-Mem → 讀 Reg → ALU 比較 | 200＋50＋100 ＝ 350 ps |
+| j | I-Mem（接著改 PC） | 200 ps |
+
+lw 用到最多元件，所以最慢。算 PC＋4 和 branch 目標的 adder 跟這些**同時**進行，通常不在最長的路徑上。
+
+#### 單週期（single-cycle）
+
+每條指令都在 **1 個 cycle** 內做完，所以 **CPI ＝ 1**。但時脈週期要能讓最慢的指令做完：**週期 ＝ 最慢的指令（通常是 lw）**。
+
+像餐廳規定每道菜都給一樣長的時間，只好照最慢的那道訂。大部分指令比 lw 快，卻都要等 lw 那麼久，這就是單週期的浪費。
+
+#### 多週期（multicycle）
+
+把指令切成幾個步驟（IF、ID、EX、MEM、WB），**每個步驟 1 個 cycle**，週期 ＝ **最慢的那一步**（通常是記憶體）。每種指令只做自己需要的步驟：
+
+| 指令 | 步驟 | cycle 數 |
+|---|---|---|
+| lw | IF、ID、EX、MEM、WB | 5 |
+| sw | IF、ID、EX、MEM | 4 |
+| R 型 | IF、ID、EX、WB | 4 |
+| beq、j | IF、ID、EX | 3 |
+
+- **CPI ＝ 每種指令的 cycle 數 × 比例，加起來**（加權平均）。
+- **每條指令平均時間 ＝ CPI × 週期**。
+- 多週期一次只做一條指令；pipeline（[4.0](#u4-0)）讓好幾條指令的不同步驟同時進行，所以 CPI 接近 1、週期又短。
+
+**多週期不一定比單週期快**：步驟的時間不平均時（記憶體 200 ps、暫存器 50 ps），短的步驟也要佔一整個 200 ps 的 cycle，見下面的 100 Q4。
+
+#### 控制訊號：每條指令要把開關撥到哪
+
+| 訊號 | 是 1 的時候 | 是 0 的時候 |
+|---|---|---|
+| RegDst | 寫入的暫存器是 rd（R 型） | 寫入的暫存器是 rt（lw） |
+| ALUSrc | ALU 的第二個輸入用**立即值**（lw、sw 算位址） | 用暫存器（R 型、beq） |
+| MemtoReg | 寫回暫存器的值來自**記憶體**（lw） | 來自 ALU（R 型） |
+| RegWrite | 要寫暫存器（R 型、lw） | 不寫（sw、beq） |
+| MemRead | 要讀記憶體（lw） | 不讀 |
+| MemWrite | 要寫記憶體（sw） | 不寫 |
+| Branch | 這是 beq；ALU 的 Zero 也是 1 時 PC 就跳 | 不是 branch |
+
+| 指令 | RegDst | ALUSrc | MemtoReg | RegWrite | MemRead | MemWrite | Branch | ALUOp |
+|---|---|---|---|---|---|---|---|---|
+| R 型 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 10 |
+| lw | 0 | 1 | 1 | 1 | 1 | 0 | 0 | 00 |
+| sw | X | 1 | X | 0 | 0 | 1 | 0 | 00 |
+| beq | X | 0 | X | 0 | 0 | 0 | 1 | 01 |
+
+**X（don't care）**：sw、beq 不寫暫存器，所以「寫哪一個暫存器」（RegDst）、「寫什麼值」（MemtoReg）是什麼都沒關係。但 **RegWrite、MemWrite 不能是 X**：不寫的時候一定要是 0，不然會把暫存器或記憶體亂改。
+
+**記法：問三個問題**
+
+1. ALU 的第二個輸入是立即值嗎？（ALUSrc）
+2. 要寫暫存器嗎？寫的值從哪裡來、寫到哪一個？（RegWrite、MemtoReg、RegDst）
+3. 要讀或寫記憶體嗎？（MemRead、MemWrite）
+
+#### 算時間的兩種題目寫法
+
+- **題目給「register file（read or write）」的時間**：讀和寫都要算（106 Q6、102 Q4）。
+- **題目給每個元件的延遲（含 mux）**：沿著最長的路徑加起來；寫回暫存器在 clock edge 完成，不另外加時間（COD 解答的算法，103 Q5）。
+
+!!! example "106 Q6（20%）：單週期 datapath，記憶體 2 ns、ALU 和 adder 2 ns、register file（讀或寫）1 ns，mux 等其他元件不算時間。add、lw、sw、beq 各需要多少時間？"
+    | 指令 | 經過的元件 | 時間 |
+    |---|---|---|
+    | add | I-Mem 2 ＋ 讀 Reg 1 ＋ ALU 2 ＋ 寫 Reg 1 | **6 ns** |
+    | lw | I-Mem 2 ＋ 讀 Reg 1 ＋ ALU 2 ＋ 讀 D-Mem 2 ＋ 寫 Reg 1 | **8 ns** |
+    | sw | I-Mem 2 ＋ 讀 Reg 1 ＋ ALU 2 ＋ 寫 D-Mem 2 | **7 ns** |
+    | beq | I-Mem 2 ＋ 讀 Reg 1 ＋ ALU 比較 2 | **5 ns** |
+
+    **為什麼 beq 不加算目標位址的 adder**：目標位址是 PC＋4 加上 sign-extend、左移兩位的立即值，這條路（I-Mem 2 ＋ adder 2 ＝ 4 ns）跟「讀暫存器＋ALU 比較」（5 ns）同時進行，比較長的是後者。
+
+    這台單週期 CPU 的時脈週期要 **8 ns**（照最慢的 lw）。
+
+!!! example "102 Q4（15%）：記憶體 2 ns、ALU 2 ns、register file（讀或寫）1 ns；單週期與五級 pipeline"
+    - **4.1 各類指令的時間**：lw **8 ns**、sw **7 ns**、R 型（sub、and、or、slt）**6 ns**、beq **5 ns**（同 106 Q6）。
+    - **4.2 時脈週期**：單週期 ＝ 最慢的 lw ＝ **8 ns**；pipeline ＝ 最慢的一級 ＝ **2 ns**（記憶體或 ALU）。
+    - **4.3 100 條 lw，每條都用到前一條載入的值**：單週期 CPI ＝ **1**。pipeline 有 forwarding 和 hazard detection，但 lw 後面馬上用到載入的值是 load-use hazard，還是要停 1 個 cycle（[4.2](#u4-2)），所以每條平均 2 個 cycle，**CPI ≈ 2**（精確：$5+99\times2=203$ 個 cycle，$203/100=2.03$）。
+    - **比一比**：單週期 $100\times8=800$ ns；pipeline $203\times2=406$ ns，還是快將近一倍。
+
+!!! example "100 Q4（20%）：比較單週期、多週期、五級 pipeline"
+    **條件**：指令比例 lw 25%、sw 10%、branch 11%、jump 2%、ALU 52%；記憶體 200 ps、ALU 與 adder 100 ps、register file 50 ps。多週期：lw 5、sw 4、ALU 4、branch 3、jump 3 個 cycle。pipeline：一半的 lw 下一條就用到結果（停 1 個 cycle）、branch 猜錯延遲 1 個 cycle、四分之一的 branch 猜錯、jump 一律多 1 個 cycle（平均 2 個 cycle）。
+
+    - **4.1 週期**：單週期 ＝ lw ＝ $200+50+100+200+50=$ **600 ps**；多週期、pipeline ＝ 最慢的一步（記憶體）＝ **200 ps**。
+    - **4.2 CPI**：
+        - 單週期 **1**。
+        - 多週期 $0.25\times5+0.10\times4+0.52\times4+0.11\times3+0.02\times3=1.25+0.40+2.08+0.33+0.06=$ **4.12**。
+        - pipeline：lw 平均 $1+\frac12\times1=1.5$、sw 1、ALU 1、branch $1+\frac14\times1=1.25$、jump 2，加權：$0.25\times1.5+0.10\times1+0.52\times1+0.11\times1.25+0.02\times2=0.375+0.10+0.52+0.1375+0.04=$ **1.1725**。
+    - **4.3 每條指令平均時間**：單週期 **600 ps**；多週期 $4.12\times200=$ **824 ps**（比單週期還慢）；pipeline $1.1725\times200\approx$ **235 ps**。
+    - **4.4 把一級拆成兩級**：最慢的是 IF 和 MEM（都是 200 ps）。**兩個都要拆**成 100 ps，週期才會降到 ALU 的 **100 ps**；只拆一個，另一個還是 200 ps，週期不變。
+
+    **為什麼多週期反而比較慢**：步驟長短差很多。讀暫存器只要 50 ps，卻佔一整個 200 ps 的 cycle，浪費掉的時間比單週期還多。
+
+!!! example "106 Q3（20%）：多週期 CPU 的三種設計"
+    **條件**：5-cycle（IF-ID-EX-MEM-WB）4.8 GHz，load 5、store 和 R 型 4、branch 和 jump 3 個 cycle；6-cycle 把 MEM 拆成 MEM1、MEM2，5.6 GHz；7-cycle 再把 IF 拆成 IF1、IF2，6.4 GHz。指令比例 load 26%、store 10%、R 型 49%、branch/jump 15%。
+
+    **每種指令要幾個 cycle**：R 型和 branch/jump 不用 MEM，拆 MEM 對它們沒影響；拆 IF 時每一種都多 1。
+
+    | 設計 | load | store | R 型 | branch/jump | CPI |
+    |---|---|---|---|---|---|
+    | 5-cycle | 5 | 4 | 4 | 3 | **4.11** |
+    | 6-cycle | 6 | 5 | 4 | 3 | 4.11＋0.26＋0.10 ＝ **4.47** |
+    | 7-cycle | 7 | 6 | 5 | 4 | 4.47＋1 ＝ **5.47** |
+
+    5-cycle 的 CPI：$0.26\times5+0.10\times4+0.49\times4+0.15\times3=1.30+0.40+1.96+0.45=4.11$。
+
+    **每條指令平均時間 ＝ CPI ÷ 時脈頻率**。不能用計算機時，用**交叉相乘**比大小：
+
+    - **3.1 6-cycle 比 5-cycle 值得嗎（值得）**：比 $\frac{4.11}{4.8}$ 和 $\frac{4.47}{5.6}$，交叉相乘 $4.11\times5.6=23.016$、$4.47\times4.8=21.456$。6-cycle 的時間比較短，快約 7%（0.798 ns 對 0.856 ns）。
+    - **3.2 7-cycle 比 6-cycle 值得嗎（不值得）**：比 $\frac{4.47}{5.6}$ 和 $\frac{5.47}{6.4}$，$4.47\times6.4=28.608$、$5.47\times5.6=30.632$。7-cycle 每條指令都多 1 個 cycle，時脈只快 $\frac{6.4}{5.6}\approx1.14$ 倍，CPI 卻多了 $\frac{5.47}{4.47}\approx1.22$ 倍，反而變慢（0.855 ns）。
+
+!!! example "103 Q5（14%）：元件延遲 I-Mem 200、Add 70、Mux 20、ALU 90、Regs 90、D-Mem 250、Sign-Extend 15、Shift-Left-2 10（ps）"
+    這組延遲出自 COD 第 4 版第 4 章的習題。沿著最長的路徑把延遲加起來：
+
+    - **(a) 只有 ALU 指令（420 ps）**：I-Mem → Regs → Mux（選 ALU 的第二個輸入）→ ALU → Mux（選寫回的值）＝ $200+90+20+90+20$。另一條 PC＋4 的路（Add 70、Mux 20）短很多。
+    - **(b) 只有 lw（670 ps）**：I-Mem → Regs → Mux → ALU → D-Mem → Mux ＝ $200+90+20+90+250+20$。立即值走 sign-extend（15），跟 Regs（90）同時進行，取比較慢的 Regs。
+    - **(c) 要支援 ALU、branch、lw、sw（670 ps）**：最長的還是 lw。sw 不用最後一個 Mux（650 ps），beq 不用 D-Mem。
+
+    **假設**：寫回暫存器在 clock edge 完成，不另外加 Regs 的時間（COD 解答的算法）。如果把寫回也算 90 ps，三題各加 90，寫出你的假設就好。
+
+!!! example "101 Q5（20%）：填 lw 和 beq 的控制訊號（0、1 或 X）"
+    | 指令 | ALUSrc | MemtoReg | RegWrite | MemWrite | RegDst |
+    |---|---|---|---|---|---|
+    | lw | **1** | **1** | **1** | **0** | **0** |
+    | beq | **0** | **X** | **0** | **0** | **X** |
+
+    - **lw**：位址 ＝ 暫存器 ＋ 立即值，ALU 的第二個輸入是立即值（ALUSrc＝1）；從記憶體讀出來的值寫回暫存器（MemtoReg＝1、RegWrite＝1）；寫到 rt（RegDst＝0）；不寫記憶體（MemWrite＝0）。
+    - **beq**：比較兩個暫存器，第二個輸入是暫存器（ALUSrc＝0）；不寫暫存器也不寫記憶體（RegWrite＝0、MemWrite＝0）；既然不寫暫存器，寫哪個、寫什麼都不重要（RegDst、MemtoReg 是 X）。
+
+#### 觀念小考
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 單週期 CPU 的時脈週期由什麼決定？
+
+1. 最快的指令
+2. 最慢的指令（通常是 lw）
+3. 所有指令的平均
+4. 最慢的元件（通常是記憶體）
+
+??? quiz "看解析"
+    **B**。每條指令都要在一個 cycle 內做完，週期就得夠最慢的指令用。D 是**多週期和 pipeline** 的週期：它們每個 cycle 只做一步，週期由最慢的一步（元件）決定。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** sw 的 RegDst 為什麼可以是 X？
+
+1. sw 不寫暫存器，選哪一個暫存器當寫入目標都不會有影響
+2. sw 一定寫到 rt
+3. sw 一定寫到 rd
+4. RegDst 只有 beq 會用到
+
+??? quiz "看解析"
+    **A**。RegDst 只決定「寫到哪一個暫存器」。sw 的 RegWrite 是 0，根本不寫暫存器，所以 RegDst 是什麼都一樣。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-3.** sw 的 RegWrite 為什麼**不能**是 X？
+
+1. 因為 sw 要寫暫存器
+2. 因為 X 只能用在 mux 上
+3. 因為不寫的時候一定要是 0，否則可能把垃圾值寫進暫存器
+4. 可以是 X
+
+??? quiz "看解析"
+    **C**。RegWrite 是「要不要寫」。如果是 X，硬體可能當成 1，就會把某個值寫進某個暫存器，破壞資料。控制「要不要動狀態」的訊號（RegWrite、MemWrite、MemRead、Branch）都不能是 X。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** 多週期 CPU：lw 佔 20%、要 5 個 cycle，其他指令佔 80%、各要 4 個 cycle。CPI 是？
+
+1. 4
+2. 4.5
+3. 5
+4. 4.2
+
+??? quiz "看解析"
+    **D**。加權平均：$0.2\times5+0.8\times4=1+3.2=4.2$。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** lw 的 ALUSrc 和 MemtoReg 各是多少？
+
+1. 0、0
+2. 1、1
+3. 1、0
+4. 0、1
+
+??? quiz "看解析"
+    **B**。lw 的位址 ＝ 暫存器 ＋ 立即值，ALU 第二個輸入用立即值（ALUSrc＝1）；寫回暫存器的是從記憶體讀出來的值（MemtoReg＝1）。R 型剛好兩個都是 0。
+
+</div>
+
+**W-1.** 100 Q4 裡，為什麼多週期（824 ps）比單週期（600 ps）還慢？什麼情況下多週期才划算？
+
+??? quiz "看參考答案"
+    多週期的每個 cycle 長度是最慢的一步（記憶體 200 ps），但讀、寫暫存器只要 50 ps，也得佔一整個 200 ps 的 cycle，浪費很多時間。加上大部分指令要 4 個 cycle（800 ps），平均起來比單週期還久。
+
+    多週期要划算，各步驟的時間要**差不多長**，而且各指令需要的步驟數要**差很多**（例如有很慢的乘除法指令，單週期得把週期拉到乘除法那麼長，多週期只讓乘除法多跑幾個 cycle）。
 
 ### 單元 4 小考 {#u4-quiz}
 

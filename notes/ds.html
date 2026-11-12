@@ -243,6 +243,10 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-svg .vz-w.skip text { opacity: .4; }
 .vz-svg .vz-hl { fill: var(--trap); font-weight: 800; }
 .vz-svg .vz-dimtxt { fill: var(--muted); opacity: .6; }
+.vz-node.dim { opacity: .45; }
+.vz-node.side2 circle { fill: var(--key-soft); stroke: var(--key); stroke-width: 2.5; }
+.vz-static .vz-form, .vz-static .vz-ctrl, .vz-static .vz-cap:empty { display: none; }
+.vz-static .vz-tag { background: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
   .vz-svg g, .vz-edge path { transition: none; }
 }
@@ -482,6 +486,33 @@ window.MathJax = {
 <p class="admonition-title">一句話重點</p>
 <p>資結題不考你「寫程式」，考你<strong>一步一步模擬</strong>。準備方法是：每個演算法都要能在紙上畫出每一步的狀態，而且畫得又快又不會錯。</p>
 </div>
+<p><strong>100–110 年還常考的題型</strong>（108、109 留作模考，不列）：</p>
+<table>
+<thead>
+<tr>
+<th>題型</th>
+<th>年份</th>
+<th>教材</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>運算式：前序、中序、後序互換，用 stack 求值</td>
+<td>100、102、103、104、106、107</td>
+<td><a href="#u3-expr">3.5</a></td>
+</tr>
+<tr>
+<td>BFS、DFS 的走訪順序，由 BFS＋DFS 畫回樹</td>
+<td>103、104、105、107</td>
+<td><a href="#u5-bfs">5.2</a></td>
+</tr>
+<tr>
+<td>Huffman 編碼</td>
+<td>101、102</td>
+<td><a href="#u3-huff">3.6</a></td>
+</tr>
+</tbody>
+</table>
 <p><strong>建議讀的順序</strong>：單元 1 C 程式追蹤 → 2 排序 → 3 樹 → 4 雜湊 → 5 圖 → 6 遞迴計數與 DP。</p>
 
 </section>
@@ -1601,6 +1632,456 @@ f(3) 回來，印 3</code></pre>
 <p>檢查：深度 E1、B2、F2、A3、D3、C4 → <span class="arithmatex">\(8\times1+9\times2+7\times2+4\times3+6\times3+1\times4=8+18+14+12+18+4=74\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 <p>考試時 DP 表很大，至少要寫出遞迴式、填表順序和最後的根，就能拿到大部分分數。</p>
 </div>
+<h3 id="u3-expr">3.5 運算式樹：前序、中序、後序式</h3>
+<p>100、102、103、104、106、107 年都考過（六年），題型只有三種：由運算式樹寫出三種式子、中序式轉前序／後序、用 stack 算出後序式（或前序式）的值。</p>
+<h4 id="_11">運算式就是一棵樹</h4>
+<p>運算子（＋ − × ÷）是內部節點，運算元（數字、變數）是葉子。<span class="arithmatex">\((A+B)\times C\)</span> 的樹：根是 ×，左子樹是 A＋B，右子樹是 C。</p>
+<p>對這棵樹做 <a href="#u3-0">3.0</a> 的三種走訪，就得到三種寫法：</p>
+<table>
+<thead>
+<tr>
+<th>走訪</th>
+<th>結果</th>
+<th>名稱</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>preorder（根、左、右）</td>
+<td>× ＋ A B C</td>
+<td>前序式（prefix，又叫波蘭式）</td>
+</tr>
+<tr>
+<td>inorder（左、根、右）</td>
+<td>A ＋ B × C，要加括號才對：(A ＋ B) × C</td>
+<td>中序式（infix），平常的寫法</td>
+</tr>
+<tr>
+<td>postorder（左、右、根）</td>
+<td>A B ＋ C ×</td>
+<td>後序式（postfix，又叫逆波蘭式）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>前序式和後序式不需要括號</strong>：運算子放在哪裡，就決定了它算哪兩個東西。中序式一定要括號：A ＋ B × C 會被當成 A ＋ (B × C)。</p>
+<h4 id="stack">用 stack 算後序式</h4>
+<p><strong>由左往右讀</strong>：遇到數字就 push；遇到運算子就 pop 兩個，<strong>先 pop 出來的是右邊的運算元</strong>，算完再 push 回去。讀完時 stack 裡剩下的那一個就是答案。</p>
+<p>小例子 <code>2 3 4 × +</code>：push 2、3、4；讀到 ×，pop 出 4、3，算 3 × 4 ＝ 12，push；讀到 ＋，pop 出 12、2，算 2 ＋ 12 ＝ 14。</p>
+<p><strong>前序式反過來</strong>：由<strong>右往左</strong>讀，規則一樣，但<strong>先 pop 出來的是左邊的運算元</strong>。</p>
+<p>減法和除法要特別注意左右：後序式 <code>8 5 −</code> 是 8 − 5 ＝ 3，不是 5 − 8。</p>
+<h4 id="_12">中序式轉前序、後序：加括號法最快</h4>
+<ol>
+<li>照優先順序（先乘除、後加減；<strong>同優先順序由左往右</strong>）把每一個運算都加上括號。</li>
+<li>後序式：把每個運算子搬到<strong>它那組括號的右括號位置</strong>；前序式：搬到<strong>左括號位置</strong>。</li>
+<li>拿掉所有括號。</li>
+</ol>
+<p>例：A − B ＋ C，同優先順序由左往右算，是 (A − B) ＋ C，所以後序式是 <strong>A B − C ＋</strong>，不是 A B C ＋ −。</p>
+<p>另一種方法是先畫運算式樹再走訪。電腦的做法是用一個<strong>運算子 stack</strong>：運算元直接輸出；讀到運算子時，先把 stack 頂端優先順序<strong>大於或等於</strong>它的運算子 pop 出來輸出，再 push 它；左括號直接 push，右括號就一直 pop 到左括號為止。下面的動畫可以切換成「中序式轉後序式」看這個過程。</p>
+<div class="admonition example">
+<p class="admonition-title">100 Q7（15%）：由運算式樹寫出後序、中序、前序式</p>
+<p>樹：根是 ÷；左子樹是 −（它的左邊是 A ÷ C，右邊是 D × E）；右子樹是 B ＋ F。下面的動畫就是這棵樹（<code>/</code> 是 ÷、<code>*</code> 是 ×），切換三種走訪對照答案。</p>
+<ul>
+<li><strong>後序式（左右根）</strong>：A C ÷ D E × − B F ＋ ÷</li>
+<li><strong>中序式（左根右，加括號）</strong>：((A ÷ C) − (D × E)) ÷ (B ＋ F)，可以省成 (A ÷ C − D × E) ÷ (B ＋ F)</li>
+<li><strong>前序式（根左右）</strong>：÷ − ÷ A C × D E ＋ B F</li>
+</ul>
+<p><strong>中序式的括號怎麼決定</strong>：子樹的運算子優先順序比父親低，就要加括號。根是 ÷，左子樹的 − 比 ÷ 低，所以 A ÷ C − D × E 整段要括起來；右子樹的 ＋ 也比 ÷ 低，也要括。</p>
+</div>
+<div class="viz" data-viz="traverse" data-tree="/,−,+,/,*,B,F,A,C,D,E" data-order="post" data-title="100 Q7 的運算式樹：切換 preorder、inorder、postorder"></div>
+
+<div class="admonition example">
+<p class="admonition-title">106 Q10（10%）：(A ＋ B) × (C ＋ D − E) × F 轉成前序式和後序式</p>
+<p><strong>全部加括號</strong>：C ＋ D − E 同優先順序由左往右，是 (C ＋ D) − E；兩個 × 也由左往右。</p>
+<div class="arithmatex">\[((A+B)\times((C+D)-E))\times F\]</div>
+<ul>
+<li><strong>後序式</strong>：A B ＋ C D ＋ E − × F ×</li>
+<li><strong>前序式</strong>：× × ＋ A B − ＋ C D E F</li>
+</ul>
+<p><strong>驗算</strong>：後序式裡運算元的順序一定跟原式一樣（A B C D E F），只有運算子的位置變了。</p>
+</div>
+<div class="viz" data-viz="expr" data-expr="(A+B)*(C+D-E)*F" data-mode="in2post" data-title="106 Q10：用運算子 stack 把中序式轉成後序式"></div>
+
+<div class="admonition example">
+<p class="admonition-title">103 Q7(2)（4%）：後序式 8 3 2 ＋ − 4 9 3 ÷ ＋ × 3 × 7 ＋ 轉成中序式並算出結果</p>
+<table>
+<thead>
+<tr>
+<th>讀到</th>
+<th>動作</th>
+<th>stack（右邊是 top）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8 3 2</td>
+<td>push</td>
+<td>8 3 2</td>
+</tr>
+<tr>
+<td>＋</td>
+<td>3 ＋ 2 ＝ 5</td>
+<td>8 5</td>
+</tr>
+<tr>
+<td>−</td>
+<td>8 − 5 ＝ 3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4 9 3</td>
+<td>push</td>
+<td>3 4 9 3</td>
+</tr>
+<tr>
+<td>÷</td>
+<td>9 ÷ 3 ＝ 3</td>
+<td>3 4 3</td>
+</tr>
+<tr>
+<td>＋</td>
+<td>4 ＋ 3 ＝ 7</td>
+<td>3 7</td>
+</tr>
+<tr>
+<td>×</td>
+<td>3 × 7 ＝ 21</td>
+<td>21</td>
+</tr>
+<tr>
+<td>3</td>
+<td>push</td>
+<td>21 3</td>
+</tr>
+<tr>
+<td>×</td>
+<td>21 × 3 ＝ 63</td>
+<td>63</td>
+</tr>
+<tr>
+<td>7</td>
+<td>push</td>
+<td>63 7</td>
+</tr>
+<tr>
+<td>＋</td>
+<td>63 ＋ 7 ＝ 70</td>
+<td>70</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>結果（70）</strong></li>
+<li><strong>中序式</strong>：<span class="arithmatex">\((8-(3+2))\times(4+9\div3)\times3+7\)</span>。算的時候每一步記下「它是由哪兩個東西組成的」，就同時得到中序式。</li>
+</ul>
+</div>
+<div class="viz" data-viz="expr" data-expr="8 3 2 + - 4 9 3 / + * 3 * 7 +" data-mode="post" data-title="103 Q7(2)：用 stack 算後序式"></div>
+
+<div class="admonition example">
+<p class="admonition-title">107 Q5(2)（3%）：算出後序式 2 4 ＋ 6 × 9 8 − 3 5 ＋ × − 的值</p>
+<ul>
+<li>2 4 ＋ → 6；6 6 × → 36</li>
+<li>9 8 − → 1（9 − 8，不是 8 − 9）</li>
+<li>3 5 ＋ → 8；1 8 × → 8</li>
+<li>36 8 − → <strong>28</strong></li>
+</ul>
+<p>中序式：<span class="arithmatex">\((2+4)\times6-(9-8)\times(3+5)=36-8=28\)</span>。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q2(2)（2%）：前序式 ＋ ＋ 2 × 3 4 × ＋ × 5 6 7 8 轉成中序式並算出結果</p>
+<p><strong>由右往左用 stack</strong>（先 pop 出來的是左運算元）：8、7、6、5 push；× → 5 × 6 ＝ 30；＋ → 30 ＋ 7 ＝ 37；× → 37 × 8 ＝ 296；4、3 push；× → 3 × 4 ＝ 12；2 push；＋ → 2 ＋ 12 ＝ 14；＋ → 14 ＋ 296 ＝ <strong>310</strong>。</p>
+<p><strong>或由左往右切</strong>：最前面的 ＋ 有兩個運算元，第一個是「＋ 2 × 3 4」＝ 2 ＋ 3 × 4，第二個是「× ＋ × 5 6 7 8」＝ (5 × 6 ＋ 7) × 8。</p>
+<p>中序式：<span class="arithmatex">\((2+3\times4)+(5\times6+7)\times8=14+296=310\)</span>。</p>
+</div>
+<div class="viz" data-viz="expr" data-expr="+ + 2 × 3 4 × + × 5 6 7 8" data-mode="pre" data-title="104 Q2(2)：前序式由右往左讀"></div>
+
+<div class="admonition example">
+<p class="admonition-title">102 Q1(5)（4%，答案可能有 0 到多個）：關於運算式的敘述，哪些對？</p>
+<ul>
+<li><strong>(A) 後序式沒有括號：對</strong>。運算子的位置已經決定運算順序。</li>
+<li><strong>(B) 前序式的第一個符號一定是運算子：對</strong>（只要式子裡至少有一個運算子；只有一個運算元時例外，可以註明）。根一定是最後算的運算子，前序式第一個就是根。</li>
+<li><strong>(C) 後序式的第一個符號一定是運算子：錯</strong>。第一個一定是運算元，因為運算子前面要先有東西可以算。</li>
+<li><strong>(D) 前序式裡運算元比運算子多：對</strong>。都是二元運算子時，運算元剛好比運算子多 1。</li>
+</ul>
+<p>答案 <strong>A、B、D</strong>。</p>
+</div>
+<h4 id="_13">觀念小考</h4>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> 後序式 <code>5 1 2 + 4 × + 3 −</code> 的值是多少？</p>
+<ol>
+<li>18</li>
+<li>12</li>
+<li>14</li>
+<li>9</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 14</strong>。1 2 ＋ → 3；3 4 × → 12；5 12 ＋ → 17；17 3 − → 14。對應的中序式是 <span class="arithmatex">\(5+(1+2)\times4-3\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> 中序式 A − B ＋ C 的後序式是？</p>
+<ol>
+<li>A B − C ＋</li>
+<li>A B C ＋ −</li>
+<li>− A ＋ B C</li>
+<li>A B C − ＋</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。− 和 ＋ 優先順序一樣，由左往右算：(A − B) ＋ C。先算的 A − B 寫成 A B −，再跟 C 相加，A B − C ＋。B 是 A − (B ＋ C) 的後序式，意思不一樣。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-3.</strong> 用 stack 算<strong>後序式</strong>時，遇到運算子 pop 出兩個數，先 pop 出來的那個是？</p>
+<ol>
+<li>左運算元</li>
+<li>右運算元</li>
+<li>看是哪一種運算子</li>
+<li>左右都可以</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。右運算元比較晚 push，所以在比較上面，先被 pop。<code>8 5 −</code> 是 8 − 5。前序式由右往左讀時剛好相反，先 pop 出來的是左運算元。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-4.</strong> A × (B ＋ C) − D 的前序式是？</p>
+<ol>
+<li>× A − ＋ B C D</li>
+<li>− × A B ＋ C D</li>
+<li>＋ × A B C − D</li>
+<li>− × A ＋ B C D</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。全部加括號：<span class="arithmatex">\(((A\times(B+C))-D)\)</span>。最後算的是 −，放最前面；它的左邊是 A × (B ＋ C)，前序式 × A ＋ B C；右邊是 D。合起來 − × A ＋ B C D。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-5.</strong> 對運算式樹做哪一種走訪，會得到後序式？</p>
+<ol>
+<li>postorder</li>
+<li>preorder</li>
+<li>inorder</li>
+<li>level order</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。postorder 是左、右、根：先把兩個運算元寫完，最後才寫運算子，就是後序式。preorder 得到前序式，inorder 得到（沒有括號的）中序式。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用自己的話說明：為什麼前序式和後序式不需要括號，中序式卻需要？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>中序式的運算子夾在兩個運算元中間，A ＋ B × C 可以讀成 (A ＋ B) × C 或 A ＋ (B × C)，只好靠括號和優先順序決定。後序式的運算子出現時，它要用的兩個運算元已經算好、放在 stack 最上面，算的順序被寫法固定住了，沒有別的讀法；前序式同理。</p>
+<p><strong>自我檢查</strong>：有沒有提到「運算子出現的位置就決定了它算哪兩個東西」？</p>
+</details>
+<h3 id="u3-huff">3.6 Huffman 編碼</h3>
+<p>101、102 年各考一題 10%：給每個符號出現的次數，畫出 Huffman 樹、寫出編碼。</p>
+<h4 id="_14">觀念：常用的字給短的編碼</h4>
+<ul>
+<li><strong>固定長度</strong>：6 個符號要 3 位元（<span class="arithmatex">\(2^2=4&lt;6\le8=2^3\)</span>），每個字都用 3 位元。</li>
+<li><strong>變動長度</strong>：常出現的字用短編碼、少見的用長編碼，總長度就變短。摩斯電碼就是這樣：最常用的 E 只有一點。</li>
+</ul>
+<p><strong>問題</strong>：編碼長短不一，怎麼知道一個字在哪裡結束？答案是用<strong>前綴碼（prefix code）</strong>：沒有任何一個編碼是另一個編碼的開頭。例如 A＝0、B＝10、C＝11，「01011」只有一種切法：0｜10｜11 → A B C。</p>
+<p><strong>把編碼畫成二元樹</strong>：往左寫 0、往右寫 1，每個符號都放在<strong>葉子</strong>上。走到葉子就停，所以一定是前綴碼。編碼長度 ＝ 葉子的深度。</p>
+<h4 id="huffman">Huffman 演算法：每次合併最小的兩個</h4>
+<ol>
+<li>每個符號自己是一棵只有一個點的樹，權重是出現次數（頻率）。</li>
+<li>拿出頻率<strong>最小的兩棵</strong>，合併成一棵新樹，新的根 ＝ 兩個頻率相加。</li>
+<li>重複第 2 步，直到只剩一棵。</li>
+</ol>
+<p>用 min-heap（priority queue）挑最小的兩個，n 個符號要 <span class="arithmatex">\(O(n\log n)\)</span>。</p>
+<p><strong>為什麼先合併最小的</strong>：合併一次，等於這兩棵樹底下所有符號的編碼都<strong>多一位</strong>，多出來的總位元數就是新根的頻率。先合併最小的兩個，每次多付的代價最小。</p>
+<p><strong>驗算捷徑</strong>：總位元數 ＝ Σ（頻率 × 編碼長度）＝ <strong>每次合併產生的新頻率全部加起來</strong>。</p>
+<h4 id="_15">考試要注意的規則</h4>
+<ul>
+<li>頻率相同時挑哪一個、誰放左邊，會改變<strong>樹的樣子和個別編碼</strong>，但<strong>不會改變總位元數</strong>。</li>
+<li>題目有給規則就照規則（102 Q4）；沒給就寫出自己的規則，例如「頻率小的放左邊，相同時字母小的放左邊」。</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">101 Q8（10%）：12000 個字元的文章只有 I、J、K、L、M、N，各出現 5400、1560、1440、1920、1080、600 次。畫出固定長度和變動長度的編碼樹</p>
+<p><strong>固定長度（36000 位元）</strong>：6 個符號要 3 位元。樹是三層的二元樹，前 6 片葉子放 I～N：I＝000、J＝001、K＝010、L＝011、M＝100、N＝101（110、111 沒用到）。共 <span class="arithmatex">\(12000\times3=36000\)</span> 位元。</p>
+<p><strong>變動長度（Huffman，26880 位元）</strong>：規則用「頻率小的放左邊」。</p>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>最小的兩個</th>
+<th>合併成</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>N 600、M 1080</td>
+<td>1680</td>
+</tr>
+<tr>
+<td>2</td>
+<td>K 1440、J 1560</td>
+<td>3000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>(NM) 1680、L 1920</td>
+<td>3600</td>
+</tr>
+<tr>
+<td>4</td>
+<td>(KJ) 3000、(NML) 3600</td>
+<td>6600</td>
+</tr>
+<tr>
+<td>5</td>
+<td>I 5400、6600</td>
+<td>12000</td>
+</tr>
+</tbody>
+</table>
+<pre class="highlight"><code class="language-text">             (12000)
+            /       \
+      I 5400         (6600)
+                    /      \
+              (3000)        (3600)
+              /    \        /     \
+          K 1440 J 1560 (1680)   L 1920
+                        /    \
+                     N 600  M 1080</code></pre>
+<ul>
+<li><strong>編碼</strong>：I＝0、K＝100、J＝101、N＝1100、M＝1101、L＝111。</li>
+<li><strong>總位元數（26880）</strong>：<span class="arithmatex">\(5400\times1+(1440+1560+1920)\times3+(600+1080)\times4\)</span>。用捷徑驗算：<span class="arithmatex">\(1680+3000+3600+6600+12000=26880\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+<li><strong>比固定長度少約 25%</strong>：<span class="arithmatex">\(\frac{36000-26880}{36000}\approx25\%\)</span>。</li>
+</ul>
+<p>這組數字剛好是 CLRS 課本範例（a 45、b 13、c 12、d 16、e 9、f 5）的 120 倍。</p>
+</div>
+<div class="viz" data-viz="huffman" data-freq="I 5400, J 1560, K 1440, L 1920, M 1080, N 600" data-left="freq" data-title="101 Q8：一步一步合併"></div>
+
+<div class="admonition example">
+<p class="admonition-title">102 Q4（10%）：A～G 的頻率是 8、15、1、6、15、3、7。規則：內部節點的標籤是左右子標籤接起來；合併時標籤字母順序小的當左子；最小頻率相同時，挑標籤字母順序小的</p>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>最小的兩個</th>
+<th>合併（左＋右）</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>C 1、F 3</td>
+<td>CF 4</td>
+<td>C ＜ F，C 放左邊</td>
+</tr>
+<tr>
+<td>2</td>
+<td>CF 4、D 6</td>
+<td>CFD 10</td>
+<td>比字母：C ＜ D，所以 CF 放左邊</td>
+</tr>
+<tr>
+<td>3</td>
+<td>G 7、A 8</td>
+<td>AG 15</td>
+<td>A ＜ G，A 放左邊</td>
+</tr>
+<tr>
+<td>4</td>
+<td>CFD 10、AG 15</td>
+<td>AGCFD 25</td>
+<td>15 有 AG、B、E 三個一樣，照規則挑字母最小的 AG；AG ＜ CFD，AG 放左邊</td>
+</tr>
+<tr>
+<td>5</td>
+<td>B 15、E 15</td>
+<td>BE 30</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>AGCFD 25、BE 30</td>
+<td>AGCFDBE 55</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<pre class="highlight"><code class="language-text">                AGCFDBE 55
+               /          \
+         AGCFD 25          BE 30
+         /      \          /    \
+      AG 15    CFD 10    B 15   E 15
+      /   \    /    \
+    A 8  G 7  CF 4  D 6
+              /  \
+            C 1  F 3</code></pre>
+<ul>
+<li><strong>編碼</strong>：A＝000、G＝001、C＝0100、F＝0101、D＝011、B＝10、E＝11。</li>
+<li><strong>總位元數（139）</strong>：<span class="arithmatex">\(4+10+15+25+30+55=139\)</span>。</li>
+<li><strong>第 4 步的假設</strong>：題目的規則 (3) 只說「最小頻率相同」時怎麼挑，第 4 步最小的 CFD 只有一個，相同的是第二小的 15。把同一條規則延伸到第二個，挑 AG，答案寫出這個假設。</li>
+</ul>
+</div>
+<div class="viz" data-viz="huffman" data-freq="A 8, B 15, C 1, D 6, E 15, F 3, G 7" data-left="lex" data-title="102 Q4：照題目的規則合併"></div>
+
+<h4 id="_16">觀念小考</h4>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 下面哪一組<strong>不是</strong>前綴碼？</p>
+<ol>
+<li>0、10、11</li>
+<li>0、01、11</li>
+<li>00、01、1</li>
+<li>1、01、001</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。0 是 01 的開頭。讀到「0」時不知道要停下來（是 0）還是繼續讀（可能是 01），解碼會有歧義。其他三組沒有任何一個是別人的開頭。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> 四個符號的頻率是 1、1、2、4，Huffman 編碼的總位元數是多少？</p>
+<ol>
+<li>14</li>
+<li>16</li>
+<li>12</li>
+<li>8</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A. 14</strong>。合併 1＋1＝2；再合併 2＋2＝4；最後 4＋4＝8。總位元數 ＝ 2＋4＋8 ＝ 14。驗算：頻率 4 的編碼長 1、頻率 2 的長 2、兩個 1 各長 3：<span class="arithmatex">\(4+4+3+3=14\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-3.</strong> 頻率相同時換一種挑法，會改變什麼？</p>
+<ol>
+<li>總位元數</li>
+<li>樹的樣子和個別編碼，但總位元數不變</li>
+<li>什麼都不變</li>
+<li>符號的個數</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。每次合併的新頻率都一樣（挑到的兩個頻率一樣），所以「新頻率加起來」的總位元數不變；但挑到哪一棵、誰放左邊不同，樹的形狀和每個符號的編碼就不同。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-4.</strong> 8 個符號出現的次數都一樣，Huffman 編碼的長度是？</p>
+<ol>
+<li>每個都是 3 位元</li>
+<li>1 到 7 位元</li>
+<li>每個都是 8 位元</li>
+<li>不一定</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。頻率都一樣時，會兩兩合併成 4 棵、再合併成 2 棵、最後 1 棵，是一棵完全平衡的樹，每片葉子深度 3。頻率一樣，變動長度就沒有好處，跟固定長度相同。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用自己的話說明：為什麼總位元數等於「每次合併產生的新頻率加起來」？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>每合併一次，新根底下的所有符號都往下多一層，也就是編碼都多一位。多出來的位元數 ＝ 這些符號的頻率加起來 ＝ 新根的頻率。從全部是單點開始，一路合併到一棵樹，每個符號的編碼長度就是它被「往下壓」的次數，所以全部合併的新頻率加起來，就是 Σ 頻率 × 編碼長度。</p>
+</details>
 <h3 id="u3-quiz">單元 3 小考</h3>
 <p><strong>3-1.</strong> preorder ABDECF、inorder DBEAFC，postorder 是什麼？</p>
 <details class="quiz">
@@ -1631,7 +2112,7 @@ f(3) 回來，印 3</code></pre>
 <section class="unit" data-unit="u4">
 <h2 id="u4">單元 4：雜湊</h2>
 <h3 id="u4-0">4.0 觀念課：依學號尾數分配置物櫃</h3>
-<h4 id="_11">雜湊的想法</h4>
+<h4 id="_17">雜湊的想法</h4>
 <p>有 5 個置物櫃（編號 0–4），每個學號放到「學號 mod 5」那一格。要找人時直接算出櫃子號碼，不用一個個翻，平均 <span class="arithmatex">\(O(1)\)</span>。</p>
 <p><strong>碰撞（collision）</strong>：兩個學號算出同一格，例如 7 和 12 都是 mod 5 ＝ 2。</p>
 <h4 id="linear-probing">linear probing：被佔了就往下一格</h4>
@@ -1679,7 +2160,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/en/hashtable">VisuAlgo Hash Table</a>：linear probing、quadratic probing、double hashing 都能自己輸入 key 看探測路線，可以直接拿 115 Q7 的數字試。</li>
 </ul>
 </div>
-<h4 id="_12">換你試試</h4>
+<h4 id="_18">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7，各放在哪裡？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1882,7 +2363,7 @@ f(3) 回來，印 3</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：圖</h2>
 <h3 id="u5-0">5.0 觀念課：用最少的電線連起所有城市</h3>
-<h4 id="_13">圖怎麼存</h4>
+<h4 id="_19">圖怎麼存</h4>
 <p>三個點 A、B、C，邊 A–B（權重 1）、B–C（權重 2）、A–C（權重 3）：</p>
 <p><strong>鄰接矩陣</strong>（<span class="arithmatex">\(V\times V\)</span> 的表，適合邊很多的圖）：</p>
 <table>
@@ -1936,7 +2417,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/zh/mst">VisuAlgo 最小生成樹（中文）</a>：Kruskal 和 Prim 一步一步加邊，還有 Kruskal 為什麼正確的說明；<a href="https://visualgo.net/en/sssp">VisuAlgo 最短路徑</a>：Dijkstra 的過程。</li>
 </ul>
 </div>
-<h4 id="_14">換你試試</h4>
+<h4 id="_20">換你試試</h4>
 <p>圖：A–B 4、A–C 1、B–C 2、B–D 5、C–D 8。</p>
 <p><strong>T-1.</strong> 從 A 開始用 Prim，依序加入哪些邊？總權重？</p>
 <details class="quiz">
@@ -2105,6 +2586,347 @@ f(3) 回來，印 3</code></pre>
 </div>
 <div class="viz" data-viz="graph" data-edges="A-B 2, A-C 4, A-E 5, B-C 1, B-D 9, B-F 7, C-E 6, C-F 10, D-F 8, E-F 3" data-order="A,B,D,F,E,C" data-algo="prim" data-start="A" data-title="115 Q8：Prim（可以切換成 Kruskal 對照 5-1）"></div>
 
+<h3 id="u5-bfs">5.2 BFS 與 DFS 的走訪順序</h3>
+<p>103、104、105、107 年都考過（每次 3–8%）：給一張圖（或鄰接矩陣），照字母順序寫出 BFS、DFS 拜訪的順序；或反過來，給 BFS 和 DFS 的結果，畫回原本的樹。</p>
+<h4 id="bfs-dfs">觀念：BFS 像水波，DFS 像走迷宮</h4>
+<ul>
+<li><strong>BFS（breadth-first search，廣度優先）</strong>：先拜訪起點的所有鄰居，再拜訪鄰居的鄰居，一圈一圈往外，像丟石頭激起的水波。用 <strong>queue</strong>（先進先出）。</li>
+<li><strong>DFS（depth-first search，深度優先）</strong>：一直往下走，走到沒有路才退回上一個岔路換別條，像走迷宮。用 <strong>stack</strong>（或遞迴）。</li>
+</ul>
+<p>BFS 一層一層往外，所以第幾層就是「離起點幾條邊」，<strong>無權重的圖可以用 BFS 找最短路徑</strong>。DFS 走的路不一定是最短的。</p>
+<h4 id="_21">手算規則（照字母順序）</h4>
+<p><strong>BFS</strong>：</p>
+<ol>
+<li>起點標成「發現了」，放進 queue。</li>
+<li>從 queue <strong>前面</strong>拿出一個點，寫進答案；把它<strong>還沒發現</strong>的鄰居照字母順序標成發現了、放到 queue <strong>後面</strong>。</li>
+<li>重複到 queue 空了。</li>
+</ol>
+<p><strong>DFS（遞迴的想法，考試最常用）</strong>：</p>
+<ol>
+<li>寫下目前的點，標成拜訪過。</li>
+<li>照字母順序看它的鄰居，遇到<strong>第一個還沒拜訪的就立刻走過去</strong>，從那裡重複第 1 步。</li>
+<li>所有鄰居都拜訪過了，才退回上一個點，看它的下一個鄰居。</li>
+</ol>
+<p><strong>常見錯誤</strong>：DFS 不是「把鄰居全部記下來再一個一個走」，那是 BFS。DFS 每次只往下走一步，回來時才看下一個鄰居。</p>
+<p><strong>鄰接矩陣怎麼讀</strong>：第 X 列裡不是 0 的欄，就是 X 的鄰居（數字是權重，BFS、DFS 不管權重）。</p>
+<div class="admonition example">
+<p class="admonition-title">104 Q3（15%）：無向圖的鄰接矩陣（A～F、S），從 S 出發；(2) BFS (3) DFS（照字母順序）(4) Prim</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+<th>E</th>
+<th>F</th>
+<th>S</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>0</td>
+<td>4</td>
+<td>7</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>B</td>
+<td>4</td>
+<td>0</td>
+<td>9</td>
+<td>8</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>C</td>
+<td>7</td>
+<td>9</td>
+<td>0</td>
+<td>11</td>
+<td>6</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>D</td>
+<td>0</td>
+<td>8</td>
+<td>11</td>
+<td>0</td>
+<td>0</td>
+<td>10</td>
+<td>0</td>
+</tr>
+<tr>
+<td>E</td>
+<td>0</td>
+<td>0</td>
+<td>6</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>5</td>
+</tr>
+<tr>
+<td>F</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>10</td>
+<td>3</td>
+<td>0</td>
+<td>2</td>
+</tr>
+<tr>
+<td>S</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>5</td>
+<td>2</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>(2) BFS（S, E, F, C, D, A, B）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>拿出</th>
+<th>鄰居（字母順序）</th>
+<th>放進 queue</th>
+<th>queue（左邊先出）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S</td>
+<td>E, F</td>
+<td>E, F</td>
+<td>E F</td>
+</tr>
+<tr>
+<td>E</td>
+<td>C, F, S</td>
+<td>C</td>
+<td>F C</td>
+</tr>
+<tr>
+<td>F</td>
+<td>C, D, E, S</td>
+<td>D</td>
+<td>C D</td>
+</tr>
+<tr>
+<td>C</td>
+<td>A, B, D, E, F</td>
+<td>A, B</td>
+<td>D A B</td>
+</tr>
+<tr>
+<td>D</td>
+<td>B, C, F</td>
+<td>—</td>
+<td>A B</td>
+</tr>
+<tr>
+<td>A</td>
+<td>B, C</td>
+<td>—</td>
+<td>B</td>
+</tr>
+<tr>
+<td>B</td>
+<td>A, C, D</td>
+<td>—</td>
+<td>（空）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>(3) DFS（S, E, C, A, B, D, F）</strong>：S 的鄰居 E、F，先走 E；E 的鄰居 C、F、S，走 C；C 的鄰居 A、B、D、E、F，走 A；A 的鄰居 B、C，走 B；B 的鄰居 A、C 拜訪過了，走 D；D 的鄰居 B、C 拜訪過了，走 F。F 的鄰居全部拜訪過，一路退回 S，結束。</p>
+<p><strong>(4) Prim（從 S）</strong>：依序加入 2（S–F）、1（C–F）、3（E–F）、7（A–C）、4（A–B）、8（B–D），總權重 25。</p>
+</div>
+<div class="viz" data-viz="graph" data-edges="A-B 4, A-C 7, B-C 9, B-D 8, C-D 11, C-E 6, C-F 1, D-F 10, E-F 3, E-S 5, F-S 2" data-algo="bfs" data-start="S" data-pos="A:0,0 B:1.5,0 C:0.75,1 D:2.4,0.9 E:0.2,2 F:1.6,1.9 S:0.9,2.9" data-title="104 Q3：BFS（可以切換成 DFS、Prim）"></div>
+
+<div class="admonition example">
+<p class="admonition-title">105 Q8（15%）：照圖回答；邊寫成 (i, j)</p>
+<p>圖的邊（權重）：(A,B) 10、(A,C) 9、(B,C) 14、(B,D) 3、(B,E) 5、(C,E) 7、(D,F) 6、(D,G) 1、(E,F) 2、(E,H) 8、(F,G) 7、(G,H) 11、(G,I) 8、(H,I) 4。</p>
+<ul>
+<li><strong>(1) 從 E 做 BFS（E, B, C, F, H, A, D, G, I）</strong>：E 的鄰居照字母 B、C、F、H；接著 B 帶出 A、D，C 沒有新的，F 帶出 G，H 帶出 I。</li>
+<li><strong>(2) 從 D 做 DFS（D, B, A, C, E, F, G, H, I）</strong>：D → B（D 的鄰居 B、F、G 裡最小）→ A → C → E → F → G → H → I。</li>
+<li><strong>(3) Kruskal（總權重 39）</strong>：由小到大考慮：(D,G) 1、(E,F) 2、(B,D) 3、(H,I) 4、(B,E) 5 加入；(D,F) 6 會成環，跳過；(C,E) 7 加入；(F,G) 7 成環，跳過；(E,H) 8 加入；(G,I) 8 成環，跳過；(A,C) 9 加入，已經 8 條邊。</li>
+<li><strong>(4) 從 I 做 Prim（總權重 39）</strong>：(H,I) 4、(E,H) 8、(E,F) 2、(B,E) 5、(B,D) 3、(D,G) 1、(C,E) 7、(A,C) 9。</li>
+<li><strong>(5) 最小連通支配集（3 個點，例如 {B, D, G}）</strong>：支配集（dominating set）是一群點，其他每個點都至少跟其中一個相鄰；連通是這群點彼此連得起來。{B, D, G} 裡 B–D–G 相連，B 管 A、C、E，D 管 F，G 管 H、I。兩個點不夠：度數最大的 B、E、G 各只管得到 5 個點（含自己），相鄰的 B、E 合起來也只有 7 個，漏掉 G、I。</li>
+</ul>
+<p><strong>最小生成樹不唯一</strong>：(E,H) 和 (G,I) 權重都是 8。Kruskal 如果先考慮 (G,I)，就會加 (G,I)、跳過 (E,H)，樹不一樣，但總權重一樣是 39。考試寫出你同權重時的挑法。</p>
+</div>
+<div class="viz" data-viz="graph" data-edges="A-B 10, A-C 9, B-C 14, B-D 3, B-E 5, C-E 7, D-F 6, D-G 1, E-F 2, E-H 8, F-G 7, G-H 11, G-I 8, H-I 4" data-algo="bfs" data-start="E" data-pos="A:0,1 B:1,0 C:1,2 D:2,0 E:2,2 F:3,1 G:4,0 H:4,2 I:5,1" data-title="105 Q8：從 E 做 BFS（起點改成 D、切換成 DFS 對照 (2)）"></div>
+
+<h4 id="bfs-dfs_1">由 BFS 和 DFS 畫回樹</h4>
+<p>這裡的 DFS 結果就是 <strong>preorder</strong>（根、再一棵一棵子樹），BFS 是<strong>一層一層</strong>由左到右。</p>
+<p><strong>方法：照 DFS 的順序一個一個把點接上去，用 BFS 判斷「往下」還是「往旁邊」</strong>：</p>
+<ol>
+<li>根 ＝ 兩個序列的第一個。</li>
+<li>目前接到 x，DFS 的下一個是 y。從 x 開始往上看每個祖先 z（不含根）：<strong>如果 BFS 裡緊接在 z 後面的就是 y，y 就是 z 的下一個兄弟</strong>（同一個爸爸的孩子在 BFS 裡一定排在一起）。</li>
+<li>都不是，y 就是 x 的<strong>第一個孩子</strong>。</li>
+<li>畫完自己做一次 BFS 和 DFS 驗算，也要符合「每個點最多幾個孩子」。少數情況兩種畫法都對得上（例如 BFS 和 DFS 都是 r a b c），考題會避開。</li>
+</ol>
+<div class="admonition example">
+<p class="admonition-title">107 Q5(1)（3%）：二元樹的 DFS 是 c, b, e, f, d, h, i, g, k, a, j，BFS 是 c, b, g, e, d, k, j, f, h, i, a。畫出這棵樹</p>
+<table>
+<thead>
+<tr>
+<th>DFS 的下一個</th>
+<th>檢查（BFS 裡誰後面接它）</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>b</td>
+<td>根 c 沒有兄弟</td>
+<td>c 的孩子</td>
+</tr>
+<tr>
+<td>e</td>
+<td>b 後面是 g，不是 e</td>
+<td>b 的孩子</td>
+</tr>
+<tr>
+<td>f</td>
+<td>e 後面是 d、b 後面是 g</td>
+<td>e 的孩子</td>
+</tr>
+<tr>
+<td>d</td>
+<td>e 後面是 <strong>d</strong></td>
+<td>e 的兄弟（b 的孩子）</td>
+</tr>
+<tr>
+<td>h</td>
+<td>d 後面是 k、b 後面是 g</td>
+<td>d 的孩子</td>
+</tr>
+<tr>
+<td>i</td>
+<td>h 後面是 <strong>i</strong></td>
+<td>h 的兄弟（d 的孩子）</td>
+</tr>
+<tr>
+<td>g</td>
+<td>i 後面是 a、d 後面是 k、b 後面是 <strong>g</strong></td>
+<td>b 的兄弟（c 的孩子）</td>
+</tr>
+<tr>
+<td>k</td>
+<td>g 後面是 e</td>
+<td>g 的孩子</td>
+</tr>
+<tr>
+<td>a</td>
+<td>k 後面是 j、g 後面是 e</td>
+<td>k 的孩子</td>
+</tr>
+<tr>
+<td>j</td>
+<td>a 是最後一個、k 後面是 <strong>j</strong></td>
+<td>k 的兄弟（g 的孩子）</td>
+</tr>
+</tbody>
+</table>
+<pre class="highlight"><code class="language-text">            c
+         /     \
+       b         g
+      / \       / \
+     e   d     k   j
+    /   / \   /
+   f   h   i a</code></pre>
+<p>e 和 k 都只有一個孩子，只看 BFS、DFS 分不出是左邊還是右邊，畫在左邊並註明就好。驗算：一層一層讀是 c｜b g｜e d k j｜f h i a <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
+</div>
+<div class="viz" data-viz="traverse" data-tree="c,b,g,e,d,k,j,f,#,h,i,a" data-order="pre" data-title="107 Q5(1) 的答案：切換 preorder、level order 驗算"></div>
+
+<div class="admonition example">
+<p class="admonition-title">103 Q7(1)（6%）：每個點最多 3 個孩子；BFS 是 iceodlmfhjbgna，DFS 是 icdbglemnofhaj。畫出這棵樹</p>
+<p>用同樣的方法：c 是 i 的孩子；d 是 c 的孩子（c 後面是 e）；b 是 d 的孩子；g 接在 b 後面 → b 的兄弟；l 接在 d 後面 → d 的兄弟；e 接在 c 後面 → c 的兄弟；m、n 往下接；o 接在 e 後面；f 是 o 的孩子；h 接在 f 後面；a 是 h 的孩子；j 接在 h 後面。</p>
+<pre class="highlight"><code class="language-text">              i
+        /     |     \
+       c      e      o
+      / \     |    / | \
+     d   l    m   f  h  j
+    / \       |      |
+   b   g      n      a</code></pre>
+<p>驗算：一層一層讀是 i｜c e o｜d l m f h j｜b g n a <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>；preorder 是 i c d b g l e m n o f h a j <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。用程式試過所有可能的樹，只有這一棵兩個序列都對得上。</p>
+</div>
+<h4 id="_22">觀念小考</h4>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> BFS 用哪一種資料結構，記住接下來要拜訪的點？</p>
+<ol>
+<li>stack</li>
+<li>queue</li>
+<li>heap</li>
+<li>hash table</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. queue</strong>。先發現的點先拜訪（先進先出），才會一層一層往外。DFS 用 stack（或遞迴，遞迴本身就是用 stack 實作的）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> 無向圖的邊是 A–B、A–C、B–D、C–D、D–E。從 A 出發、照字母順序的 DFS 是？</p>
+<ol>
+<li>A, B, D, C, E</li>
+<li>A, B, C, D, E</li>
+<li>A, B, D, E, C</li>
+<li>A, C, D, B, E</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。A → B（A 的鄰居 B、C 裡最小）→ D（B 的鄰居只剩 D）→ C（D 的鄰居 B、C、E 裡，還沒拜訪的最小是 C）→ C 的鄰居都拜訪過，退回 D → E。B 是 BFS 的順序。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-3.</strong> 為什麼 BFS 可以找出無權重圖從起點到每個點的最短路徑？</p>
+<ol>
+<li>因為 BFS 照字母順序走</li>
+<li>因為 BFS 會走過每一條邊</li>
+<li>因為 BFS 一層一層往外，第一次發現某個點時，走的就是最少的邊數</li>
+<li>因為 BFS 用 stack</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。BFS 先處理完所有距離 1 的點，才處理距離 2 的點，依此類推。一個點第一次被發現時，它的距離就是最小的。DFS 可能繞一大圈才走到某個點，所以不能用來找最短路徑。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-4.</strong> V 個點、E 條邊的圖，用 adjacency list 存，BFS 的時間複雜度是？</p>
+<ol>
+<li><span class="arithmatex">\(O(V)\)</span></li>
+<li><span class="arithmatex">\(O(E)\)</span></li>
+<li><span class="arithmatex">\(O(V^2)\)</span></li>
+<li><span class="arithmatex">\(O(V+E)\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。每個點進出 queue 一次（<span class="arithmatex">\(V\)</span>），每條邊從兩端各看一次（<span class="arithmatex">\(2E\)</span>）。如果用鄰接矩陣，找鄰居要掃一整列，變成 <span class="arithmatex">\(O(V^2)\)</span>。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用自己的話說明 BFS 和 DFS 的差別，各舉一個適合的用途。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ul>
+<li><strong>BFS</strong>：用 queue，一層一層往外，離起點近的先拜訪。適合找<strong>無權重圖的最短路徑</strong>（例如走迷宮最少幾步）。</li>
+<li><strong>DFS</strong>：用 stack 或遞迴，一路走到底再退回來。適合<strong>檢查連通、找環、拓樸排序</strong>，以及需要「試完一條路再換下一條」的問題。</li>
+</ul>
+</details>
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> 同一張圖用 Kruskal，加邊的順序？</p>
 <details class="quiz">
@@ -2178,7 +3000,7 @@ f(3) 回來，印 3</code></pre>
 <p>先看直接遞迴的呼叫樹（橘色是「之前算過、又重算一次」的），再把寫法切換成「算過就記在表裡」比較：</p>
 <div class="viz" data-viz="calltree" data-n="5"></div>
 
-<h4 id="_15">寫遞迴式的四步</h4>
+<h4 id="_23">寫遞迴式的四步</h4>
 <ol>
 <li><strong>定義狀態</strong>：用一句話說清楚 <span class="arithmatex">\(g(i,j)\)</span> 是什麼，例如「只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊出 <span class="arithmatex">\(j\)</span> 元的方法數」。</li>
 <li><strong>看最後一步（或第一步）分類</strong>：「有沒有用到第 <span class="arithmatex">\(i\)</span> 種硬幣」。</li>
@@ -2230,7 +3052,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10221988">談硬幣問題的文章</a>（面額 1、2、5 湊 11 元）。注意它算的是「最少幾枚硬幣」，這節和 112 Q4 算的是「有幾種組合」，遞迴式不一樣，可以兩個對照著看。</li>
 </ul>
 </div>
-<h4 id="_16">換你試試</h4>
+<h4 id="_24">換你試試</h4>
 <p><strong>T-1.</strong> 用 1、2、3 元湊 4 元（不計順序），有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>

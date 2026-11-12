@@ -243,6 +243,10 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-svg .vz-w.skip text { opacity: .4; }
 .vz-svg .vz-hl { fill: var(--trap); font-weight: 800; }
 .vz-svg .vz-dimtxt { fill: var(--muted); opacity: .6; }
+.vz-node.dim { opacity: .45; }
+.vz-node.side2 circle { fill: var(--key-soft); stroke: var(--key); stroke-width: 2.5; }
+.vz-static .vz-form, .vz-static .vz-ctrl, .vz-static .vz-cap:empty { display: none; }
+.vz-static .vz-tag { background: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
   .vz-svg g, .vz-edge path { transition: none; }
 }
@@ -394,6 +398,7 @@ window.MathJax = {
 <li><a href="#u7">單元 7：關係、函數、運算與邏輯</a></li>
 <li><a href="#u8">單元 8：有限狀態機</a></li>
 <li><a href="#u9">單元 9：機率與期望值</a></li>
+<li><a href="#u10">單元 10：圖論基礎</a></li>
 <li><a href="#mix">綜合小考：混合題型</a></li>
 <li><a href="#res">資源</a></li>
 </ul>
@@ -536,11 +541,12 @@ window.MathJax = {
 <p class="admonition-title">讀這張表的方法</p>
 <ul>
 <li><strong>計數＋生成函數＋遞迴</strong>每年都佔一半以上的分數，這是你的第一優先。</li>
-<li><strong>圖論幾乎沒考</strong>（只有 115 年 Ramsey），群、格、偏序也沒出現。時間不夠時，這些先放掉。</li>
+<li><strong>圖論</strong>：111–115 年只有 115 年的 Ramsey，但 100、101、104、105、106 年都考了證明題（106 年一題 30%），所以補了<a href="#u10">單元 10</a>。群、格、偏序 111–115 年沒有出現（102–107 年考過四年），時間不夠時先放掉。</li>
 <li>115 年格式大改：10 題簡答只寫答案（每題 7 分），3 題計算要寫過程。116 年很可能延續這個格式，所以<strong>答案正確、算得快</strong>變得更重要。</li>
 </ul>
 </div>
-<p><strong>建議讀的順序</strong>：單元 1 計數 → 2 排容 → 3 生成函數 → 4 遞迴 → 5 數論 → 6 鴿籠 → 7 關係與邏輯 → 8 有限狀態機 → 9 機率。前四個單元環環相扣，一定要照順序。</p>
+<p><strong>100–110 年的圖論題</strong>（108、109 留作模考，不列）：100 Q4、Q6，101 Q3、Q4、Q8，104 Q6，105 Q6，106 Q4，全部在<a href="#u10">單元 10</a> 有詳解。</p>
+<p><strong>建議讀的順序</strong>：單元 1 計數 → 2 排容 → 3 生成函數 → 4 遞迴 → 5 數論 → 6 鴿籠 → 7 關係與邏輯 → 8 有限狀態機 → 9 機率 → 10 圖論。前四個單元環環相扣，一定要照順序。</p>
 
 </section>
 <section class="unit" data-unit="u1">
@@ -3078,6 +3084,303 @@ window.MathJax = {
 <details class="quiz">
 <summary>看答案</summary>
 <p><span class="arithmatex">\(3\times7=21\)</span>。</p>
+</details>
+
+</section>
+<section class="unit" data-unit="u10">
+<h2 id="u10">單元 10：圖論基礎</h2>
+<div class="admonition key">
+<p class="admonition-title">一句話重點</p>
+<p>111–115 年幾乎沒考圖論，但 100、101、104、105、106 年都有（106 年一題 30%），而且<strong>幾乎都是證明題</strong>。先背熟名詞、握手定理、Euler 公式，再學三種證明套路：看最長的路徑、數度數、反證法。</p>
+</div>
+<h3 id="u10-0">10.0 觀念課：點和線</h3>
+<h4 id="_44">基本名詞</h4>
+<table>
+<thead>
+<tr>
+<th>名詞</th>
+<th>意思</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>圖 <span class="arithmatex">\(G=(V,E)\)</span></td>
+<td>V 是點（vertex）的集合，E 是邊（edge）的集合</td>
+</tr>
+<tr>
+<td>簡單圖（simple graph）</td>
+<td>沒有自己連自己的邊（loop），兩點之間最多一條邊。題目沒說通常就是簡單圖</td>
+</tr>
+<tr>
+<td>度數（degree）<span class="arithmatex">\(\deg(v)\)</span></td>
+<td>連到 v 的邊有幾條</td>
+</tr>
+<tr>
+<td>路徑（path）</td>
+<td>一串相鄰的點，<strong>點不重複</strong>；長度 ＝ 邊數</td>
+</tr>
+<tr>
+<td>環（cycle）</td>
+<td>頭尾是同一點的路徑，長度至少 3</td>
+</tr>
+<tr>
+<td>連通（connected）</td>
+<td>任兩點之間都有路徑</td>
+</tr>
+<tr>
+<td>樹（tree）</td>
+<td>連通、而且沒有環</td>
+</tr>
+<tr>
+<td>葉子（leaf）</td>
+<td>度數是 1 的點</td>
+</tr>
+</tbody>
+</table>
+<p>幾種常考的圖：</p>
+<table>
+<thead>
+<tr>
+<th>圖</th>
+<th>長什麼樣子</th>
+<th>點數</th>
+<th>邊數</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>完全圖 <span class="arithmatex">\(K_n\)</span></td>
+<td>每兩點都有一條邊</td>
+<td><span class="arithmatex">\(n\)</span></td>
+<td><span class="arithmatex">\(\binom n2=\frac{n(n-1)}2\)</span></td>
+</tr>
+<tr>
+<td>完全二分圖 <span class="arithmatex">\(K_{m,n}\)</span></td>
+<td>點分成 m 個和 n 個兩群，<strong>不同群的每兩點都有邊，同群沒有</strong></td>
+<td><span class="arithmatex">\(m+n\)</span></td>
+<td><span class="arithmatex">\(mn\)</span></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(k\)</span>-cube <span class="arithmatex">\(Q_k\)</span></td>
+<td>點是長度 k 的二進位字串，剛好差一個位元就相鄰</td>
+<td><span class="arithmatex">\(2^k\)</span></td>
+<td><span class="arithmatex">\(k\cdot2^{k-1}\)</span></td>
+</tr>
+<tr>
+<td>路徑 <span class="arithmatex">\(P_n\)</span></td>
+<td>n 個點排成一直線</td>
+<td><span class="arithmatex">\(n\)</span></td>
+<td><span class="arithmatex">\(n-1\)</span></td>
+</tr>
+<tr>
+<td>環 <span class="arithmatex">\(C_n\)</span></td>
+<td>n 個點圍成一圈</td>
+<td><span class="arithmatex">\(n\)</span></td>
+<td><span class="arithmatex">\(n\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>補圖（complement）<span class="arithmatex">\(\bar G\)</span></strong>：同樣的點，原本沒有邊的地方畫上邊、原本有邊的拿掉。所以 <span class="arithmatex">\(|E(G)|+|E(\bar G)|=\binom n2\)</span>。</p>
+<h4 id="_45">握手定理：度數加起來是邊數的兩倍</h4>
+<div class="arithmatex">\[\sum_{v\in V}\deg(v)=2|E|\]</div>
+<p><strong>為什麼</strong>：一群人握手，每握一次手，兩個人各算一次。每條邊有兩個端點，算度數時被兩端各算一次。</p>
+<p><strong>推論：度數是奇數的點一定有偶數個</strong>。度數總和是偶數，奇數要成對出現加起來才會是偶數。</p>
+<p><strong>小例子</strong>：<span class="arithmatex">\(K_n\)</span> 每個點連到其他 <span class="arithmatex">\(n-1\)</span> 個點，度數總和 <span class="arithmatex">\(n(n-1)=2|E|\)</span>，所以 <span class="arithmatex">\(|E|=\frac{n(n-1)}2\)</span>。<span class="arithmatex">\(Q_k\)</span> 每個點度數 k（改 k 個位元中的一個），<span class="arithmatex">\(k\cdot2^k=2|E|\)</span>，所以 <span class="arithmatex">\(|E|=k\cdot2^{k-1}\)</span>。</p>
+<h4 id="n-n1">樹：n 個點剛好 n−1 條邊</h4>
+<ul>
+<li><strong>連通、沒有環、n−1 條邊</strong>：三個條件任兩個成立，第三個就成立。</li>
+<li>任兩點之間<strong>剛好一條</strong>路徑；拿掉任何一條邊就不連通；加上任何一條邊就有環。</li>
+</ul>
+<h4 id="_46">證明的三種套路</h4>
+<ol>
+<li><strong>看最長的路徑</strong>：最長路徑的端點，鄰居一定都在這條路徑上，不然路徑還可以再延長。（100 Q6、101 Q4）</li>
+<li><strong>數度數</strong>：握手定理加上不等式。（100 Q6 的第二種證法）</li>
+<li><strong>反證法</strong>：假設不連通（或兩個都是平面圖），算出矛盾。（104 Q6、100 Q4）</li>
+</ol>
+<p>鴿籠也常出現：度數的可能值比點數少，就有兩點度數一樣（101 Q3）。</p>
+<h4 id="_47">換你試試</h4>
+<p><strong>T-1.</strong> 一個圖有 5 個點，度數分別是 3、3、2、2、1，畫得出來嗎？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><strong>畫不出來</strong>。度數加起來 <span class="arithmatex">\(3+3+2+2+1=11\)</span> 是奇數，但握手定理說總和一定是 <span class="arithmatex">\(2|E|\)</span>（偶數）。換個說法：度數是奇數的點有 3、3、1 三個，奇數個，不可能。</p>
+</details>
+<p><strong>T-2.</strong> <span class="arithmatex">\(K_{m,12}\)</span> 有 72 條邊，m 是多少？<span class="arithmatex">\(K_{3,4}\)</span> 有幾個點、幾條邊？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p><span class="arithmatex">\(K_{m,n}\)</span> 有 <span class="arithmatex">\(mn\)</span> 條邊：<span class="arithmatex">\(12m=72\)</span>，<strong>m ＝ 6</strong>。<span class="arithmatex">\(K_{3,4}\)</span> 有 <span class="arithmatex">\(3+4=\)</span> <strong>7 個點</strong>、<span class="arithmatex">\(3\times4=\)</span> <strong>12 條邊</strong>。</p>
+</details>
+<h3 id="u10-1">10.1 樹與連通</h3>
+<div class="admonition example">
+<p class="admonition-title">100 Q6（10%）：(a) 樹至少有 2 個點時，至少有 2 個度數 1 的點 (b) 能不能有更強的定理：「點數超過 α 的樹，至少有 β（＞2）個度數 1 的點」？</p>
+<p><strong>(a) 證法一：看最長的路徑</strong>。在樹裡取一條最長的路徑 <span class="arithmatex">\(v_0,v_1,\dots,v_k\)</span>（樹連通、至少 2 個點，所以 <span class="arithmatex">\(k\ge1\)</span>）。假設 <span class="arithmatex">\(\deg(v_0)\ge2\)</span>，<span class="arithmatex">\(v_0\)</span> 除了 <span class="arithmatex">\(v_1\)</span> 還有另一個鄰居 w：</p>
+<ul>
+<li>w 在路徑上：<span class="arithmatex">\(v_0\)</span> 經過路徑走到 w，再走邊 <span class="arithmatex">\(wv_0\)</span> 回來，形成環，但樹沒有環，矛盾。</li>
+<li>w 不在路徑上：<span class="arithmatex">\(w,v_0,\dots,v_k\)</span> 是更長的路徑，跟「最長」矛盾。</li>
+</ul>
+<p>所以 <span class="arithmatex">\(\deg(v_0)=1\)</span>；同理 <span class="arithmatex">\(\deg(v_k)=1\)</span>。<span class="arithmatex">\(v_0\ne v_k\)</span>，所以至少 2 個。∎</p>
+<p><strong>(a) 證法二：數度數</strong>。n 個點的樹有 <span class="arithmatex">\(n-1\)</span> 條邊，度數總和 <span class="arithmatex">\(2n-2\)</span>。樹連通、<span class="arithmatex">\(n\ge2\)</span>，每個點度數至少 1。如果度數 1 的點最多只有 1 個，其他 <span class="arithmatex">\(n-1\)</span> 個點度數都至少 2，總和至少 <span class="arithmatex">\(1+2(n-1)=2n-1&gt;2n-2\)</span>，矛盾。∎</p>
+<p><strong>(b) 不能</strong>。路徑 <span class="arithmatex">\(P_n\)</span>（n 個點排成一直線）是一棵樹，不管 n 多大都<strong>只有 2 個</strong>度數 1 的點（兩端）。所以不論 α 多大，「至少 β＞2 個」都有反例。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q4（10%）：簡單圖 G 的最小度數 ≥ k，證明 G 有一條長度至少 k 的路徑</p>
+<p>取一條最長的路徑 <span class="arithmatex">\(v_0,v_1,\dots,v_\ell\)</span>。<span class="arithmatex">\(v_0\)</span> 的鄰居都在這條路徑上，不然可以接在前面變得更長。<span class="arithmatex">\(v_0\)</span> 至少有 k 個鄰居，簡單圖沒有 loop，鄰居不會是 <span class="arithmatex">\(v_0\)</span> 自己，所以這 k 個鄰居都在 <span class="arithmatex">\(\{v_1,\dots,v_\ell\}\)</span> 裡，因此 <span class="arithmatex">\(\ell\ge k\)</span>。∎</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q6（10%）：loop-free 圖，<span class="arithmatex">\(|V|=n\ge2\)</span>，任兩個不同的點都有 <span class="arithmatex">\(\deg(x)+\deg(y)\ge n-1\)</span>。證明 G 連通</p>
+<p><strong>假設</strong>：題目只說沒有 loop，答案要補上「兩點之間最多一條邊」。不然一對點之間畫很多條邊，度數可以很大，圖卻不連通。</p>
+<p><strong>反證</strong>：假設 G 不連通，取 x、y 在不同的連通分量（connected component），兩個分量的點數是 a、b，<span class="arithmatex">\(a+b\le n\)</span>。x 的鄰居只能在自己的分量裡，最多 <span class="arithmatex">\(a-1\)</span> 個；y 最多 <span class="arithmatex">\(b-1\)</span> 個。</p>
+<div class="arithmatex">\[\deg(x)+\deg(y)\le(a-1)+(b-1)\le n-2&lt;n-1\]</div>
+<p>跟題目矛盾，所以 G 連通。∎</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q3（10%）：朋友關係是對稱的；證明兩人以上的團體裡，一定有兩個人的朋友數一樣</p>
+<p>人當點、朋友當邊，要證明：<strong>簡單圖至少 2 個點時，一定有兩個點度數相同</strong>。</p>
+<p>n 個點，每個點的度數可能是 <span class="arithmatex">\(0,1,\dots,n-1\)</span>，共 n 種。但 0 和 <span class="arithmatex">\(n-1\)</span> <strong>不會同時出現</strong>：度數 <span class="arithmatex">\(n-1\)</span> 的人跟每個人都是朋友，就不會有人朋友數是 0。所以實際上最多 <span class="arithmatex">\(n-1\)</span> 種值。n 個人放進 <span class="arithmatex">\(n-1\)</span> 種度數，由鴿籠，一定有兩人一樣。∎</p>
+</div>
+<h3 id="u10-2">10.2 二分圖</h3>
+<p><strong>二分圖（bipartite graph）</strong>：點可以分成兩群 X、Y，<strong>每條邊都一端在 X、一端在 Y</strong>，同一群裡沒有邊。換個說法：點能塗兩種顏色，相鄰的點顏色不同。</p>
+<p><strong>定理：G 是二分圖 ⇔ G 沒有奇數長度的環。</strong></p>
+<p><strong>怎麼檢查</strong>：從一點開始塗 X，它的鄰居塗 Y，鄰居的鄰居塗 X……（就是 BFS 一層一層往外，偶數層 X、奇數層 Y）。只要有一條邊兩端同色，就找得到奇數環，不是二分圖。</p>
+<p><div class="viz" data-viz="graph" data-edges="000-001, 000-010, 000-100, 001-011, 001-101, 010-011, 010-110, 100-101, 100-110, 011-111, 101-111, 110-111" data-algo="bip" data-start="000" data-pos="010:0,0 110:2.2,0 000:0,2.2 100:2.2,2.2 011:0.7,0.7 111:1.5,0.7 001:0.7,1.5 101:1.5,1.5" data-title="Q₃ 是二分圖（把邊改成 A-B, B-C, C-D, D-E, E-A 看看 5 個點的環）"></div></p>
+<div class="admonition example">
+<p class="admonition-title">106 Q4（30%）：<span class="arithmatex">\(Q_k\)</span> 是 k-cube。(a) 證明 <span class="arithmatex">\(Q_k\)</span> 是二分圖 (b) 二分圖沒有奇數長度的環 (c) 沒有奇數長度的環的圖是二分圖</p>
+<p><strong>(a)</strong> 令 X ＝「1 的個數是偶數」的字串，Y ＝「1 的個數是奇數」的字串。相鄰的兩個字串剛好差一個位元，1 的個數差 1，奇偶性一定不同，所以每條邊都是一端在 X、一端在 Y。∎</p>
+<p><strong>(b)</strong> 設環是 <span class="arithmatex">\(v_0,v_1,\dots,v_\ell=v_0\)</span>。沿著環每走一條邊就換一群（X → Y → X → …），走了 ℓ 步回到起點那一群，所以 ℓ 一定是偶數。∎</p>
+<p><strong>(c)</strong> 不同的連通分量之間沒有邊，可以各自分好再合起來，所以假設 G 連通。選一點 r，令 <span class="arithmatex">\(d(v)\)</span> ＝ r 到 v 的最短距離（邊數）；X ＝ d 是偶數的點、Y ＝ d 是奇數的點。</p>
+<p>要證每條邊 uw 的兩端奇偶不同。假設 <span class="arithmatex">\(d(u)\)</span>、<span class="arithmatex">\(d(w)\)</span> 奇偶相同：r 到 u 的最短路徑、邊 uw、w 回到 r 的最短路徑，接起來是一條長度 <span class="arithmatex">\(d(u)+1+d(w)\)</span> 的<strong>封閉路線（closed walk）</strong>，長度是奇數。</p>
+<p><strong>奇數長度的封閉路線一定包含奇數環</strong>：如果路線上沒有重複的點，它本身就是奇數環；如果有重複的點，就在那裡切成兩條比較短的封閉路線，兩段長度加起來是奇數，其中一段一定是奇數，對它繼續切，直到沒有重複的點。這跟「沒有奇數環」矛盾，所以 X、Y 是一個二分的分法。∎</p>
+</div>
+<h3 id="u10-3">10.3 平面圖</h3>
+<p><strong>平面圖（planar graph）</strong>：<strong>能夠</strong>畫在平面上而且邊不交叉（只要找得到一種畫法就算）。<span class="arithmatex">\(K_4\)</span> 平常畫成正方形加兩條對角線會交叉，但把一個點畫到三角形中間就不交叉，所以 <span class="arithmatex">\(K_4\)</span> 是平面圖：</p>
+<div class="viz" data-viz="graph" data-edges="A-B, A-C, B-C, A-D, B-D, C-D" data-algo="show" data-static data-pos="A:1,0 B:0,1.7 C:2,1.7 D:1,1.1" data-title="K₄ 的平面畫法：4 個面（3 個三角形，加上外面）"></div>
+
+<p><strong>面（face）</strong>：平面圖把平面切成幾塊，<strong>外面那一大塊也算一個面</strong>。</p>
+<h4 id="euler">Euler 公式</h4>
+<p>連通的平面圖：</p>
+<div class="arithmatex">\[v-e+f=2\]</div>
+<p><strong>驗算</strong>：三角形 <span class="arithmatex">\(v=3\)</span>、<span class="arithmatex">\(e=3\)</span>、<span class="arithmatex">\(f=2\)</span>（裡面、外面）；樹沒有環，只有外面一個面，<span class="arithmatex">\(v-(v-1)+1=2\)</span>；上面的 <span class="arithmatex">\(K_4\)</span>：<span class="arithmatex">\(4-6+4=2\)</span>。</p>
+<h4 id="ele3v-6">邊數上限：<span class="arithmatex">\(e\le3v-6\)</span></h4>
+<p><strong>為什麼</strong>（簡單圖、<span class="arithmatex">\(v\ge3\)</span>）：每個面至少被 3 條邊圍住（簡單圖沒有兩條邊圍成的面），每條邊最多碰到 2 個面，所以 <span class="arithmatex">\(3f\le2e\)</span>。代進 Euler 公式：</p>
+<div class="arithmatex">\[2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6\]</div>
+<ul>
+<li><strong>沒有三角形</strong>（例如二分圖，最短的環至少 4）：每個面至少 4 條邊，<span class="arithmatex">\(4f\le2e\)</span>，得到 <span class="arithmatex">\(e\le2v-4\)</span>。</li>
+<li><strong>一般化</strong>：最短的環長度叫 <strong>girth</strong>，記作 g。每個面至少 g 條邊，<span class="arithmatex">\(gf\le2e\)</span>，得到 <span class="arithmatex">\(e\le\frac{g}{g-2}(v-2)\)</span>（105 Q6 直接給這個公式）。</li>
+</ul>
+<h4 id="k_5-k_33"><span class="arithmatex">\(K_5\)</span> 和 <span class="arithmatex">\(K_{3,3}\)</span> 不是平面圖</h4>
+<div class="viz" data-viz="graph" data-edges="A-B, A-C, A-D, A-E, B-C, B-D, B-E, C-D, C-E, D-E" data-algo="show" data-static data-title="K₅：5 個點、10 條邊"></div>
+
+<div class="viz" data-viz="graph" data-edges="a1-b1, a1-b2, a1-b3, a2-b1, a2-b2, a2-b3, a3-b1, a3-b2, a3-b3" data-algo="show" data-static data-pos="a1:0,0 a2:1.3,0 a3:2.6,0 b1:0,1.5 b2:1.3,1.5 b3:2.6,1.5" data-title="K₃,₃：6 個點、9 條邊（三間房子接三種管線）"></div>
+
+<ul>
+<li><span class="arithmatex">\(K_5\)</span>：<span class="arithmatex">\(v=5\)</span>、<span class="arithmatex">\(e=10\)</span>，但 <span class="arithmatex">\(3v-6=9&lt;10\)</span>，不是平面圖。</li>
+<li><span class="arithmatex">\(K_{3,3}\)</span>：<span class="arithmatex">\(v=6\)</span>、<span class="arithmatex">\(e=9\)</span>。<span class="arithmatex">\(3v-6=12\)</span> 判斷不出來；它是二分圖、沒有三角形，用 <span class="arithmatex">\(2v-4=8&lt;9\)</span>，不是平面圖。</li>
+</ul>
+<p><strong><span class="arithmatex">\(e\le3v-6\)</span> 只是必要條件</strong>：邊數超過一定不是平面圖；沒超過<strong>不代表</strong>是，<span class="arithmatex">\(K_{3,3}\)</span> 就是例子。（Kuratowski 定理：一個圖是平面圖，若且唯若它不含 <span class="arithmatex">\(K_5\)</span> 或 <span class="arithmatex">\(K_{3,3}\)</span> 的細分，知道名字就好。）</p>
+<div class="admonition example">
+<p class="admonition-title">100 Q4（10%）：(a) 簡單平面圖、<span class="arithmatex">\(n&gt;2\)</span> 時 <span class="arithmatex">\(m\le3n-6\)</span> (b) G 是平面圖、<span class="arithmatex">\(n&gt;10\)</span> 時，補圖 <span class="arithmatex">\(\bar G\)</span> 不是平面圖</p>
+<p><strong>(a)</strong> 如果 <span class="arithmatex">\(m&lt;3\)</span>，<span class="arithmatex">\(3n-6\ge3&gt;m\)</span>，直接成立。<span class="arithmatex">\(m\ge3\)</span> 時，先處理連通的情況：每個面至少被 3 條邊圍住、每條邊最多碰到 2 個面，所以 <span class="arithmatex">\(3f\le2m\)</span>；代進 Euler 公式 <span class="arithmatex">\(n-m+f=2\)</span>，得 <span class="arithmatex">\(2\le n-m+\frac{2m}3\)</span>，也就是 <span class="arithmatex">\(m\le3n-6\)</span>。</p>
+<p>G 不連通時，在不同的連通分量之間加邊把它們連起來，仍然是簡單平面圖，邊只變多；加邊後的圖符合 <span class="arithmatex">\(m'\le3n-6\)</span>，原本的 <span class="arithmatex">\(m\le m'\)</span> 也符合。∎</p>
+<p><strong>(b)</strong> 反證：假設 G 和 <span class="arithmatex">\(\bar G\)</span> 都是平面圖。兩個的邊數加起來是 <span class="arithmatex">\(\binom n2\)</span>，各自又不超過 <span class="arithmatex">\(3n-6\)</span>：</p>
+<div class="arithmatex">\[\frac{n(n-1)}2=m+\bar m\le2(3n-6)\ \Rightarrow\ n^2-13n+24\le0\]</div>
+<p><span class="arithmatex">\(n=11\)</span> 時 <span class="arithmatex">\(121-143+24=2&gt;0\)</span>；這個二次式的對稱軸在 <span class="arithmatex">\(n=6.5\)</span>，<span class="arithmatex">\(n\ge11\)</span> 之後只會越來越大，一直大於 0。所以 <span class="arithmatex">\(n\ge11\)</span> 時不可能兩個都是平面圖，<span class="arithmatex">\(\bar G\)</span> 不是平面圖。∎</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">105 Q6（15%）：girth 是 g 的簡單平面圖滿足 <span class="arithmatex">\(\epsilon\le\frac{g}{g-2}(\nu-2)\)</span>（ν 是點數、ε 是邊數）。畫出 <span class="arithmatex">\(K_5\)</span>、<span class="arithmatex">\(K_{3,3}\)</span>，並證明它們不是平面圖</p>
+<ul>
+<li><strong><span class="arithmatex">\(K_5\)</span></strong>：最短的環是三角形，<span class="arithmatex">\(g=3\)</span>。如果是平面圖，<span class="arithmatex">\(\epsilon\le\frac31(5-2)=9\)</span>，但 <span class="arithmatex">\(K_5\)</span> 有 10 條邊，矛盾。</li>
+<li><strong><span class="arithmatex">\(K_{3,3}\)</span></strong>：二分圖沒有奇數環，最短的環是 4，<span class="arithmatex">\(g=4\)</span>。如果是平面圖，<span class="arithmatex">\(\epsilon\le\frac42(6-2)=8\)</span>，但 <span class="arithmatex">\(K_{3,3}\)</span> 有 9 條邊，矛盾。∎</li>
+</ul>
+<p>圖就畫上面兩張。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q8（10%）：證明 G 能畫在平面上不交叉，若且唯若 G 能畫在球面上不交叉</p>
+<p>用<strong>球極投影（stereographic projection）</strong>：把球放在平面上，從球的最高點 N 往外照，球面上 N 以外的每一點，都對到平面上剛好一點；反過來也是。這個對應是一對一而且連續的，交不交叉不會改變。</p>
+<ul>
+<li><strong>平面 → 球面</strong>：把平面上的畫法投影到球面上，邊還是不交叉。</li>
+<li><strong>球面 → 平面</strong>：圖在球面上只佔有限的線條，一定找得到一點不在任何點或邊上。把球轉一下，讓這一點當 N，再投影到平面上。∎</li>
+</ul>
+</div>
+<h3 id="u10-quiz">單元 10 小考</h3>
+<div class="mcq" data-ans="3">
+<p><strong>10-1.</strong> 一棵樹有 10 個點，有幾條邊？</p>
+<ol>
+<li>10</li>
+<li>11</li>
+<li>9</li>
+<li>不一定</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 9</strong>。樹有 n 個點就剛好 <span class="arithmatex">\(n-1\)</span> 條邊。少一條就不連通，多一條就會有環。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>10-2.</strong> <span class="arithmatex">\(K_{4,6}\)</span> 有幾條邊？</p>
+<ol>
+<li>10</li>
+<li>24</li>
+<li>45</li>
+<li>12</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. 24</strong>。一群 4 個點、一群 6 個點，不同群的每兩點都有邊：<span class="arithmatex">\(4\times6=24\)</span>。45 是 <span class="arithmatex">\(K_{10}\)</span> 的邊數 <span class="arithmatex">\(\binom{10}2\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>10-3.</strong> 下面哪一個是二分圖？</p>
+<ol>
+<li><span class="arithmatex">\(K_3\)</span>（三角形）</li>
+<li><span class="arithmatex">\(C_5\)</span>（5 個點的環）</li>
+<li><span class="arithmatex">\(C_6\)</span>（6 個點的環）</li>
+<li><span class="arithmatex">\(K_4\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。二分圖 ⇔ 沒有奇數長度的環。<span class="arithmatex">\(C_6\)</span> 是偶數環，塗色時一路交替就塗得完。<span class="arithmatex">\(K_3\)</span>、<span class="arithmatex">\(C_5\)</span> 本身就是奇數環，<span class="arithmatex">\(K_4\)</span> 裡有三角形。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>10-4.</strong> 一個連通的平面圖有 6 個點、10 條邊，畫成平面圖時有幾個面？</p>
+<ol>
+<li>4</li>
+<li>5</li>
+<li>16</li>
+<li>6</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D. 6</strong>。Euler 公式 <span class="arithmatex">\(v-e+f=2\)</span>：<span class="arithmatex">\(6-10+f=2\)</span>，<span class="arithmatex">\(f=6\)</span>。別忘了外面那一塊也算一個面。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>10-5.</strong> <span class="arithmatex">\(K_6\)</span> 是平面圖嗎？</p>
+<ol>
+<li>是，因為 <span class="arithmatex">\(K_4\)</span> 是平面圖</li>
+<li>不是，因為 15 條邊超過 <span class="arithmatex">\(3v-6=12\)</span></li>
+<li>是，因為 15 ≤ 3 × 6</li>
+<li>不一定，要畫畫看</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(K_6\)</span> 有 <span class="arithmatex">\(\binom62=15\)</span> 條邊，但 6 個點的簡單平面圖最多 <span class="arithmatex">\(3\times6-6=12\)</span> 條，所以不是平面圖。（<span class="arithmatex">\(K_6\)</span> 裡面也含有 <span class="arithmatex">\(K_5\)</span>。）</p>
+</details>
+</div>
+<p><strong>10-6.</strong> 證明：任何圖中，度數是奇數的點一定有偶數個。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>由握手定理，<span class="arithmatex">\(\sum\deg(v)=2|E|\)</span> 是偶數。把點分成度數偶數的、度數奇數的兩群：偶數那群的度數總和是偶數，所以奇數那群的度數總和 ＝ 偶數 − 偶數 ＝ 偶數。一堆奇數加起來是偶數，個數一定是偶數。∎</p>
+</details>
+<p><strong>10-7.</strong> 簡單圖有 n 個點，每個點的度數都至少 <span class="arithmatex">\(\frac n2\)</span>。證明 G 連通。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>任兩點 x、y：<span class="arithmatex">\(\deg(x)+\deg(y)\ge\frac n2+\frac n2=n&gt;n-1\)</span>，套 104 Q6 的結論就連通。</p>
+<p>也可以直接證：如果 x、y 不相鄰，它們各自至少有 <span class="arithmatex">\(\frac n2\)</span> 個鄰居，都在其他 <span class="arithmatex">\(n-2\)</span> 個點裡。<span class="arithmatex">\(\frac n2+\frac n2=n&gt;n-2\)</span>，由鴿籠一定有共同的鄰居，x、y 之間有長度 2 的路徑。∎</p>
+</details>
+<p><strong>10-8.</strong> 說明 <span class="arithmatex">\(K_{3,3}\)</span> 為什麼要用 <span class="arithmatex">\(e\le2v-4\)</span>，而不能用 <span class="arithmatex">\(e\le3v-6\)</span> 判斷它不是平面圖。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><span class="arithmatex">\(K_{3,3}\)</span> 有 6 個點、9 條邊。<span class="arithmatex">\(3v-6=12\ge9\)</span>，沒有超過，<strong>判斷不出來</strong>（這個條件只是必要條件）。但 <span class="arithmatex">\(K_{3,3}\)</span> 是二分圖，沒有三角形，每個面至少被 4 條邊圍住，可以用比較嚴格的 <span class="arithmatex">\(e\le2v-4=8\)</span>。<span class="arithmatex">\(9&gt;8\)</span>，所以不是平面圖。</p>
 </details>
 
 </section>

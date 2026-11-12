@@ -14,7 +14,7 @@
   - **一次只顯示一個單元**：每個 `##` 標題是一個單元，網址的 `#錨點` 決定顯示哪個單元（行程表的連結照常能用），單元最後有上一單元／下一單元。手機上按右下角的目錄按鈕，目錄會從頁首下方往下展開；目錄裡每個單元右邊的箭頭可以展開它的小節。回到最上面、到最下面的按鈕在已經到頂、到底時會收起來（其他按鈕往下補位），按了會在半秒左右快速滑過去（`notes/assets/glide.js`）。程式在 `notes/assets/nav.js`。
   - **手機排版**：數學式用 MathJax 4，太長的公式會自動換行，而且只排版正在看的單元。手機上放不下的表格會自動改排：欄位多、內容短的表轉成直的，文字多的表每一列變成一張卡片。
   - **圖示**：不用 emoji，全部是 `notes/assets/icons.js` 裡畫的 SVG；內文的 ✓ ✗ ★ 在 build 時自動換成 SVG。
-  - **動畫**：手動模擬類的題目（排序、heap、樹、雜湊、圖、stack、遞迴、cache、CPU 排程、page 置換）有可以一步一步播放、也可以改數字的動畫。程式在 `notes/assets/viz.js`。
+  - **動畫**：手動模擬類的題目（排序、heap、樹、雜湊、圖的 BFS／DFS／MST、二分圖、stack、運算式、Huffman、遞迴、cache、CPU 排程、page 置換、磁碟排程）有可以一步一步播放、也可以改數字的動畫。程式在 `notes/assets/viz.js`。
 - **每日行程**：從每個人自己的開始日期（第一次用網站那天，可以改）排到考試前一天。剩下的天數決定計畫（完整、標準、加速、衝刺、考前、最後衝刺），讀書天不夠時照 `data/*.js` 的 `compress` 一層一層壓縮（取消選做日、減少週考、較舊的考古題有空再做、打底期併天）；`tracks` 定義各計畫的天數門檻和預設休息日。
 - **考古題進度**：逐年逐科的劃記表（未做 → 做完 → 已訂正 → 二刷完）。
 - **上榜策略**、**教材與來源**。
@@ -44,7 +44,7 @@ Markdown 寫法：
 - 選擇題：整題包在 `<div class="mcq" data-ans="正確選項的編號" markdown="1">` 裡，題目一段、選項用 `1.` `2.` 編號清單、解析放在 `??? quiz "看解析"`；網頁上選項會變成按鈕，選了馬上對答案並自動記錄
 - 插在舊題目前面的新題目，用 `<div data-qid="固定的 id" markdown="1">` 包起來，舊題目的紀錄（和手寫筆跡）就不會錯位
 - 標題錨點：`## 單元 1：計數 {#u1}`，行程表用這個錨點連到教材
-- 動畫：單獨一行寫 `<div class="viz" data-viz="heap" data-nums="3,1,6,5,2,4"></div>`，`data-viz` 是動畫種類（insertion、heap、radix、bst、avl、traverse、rebuild、hash、graph、stack、calltree、cache、paging、sched），其他 `data-*` 是預設的輸入，欄位名稱見 `notes/assets/viz.js` 裡各動畫的 `fields`
+- 動畫：單獨一行寫 `<div class="viz" data-viz="heap" data-nums="3,1,6,5,2,4"></div>`，`data-viz` 是動畫種類（insertion、heap、radix、bst、avl、traverse、rebuild、hash、graph、stack、calltree、cache、paging、sched、disk、expr、huffman），其他 `data-*` 是預設的輸入，欄位名稱見 `notes/assets/viz.js` 裡各動畫的 `fields`。graph 的 `data-algo` 可以是 prim、kruskal、dijkstra、bfs、dfs、bip（二分圖檢查）、show（只畫圖）；`data-pos="A:0,0 B:1,0"` 指定點的位置；加 `data-static` 就只畫一張圖，沒有輸入欄和播放鍵
 - 小考的手寫板由 `notes/assets/ink.js` 自動加在每個 `??? quiz` 上面，不用另外寫
 
 所有詳解的數字都用程式驗算過；C 程式題都實際編譯執行過。

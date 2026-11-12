@@ -133,8 +133,8 @@ window.EXAMS.push({
      "subject": "ca",
      "time": "下午",
      "title": "讀「學習方法」與四份教材的第 0 節",
-     "read": "111–115 年的考題分布已經整理好",
-     "practice": "自己翻 100–110 年題目，補進頻率表",
+     "read": "111–115 年的考題分布，加上 100–110 年還常考的題型，都已經整理好（108、109 留作模考，不列）",
+     "practice": "圈出出現 3 年以上的主題，當作讀書的優先順序",
      "link": "notes/method.html"
     },
     {
@@ -189,7 +189,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "計數：插空法與不相鄰｜效能：Amdahl 定律｜行程、PCB、IPC",
+   "title": "計數：插空法與不相鄰｜效能：Amdahl 定律｜行程、PCB、IPC、fork 程式追蹤",
    "blocks": [
     {
      "subject": "dm",
@@ -210,9 +210,9 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "time": "晚上",
-     "title": "OS：行程、PCB、IPC",
-     "read": "先讀觀念課 1.0，再讀教材 1.1",
-     "practice": "例題 112 Q5a、115 Q2、114 Q6b",
+     "title": "OS：行程、PCB、IPC、fork 程式追蹤",
+     "read": "先讀觀念課 1.0，再讀教材 1.1、1.3",
+     "practice": "例題 112 Q5a、115 Q2、114 Q6b、106 Q1、110 Q1",
      "link": "notes/os.html#u1-0"
     }
    ],
@@ -338,7 +338,7 @@ window.EXAMS.push({
     },
     {
      "subject": "osds",
-     "text": "回想〈行程、PCB、IPC〉的重點，寫不出來就重看",
+     "text": "回想〈行程、PCB、IPC、fork 程式追蹤〉的重點，寫不出來就重看",
      "link": "notes/os.html#u1-0"
     },
     {
@@ -766,7 +766,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "遞迴：特徵方程（相異、重根、複數根）｜Pipeline：時間計算｜樹：走訪重建與 BST",
+   "title": "遞迴：特徵方程（相異、重根、複數根）｜單週期與多週期 datapath｜樹：走訪重建、運算式、BST",
    "blocks": [
     {
      "subject": "dm",
@@ -779,17 +779,17 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "time": "下午",
-     "title": "Pipeline：時間計算",
-     "read": "先讀觀念課 4.0，再讀教材 4.1",
-     "practice": "例題 113 Q3",
+     "title": "單週期與多週期 datapath",
+     "read": "先讀觀念課 4.0，再讀教材 4.3：每種指令經過哪些元件、控制訊號",
+     "practice": "例題 106 Q6、102 Q4、101 Q5、103 Q5",
      "link": "notes/arch.html#u4-0"
     },
     {
      "subject": "osds",
      "time": "晚上",
-     "title": "資結：樹：走訪重建與 BST",
-     "read": "先讀觀念課 3.0，再讀教材 3.1–3.2",
-     "practice": "例題 115 Q6、111 Q3",
+     "title": "資結：樹：走訪重建、運算式、BST",
+     "read": "先讀觀念課 3.0，再讀教材 3.1、3.5、3.2",
+     "practice": "例題 115 Q6、100 Q7、106 Q10、103 Q7(2)、111 Q3",
      "link": "notes/ds.html#u3-0"
     }
    ],
@@ -822,7 +822,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "遞迴：非齊次與換元｜Pipeline：hazard 與 forwarding｜記憶體計算模板",
+   "title": "遞迴：非齊次與換元｜Pipeline：時間計算，跟單週期、多週期比較｜記憶體計算模板",
    "blocks": [
     {
      "subject": "dm",
@@ -835,10 +835,10 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "time": "下午",
-     "title": "Pipeline：hazard 與 forwarding",
-     "read": "教材 4.2：load-use 一定要 stall 1",
-     "practice": "例題 115 Q5.1、111 P5",
-     "link": "notes/arch.html#u4-2"
+     "title": "Pipeline：時間計算，跟單週期、多週期比較",
+     "read": "教材 4.1，再看 4.3 的 100 Q4、106 Q3",
+     "practice": "例題 113 Q3、100 Q4、106 Q3",
+     "link": "notes/arch.html#u4-1"
     },
     {
      "subject": "osds",
@@ -916,7 +916,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "遞迴：混合練習｜Pipeline：forwarding 值不值得｜AVL tree",
+   "title": "遞迴：混合練習｜Pipeline：hazard、forwarding 值不值得｜AVL tree",
    "blocks": [
     {
      "subject": "dm",
@@ -929,9 +929,9 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "time": "下午",
-     "title": "Pipeline：forwarding 值不值得",
-     "read": "教材 4.2 最後一題",
-     "practice": "例題 114 Q4；做單元 4 小考",
+     "title": "Pipeline：hazard、forwarding 值不值得",
+     "read": "教材 4.2：load-use 一定要 stall 1",
+     "practice": "例題 115 Q5.1、111 P5、114 Q4；做單元 4 小考",
      "link": "notes/arch.html#u4-2"
     },
     {
@@ -951,12 +951,12 @@ window.EXAMS.push({
     },
     {
      "subject": "ca",
-     "text": "不看答案重做〈Pipeline：時間計算〉的小考（約 3 天前學的）",
+     "text": "不看答案重做〈單週期與多週期 datapath〉的小考（約 3 天前學的）",
      "link": "notes/arch.html#u4-0"
     },
     {
      "subject": "osds",
-     "text": "回想〈樹：走訪重建與 BST〉的重點，寫不出來就重看",
+     "text": "回想〈樹：走訪重建、運算式、BST〉的重點，寫不出來就重看",
      "link": "notes/ds.html#u3-0"
     },
     {
@@ -972,7 +972,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "數論：gcd 與線性組合｜分支：penalty 與額外 CPI｜置換、thrashing、copy-on-write",
+   "title": "數論：gcd 與線性組合｜分支：penalty 與額外 CPI｜置換、thrashing、二維陣列的 page fault",
    "blocks": [
     {
      "subject": "dm",
@@ -993,9 +993,9 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "time": "晚上",
-     "title": "OS：置換、thrashing、copy-on-write",
-     "read": "教材 4.3",
-     "practice": "例題 112 Q6b、115 Q3b；做單元 4 小考",
+     "title": "OS：置換、thrashing、二維陣列的 page fault",
+     "read": "教材 4.3–4.4",
+     "practice": "例題 112 Q6b、115 Q3b、103 Q2–Q3、110 Q5；做單元 4 小考",
      "link": "notes/os.html#u4-3"
     }
    ],
@@ -1007,8 +1007,8 @@ window.EXAMS.push({
     },
     {
      "subject": "ca",
-     "text": "不看答案重做〈Pipeline：hazard 與 forwarding〉的小考（約 3 天前學的）",
-     "link": "notes/arch.html#u4-2"
+     "text": "不看答案重做〈Pipeline：時間計算，跟單週期、多週期比較〉的小考（約 3 天前學的）",
+     "link": "notes/arch.html#u4-1"
     },
     {
      "subject": "osds",
@@ -1028,7 +1028,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "數論：歐幾里得演算法與模反元素｜分支：深 pipeline、dual-path、2-bit｜Optimal BST（DP）",
+   "title": "數論：歐幾里得演算法與模反元素｜分支：深 pipeline、dual-path、2-bit｜Optimal BST 與 Huffman 編碼",
    "blocks": [
     {
      "subject": "dm",
@@ -1049,9 +1049,9 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "time": "晚上",
-     "title": "資結：Optimal BST（DP）",
-     "read": "教材 3.4",
-     "practice": "例題 112 Q3；做單元 3 小考",
+     "title": "資結：Optimal BST 與 Huffman 編碼",
+     "read": "教材 3.4、3.6",
+     "practice": "例題 112 Q3、101 Q8、102 Q4；做單元 3 小考",
      "link": "notes/ds.html#u3-4"
     }
    ],
@@ -1063,7 +1063,7 @@ window.EXAMS.push({
     },
     {
      "subject": "ca",
-     "text": "不看答案重做〈Pipeline：forwarding 值不值得〉的小考（約 3 天前學的）",
+     "text": "不看答案重做〈Pipeline：hazard、forwarding 值不值得〉的小考（約 3 天前學的）",
      "link": "notes/arch.html#u4-2"
     },
     {
@@ -1124,7 +1124,7 @@ window.EXAMS.push({
     },
     {
      "subject": "osds",
-     "text": "回想〈置換、thrashing、copy-on-write〉的重點，寫不出來就重看",
+     "text": "回想〈置換、thrashing、二維陣列的 page fault〉的重點，寫不出來就重看",
      "link": "notes/os.html#u4-3"
     },
     {
@@ -1218,7 +1218,7 @@ window.EXAMS.push({
     },
     {
      "subject": "osds",
-     "text": "回想〈Optimal BST（DP）〉的重點，寫不出來就重看",
+     "text": "回想〈Optimal BST 與 Huffman 編碼〉的重點，寫不出來就重看",
      "link": "notes/ds.html#u3-4"
     },
     {
@@ -1234,7 +1234,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "Ramsey：R(3,3)=6｜DRAM refresh｜磁碟與 I/O",
+   "title": "Ramsey：R(3,3)=6｜DRAM refresh｜磁碟、磁碟排程與 I/O",
    "blocks": [
     {
      "subject": "dm",
@@ -1255,9 +1255,9 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "time": "晚上",
-     "title": "OS：磁碟與 I/O",
-     "read": "教材 5.2–5.3",
-     "practice": "例題 111 Q7、115 Q4、114 Q5b；做單元 5 小考",
+     "title": "OS：磁碟、磁碟排程與 I/O",
+     "read": "教材 5.2–5.4",
+     "practice": "例題 111 Q7、115 Q4、110 Q2、102 Q7、114 Q5b；做單元 5 小考",
      "link": "notes/os.html#u5-2"
     }
    ],
@@ -1290,7 +1290,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "關係的計數｜資料重用與迴圈順序｜圖：MST",
+   "title": "關係的計數｜資料重用與迴圈順序｜圖：BFS／DFS 與 MST",
    "blocks": [
     {
      "subject": "dm",
@@ -1311,9 +1311,9 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "time": "晚上",
-     "title": "資結：圖：MST",
-     "read": "先讀觀念課 5.0，再讀教材單元 5",
-     "practice": "例題 115 Q8；做單元 5 小考",
+     "title": "資結：圖：BFS／DFS 與 MST",
+     "read": "先讀觀念課 5.0，再讀教材單元 5（含 5.2 BFS／DFS）",
+     "practice": "例題 115 Q8、104 Q3、105 Q8、107 Q5(1)；做單元 5 小考",
      "link": "notes/ds.html#u5-0"
     }
    ],
@@ -1386,7 +1386,7 @@ window.EXAMS.push({
     },
     {
      "subject": "osds",
-     "text": "回想〈磁碟與 I/O〉的重點，寫不出來就重看",
+     "text": "回想〈磁碟、磁碟排程與 I/O〉的重點，寫不出來就重看",
      "link": "notes/os.html#u5-2"
     },
     {
@@ -1480,7 +1480,7 @@ window.EXAMS.push({
     },
     {
      "subject": "osds",
-     "text": "回想〈圖：MST〉的重點，寫不出來就重看",
+     "text": "回想〈圖：BFS／DFS 與 MST〉的重點，寫不出來就重看",
      "link": "notes/ds.html#u5-0"
     },
     {
@@ -1552,15 +1552,15 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "離散綜合小考｜Onur Mutlu 考古題｜遞迴式與 DP",
+   "title": "圖論基礎：度數、樹、二分圖、平面圖｜Onur Mutlu 考古題｜遞迴式與 DP",
    "blocks": [
     {
      "subject": "dm",
      "time": "上午",
-     "title": "離散綜合小考",
-     "read": "限時 40 分鐘，題型打散",
-     "practice": "教材「綜合小考」6 題",
-     "link": "notes/discrete.html#mix"
+     "title": "圖論基礎：度數、樹、二分圖、平面圖",
+     "read": "先讀觀念課 10.0，再讀教材單元 10：先背握手定理和 Euler 公式，再看三種證明套路",
+     "practice": "例題 100 Q4、Q6、101 Q4、104 Q6、105 Q6、106 Q4；做單元 10 小考",
+     "link": "notes/discrete.html#u10-0"
     },
     {
      "subject": "ca",
@@ -1608,15 +1608,15 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "離散總回顧｜計結綜合小考與總回顧｜OS 綜合小考",
+   "title": "離散綜合小考與總回顧｜計結綜合小考與總回顧｜OS 綜合小考",
    "blocks": [
     {
      "subject": "dm",
      "time": "上午",
-     "title": "離散總回顧",
-     "read": "回看教材第 0 節的考題分布表",
+     "title": "離散綜合小考與總回顧",
+     "read": "限時 40 分鐘做綜合小考，再回看第 0 節的考題分布表",
      "practice": "錯題本最弱的 3 個單元各再做 5 題",
-     "link": "notes/discrete.html#u0"
+     "link": "notes/discrete.html#mix"
     },
     {
      "subject": "ca",
@@ -3347,28 +3347,28 @@ window.EXAMS.push({
    "slug": "discrete",
    "subject": "dm",
    "title": "離散數學",
-   "desc": "9 個單元各有觀念課，111–115 全部 48 題都有詳解：計數、排容、生成函數、遞迴、數論、鴿籠、關係、FSM、機率",
+   "desc": "10 個單元各有觀念課，111–115 全部 48 題都有詳解：計數、排容、生成函數、遞迴、數論、鴿籠、關係、FSM、機率，加上 100–106 年的圖論題",
    "url": "notes/discrete.html"
   },
   {
    "slug": "arch",
    "subject": "ca",
    "title": "計算機結構",
-   "desc": "9 個單元各有觀念課：效能、cache、虛擬記憶體、pipeline、分支、多執行緒、DRAM、平行、ISA 與算術",
+   "desc": "9 個單元各有觀念課：效能、cache、虛擬記憶體、pipeline（含單週期、多週期 datapath）、分支、多執行緒、DRAM、平行、ISA 與算術",
    "url": "notes/arch.html"
   },
   {
    "slug": "os",
    "subject": "osds",
    "title": "作業系統",
-   "desc": "6 個單元各有觀念課：行程與排程、同步、死結、記憶體、儲存與 I/O、安全；加上 113–115 填空總表",
+   "desc": "6 個單元各有觀念課：行程與排程（含 fork 程式追蹤）、同步、死結、記憶體（含二維陣列 page fault）、儲存與 I/O（含磁碟排程）、安全；加上 113–115 填空總表",
    "url": "notes/os.html"
   },
   {
    "slug": "ds",
    "subject": "osds",
    "title": "資料結構",
-   "desc": "6 個單元各有觀念課：C 程式追蹤、排序、樹、雜湊、圖、遞迴計數與 DP",
+   "desc": "6 個單元各有觀念課：C 程式追蹤、排序、樹（含運算式、Huffman）、雜湊、圖（含 BFS／DFS）、遞迴計數與 DP",
    "url": "notes/ds.html"
   }
  ],
@@ -3382,7 +3382,7 @@ window.EXAMS.push({
   },
   {
    "title": "弱科其實是題型最固定的科目",
-   "body": "111–115 年的離散，計數、生成函數、遞迴每年都佔一半以上，圖論幾乎沒考；計結每年都在算 CPI、Amdahl、AMAT、cache 位元數、pipeline 與分支。教材把這五年的題目全部拆成單元，照單元把模板練熟，弱科也能穩定拿分。",
+   "body": "111–115 年的離散，計數、生成函數、遞迴每年都佔一半以上；圖論 111–115 年幾乎沒考，100–106 年卻考了 5 年，教材已補上；計結每年都在算 CPI、Amdahl、AMAT、cache 位元數、pipeline 與分支。教材把這五年的題目全部拆成單元，照單元把模板練熟，弱科也能穩定拿分。",
    "src": [
     7
    ]
@@ -3397,7 +3397,7 @@ window.EXAMS.push({
   },
   {
    "title": "111–115 拆成教材，108–109 留做模考",
-   "body": "最近五年的題目用來學（每題都有詳解）；108、109 年先不要碰，留到一月當全真模考。110 年第一天已用來診斷。115 年是新格式，衝刺期再整份重考一次。",
+   "body": "最近五年的題目用來學（每題都有詳解），100–110 年近年沒考但以前常考的題型（磁碟排程、運算式、datapath、圖論等）也挑進教材；108、109 年先不要碰，留到一月當全真模考。110 年第一天已用來診斷。115 年是新格式，衝刺期再整份重考一次。",
    "src": [
     7
    ]
@@ -3537,7 +3537,7 @@ window.EXAMS.push({
    "109": "模考 #1",
    "108": "模考 #2"
   },
-  "note": "111–115 已拆進教材當例題；108、109 先不要碰，留到一月當全真模考。資工系的 PDF 在圖資處考古題頁，檔名是 infoe_年度.pdf。下載時看試題上的「科目名稱」：要寫【資工系碩士班甲組】（計算機結構是甲組、乙組共用）。111–113 年考卷最上面印著「碩士班暨碩士在職專班招生考試試題」，那是整場考試的名稱（碩士班和在職專班同一次考），不代表這份是在職專班的題目。",
+  "note": "111–115 已拆進教材當例題，100–107、110 年近年沒考的題型也挑了一些進教材；108、109 先不要碰，留到一月當全真模考。資工系的 PDF 在圖資處考古題頁，檔名是 infoe_年度.pdf。下載時看試題上的「科目名稱」：要寫【資工系碩士班甲組】（計算機結構是甲組、乙組共用）。111–113 年考卷最上面印著「碩士班暨碩士在職專班招生考試試題」，那是整場考試的名稱（碩士班和在職專班同一次考），不代表這份是在職專班的題目。",
   "url": "https://lis.nsysu.edu.tw/p/412-1001-6014.php?Lang=zh-tw"
  },
  "links": [

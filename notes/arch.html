@@ -243,6 +243,10 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-svg .vz-w.skip text { opacity: .4; }
 .vz-svg .vz-hl { fill: var(--trap); font-weight: 800; }
 .vz-svg .vz-dimtxt { fill: var(--muted); opacity: .6; }
+.vz-node.dim { opacity: .45; }
+.vz-node.side2 circle { fill: var(--key-soft); stroke: var(--key); stroke-width: 2.5; }
+.vz-static .vz-form, .vz-static .vz-ctrl, .vz-static .vz-cap:empty { display: none; }
+.vz-static .vz-tag { background: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
   .vz-svg g, .vz-edge path { transition: none; }
 }
@@ -524,7 +528,8 @@ window.MathJax = {
 </tr>
 </tbody>
 </table>
-<p><strong>建議讀的順序</strong>：單元 1 效能 → 2 cache → 3 虛擬記憶體 → 4 pipeline → 5 分支 → 6 多執行緒 → 7 DRAM → 8 平行 → 9 ISA 與算術。前五個單元是每年必考的核心。</p>
+<p><strong>100–110 年還常考</strong>（108、109 留作模考，不列）：<strong>單週期／多週期 datapath 與控制訊號</strong>，100、101、102、103、106 年都有，在 <a href="#u4-dp">4.3</a>。</p>
+<p><strong>建議讀的順序</strong>：單元 1 效能 → 2 cache → 3 虛擬記憶體 → 4 pipeline（不熟 datapath 先讀 4.3）→ 5 分支 → 6 多執行緒 → 7 DRAM → 8 平行 → 9 ISA 與算術。前五個單元是每年必考的核心。</p>
 <div class="admonition trap">
 <p class="admonition-title">作答習慣</p>
 <ul>
@@ -1926,6 +1931,7 @@ window.MathJax = {
 <p class="admonition-title">一句話重點</p>
 <p>pipeline 讓<strong>吞吐量</strong>變高，但單一指令的<strong>延遲</strong>不會變短。週期時間由最慢的那一級決定。</p>
 </div>
+<p>4.0 用洗衣服比喻講 pipeline。每種指令實際經過哪些元件（register file、ALU、記憶體、mux），在 <a href="#u4-dp">4.3</a> 的前半；不熟的話，兩節搭配著讀。</p>
 <h3 id="u4-0">4.0 觀念課：洗衣服的流水線</h3>
 <h4 id="_13">比喻：洗、烘、摺</h4>
 <p>洗衣服有三步：洗 30 分、烘 30 分、摺 30 分。有 4 批衣服：</p>
@@ -2158,6 +2164,477 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p>4.3：設沒 forwarding 時的 NOP 比例為 <span class="arithmatex">\(x\)</span>，要 <span class="arithmatex">\((1+x)\times250&gt;300\)</span>（forwarding 最好情況 0 個 NOP），得 <span class="arithmatex">\(x&gt;0.2\)</span>，<strong>至少 20%</strong>。</p>
 <p>這題是 COD 第 4 章的習題原題。</p>
 </div>
+<h3 id="u4-dp">4.3 單週期與多週期 datapath</h3>
+<p>pipeline 之前的兩種 CPU 做法。100、101、102、103、106 年都考過（每次 14–20%）：算每條指令要多久、時脈週期多長、CPI 多少，或填控制訊號。這一節也是看懂 pipeline 五個階段的基礎。</p>
+<h4 id="_16">觀念：一條指令會經過哪些元件</h4>
+<p>datapath 是 CPU 裡資料走的路線，主要元件：</p>
+<table>
+<thead>
+<tr>
+<th>元件</th>
+<th>做什麼</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>instruction memory（I-Mem）</td>
+<td>用 PC 讀出這條指令</td>
+</tr>
+<tr>
+<td>register file（Reg）</td>
+<td>讀兩個暫存器、寫一個暫存器</td>
+</tr>
+<tr>
+<td>ALU</td>
+<td>算數、比大小、算記憶體位址</td>
+</tr>
+<tr>
+<td>data memory（D-Mem）</td>
+<td>lw 讀資料、sw 寫資料</td>
+</tr>
+<tr>
+<td>adder</td>
+<td>算 PC＋4、算 branch 的目標位址</td>
+</tr>
+<tr>
+<td>mux（多工器）</td>
+<td>從兩個來源選一個，由控制訊號決定</td>
+</tr>
+<tr>
+<td>sign-extend</td>
+<td>把 16 位元的立即值擴成 32 位元</td>
+</tr>
+</tbody>
+</table>
+<p><strong>每種指令經過的元件不同</strong>，所以需要的時間也不同。用 100 Q4 的數字（記憶體 200 ps、ALU 100 ps、暫存器讀或寫 50 ps）：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>經過的元件（照順序）</th>
+<th>時間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R 型（add、sub、and、or、slt）</td>
+<td>I-Mem → 讀 Reg → ALU → 寫 Reg</td>
+<td>200＋50＋100＋50 ＝ 400 ps</td>
+</tr>
+<tr>
+<td>lw</td>
+<td>I-Mem → 讀 Reg → ALU 算位址 → <strong>讀 D-Mem</strong> → 寫 Reg</td>
+<td>200＋50＋100＋200＋50 ＝ <strong>600 ps</strong></td>
+</tr>
+<tr>
+<td>sw</td>
+<td>I-Mem → 讀 Reg → ALU 算位址 → <strong>寫 D-Mem</strong></td>
+<td>200＋50＋100＋200 ＝ 550 ps</td>
+</tr>
+<tr>
+<td>beq</td>
+<td>I-Mem → 讀 Reg → ALU 比較</td>
+<td>200＋50＋100 ＝ 350 ps</td>
+</tr>
+<tr>
+<td>j</td>
+<td>I-Mem（接著改 PC）</td>
+<td>200 ps</td>
+</tr>
+</tbody>
+</table>
+<p>lw 用到最多元件，所以最慢。算 PC＋4 和 branch 目標的 adder 跟這些<strong>同時</strong>進行，通常不在最長的路徑上。</p>
+<h4 id="single-cycle">單週期（single-cycle）</h4>
+<p>每條指令都在 <strong>1 個 cycle</strong> 內做完，所以 <strong>CPI ＝ 1</strong>。但時脈週期要能讓最慢的指令做完：<strong>週期 ＝ 最慢的指令（通常是 lw）</strong>。</p>
+<p>像餐廳規定每道菜都給一樣長的時間，只好照最慢的那道訂。大部分指令比 lw 快，卻都要等 lw 那麼久，這就是單週期的浪費。</p>
+<h4 id="multicycle">多週期（multicycle）</h4>
+<p>把指令切成幾個步驟（IF、ID、EX、MEM、WB），<strong>每個步驟 1 個 cycle</strong>，週期 ＝ <strong>最慢的那一步</strong>（通常是記憶體）。每種指令只做自己需要的步驟：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>步驟</th>
+<th>cycle 數</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lw</td>
+<td>IF、ID、EX、MEM、WB</td>
+<td>5</td>
+</tr>
+<tr>
+<td>sw</td>
+<td>IF、ID、EX、MEM</td>
+<td>4</td>
+</tr>
+<tr>
+<td>R 型</td>
+<td>IF、ID、EX、WB</td>
+<td>4</td>
+</tr>
+<tr>
+<td>beq、j</td>
+<td>IF、ID、EX</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>CPI ＝ 每種指令的 cycle 數 × 比例，加起來</strong>（加權平均）。</li>
+<li><strong>每條指令平均時間 ＝ CPI × 週期</strong>。</li>
+<li>多週期一次只做一條指令；pipeline（<a href="#u4-0">4.0</a>）讓好幾條指令的不同步驟同時進行，所以 CPI 接近 1、週期又短。</li>
+</ul>
+<p><strong>多週期不一定比單週期快</strong>：步驟的時間不平均時（記憶體 200 ps、暫存器 50 ps），短的步驟也要佔一整個 200 ps 的 cycle，見下面的 100 Q4。</p>
+<h4 id="_17">控制訊號：每條指令要把開關撥到哪</h4>
+<table>
+<thead>
+<tr>
+<th>訊號</th>
+<th>是 1 的時候</th>
+<th>是 0 的時候</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RegDst</td>
+<td>寫入的暫存器是 rd（R 型）</td>
+<td>寫入的暫存器是 rt（lw）</td>
+</tr>
+<tr>
+<td>ALUSrc</td>
+<td>ALU 的第二個輸入用<strong>立即值</strong>（lw、sw 算位址）</td>
+<td>用暫存器（R 型、beq）</td>
+</tr>
+<tr>
+<td>MemtoReg</td>
+<td>寫回暫存器的值來自<strong>記憶體</strong>（lw）</td>
+<td>來自 ALU（R 型）</td>
+</tr>
+<tr>
+<td>RegWrite</td>
+<td>要寫暫存器（R 型、lw）</td>
+<td>不寫（sw、beq）</td>
+</tr>
+<tr>
+<td>MemRead</td>
+<td>要讀記憶體（lw）</td>
+<td>不讀</td>
+</tr>
+<tr>
+<td>MemWrite</td>
+<td>要寫記憶體（sw）</td>
+<td>不寫</td>
+</tr>
+<tr>
+<td>Branch</td>
+<td>這是 beq；ALU 的 Zero 也是 1 時 PC 就跳</td>
+<td>不是 branch</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>RegDst</th>
+<th>ALUSrc</th>
+<th>MemtoReg</th>
+<th>RegWrite</th>
+<th>MemRead</th>
+<th>MemWrite</th>
+<th>Branch</th>
+<th>ALUOp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R 型</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>10</td>
+</tr>
+<tr>
+<td>lw</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>00</td>
+</tr>
+<tr>
+<td>sw</td>
+<td>X</td>
+<td>1</td>
+<td>X</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>00</td>
+</tr>
+<tr>
+<td>beq</td>
+<td>X</td>
+<td>0</td>
+<td>X</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>01</td>
+</tr>
+</tbody>
+</table>
+<p><strong>X（don't care）</strong>：sw、beq 不寫暫存器，所以「寫哪一個暫存器」（RegDst）、「寫什麼值」（MemtoReg）是什麼都沒關係。但 <strong>RegWrite、MemWrite 不能是 X</strong>：不寫的時候一定要是 0，不然會把暫存器或記憶體亂改。</p>
+<p><strong>記法：問三個問題</strong></p>
+<ol>
+<li>ALU 的第二個輸入是立即值嗎？（ALUSrc）</li>
+<li>要寫暫存器嗎？寫的值從哪裡來、寫到哪一個？（RegWrite、MemtoReg、RegDst）</li>
+<li>要讀或寫記憶體嗎？（MemRead、MemWrite）</li>
+</ol>
+<h4 id="_18">算時間的兩種題目寫法</h4>
+<ul>
+<li><strong>題目給「register file（read or write）」的時間</strong>：讀和寫都要算（106 Q6、102 Q4）。</li>
+<li><strong>題目給每個元件的延遲（含 mux）</strong>：沿著最長的路徑加起來；寫回暫存器在 clock edge 完成，不另外加時間（COD 解答的算法，103 Q5）。</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">106 Q6（20%）：單週期 datapath，記憶體 2 ns、ALU 和 adder 2 ns、register file（讀或寫）1 ns，mux 等其他元件不算時間。add、lw、sw、beq 各需要多少時間？</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>經過的元件</th>
+<th>時間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>add</td>
+<td>I-Mem 2 ＋ 讀 Reg 1 ＋ ALU 2 ＋ 寫 Reg 1</td>
+<td><strong>6 ns</strong></td>
+</tr>
+<tr>
+<td>lw</td>
+<td>I-Mem 2 ＋ 讀 Reg 1 ＋ ALU 2 ＋ 讀 D-Mem 2 ＋ 寫 Reg 1</td>
+<td><strong>8 ns</strong></td>
+</tr>
+<tr>
+<td>sw</td>
+<td>I-Mem 2 ＋ 讀 Reg 1 ＋ ALU 2 ＋ 寫 D-Mem 2</td>
+<td><strong>7 ns</strong></td>
+</tr>
+<tr>
+<td>beq</td>
+<td>I-Mem 2 ＋ 讀 Reg 1 ＋ ALU 比較 2</td>
+<td><strong>5 ns</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>為什麼 beq 不加算目標位址的 adder</strong>：目標位址是 PC＋4 加上 sign-extend、左移兩位的立即值，這條路（I-Mem 2 ＋ adder 2 ＝ 4 ns）跟「讀暫存器＋ALU 比較」（5 ns）同時進行，比較長的是後者。</p>
+<p>這台單週期 CPU 的時脈週期要 <strong>8 ns</strong>（照最慢的 lw）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">102 Q4（15%）：記憶體 2 ns、ALU 2 ns、register file（讀或寫）1 ns；單週期與五級 pipeline</p>
+<ul>
+<li><strong>4.1 各類指令的時間</strong>：lw <strong>8 ns</strong>、sw <strong>7 ns</strong>、R 型（sub、and、or、slt）<strong>6 ns</strong>、beq <strong>5 ns</strong>（同 106 Q6）。</li>
+<li><strong>4.2 時脈週期</strong>：單週期 ＝ 最慢的 lw ＝ <strong>8 ns</strong>；pipeline ＝ 最慢的一級 ＝ <strong>2 ns</strong>（記憶體或 ALU）。</li>
+<li><strong>4.3 100 條 lw，每條都用到前一條載入的值</strong>：單週期 CPI ＝ <strong>1</strong>。pipeline 有 forwarding 和 hazard detection，但 lw 後面馬上用到載入的值是 load-use hazard，還是要停 1 個 cycle（<a href="#u4-2">4.2</a>），所以每條平均 2 個 cycle，<strong>CPI ≈ 2</strong>（精確：<span class="arithmatex">\(5+99\times2=203\)</span> 個 cycle，<span class="arithmatex">\(203/100=2.03\)</span>）。</li>
+<li><strong>比一比</strong>：單週期 <span class="arithmatex">\(100\times8=800\)</span> ns；pipeline <span class="arithmatex">\(203\times2=406\)</span> ns，還是快將近一倍。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">100 Q4（20%）：比較單週期、多週期、五級 pipeline</p>
+<p><strong>條件</strong>：指令比例 lw 25%、sw 10%、branch 11%、jump 2%、ALU 52%；記憶體 200 ps、ALU 與 adder 100 ps、register file 50 ps。多週期：lw 5、sw 4、ALU 4、branch 3、jump 3 個 cycle。pipeline：一半的 lw 下一條就用到結果（停 1 個 cycle）、branch 猜錯延遲 1 個 cycle、四分之一的 branch 猜錯、jump 一律多 1 個 cycle（平均 2 個 cycle）。</p>
+<ul>
+<li><strong>4.1 週期</strong>：單週期 ＝ lw ＝ <span class="arithmatex">\(200+50+100+200+50=\)</span> <strong>600 ps</strong>；多週期、pipeline ＝ 最慢的一步（記憶體）＝ <strong>200 ps</strong>。</li>
+<li><strong>4.2 CPI</strong>：<ul>
+<li>單週期 <strong>1</strong>。</li>
+<li>多週期 <span class="arithmatex">\(0.25\times5+0.10\times4+0.52\times4+0.11\times3+0.02\times3=1.25+0.40+2.08+0.33+0.06=\)</span> <strong>4.12</strong>。</li>
+<li>pipeline：lw 平均 <span class="arithmatex">\(1+\frac12\times1=1.5\)</span>、sw 1、ALU 1、branch <span class="arithmatex">\(1+\frac14\times1=1.25\)</span>、jump 2，加權：<span class="arithmatex">\(0.25\times1.5+0.10\times1+0.52\times1+0.11\times1.25+0.02\times2=0.375+0.10+0.52+0.1375+0.04=\)</span> <strong>1.1725</strong>。</li>
+</ul>
+</li>
+<li><strong>4.3 每條指令平均時間</strong>：單週期 <strong>600 ps</strong>；多週期 <span class="arithmatex">\(4.12\times200=\)</span> <strong>824 ps</strong>（比單週期還慢）；pipeline <span class="arithmatex">\(1.1725\times200\approx\)</span> <strong>235 ps</strong>。</li>
+<li><strong>4.4 把一級拆成兩級</strong>：最慢的是 IF 和 MEM（都是 200 ps）。<strong>兩個都要拆</strong>成 100 ps，週期才會降到 ALU 的 <strong>100 ps</strong>；只拆一個，另一個還是 200 ps，週期不變。</li>
+</ul>
+<p><strong>為什麼多週期反而比較慢</strong>：步驟長短差很多。讀暫存器只要 50 ps，卻佔一整個 200 ps 的 cycle，浪費掉的時間比單週期還多。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">106 Q3（20%）：多週期 CPU 的三種設計</p>
+<p><strong>條件</strong>：5-cycle（IF-ID-EX-MEM-WB）4.8 GHz，load 5、store 和 R 型 4、branch 和 jump 3 個 cycle；6-cycle 把 MEM 拆成 MEM1、MEM2，5.6 GHz；7-cycle 再把 IF 拆成 IF1、IF2，6.4 GHz。指令比例 load 26%、store 10%、R 型 49%、branch/jump 15%。</p>
+<p><strong>每種指令要幾個 cycle</strong>：R 型和 branch/jump 不用 MEM，拆 MEM 對它們沒影響；拆 IF 時每一種都多 1。</p>
+<table>
+<thead>
+<tr>
+<th>設計</th>
+<th>load</th>
+<th>store</th>
+<th>R 型</th>
+<th>branch/jump</th>
+<th>CPI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5-cycle</td>
+<td>5</td>
+<td>4</td>
+<td>4</td>
+<td>3</td>
+<td><strong>4.11</strong></td>
+</tr>
+<tr>
+<td>6-cycle</td>
+<td>6</td>
+<td>5</td>
+<td>4</td>
+<td>3</td>
+<td>4.11＋0.26＋0.10 ＝ <strong>4.47</strong></td>
+</tr>
+<tr>
+<td>7-cycle</td>
+<td>7</td>
+<td>6</td>
+<td>5</td>
+<td>4</td>
+<td>4.47＋1 ＝ <strong>5.47</strong></td>
+</tr>
+</tbody>
+</table>
+<p>5-cycle 的 CPI：<span class="arithmatex">\(0.26\times5+0.10\times4+0.49\times4+0.15\times3=1.30+0.40+1.96+0.45=4.11\)</span>。</p>
+<p><strong>每條指令平均時間 ＝ CPI ÷ 時脈頻率</strong>。不能用計算機時，用<strong>交叉相乘</strong>比大小：</p>
+<ul>
+<li><strong>3.1 6-cycle 比 5-cycle 值得嗎（值得）</strong>：比 <span class="arithmatex">\(\frac{4.11}{4.8}\)</span> 和 <span class="arithmatex">\(\frac{4.47}{5.6}\)</span>，交叉相乘 <span class="arithmatex">\(4.11\times5.6=23.016\)</span>、<span class="arithmatex">\(4.47\times4.8=21.456\)</span>。6-cycle 的時間比較短，快約 7%（0.798 ns 對 0.856 ns）。</li>
+<li><strong>3.2 7-cycle 比 6-cycle 值得嗎（不值得）</strong>：比 <span class="arithmatex">\(\frac{4.47}{5.6}\)</span> 和 <span class="arithmatex">\(\frac{5.47}{6.4}\)</span>，<span class="arithmatex">\(4.47\times6.4=28.608\)</span>、<span class="arithmatex">\(5.47\times5.6=30.632\)</span>。7-cycle 每條指令都多 1 個 cycle，時脈只快 <span class="arithmatex">\(\frac{6.4}{5.6}\approx1.14\)</span> 倍，CPI 卻多了 <span class="arithmatex">\(\frac{5.47}{4.47}\approx1.22\)</span> 倍，反而變慢（0.855 ns）。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">103 Q5（14%）：元件延遲 I-Mem 200、Add 70、Mux 20、ALU 90、Regs 90、D-Mem 250、Sign-Extend 15、Shift-Left-2 10（ps）</p>
+<p>這組延遲出自 COD 第 4 版第 4 章的習題。沿著最長的路徑把延遲加起來：</p>
+<ul>
+<li><strong>(a) 只有 ALU 指令（420 ps）</strong>：I-Mem → Regs → Mux（選 ALU 的第二個輸入）→ ALU → Mux（選寫回的值）＝ <span class="arithmatex">\(200+90+20+90+20\)</span>。另一條 PC＋4 的路（Add 70、Mux 20）短很多。</li>
+<li><strong>(b) 只有 lw（670 ps）</strong>：I-Mem → Regs → Mux → ALU → D-Mem → Mux ＝ <span class="arithmatex">\(200+90+20+90+250+20\)</span>。立即值走 sign-extend（15），跟 Regs（90）同時進行，取比較慢的 Regs。</li>
+<li><strong>(c) 要支援 ALU、branch、lw、sw（670 ps）</strong>：最長的還是 lw。sw 不用最後一個 Mux（650 ps），beq 不用 D-Mem。</li>
+</ul>
+<p><strong>假設</strong>：寫回暫存器在 clock edge 完成，不另外加 Regs 的時間（COD 解答的算法）。如果把寫回也算 90 ps，三題各加 90，寫出你的假設就好。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q5（20%）：填 lw 和 beq 的控制訊號（0、1 或 X）</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>ALUSrc</th>
+<th>MemtoReg</th>
+<th>RegWrite</th>
+<th>MemWrite</th>
+<th>RegDst</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lw</td>
+<td><strong>1</strong></td>
+<td><strong>1</strong></td>
+<td><strong>1</strong></td>
+<td><strong>0</strong></td>
+<td><strong>0</strong></td>
+</tr>
+<tr>
+<td>beq</td>
+<td><strong>0</strong></td>
+<td><strong>X</strong></td>
+<td><strong>0</strong></td>
+<td><strong>0</strong></td>
+<td><strong>X</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>lw</strong>：位址 ＝ 暫存器 ＋ 立即值，ALU 的第二個輸入是立即值（ALUSrc＝1）；從記憶體讀出來的值寫回暫存器（MemtoReg＝1、RegWrite＝1）；寫到 rt（RegDst＝0）；不寫記憶體（MemWrite＝0）。</li>
+<li><strong>beq</strong>：比較兩個暫存器，第二個輸入是暫存器（ALUSrc＝0）；不寫暫存器也不寫記憶體（RegWrite＝0、MemWrite＝0）；既然不寫暫存器，寫哪個、寫什麼都不重要（RegDst、MemtoReg 是 X）。</li>
+</ul>
+</div>
+<h4 id="_19">觀念小考</h4>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 單週期 CPU 的時脈週期由什麼決定？</p>
+<ol>
+<li>最快的指令</li>
+<li>最慢的指令（通常是 lw）</li>
+<li>所有指令的平均</li>
+<li>最慢的元件（通常是記憶體）</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。每條指令都要在一個 cycle 內做完，週期就得夠最慢的指令用。D 是<strong>多週期和 pipeline</strong> 的週期：它們每個 cycle 只做一步，週期由最慢的一步（元件）決定。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> sw 的 RegDst 為什麼可以是 X？</p>
+<ol>
+<li>sw 不寫暫存器，選哪一個暫存器當寫入目標都不會有影響</li>
+<li>sw 一定寫到 rt</li>
+<li>sw 一定寫到 rd</li>
+<li>RegDst 只有 beq 會用到</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。RegDst 只決定「寫到哪一個暫存器」。sw 的 RegWrite 是 0，根本不寫暫存器，所以 RegDst 是什麼都一樣。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-3.</strong> sw 的 RegWrite 為什麼<strong>不能</strong>是 X？</p>
+<ol>
+<li>因為 sw 要寫暫存器</li>
+<li>因為 X 只能用在 mux 上</li>
+<li>因為不寫的時候一定要是 0，否則可能把垃圾值寫進暫存器</li>
+<li>可以是 X</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。RegWrite 是「要不要寫」。如果是 X，硬體可能當成 1，就會把某個值寫進某個暫存器，破壞資料。控制「要不要動狀態」的訊號（RegWrite、MemWrite、MemRead、Branch）都不能是 X。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-4.</strong> 多週期 CPU：lw 佔 20%、要 5 個 cycle，其他指令佔 80%、各要 4 個 cycle。CPI 是？</p>
+<ol>
+<li>4</li>
+<li>4.5</li>
+<li>5</li>
+<li>4.2</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。加權平均：<span class="arithmatex">\(0.2\times5+0.8\times4=1+3.2=4.2\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> lw 的 ALUSrc 和 MemtoReg 各是多少？</p>
+<ol>
+<li>0、0</li>
+<li>1、1</li>
+<li>1、0</li>
+<li>0、1</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。lw 的位址 ＝ 暫存器 ＋ 立即值，ALU 第二個輸入用立即值（ALUSrc＝1）；寫回暫存器的是從記憶體讀出來的值（MemtoReg＝1）。R 型剛好兩個都是 0。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 100 Q4 裡，為什麼多週期（824 ps）比單週期（600 ps）還慢？什麼情況下多週期才划算？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>多週期的每個 cycle 長度是最慢的一步（記憶體 200 ps），但讀、寫暫存器只要 50 ps，也得佔一整個 200 ps 的 cycle，浪費很多時間。加上大部分指令要 4 個 cycle（800 ps），平均起來比單週期還久。</p>
+<p>多週期要划算，各步驟的時間要<strong>差不多長</strong>，而且各指令需要的步驟數要<strong>差很多</strong>（例如有很慢的乘除法指令，單週期得把週期拉到乘除法那麼長，多週期只讓乘除法多跑幾個 cycle）。</p>
+</details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> 各級 200、100、250、200、150 ps。single-cycle 和 pipeline 的週期？1000 條指令時 pipeline 的總時間和 speedup？</p>
 <details class="quiz">
@@ -2222,7 +2699,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p>猜錯一次要丟掉「branch 決定之前已經進來的指令」。penalty 由<strong>在第幾級決定</strong>決定，pipeline 越深 penalty 越大。</p>
 </div>
 <h3 id="u5-0">5.0 觀念課：還不知道要跳去哪，只好先猜</h3>
-<h4 id="_16">問題在哪</h4>
+<h4 id="_20">問題在哪</h4>
 <p><code>beq</code> 要比較完兩個暫存器，才知道要跳還是不跳。假設在 EX（第 3 級）結束時才知道結果：</p>
 <table>
 <thead>
@@ -2260,7 +2737,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 </table>
 <p>在知道結果之前，pipeline 已經抓了 2 條指令進來。猜對了沒事；<strong>猜錯了，這 2 條要丟掉</strong>，浪費 2 個 cycle。這就是 misprediction penalty：</p>
 <div class="arithmatex">\[\text{penalty}=\text{決定 branch 的那一級}-1\]</div>
-<h4 id="_17">平均多花多少</h4>
+<h4 id="_21">平均多花多少</h4>
 <p>100 條指令裡有 20 條 branch，猜對率 75%：猜錯 <span class="arithmatex">\(20\times0.25=5\)</span> 次，每次 2 cycle，多花 10 cycle。理想 CPI 1 變成 <span class="arithmatex">\(\frac{100+10}{100}=1.1\)</span>。</p>
 <div class="arithmatex">\[\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty}\]</div>
 <h4 id="2-bit-1-bit">2-bit 預測器為什麼比 1-bit 好</h4>
@@ -2276,7 +2753,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>英文</strong>：<a href="https://safari.ethz.ch/ddca/spring2025/doku.php?id=start">ETH Digital Design &amp; Computer Architecture 2025</a> 的 superscalar 與 branch prediction 講次。114 Q3（dual-path、confidence estimator）就是這門課的題型。</li>
 </ul>
 </div>
-<h4 id="_18">換你試試</h4>
+<h4 id="_22">換你試試</h4>
 <p><strong>T-1.</strong> 30% 是 branch、準確率 80%、penalty 3，CPI？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2525,7 +3002,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf">MIT 6.823 Problem Set 10</a>（<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf">解答</a>）有跟 112 Q3、114 Q5 一樣的 fixed／data-dependent switching 題目。</li>
 </ul>
 </div>
-<h4 id="_19">換你試試</h4>
+<h4 id="_23">換你試試</h4>
 <p>同樣的迴圈，LD 改成 6 個 cycle。</p>
 <p><strong>T-1.</strong> 固定輪流需要幾個 thread？</p>
 <details class="quiz">
@@ -2585,13 +3062,13 @@ BNE  ...</code></pre>
 <li>refresh 的命令要佔用<strong>命令匯流排</strong>（command bus）一段時間，這段時間不能送別的命令。</li>
 <li>正在 refresh 的那個 <strong>bank</strong> 不能被讀寫。</li>
 </ul>
-<h4 id="_20">使用率怎麼算</h4>
+<h4 id="_24">使用率怎麼算</h4>
 <div class="arithmatex">\[\text{使用率}=\frac{\text{這段時間內被 refresh 佔用的總時間}}{\text{這段時間}}\]</div>
 <p><strong>小例子</strong>：1 個 bank、1000 列，每次 refresh 佔用 bus 10 ns，每 64 ms 要全部 refresh 一次。</p>
 <p>64 ms 內被佔用 <span class="arithmatex">\(1000\times10\text{ ns}=10\ \mu\text{s}\)</span>，使用率 <span class="arithmatex">\(=\frac{10\ \mu\text{s}}{64\text{ ms}}\approx0.016\%\)</span>。</p>
 <p>數字很小，但記憶體越大，列數越多（考題常是 <span class="arithmatex">\(2^{19}\)</span> 列以上），使用率就跟著變大到好幾 %，而且 bank 被佔用時讀寫都要等。</p>
 <p><strong>考試技巧</strong>：數字留成 2 的次方和 10 的次方，例如 <span class="arithmatex">\(64\text{ ms}=2^6\times10^6\)</span> ns，就能約分不用計算機。</p>
-<h4 id="_21">資料重用：同一個東西多久會再用到</h4>
+<h4 id="_25">資料重用：同一個東西多久會再用到</h4>
 <p>SRAM／cache 很小，只能留住「很快又會用到」的資料。</p>
 <pre class="highlight"><code class="language-text">for i in 0..2:
   for j in 0..2:
@@ -2609,7 +3086,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://safari.ethz.ch/architecture/fall2022/doku.php?id=exams">ETH 計算機結構考古題（附詳解）</a>，可以找 DRAM refresh 相關的題目練習。</li>
 </ul>
 </div>
-<h4 id="_22">換你試試</h4>
+<h4 id="_26">換你試試</h4>
 <p><strong>T-1.</strong> 4 個 bank × 1024 列，每次 refresh 佔 bus 5 ns，64 ms 一輪，使用率？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2679,7 +3156,7 @@ BNE  ...</code></pre>
 <section class="unit" data-unit="u8">
 <h2 id="u8">單元 8：平行與微架構</h2>
 <h3 id="u8-0">8.0 觀念課：同時做好幾件事的三種方式</h3>
-<h4 id="_23">平行化的上限</h4>
+<h4 id="_27">平行化的上限</h4>
 <p>90% 可以平行的程式，用 <span class="arithmatex">\(N\)</span> 個處理器：</p>
 <table>
 <thead>
@@ -2706,7 +3183,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>處理器加倍，speedup 卻越加越少，因為那 10% 不能平行的部分變成主要的時間。再加上處理器之間要溝通，實際上更低。</p>
-<h4 id="_24">三種平行</h4>
+<h4 id="_28">三種平行</h4>
 <table>
 <thead>
 <tr>
@@ -2734,7 +3211,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>從比喻就能回答 114 Q6：VLIW 比 superscalar 簡單（硬體不用排程）、superscalar 可能更快（現場能應變 cache miss）、VLIW 比 array 彈性（每個槽可以做不同事）、array 最簡單（只要一份指令和控制）。</p>
-<h4 id="_25">記憶體一致性：把指令洗成一疊牌</h4>
+<h4 id="_29">記憶體一致性：把指令洗成一疊牌</h4>
 <p>兩個處理器同時跑（x、y 一開始都是 0）：</p>
 <table>
 <thead>
@@ -2757,7 +3234,7 @@ BNE  ...</code></pre>
 <p><strong>Sequential consistency（SC）</strong> 的意思是：最後的結果，必須等於把兩邊的指令<strong>洗成一疊</strong>（各自的順序不能變）後依序執行的結果。</p>
 <p>把所有洗法列出來，(r1, r2) 只可能是 (0,1)、(1,0)、(1,1)。<strong>(0,0) 不可能</strong>：r1＝0 代表 P1 讀 y 時 P2 還沒寫 y；r2＝0 代表 P2 讀 x 時 P1 還沒寫 x。但兩邊都是「先寫再讀」，一定有一邊的寫入比另一邊的讀取早，矛盾。</p>
 <p>112 Q5 的三個處理器版本，用的就是同一個推理：把「讀到 0」換成「某個讀取在某個寫入之前」，看會不會繞成一個圈。</p>
-<h4 id="_26">頻寬撐不撐得住</h4>
+<h4 id="_30">頻寬撐不撐得住</h4>
 <p>運算再快，資料送不進來也沒用。需要的頻寬 ＝ 每秒運算次數 × 每次運算要從記憶體讀幾個 byte。這個值超過記憶體頻寬，運算單元就會空等。</p>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
@@ -2766,7 +3243,7 @@ BNE  ...</code></pre>
 <li><strong>英文文章</strong>：Russ Cox〈<a href="https://research.swtch.com/hwmm">Hardware Memory Models</a>〉用 litmus test（就是這節 P1、P2 那種小程式）解釋 sequential consistency，例子寫得非常清楚。</li>
 </ul>
 </div>
-<h4 id="_27">換你試試</h4>
+<h4 id="_31">換你試試</h4>
 <p><strong>T-1.</strong> 95% 可平行，處理器無限多，speedup 上限？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2875,7 +3352,7 @@ BNE  ...</code></pre>
 <p><strong>為什麼「反相再加 1」就是取負</strong>：<span class="arithmatex">\(x\)</span> 和 <span class="arithmatex">\(\sim x\)</span> 每一位都相反，加起來是 1111，也就是 −1。所以 <span class="arithmatex">\(x+\sim x=-1\)</span>，移項得 <span class="arithmatex">\(-x=\sim x+1\)</span>。</p>
 <p>例：<span class="arithmatex">\(-3\)</span>：<span class="arithmatex">\(3=0011\)</span>，反相 1100，加 1 得 <strong>1101</strong>。</p>
 <p><strong>溢位</strong>：兩個正數相加得到負數（或兩個負數相加得到正數），結果就超出範圍了。例：<span class="arithmatex">\(5+4=1001\)</span>，讀起來是 −7，溢位。</p>
-<h4 id="_28">浮點數：二進位的科學記號</h4>
+<h4 id="_32">浮點數：二進位的科學記號</h4>
 <div class="arithmatex">\[(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})\]</div>
 <p><strong>每一部分的意思</strong>：</p>
 <ul>
@@ -2908,7 +3385,7 @@ BNE  ...</code></pre>
 <li><strong>英文</strong>：〈<a href="https://teaching.idallen.com/cst8214/08w/notes/ieee754_conversions.txt">IEEE 754 conversions</a>〉一步一步手算十進位和 IEEE 754 互換，適合練習。</li>
 </ul>
 </div>
-<h4 id="_29">換你試試</h4>
+<h4 id="_33">換你試試</h4>
 <p><strong>T-1.</strong> 用 4 位元二補數算 <span class="arithmatex">\(6+3\)</span>，結果是什麼？有沒有溢位？</p>
 <details class="quiz">
 <summary>看答案</summary>
