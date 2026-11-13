@@ -189,14 +189,14 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "計數：插空法與不相鄰｜效能：Amdahl 定律｜行程、PCB、IPC、fork 程式追蹤",
+   "title": "計數：插空法、不相鄰、格子路徑｜效能：Amdahl 定律｜行程、PCB、IPC、fork 程式追蹤",
    "blocks": [
     {
      "subject": "dm",
      "time": "上午",
-     "title": "計數：插空法與不相鄰",
-     "read": "教材 1.3",
-     "practice": "例題 115 A1、A6；Grimaldi 第 1 章同類題 5 題",
+     "title": "計數：插空法、不相鄰、格子路徑",
+     "read": "教材 1.3、1.7：碰到 x 軸的路徑用反射原理",
+     "practice": "例題 115 A1、A6、101 Q5；Grimaldi 第 1 章同類題 5 題",
      "link": "notes/discrete.html#u1-3"
     },
     {
@@ -242,7 +242,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "計數：多項式係數、字串、二項式恆等式｜效能：時脈的限制、make the common case fast｜C 程式：指標與遞迴追蹤",
+   "title": "計數：多項式係數、字串、二項式恆等式｜效能：時脈的限制、MIPS 值、功耗、平均數｜C 程式：指標與遞迴追蹤",
    "blocks": [
     {
      "subject": "dm",
@@ -255,9 +255,9 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "time": "下午",
-     "title": "效能：時脈的限制、make the common case fast",
-     "read": "教材 1.3",
-     "practice": "例題 115 Q1.1、Q1.3；做單元 1 小考",
+     "title": "效能：時脈的限制、MIPS 值、功耗、平均數",
+     "read": "教材 1.3–1.4：比快慢只看執行時間",
+     "practice": "例題 115 Q1.1、Q1.3、100 Q3、102 Q1、101 Q2、105 Q5；做單元 1 小考",
      "link": "notes/arch.html#u1-3"
     },
     {
@@ -328,7 +328,7 @@ window.EXAMS.push({
    "review": [
     {
      "subject": "dm",
-     "text": "不看答案重做〈計數：插空法與不相鄰〉的小考（約 3 天前學的）",
+     "text": "不看答案重做〈計數：插空法、不相鄰、格子路徑〉的小考（約 3 天前學的）",
      "link": "notes/discrete.html#u1-3"
     },
     {
@@ -427,7 +427,7 @@ window.EXAMS.push({
     },
     {
      "subject": "ca",
-     "text": "不看答案重做〈效能：時脈的限制、make the common case fast〉的小考（約 3 天前學的）",
+     "text": "不看答案重做〈效能：時脈的限制、MIPS 值、功耗、平均數〉的小考（約 3 天前學的）",
      "link": "notes/arch.html#u1-3"
     },
     {
@@ -560,22 +560,22 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "生成函數：解遞迴｜Cache：觀念題與逆向工程｜死結",
+   "title": "生成函數：解遞迴、整數分割｜Cache：觀念題、逆向工程、進階方法｜死結",
    "blocks": [
     {
      "subject": "dm",
      "time": "上午",
-     "title": "生成函數：解遞迴",
-     "read": "教材 3.3：部分分式",
-     "practice": "例題 113 Q10；做單元 3 小考",
+     "title": "生成函數：解遞迴、整數分割",
+     "read": "教材 3.3–3.4：部分分式；分割是每種加數寫一個因子",
+     "practice": "例題 113 Q10、103 Q6；做單元 3 小考",
      "link": "notes/discrete.html#u3-3"
     },
     {
      "subject": "ca",
      "time": "下午",
-     "title": "Cache：觀念題與逆向工程",
-     "read": "教材 2.5",
-     "practice": "例題 111 P1、112 Q6；做單元 2 小考",
+     "title": "Cache：觀念題、逆向工程、進階方法",
+     "read": "教材 2.7、2.9",
+     "practice": "例題 111 P1、112 Q6、105 Q2、110 Q1、Q4；做單元 2 小考",
      "link": "notes/arch.html#u2-5"
     },
     {
@@ -740,12 +740,12 @@ window.EXAMS.push({
    "review": [
     {
      "subject": "dm",
-     "text": "不看答案重做〈生成函數：解遞迴〉的小考（約 3 天前學的）",
+     "text": "不看答案重做〈生成函數：解遞迴、整數分割〉的小考（約 3 天前學的）",
      "link": "notes/discrete.html#u3-3"
     },
     {
      "subject": "ca",
-     "text": "不看答案重做〈Cache：觀念題與逆向工程〉的小考（約 3 天前學的）",
+     "text": "不看答案重做〈Cache：觀念題、逆向工程、進階方法〉的小考（約 3 天前學的）",
      "link": "notes/arch.html#u2-5"
     },
     {
@@ -822,14 +822,14 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "遞迴：非齊次與換元｜Pipeline：時間計算，跟單週期、多週期比較｜記憶體計算模板",
+   "title": "遞迴：非齊次、換元、分治｜Pipeline：時間計算，跟單週期、多週期比較｜記憶體計算模板",
    "blocks": [
     {
      "subject": "dm",
      "time": "上午",
-     "title": "遞迴：非齊次與換元",
-     "read": "教材 4.3：特解猜法表",
-     "practice": "例題 114 Q9；做單元 4 小考",
+     "title": "遞迴：非齊次、換元、分治",
+     "read": "教材 4.3–4.4：特解猜法表；n 每次減半就令 n＝2^k",
+     "practice": "例題 114 Q9、101 Q2；做單元 4 小考",
      "link": "notes/discrete.html#u4-3"
     },
     {
@@ -1002,7 +1002,7 @@ window.EXAMS.push({
    "review": [
     {
      "subject": "dm",
-     "text": "不看答案重做〈遞迴：非齊次與換元〉的小考（約 3 天前學的）",
+     "text": "不看答案重做〈遞迴：非齊次、換元、分治〉的小考（約 3 天前學的）",
      "link": "notes/discrete.html#u4-3"
     },
     {
@@ -1084,7 +1084,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "數論：質數、同餘、Fermat｜多執行緒：fixed 與 data-dependent 切換｜檔案系統",
+   "title": "數論：質數、同餘、Fermat｜多執行緒：fixed 與 data-dependent 切換｜檔案系統、目錄、開檔表、I/O 方式",
    "blocks": [
     {
      "subject": "dm",
@@ -1105,9 +1105,9 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "time": "晚上",
-     "title": "OS：檔案系統",
-     "read": "先讀觀念課 5.0，再讀教材 5.1",
-     "practice": "例題 114 Q5a、112 Q7、111 Q5",
+     "title": "OS：檔案系統、目錄、開檔表、I/O 方式",
+     "read": "先讀觀念課 5.0，再讀教材 5.1、5.5",
+     "practice": "例題 114 Q5a、112 Q7、111 Q5、104 Q6(1)、105 Q2、107 Q3",
      "link": "notes/os.html#u5-0"
     }
    ],
@@ -1274,7 +1274,7 @@ window.EXAMS.push({
     },
     {
      "subject": "osds",
-     "text": "回想〈檔案系統〉的重點，寫不出來就重看",
+     "text": "回想〈檔案系統、目錄、開檔表、I/O 方式〉的重點，寫不出來就重看",
      "link": "notes/os.html#u5-0"
     },
     {
@@ -1290,14 +1290,14 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "關係的計數、等價關係｜資料重用與迴圈順序｜圖：BFS／DFS 與 MST",
+   "title": "關係的計數、等價關係、偏序｜資料重用與迴圈順序｜圖：BFS／DFS 與 MST",
    "blocks": [
     {
      "subject": "dm",
      "time": "上午",
-     "title": "關係的計數、等價關係",
-     "read": "先讀觀念課 7.0，再讀教材 7.1、7.4：把關係想成矩陣的格子",
-     "practice": "例題 113 Q7、111 Q3、100 Q7、104 Q2",
+     "title": "關係的計數、等價關係、偏序",
+     "read": "先讀觀念課 7.0，再讀教材 7.1、7.4–7.5：把關係想成矩陣的格子；會畫 Hasse 圖",
+     "practice": "例題 113 Q7、111 Q3、100 Q7、104 Q2、102 Q7",
      "link": "notes/discrete.html#u7-0"
     },
     {
@@ -1346,14 +1346,14 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "函數、二元運算、邏輯與證明｜GPU、VLIW、superscalar、Tomasulo｜保護、安全與其他",
+   "title": "函數、邏輯、布林代數、可數性｜GPU、VLIW、superscalar、Tomasulo｜保護、安全、分散式與網路",
    "blocks": [
     {
      "subject": "dm",
      "time": "上午",
-     "title": "函數、二元運算、邏輯與證明",
-     "read": "教材 7.2–7.3",
-     "practice": "例題 115 A8、113 Q6、115 B2、114 Q2；做單元 7 小考",
+     "title": "函數、邏輯、布林代數、可數性",
+     "read": "教材 7.2–7.3、7.6–7.7",
+     "practice": "例題 115 A8、113 Q6、115 B2、114 Q2、100 Q5、105 Q2；做單元 7 小考",
      "link": "notes/discrete.html#u7-2"
     },
     {
@@ -1367,9 +1367,9 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "time": "晚上",
-     "title": "OS：保護、安全與其他",
-     "read": "先讀觀念課 6.0，再讀教材單元 6（含 6.2）",
-     "practice": "例題 112 Q8b–c、Q9、113 Q7、101 Q5、105 Q4、107 Q4",
+     "title": "OS：保護、安全、分散式與網路",
+     "read": "先讀觀念課 6.0，再讀教材單元 6（含 6.2–6.3）",
+     "practice": "例題 112 Q8b–c、Q9、113 Q7、101 Q5、105 Q4、107 Q4、101 Q6、102 Q8",
      "link": "notes/os.html#u6-0"
     }
    ],
@@ -1440,7 +1440,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "有限狀態機｜記憶體一致性與多處理器｜B-tree、binomial heap、Fibonacci heap",
+   "title": "有限狀態機｜記憶體一致性與多處理器｜B-tree、heap 家族、treap",
    "blocks": [
     {
      "subject": "dm",
@@ -1461,16 +1461,16 @@ window.EXAMS.push({
     {
      "subject": "osds",
      "time": "晚上",
-     "title": "資結：B-tree、binomial heap、Fibonacci heap",
-     "read": "先讀觀念課 7.0，再讀教材 7.2–7.4",
-     "practice": "例題 101 Q9、107 Q6、104 Q4、105 Q5(2)；做單元 7 小考",
+     "title": "資結：B-tree、heap 家族、treap",
+     "read": "先讀觀念課 7.0，再讀教材 7.2–7.5",
+     "practice": "例題 101 Q9、107 Q6、104 Q4、105 Q5(2)、103 Q8；做單元 7 小考",
      "link": "notes/ds.html#u7-0"
     }
    ],
    "review": [
     {
      "subject": "dm",
-     "text": "不看答案重做〈關係的計數、等價關係〉的小考（約 3 天前學的）",
+     "text": "不看答案重做〈關係的計數、等價關係、偏序〉的小考（約 3 天前學的）",
      "link": "notes/discrete.html#u7-0"
     },
     {
@@ -1496,7 +1496,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "機率與期望值｜ISA 與算術｜名詞填空總表（第一輪）",
+   "title": "機率與期望值｜ISA 與算術：二補數、浮點數的編碼與解讀｜名詞填空總表（第一輪）",
    "blocks": [
     {
      "subject": "dm",
@@ -1509,9 +1509,9 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "time": "下午",
-     "title": "ISA 與算術",
-     "read": "先讀觀念課 9.0，再讀教材單元 9",
-     "practice": "例題 115 Q3、Q4、111 P1.1；做單元 9 小考",
+     "title": "ISA 與算術：二補數、浮點數的編碼與解讀",
+     "read": "先讀觀念課 9.0，再讀教材 9.0–9.2：數值轉位元、位元轉數值兩個方向都要會",
+     "practice": "例題 115 Q3、Q4、111 P1.1、100 Q2、103 Q2",
      "link": "notes/arch.html#u9-0"
     },
     {
@@ -1526,7 +1526,7 @@ window.EXAMS.push({
    "review": [
     {
      "subject": "dm",
-     "text": "不看答案重做〈函數、二元運算、邏輯與證明〉的小考（約 3 天前學的）",
+     "text": "不看答案重做〈函數、邏輯、布林代數、可數性〉的小考（約 3 天前學的）",
      "link": "notes/discrete.html#u7-2"
     },
     {
@@ -1536,7 +1536,7 @@ window.EXAMS.push({
     },
     {
      "subject": "osds",
-     "text": "回想〈保護、安全與其他〉的重點，寫不出來就重看",
+     "text": "回想〈保護、安全、分散式與網路〉的重點，寫不出來就重看",
      "link": "notes/os.html#u6-0"
     },
     {
@@ -1552,7 +1552,7 @@ window.EXAMS.push({
   },
   {
    "phase": "foundation",
-   "title": "圖論基礎：度數、樹、二分圖、平面圖｜Onur Mutlu 考古題｜Catalan 數、遞迴式與 DP",
+   "title": "圖論基礎：度數、樹、二分圖、平面圖｜MIPS 組合語言、加法器與乘法器｜Catalan 數、遞迴式與 DP",
    "blocks": [
     {
      "subject": "dm",
@@ -1565,10 +1565,10 @@ window.EXAMS.push({
     {
      "subject": "ca",
      "time": "下午",
-     "title": "Onur Mutlu 考古題",
-     "read": "教材「資源」的 ETH 考古題頁",
-     "practice": "挑一份有詳解的期中考，只做 cache、pipeline、多執行緒題",
-     "link": "notes/arch.html#res"
+     "title": "MIPS 組合語言、加法器與乘法器",
+     "read": "教材 9.3–9.4：陣列位址要乘 4；會寫 g、p 和進位式",
+     "practice": "例題 101 Q3、102 Q2、103 Q4、101 Q8、102 Q3、101 Q4；做單元 9 小考",
+     "link": "notes/arch.html#u9-mips"
     },
     {
      "subject": "osds",
@@ -1592,7 +1592,7 @@ window.EXAMS.push({
     },
     {
      "subject": "osds",
-     "text": "回想〈B-tree、binomial heap、Fibonacci heap〉的重點，寫不出來就重看",
+     "text": "回想〈B-tree、heap 家族、treap〉的重點，寫不出來就重看",
      "link": "notes/ds.html#u7-0"
     },
     {
@@ -1643,7 +1643,7 @@ window.EXAMS.push({
     },
     {
      "subject": "ca",
-     "text": "不看答案重做〈ISA 與算術〉的小考（約 3 天前學的）",
+     "text": "不看答案重做〈ISA 與算術：二補數、浮點數的編碼與解讀〉的小考（約 3 天前學的）",
      "link": "notes/arch.html#u9-0"
     },
     {
@@ -3347,28 +3347,28 @@ window.EXAMS.push({
    "slug": "discrete",
    "subject": "dm",
    "title": "離散數學",
-   "desc": "11 個單元各有觀念課，111–115 全部 48 題都有詳解：計數、排容、生成函數、遞迴、數論、鴿籠、關係、FSM、機率，加上 100–110 年常考的圖論、群論",
+   "desc": "11 個單元各有觀念課，111–115 全部 48 題都有詳解：計數、排容、生成函數、遞迴、數論、鴿籠、關係、FSM、機率，加上 100–110 年考過的圖論、群論、偏序、布林代數、可數性、格子路徑",
    "url": "notes/discrete.html"
   },
   {
    "slug": "arch",
    "subject": "ca",
    "title": "計算機結構",
-   "desc": "9 個單元各有觀念課：效能、cache、虛擬記憶體、pipeline（含單週期、多週期 datapath）、分支、多執行緒、DRAM、平行（含多處理器、Tomasulo）、ISA 與算術",
+   "desc": "9 個單元各有觀念課：效能（含 MIPS 值、功耗）、cache（含進階方法）、虛擬記憶體、pipeline（含單週期、多週期 datapath）、分支、多執行緒、DRAM、平行（含多處理器、Tomasulo）、ISA 與算術（含 MIPS 組合語言、加法器與乘法器）",
    "url": "notes/arch.html"
   },
   {
    "slug": "os",
    "subject": "osds",
    "title": "作業系統",
-   "desc": "6 個單元各有觀念課：行程與排程（含 fork 程式追蹤）、同步、死結、記憶體（含二維陣列 page fault、記憶體配置）、儲存與 I/O（含磁碟排程）、安全（含攻擊手法）；加上 113–115 填空總表",
+   "desc": "6 個單元各有觀念課：行程與排程（含 fork 程式追蹤）、同步、死結、記憶體（含二維陣列 page fault、記憶體配置）、儲存與 I/O（含磁碟排程、目錄、I/O 方式）、安全與分散式（含攻擊手法、事件順序）；加上 113–115 填空總表",
    "url": "notes/os.html"
   },
   {
    "slug": "ds",
    "subject": "osds",
    "title": "資料結構",
-   "desc": "7 個單元各有觀念課：C 程式追蹤、排序（含下界）、樹（含運算式、Huffman）、雜湊（含理論）、圖（含 BFS／DFS）、遞迴計數與 DP、進階資料結構（紅黑樹、B-tree、heap）",
+   "desc": "7 個單元各有觀念課：C 程式追蹤、排序（含下界）、樹（含運算式、Huffman）、雜湊（含理論）、圖（含 BFS／DFS）、遞迴計數與 DP、進階資料結構（紅黑樹、B-tree、heap、treap）",
    "url": "notes/ds.html"
   }
  ],
@@ -3397,7 +3397,7 @@ window.EXAMS.push({
   },
   {
    "title": "111–115 拆成教材，108–109 留做模考",
-   "body": "最近五年的題目用來學（每題都有詳解），100–110 年近年沒考但以前常考的題型（磁碟排程、運算式、datapath、圖論、群論、紅黑樹與 B-tree 等）也挑進教材；108、109 年先不要碰，留到一月當全真模考。110 年第一天已用來診斷。115 年是新格式，衝刺期再整份重考一次。",
+   "body": "最近五年的題目用來學（每題都有詳解），100–110 年近年沒考但以前常考的題型（磁碟排程、運算式、datapath、圖論、群論、紅黑樹與 B-tree、MIPS 組合語言等）也挑進教材；108、109 年先不要碰，留到一月當全真模考。110 年第一天已用來診斷。115 年是新格式，衝刺期再整份重考一次。",
    "src": [
     7
    ]

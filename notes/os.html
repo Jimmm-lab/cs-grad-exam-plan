@@ -512,6 +512,16 @@ window.MathJax = {
 <td>101、102、105、107</td>
 <td><a href="#u6-more">6.2</a></td>
 </tr>
+<tr>
+<td>檔案系統與 I/O（目錄結構、mount、開檔表、polling／DMA）</td>
+<td>104、105、107</td>
+<td><a href="#u5-more">5.5</a></td>
+</tr>
+<tr>
+<td>分散式系統與網路（CSMA/CD、token passing、happened-before）</td>
+<td>101、102、104</td>
+<td><a href="#u6-dist">6.3</a></td>
+</tr>
 </tbody>
 </table>
 <p><strong>建議讀的順序</strong>：單元 1 行程與排程 → 2 同步 → 3 死結 → 4 記憶體 → 5 儲存與檔案 → 6 保護、安全與其他 → 7 名詞總表。</p>
@@ -2756,6 +2766,192 @@ printf("%d\n", v);</code></pre>
 </ul>
 <p><strong>自我檢查</strong>：C-LOOK 跳回去後，方向還是「往小的」，所以從 190 往下服務到 150，不是從 150 往上到 190。</p>
 </details>
+<h3 id="u5-more">5.5 檔案系統與 I/O 的考古題補充：目錄、mount、開檔表、I/O 方式</h3>
+<p>104、105、107 年的「File System and I/O」小題，每題 2–4%，加起來將近 25%：目錄有哪幾種結構、mount point 是什麼、開檔時 UNIX 記住哪些資訊、CPU 怎麼知道 I/O 做完了、memory-mapped I/O。都是恐龍書的名詞，<strong>會講「為什麼要這樣做」</strong>就能拿分。</p>
+<h4 id="_31">目錄結構：檔案越來越多，怎麼放？</h4>
+<table>
+<thead>
+<tr>
+<th>結構</th>
+<th>長相</th>
+<th>好處</th>
+<th>問題</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>single-level</td>
+<td>所有檔案放同一個目錄</td>
+<td>最簡單</td>
+<td>檔名不能重複，人多、檔案多就亂</td>
+</tr>
+<tr>
+<td>two-level</td>
+<td>每個使用者一個目錄</td>
+<td>不同使用者可以用一樣的檔名</td>
+<td>不能再分類，使用者之間不好共享</td>
+</tr>
+<tr>
+<td>tree-structured</td>
+<td>目錄裡可以再開子目錄</td>
+<td>可以分類；有 current directory，用絕對、相對路徑</td>
+<td>一個檔案只屬於一個目錄，不能共享</td>
+</tr>
+<tr>
+<td>acyclic-graph</td>
+<td>樹再加上 link，同一個檔案可以出現在好幾個目錄</td>
+<td>可以共享</td>
+<td>一個檔案有好幾個名字；刪除時要用 reference count，不然會留下指到不存在檔案的 link（dangling pointer）</td>
+</tr>
+<tr>
+<td>general graph</td>
+<td>link 可以形成迴圈</td>
+<td>最有彈性</td>
+<td>走訪可能繞不出來；迴圈裡的檔案可能沒人用卻刪不掉，要 garbage collection</td>
+</tr>
+</tbody>
+</table>
+<p><strong>multilevel（樹狀）命名的好處</strong>：檔案可以照用途分類；不同目錄裡可以有同名的檔案（路徑不同就不衝突）；用路徑一層一層找，比在一個大目錄裡找快。</p>
+<h4 id="mount-point">mount point：把另一個檔案系統接上來</h4>
+<p>一顆硬碟、一支隨身碟各有自己的檔案系統。<strong>mount</strong> 是把一個檔案系統「接」到目前目錄樹的某個目錄上，那個目錄叫 <strong>mount point</strong>（通常是空目錄）。接上之後，<code>/mnt/usb/report.txt</code> 就是隨身碟裡的 <code>report.txt</code>，使用者看到的是一棵完整的樹，不用管檔案實際在哪個裝置。</p>
+<h4 id="os">開檔時，OS 記住哪些資訊？</h4>
+<p>每次讀寫都從頭找目錄太慢，所以 <code>open()</code> 時把資訊放進 <strong>open-file table</strong>，之後用 file descriptor 直接查表：</p>
+<table>
+<thead>
+<tr>
+<th>資訊</th>
+<th>用途</th>
+<th>放在哪</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>file pointer</td>
+<td>目前讀寫到哪裡</td>
+<td>每個 process 各一份（兩個 process 讀同一個檔，位置不一樣）</td>
+</tr>
+<tr>
+<td>file-open count</td>
+<td>有幾個 process 開著這個檔</td>
+<td>系統共用的表；歸 0 時才把這一格清掉</td>
+</tr>
+<tr>
+<td>disk location</td>
+<td>檔案在磁碟的位置</td>
+<td>系統共用的表，不用每次重查</td>
+</tr>
+<tr>
+<td>access rights</td>
+<td>這個 process 用什麼模式開（唯讀、可寫）</td>
+<td>每個 process 各一份</td>
+</tr>
+</tbody>
+</table>
+<h4 id="cpu-io">CPU 怎麼知道 I/O 做完了？</h4>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>怎麼做</th>
+<th>適合</th>
+<th>缺點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>polling（busy waiting）</td>
+<td>CPU 一直讀裝置的 status register，看 busy 位元變 0 沒</td>
+<td>裝置很快、馬上就好</td>
+<td>裝置慢時 CPU 空轉</td>
+</tr>
+<tr>
+<td>interrupt</td>
+<td>裝置好了就拉中斷線通知 CPU，CPU 跳去執行 interrupt handler</td>
+<td>裝置慢、事件不常發生</td>
+<td>每次中斷都要存狀態、切換，量大時開銷大</td>
+</tr>
+<tr>
+<td>DMA（direct memory access）</td>
+<td>CPU 告訴 DMA controller 要搬哪一塊、搬到哪，DMA 自己在裝置和記憶體之間搬，<strong>整塊搬完才中斷一次</strong></td>
+<td>大量資料（磁碟、網路）</td>
+<td>要 DMA 硬體；搬的時候跟 CPU 搶記憶體匯流排（cycle stealing）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>I/O 裝置的暫存器</strong>：通常有 data-in（給 CPU 讀）、data-out（CPU 寫給裝置）、status（忙不忙、有沒有錯誤）、control（下命令）四種。</p>
+<p><strong>CPU 怎麼碰到這些暫存器</strong>：</p>
+<ul>
+<li><strong>I/O port</strong>：用特殊的 I/O 指令（例如 x86 的 <code>in</code>、<code>out</code>）。</li>
+<li><strong>memory-mapped I/O</strong>：把裝置的暫存器對應到記憶體位址，CPU 用一般的 load／store 讀寫。好處是不用特殊指令、程式好寫，大量資料（例如顯示卡的畫面記憶體）直接寫記憶體就好，比一個 byte 一個 byte 用 I/O 指令送快。</li>
+</ul>
+<p><strong>blocking、nonblocking、asynchronous I/O</strong>：blocking 是等 I/O 做完才回來（process 被暫停）；nonblocking 是馬上回來，有多少資料就給多少；asynchronous 是馬上回來，I/O 在背後做，<strong>做完再通知</strong>。</p>
+<div class="admonition example">
+<p class="admonition-title">104 Q6(1)（3%）：除了 single-level、two-level，還有哪三種常見的目錄結構？</p>
+<p>tree-structured、acyclic-graph、general graph（各自的特點見上表）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">105 Q2（10%）：(1) 什麼是 mount point (2) multilevel naming 的好處 (3) 磁碟隨機存取時間的兩個部分 (4) CPU 的兩條中斷要求線</p>
+<p><strong>(1)</strong> 把一個檔案系統接進目錄樹的那個目錄。接上之後，那個裝置的檔案從這個目錄底下存取（見上面）。</p>
+<p><strong>(2)</strong> 檔案可以分類放、不同目錄可以有同名檔案、照路徑找比較快（見上面）。</p>
+<p><strong>(3)</strong> <strong>seek time</strong>（讀寫頭移到正確的磁軌）＋ <strong>rotational latency</strong>（等資料轉到讀寫頭下面）。（<a href="#u5-0">5.0</a>）</p>
+<p><strong>(4)</strong> <strong>nonmaskable</strong>：留給不能等的嚴重錯誤（例如無法修正的記憶體錯誤），不能關掉。<strong>maskable</strong>：一般裝置的中斷，CPU 執行不能被打斷的程式段時可以暫時關掉。（<a href="#u5-3">5.3</a>）</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">107 Q3(1)(3)(4)（9%）：(1) 開檔時 UNIX 記住哪四項資訊 (3) RAID 的 parity 怎麼運作 (4) CPU 知道 I/O 裝置資料好了沒的三種方法</p>
+<p><strong>(1)</strong> file pointer、file-open count、disk location、access rights（見上表）。</p>
+<p><strong>(3)</strong> 把幾顆磁碟同一位置的資料做 XOR，存成 parity。任何一顆壞掉，把剩下的（含 parity）XOR 起來就是壞掉那顆的資料（<a href="#u5-0">5.0</a> 的例子）。</p>
+<p><strong>(4)</strong> polling、interrupt、DMA（見上表）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q7(4)（3%）：什麼是 memory-mapped I/O？為什麼需要它？</p>
+<p>把裝置的控制暫存器（和緩衝區）對應到記憶體位址空間，CPU 用一般的 load／store 指令讀寫裝置。<strong>需要的原因</strong>：不用額外的 I/O 指令，程式和硬體都比較簡單；大量資料（例如畫面）可以直接寫到對應的記憶體，速度快。</p>
+</div>
+<h4 id="_32">觀念小考</h4>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> acyclic-graph 目錄讓同一個檔案出現在好幾個目錄。刪除檔案時最需要處理的問題是？</p>
+<ol>
+<li>檔名太長</li>
+<li>目錄會形成迴圈</li>
+<li>其他目錄的 link 會指到已經刪掉的檔案</li>
+<li>檔案會被複製好幾份</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。dangling pointer。解法是 reference count：記錄有幾個 link 指到這個檔案，歸 0 才真的刪。B 是 general graph 的問題，acyclic 本來就不允許迴圈。D 錯：link 不是複製，只有一份資料。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-2.</strong> 要把磁碟上 1 MB 的資料讀進記憶體，哪一種方式最不佔 CPU？</p>
+<ol>
+<li>polling</li>
+<li>DMA</li>
+<li>每個 byte 一次 interrupt</li>
+<li>memory-mapped I/O 加上 polling</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。DMA controller 自己搬整塊資料，搬完才中斷 CPU 一次。polling 讓 CPU 一直等；每個 byte 一次中斷，中斷的開銷會比搬資料還大。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> open-file table 裡，哪一項是<strong>每個 process 各自一份</strong>的？</p>
+<ol>
+<li>disk location</li>
+<li>file-open count</li>
+<li>檔案大小</li>
+<li>file pointer</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。兩個 process 同時讀一個檔案，讀到的位置可以不一樣，所以 file pointer 要各自記。disk location、open count 是這個檔案共用的資訊，放在系統共用的表。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 什麼情況下 polling 反而比 interrupt 好？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>裝置很快、資料馬上就會好</strong>的時候。這時 CPU 只要檢查幾次 status register 就等到了；如果改用 interrupt，要存目前的狀態、跳去 handler、再恢復，這些開銷可能比等幾個 cycle 還久。</p>
+<p>反過來，裝置很慢（例如鍵盤、磁碟）或事件不常發生時，polling 會讓 CPU 大部分時間在空轉，用 interrupt 才能讓 CPU 先去做別的事。</p>
+</details>
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> i-node 有 12 個直接區塊和 single、double indirect，區塊 4 KB、指標 4 B，最大檔案幾個資料區塊？</p>
 <details class="quiz">
@@ -2805,9 +3001,9 @@ printf("%d\n", v);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_31">最小權限</h4>
+<h4 id="_33">最小權限</h4>
 <p><strong>principle of least privilege</strong>（最小權限）和 <strong>need-to-know</strong> 是同一類想法：每個行程、每個使用者只拿到<strong>完成目前工作需要</strong>的權限和資源。出事時，損害才會被限制在小範圍。兩者在恐龍書裡的說法有一點差別，是非題考過，見 <a href="#u6-more">6.2</a>。</p>
-<h4 id="_32">存取矩陣：誰能對什麼做什麼</h4>
+<h4 id="_34">存取矩陣：誰能對什麼做什麼</h4>
 <p>把權限畫成一張表：列是使用者（domain），欄是檔案（object），格子裡是權限。</p>
 <table>
 <thead>
@@ -2837,7 +3033,7 @@ printf("%d\n", v);</code></pre>
 <li>照<strong>欄</strong>存（每個檔案記錄誰能用它）→ <strong>access control list（ACL）</strong></li>
 <li>照<strong>列</strong>存（每個使用者帶著自己能用什麼）→ <strong>capability list</strong></li>
 </ul>
-<h4 id="_33">惡意程式的名詞</h4>
+<h4 id="_35">惡意程式的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -2875,7 +3071,7 @@ printf("%d\n", v);</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/izkd4JwXRwub_ZmhSMTlNw">OS 筆記 Chapter 14: Protection</a>〉：保護的原則、存取矩陣、ACL 與 capability 的實作、權限撤銷，就是這節表格的完整版。</li>
 </ul>
 </div>
-<h4 id="_34">換你試試</h4>
+<h4 id="_36">換你試試</h4>
 <p><strong>T-1.</strong> 有人偷改了資料庫裡的成績，破壞的是 CIA 的哪一項？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3002,7 +3198,7 @@ printf("%d\n", v);</code></pre>
 </table>
 <p><span class="arithmatex">\(H(m)\)</span> 是 <a href="ds.html#u4-theory">資結 4.2</a> 的密碼學雜湊函數，先把訊息壓短再簽。</p>
 <p><strong>公鑰怎麼發</strong>（105 Q4(4)）：公鑰可以公開，問題是怎麼確定這把公鑰真的是對方的（不然中間人可以換成自己的）。做法是<strong>數位憑證</strong>（digital certificate）：可信任的憑證機構（CA）用它的私鑰簽署「這把公鑰屬於某某人」，CA 的公鑰事先內建在瀏覽器或作業系統裡。</p>
-<h4 id="_35">攻擊手法的名詞</h4>
+<h4 id="_37">攻擊手法的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -3083,7 +3279,7 @@ printf("%d\n", v);</code></pre>
 <li>「location transparency 能在不同時間把同一個檔名對應到不同位置，所以比 location independence 強」：<strong>錯</strong>，說反了。能動態改變對應位置的是 <strong>location independence</strong>，它比 location transparency 強。</li>
 </ol>
 </div>
-<h4 id="_36">觀念小考</h4>
+<h4 id="_38">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 哪一種方法能提供 nonrepudiation（送的人事後不能否認）？</p>
 <ol>
@@ -3123,6 +3319,228 @@ printf("%d\n", v);</code></pre>
 <p><strong>A</strong>。訊息本身是合法的，只是被重送。對策是在訊息裡加時間戳記或一次性的亂數（nonce），重送的舊訊息就會被拒絕。</p>
 </details>
 </div>
+<h3 id="u6-dist">6.3 分散式系統與網路：CSMA/CD、token passing、事件的先後</h3>
+<p>101 年（區域網路怎麼避免碰撞，10%）、102 年（分散式系統的事件順序，10%）、104 年（分散式檔案系統的名詞，1%）考過。另外 102 年的分散式檔案系統命名在 <a href="#u6-more">6.2</a>，atomic transaction、two-phase locking 在 <a href="#u2-more">2.2</a>，分散式檔案系統的 cache 在 <a href="#u6-1">6.1</a>。</p>
+<h4 id="_39">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
+<p>同一條線上的電腦同時送資料，訊號會疊在一起變成雜訊，叫<strong>碰撞</strong>（collision）。兩種做法：</p>
+<p><strong>CSMA/CD</strong>（carrier sense multiple access with collision detection，乙太網路用的）：</p>
+<ol>
+<li><strong>先聽</strong>（carrier sense）：線上有人在傳就等，沒人才傳。</li>
+<li><strong>邊傳邊聽</strong>（collision detection）：兩台剛好同時開始傳，會偵測到訊號跟自己送的不一樣。</li>
+<li><strong>碰撞了就停</strong>：送出 jam 訊號讓大家知道，然後<strong>各自等一段隨機的時間</strong>再重來。連續碰撞 k 次，就從 0 到 <span class="arithmatex">\(2^k-1\)</span> 個時槽裡隨機挑一個等（binary exponential backoff），越撞等越久，避免一直撞在一起。</li>
+</ol>
+<p><strong>token passing</strong>（token ring）：</p>
+<ol>
+<li>一個特殊的訊息 <strong>token</strong> 在環上一台傳一台。</li>
+<li><strong>拿到 token 的才可以傳資料</strong>；傳完（或拿太久）就把 token 交給下一台。</li>
+<li>同一時間只有一台能傳，<strong>不會碰撞</strong>。token 弄丟了要重新產生（選一台負責）。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>CSMA/CD</th>
+<th>token passing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>會不會碰撞</td>
+<td>會，撞了再重傳</td>
+<td>不會</td>
+</tr>
+<tr>
+<td>人少（負載輕）</td>
+<td>好：想傳就傳，幾乎不用等</td>
+<td>要等 token 繞過來</td>
+</tr>
+<tr>
+<td>人多（負載重）</td>
+<td>差：碰撞一直發生，有效流量下降</td>
+<td>好：大家輪流，最多等一圈</td>
+</tr>
+<tr>
+<td>等多久有上限嗎</td>
+<td>沒有（運氣差會一直撞）</td>
+<td>有，適合要保證延遲的系統</td>
+</tr>
+</tbody>
+</table>
+<h4 id="_40">分散式系統裡，為什麼很難知道誰先發生？</h4>
+<p>分散式系統的電腦<strong>沒有共用的時鐘、也沒有共用的記憶體</strong>，只能傳訊息。每台電腦的時鐘快慢不一樣（會漂移），訊息在網路上要花多久也不固定。所以 A 機器記錄 10:00:01、B 機器記錄 10:00:02，<strong>不能保證 A 的事件真的比較早</strong>。</p>
+<h4 id="happened-before">happened-before（→）：只用能確定的事排順序</h4>
+<p>Lamport 定義的 happened-before 關係，A → B 讀作「A 在 B 之前發生」：</p>
+<ol>
+<li><strong>同一個 process 裡</strong>：A 比 B 先執行，就 A → B。</li>
+<li><strong>傳訊息</strong>：A 是某個 process 送出一個訊息，B 是另一個 process 收到同一個訊息，就 A → B（先送才能收）。</li>
+<li><strong>遞移</strong>：A → B 而且 B → C，就 A → C。</li>
+</ol>
+<p>A → B 和 B → A <strong>都不成立</strong>的兩個事件叫<strong>同時發生</strong>（concurrent），誰先誰後都無所謂，它們不可能互相影響。</p>
+<h4 id="lamport">Lamport 邏輯時鐘：幫每個事件編號</h4>
+<p>每個 process 有一個計數器 LC：</p>
+<ul>
+<li>每發生一個事件，LC 加 1，這個數字就是事件的時間戳記。</li>
+<li>送訊息時，把自己的時間戳記附在訊息上。</li>
+<li>收到訊息時，<span class="arithmatex">\(\text{LC}=\max(\text{LC},\text{訊息的戳記})+1\)</span>，保證收的事件一定比送的晚。</li>
+</ul>
+<p><strong>例子</strong>：P1 依序有 a、b（送訊息給 P2）、c；P2 有 d（收到 P1 的訊息）、e（送訊息給 P3）；P3 有 f、g（收到 P2 的訊息）。</p>
+<table>
+<thead>
+<tr>
+<th>事件</th>
+<th>process</th>
+<th>時間戳記</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a</td>
+<td>P1</td>
+<td>1</td>
+<td>P1 的第一個事件</td>
+</tr>
+<tr>
+<td>b</td>
+<td>P1</td>
+<td>2</td>
+<td>送訊息，戳記 2 附在訊息上</td>
+</tr>
+<tr>
+<td>c</td>
+<td>P1</td>
+<td>3</td>
+<td></td>
+</tr>
+<tr>
+<td>d</td>
+<td>P2</td>
+<td>3</td>
+<td>收訊息：<span class="arithmatex">\(\max(0,2)+1\)</span></td>
+</tr>
+<tr>
+<td>e</td>
+<td>P2</td>
+<td>4</td>
+<td>送訊息，附上 4</td>
+</tr>
+<tr>
+<td>f</td>
+<td>P3</td>
+<td>1</td>
+<td>P3 的第一個事件</td>
+</tr>
+<tr>
+<td>g</td>
+<td>P3</td>
+<td>5</td>
+<td>收訊息：<span class="arithmatex">\(\max(1,4)+1\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>保證</strong>：A → B 就一定 LC(A) &lt; LC(B)。反過來不一定：c（3）和 f（1）是同時發生的，數字大小沒有意義。要排出全部事件的順序（total order），戳記一樣時用 process 編號決定。</p>
+<div class="admonition example">
+<p class="admonition-title">101 Q6（10%）：區域網路裡的電腦可能同時傳資料，造成嚴重的碰撞。說明 CSMA/CD 和 token passing 怎麼運作</p>
+<p><strong>CSMA/CD</strong>：傳之前先聽線路，沒人才傳；傳的時候繼續聽，偵測到碰撞就停止、送 jam 訊號，等一段隨機時間（binary exponential backoff）再重傳。</p>
+<p><strong>token passing</strong>：一個 token 在網路上依序傳遞，只有拿到 token 的電腦可以傳資料，傳完把 token 交給下一台，所以不會碰撞。</p>
+<p>（可以再補上面那張比較表：負載輕時 CSMA/CD 好，負載重或需要保證延遲時 token passing 好。）</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">102 Q8（10%）：(1) 分散式系統為什麼很難決定事件的順序 (2) 用 A、B、C 和 →，寫出 happened-before 的三條規則 (3) 什麼是 atomic transaction</p>
+<p><strong>(1)</strong> 沒有共用的時鐘和記憶體；各台電腦的時鐘有誤差，訊息的延遲不固定，不能用各自的時間比先後。</p>
+<p><strong>(2)</strong></p>
+<ul>
+<li>A、B 在同一個 process，A 先執行 → A → B。</li>
+<li>A 是送出一個訊息、B 是另一個 process 收到這個訊息 → A → B。</li>
+<li>A → B 且 B → C → A → C。</li>
+</ul>
+<p><strong>(3)</strong> 一組讀寫要嘛<strong>全部完成</strong>（commit），要嘛<strong>全部取消</strong>（abort，回到開始前的狀態），不會只做一半。例：轉帳的扣款和入帳一定要一起成功。（<a href="#u2-more">2.2</a>）</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q6(3)（1%）：分散式檔案系統的 component unit 是什麼？</p>
+<p><strong>可以放在同一台機器上、跟其他 unit 互不相關的最小一組檔案</strong>。同一個 component unit 裡的檔案一定放在同一個地方，命名和搬移都以它為單位。</p>
+</div>
+<h4 id="_41">觀念小考</h4>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> CSMA/CD 偵測到碰撞之後，為什麼要等一段<strong>隨機</strong>的時間再重傳？</p>
+<ol>
+<li>讓線路冷卻</li>
+<li>如果兩台等一樣久，重傳時會再撞一次</li>
+<li>讓 token 先傳一圈</li>
+<li>讓接收端有時間檢查錯誤</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。兩台同時撞到、又等一樣久，就會同時重傳、再撞一次。隨機等，兩台錯開的機會很大；連續撞越多次，隨機的範圍越大（<span class="arithmatex">\(0\)</span> 到 <span class="arithmatex">\(2^k-1\)</span> 個時槽）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-2.</strong> P1 送一個訊息給 P2（P1 的事件 s、P2 的事件 r）。P1 在 s 之前有事件 a，P2 在 r 之前有事件 b。下面哪一對是同時發生（concurrent）？</p>
+<ol>
+<li>a 和 s</li>
+<li>s 和 r</li>
+<li>a 和 r</li>
+<li>a 和 b</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。a → s（同一個 process）、s → r（傳訊息）、所以 a → r（遞移）。b 在 r 之前、跟 P1 的事件沒有任何訊息連起來，a 和 b 誰也推不出誰先，是同時發生。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> token passing 比 CSMA/CD 好的地方是？</p>
+<ol>
+<li>負載很重時效率高，而且等待時間有上限</li>
+<li>負載很輕時延遲比較低</li>
+<li>token 不會弄丟</li>
+<li>不需要任何控制訊息</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。大家輪流拿 token，最多等一圈，不會碰撞。B 剛好相反，負載輕時還是要等 token 繞過來；C、D 錯，token 會弄丟、要有重新產生 token 的機制，token 本身就是控制訊息。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> P1 的事件依序是 x、y（送訊息 m 給 P2）；P2 的事件依序是 u、v、w（w 收到 m）。用 Lamport 邏輯時鐘標出每個事件的時間戳記。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<table>
+<thead>
+<tr>
+<th>事件</th>
+<th>時間戳記</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x</td>
+<td>1</td>
+<td>P1 第一個事件</td>
+</tr>
+<tr>
+<td>y</td>
+<td>2</td>
+<td>送 m，附上 2</td>
+</tr>
+<tr>
+<td>u</td>
+<td>1</td>
+<td>P2 第一個事件</td>
+</tr>
+<tr>
+<td>v</td>
+<td>2</td>
+<td></td>
+</tr>
+<tr>
+<td>w</td>
+<td>3</td>
+<td>收 m：<span class="arithmatex">\(\max(2,2)+1=3\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>w 的戳記 3 比 y 的 2 大，符合「送一定比收早」。u、v 和 x、y 之間沒有訊息連接，是同時發生的。</p>
+</details>
 
 </section>
 <section class="unit" data-unit="u7">

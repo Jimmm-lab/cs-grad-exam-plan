@@ -553,6 +553,31 @@ window.MathJax = {
 <td>100、105、107</td>
 <td><a href="#u8-ooo">8.5</a></td>
 </tr>
+<tr>
+<td>效能指標（MIPS 值的陷阱、指令組合、功耗、幾何平均）</td>
+<td>100、101、102、103、104、105、106</td>
+<td><a href="#u1-perf">1.4</a></td>
+</tr>
+<tr>
+<td>cache 進階（降低 miss 的方法、block size、記憶體階層設計）</td>
+<td>105、106、110</td>
+<td><a href="#u2-adv">2.9</a></td>
+</tr>
+<tr>
+<td>從十六進位解回二補數、浮點數</td>
+<td>100、103</td>
+<td><a href="#u9-dec">9.2</a></td>
+</tr>
+<tr>
+<td>MIPS 組合語言（C 翻成 MIPS、定址模式）</td>
+<td>101、102、103</td>
+<td><a href="#u9-mips">9.3</a></td>
+</tr>
+<tr>
+<td>ALU 硬體（進位前瞻加法器、乘法器）</td>
+<td>101、102</td>
+<td><a href="#u9-alu">9.4</a></td>
+</tr>
 </tbody>
 </table>
 <p><strong>建議讀的順序</strong>：單元 1 效能 → 2 cache → 3 虛擬記憶體 → 4 pipeline（不熟 datapath 先讀 4.3）→ 5 分支 → 6 多執行緒 → 7 DRAM → 8 平行 → 9 ISA 與算術。前五個單元是每年必考的核心。</p>
@@ -716,6 +741,405 @@ window.MathJax = {
 <li><strong>記憶體牆（memory wall）</strong>：DRAM 延遲沒有跟著 CPU 變快，時脈再高也只是多等幾個週期。→ 發展<strong>記憶體階層</strong>（多層 cache）來隱藏延遲。</li>
 <li>（可再補）<strong>pipeline 越切越細的極限</strong>：每級都有 pipeline 暫存器的固定延遲，切到最後收益變小，而 branch misprediction penalty 越來越大。→ 需要更好的<strong>分支預測</strong>與推測執行。</li>
 </ol>
+<h3 id="u1-perf">1.4 效能指標：MIPS 值、指令組合、功耗與平均數</h3>
+<p>100–106 年幾乎每年都有一題：用 MIPS 值比快慢的陷阱（100、102）、從指令組合算記憶體存取的比例（100、104）、編譯器和處理器的搭配（102、103、104）、兩種改進的 Amdahl（101、104）、功耗（101、106）、benchmark 的平均（105）。全部都是 <a href="#u1-1">1.1</a> 的 CPU time 公式換個問法。</p>
+<h4 id="mips">為什麼 MIPS 值高，不一定比較快？</h4>
+<p><strong>MIPS</strong>（million instructions per second，每秒幾百萬條指令）：</p>
+<div class="arithmatex">\[\text{MIPS}=\frac{\text{IC}}{\text{CPU time}\times10^6}=\frac{f}{\text{CPI}\times10^6}\]</div>
+<p>它只看「每秒做幾條指令」，<strong>不管指令數（IC）</strong>。同一個程式，編譯器 A 產生很多簡單的指令（CPI 低、MIPS 高），編譯器 B 產生比較少、比較複雜的指令（CPI 高、MIPS 低），結果可能是 B 先跑完。比快慢<strong>只能看 CPU time</strong>。</p>
+<p>另外兩個問題：不同 ISA 的指令做的事不一樣多，MIPS 不能拿來比；同一台機器跑不同程式，MIPS 也不一樣，所以沒有「一台機器的 MIPS 值」。</p>
+<h4 id="_5">一條指令會存取記憶體幾次？</h4>
+<ul>
+<li><strong>每條指令都要抓一次指令</strong>：1 次指令記憶體的讀取。</li>
+<li><strong>資料搬移指令</strong>（load、store）<strong>多 1 次</strong>資料存取；load 是讀、store 是寫。</li>
+</ul>
+<p>所以每條指令平均存取 <span class="arithmatex">\(1+(\text{load/store 的比例})\)</span> 次記憶體。例：load／store 佔 30%，每條指令平均存取 1.3 次，其中資料佔 <span class="arithmatex">\(\frac{0.3}{1.3}\approx23\%\)</span>。</p>
+<h4 id="_6">編譯器和處理器各改哪個數字？</h4>
+<div class="arithmatex">\[\text{CPU time}=\text{IC}\times\text{CPI}\times T\]</div>
+<table>
+<thead>
+<tr>
+<th>誰</th>
+<th>改什麼</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>演算法、程式語言</td>
+<td>IC（還有指令組合，所以也影響 CPI）</td>
+</tr>
+<tr>
+<td>編譯器</td>
+<td>IC 和指令組合（→ CPI）</td>
+</tr>
+<tr>
+<td>ISA</td>
+<td>IC、CPI、T 都會影響</td>
+</tr>
+<tr>
+<td>硬體實作（microarchitecture）</td>
+<td>CPI、T</td>
+</tr>
+<tr>
+<td>製程</td>
+<td>T</td>
+</tr>
+</tbody>
+</table>
+<p>所以比較「某個編譯器 ＋ 某台處理器」時，<strong>三個數字都要重算</strong>，不能只比時脈或只比 CPI。</p>
+<h4 id="pcv2f">動態功耗：<span class="arithmatex">\(P=CV^2f\)</span></h4>
+<p>晶片每切換一次，要把負載電容 C 充電到電壓 V；每秒切換 f 次。考題寫 <span class="arithmatex">\(P=CFV^2\)</span>，課本寫 <span class="arithmatex">\(\frac12CV^2f\)</span>，<strong>算比例時 <span class="arithmatex">\(\frac12\)</span> 會消掉</strong>，答案一樣：</p>
+<div class="arithmatex">\[\frac{P_{\text{new}}}{P_{\text{old}}}=\frac{C_{\text{new}}}{C_{\text{old}}}\times\left(\frac{V_{\text{new}}}{V_{\text{old}}}\right)^2\times\frac{f_{\text{new}}}{f_{\text{old}}}\]</div>
+<p>電壓是平方，所以<strong>降電壓最有效</strong>。降電壓有極限（電晶體會漏電、不穩定），這就是 <a href="#u1-3">1.3</a> 的功耗牆。另外還有<strong>靜態功耗</strong>（漏電流），晶片沒在切換也會耗電。</p>
+<h4 id="benchmark">一組 benchmark 要怎麼平均？</h4>
+<p><strong>算術平均</strong>（arithmetic mean）<span class="arithmatex">\(\frac1n\sum t_i\)</span>：適合「每個程式都跑一次、總共花多久」，也就是總時間。</p>
+<p><strong>幾何平均</strong>（geometric mean）<span class="arithmatex">\(\sqrt[n]{\prod r_i}\)</span>：適合平均<strong>比值</strong>。SPEC（例如 SPECINT2006）先算每個程式的 SPECratio ＝ 參考機器的時間 ÷ 受測機器的時間，再取<strong>幾何平均</strong>。</p>
+<p><strong>為什麼比值不能用算術平均</strong>：A、B 兩台機器跑兩個程式。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>程式 1</th>
+<th>程式 2</th>
+<th>總時間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A 的時間</td>
+<td>1 秒</td>
+<td>1000 秒</td>
+<td>1001 秒</td>
+</tr>
+<tr>
+<td>B 的時間</td>
+<td>10 秒</td>
+<td>100 秒</td>
+<td>110 秒</td>
+</tr>
+<tr>
+<td>B ÷ A</td>
+<td>10</td>
+<td>0.1</td>
+<td></td>
+</tr>
+<tr>
+<td>A ÷ B</td>
+<td>0.1</td>
+<td>10</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>以 A 為準：B 的比值算術平均 <span class="arithmatex">\(\frac{10+0.1}2=5.05\)</span>，好像 B 比較慢。</li>
+<li>以 B 為準：A 的比值算術平均也是 5.05，好像 A 比較慢。</li>
+<li>換參考機器，結論就反過來，矛盾。<strong>幾何平均</strong>兩種都是 <span class="arithmatex">\(\sqrt{10\times0.1}=1\)</span>，結論一致（跟參考機器無關）。</li>
+<li>但如果真的要每個程式各跑一次，看總時間：B 只要 110 秒，快很多。<strong>幾何平均不代表總時間</strong>，這是它的缺點。</li>
+</ul>
+<div class="admonition example">
+<p class="admonition-title">100 Q3（12%）：CPI：A 類 1、B 類 2、C 類 3。兩個編譯器的指令數（十億）：編譯器 1 是 5、1、1，編譯器 2 是 11、1、1。時脈 4 GHz。(1) 兩個版本的 MIPS 值，照 MIPS 誰快 (2) 執行時間，照時間誰快</p>
+<p><strong>cycle 數</strong>：</p>
+<ul>
+<li>編譯器 1：<span class="arithmatex">\((5\times1+1\times2+1\times3)\times10^9=10\times10^9\)</span>，指令 <span class="arithmatex">\(7\times10^9\)</span> 條。</li>
+<li>編譯器 2：<span class="arithmatex">\((11\times1+1\times2+1\times3)\times10^9=16\times10^9\)</span>，指令 <span class="arithmatex">\(13\times10^9\)</span> 條。</li>
+</ul>
+<p><strong>(2) 執行時間（編譯器 1 快）</strong>：編譯器 1 <span class="arithmatex">\(=\frac{10\times10^9}{4\times10^9}=2.5\)</span> 秒；編譯器 2 <span class="arithmatex">\(=\frac{16\times10^9}{4\times10^9}=4\)</span> 秒。</p>
+<p><strong>(1) MIPS（編譯器 2 比較「高」）</strong>：編譯器 1 <span class="arithmatex">\(=\frac{7\times10^9}{2.5\times10^6}=2800\)</span>；編譯器 2 <span class="arithmatex">\(=\frac{13\times10^9}{4\times10^6}=3250\)</span>。</p>
+<p><strong>結論</strong>：照 MIPS 是編譯器 2 快，照執行時間是編譯器 1 快。編譯器 2 多產生了 60 億條便宜的 A 類指令，MIPS 被灌高，實際卻慢了 1.6 倍。這題就是要你寫出「MIPS 會誤導，要看執行時間」。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">102 Q1（18%）：Mbase 500 MHz；硬體最佳化後的 Mopt 600 MHz。指令比例 A 40%、B 25%、C 25%、D 10%；CPI 在 Mbase 是 2、3、3、5，在 Mopt 是 2、2、3、4。(1) 兩台的 CPI 和 MIPS (2) 改良的編譯器 Mcomp 讓 A、B、C、D 的指令數變成原本的 90%、90%、85%、95%，Mcomp 的 CPI，比 Mbase 快幾倍</p>
+<p><strong>(1) Mbase（CPI 2.8，MIPS 178.6）</strong>：<span class="arithmatex">\(\text{CPI}=0.4\times2+0.25\times3+0.25\times3+0.1\times5=0.8+0.75+0.75+0.5=2.8\)</span>；<span class="arithmatex">\(\text{MIPS}=\frac{500}{2.8}\approx178.6\)</span>。</p>
+<p><strong>(1) Mopt（CPI 2.45，MIPS 244.9）</strong>：<span class="arithmatex">\(\text{CPI}=0.8+0.5+0.75+0.4=2.45\)</span>；<span class="arithmatex">\(\text{MIPS}=\frac{600}{2.45}\approx244.9\)</span>。</p>
+<p><strong>(2) Mcomp 的指令數（原本的 0.8925 倍）</strong>：以 Mbase 的 1 條指令為單位，A <span class="arithmatex">\(0.4\times0.9=0.36\)</span>、B <span class="arithmatex">\(0.25\times0.9=0.225\)</span>、C <span class="arithmatex">\(0.25\times0.85=0.2125\)</span>、D <span class="arithmatex">\(0.1\times0.95=0.095\)</span>，加起來 0.8925。</p>
+<p><strong>(2) Mcomp 的 cycle 數與 CPI（2.81）</strong>：<span class="arithmatex">\(0.36\times2+0.225\times3+0.2125\times3+0.095\times5=0.72+0.675+0.6375+0.475=2.5075\)</span>；<span class="arithmatex">\(\text{CPI}=\frac{2.5075}{0.8925}\approx2.81\)</span>。</p>
+<p><strong>(2) 快幾倍（1.12）</strong>：同一台機器、同一個時脈，時間比 ＝ cycle 數比 <span class="arithmatex">\(=\frac{2.8}{2.5075}\approx1.12\)</span>。</p>
+<p>注意 Mcomp 的 CPI（2.81）比 Mbase（2.8）還<strong>高</strong>，MIPS 也比較低（約 178.0），卻比較快，因為指令數少了 10.75%。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">100 Q1（12%）、104 Q1（14%）：MIPS 指令在 SPEC2000 的比例</p>
+<p><strong>題目條件</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>類別</th>
+<th>CPI</th>
+<th>整數程式</th>
+<th>浮點程式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>算術（add、sub、addi）</td>
+<td>1.0</td>
+<td>24%</td>
+<td>48%</td>
+</tr>
+<tr>
+<td>資料搬移（lw、sw、lb、sb、lui）</td>
+<td>1.4</td>
+<td>36%</td>
+<td>39%</td>
+</tr>
+<tr>
+<td>邏輯（and、or、nor、andi、ori）</td>
+<td>1.0</td>
+<td>18%</td>
+<td>4%（104 年是 5%）</td>
+</tr>
+<tr>
+<td>條件分支（beq、bne、slt、slti）</td>
+<td>1.7</td>
+<td>18%</td>
+<td>6%</td>
+</tr>
+<tr>
+<td>跳躍（j、jr、jal）</td>
+<td>1.2</td>
+<td>4%</td>
+<td>2%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>100 Q1.1 整數程式：記憶體存取中資料佔幾成（26.5%）</strong>：每條指令抓指令 1 次，資料搬移再多 0.36 次。<span class="arithmatex">\(\frac{0.36}{1+0.36}\approx26.5\%\)</span>。</p>
+<p><strong>100 Q1.2、104 Q1.1 浮點程式：記憶體存取中讀取佔幾成（90.6%）</strong>：資料搬移的三分之二是 load。讀 ＝ 抓指令 1 ＋ load <span class="arithmatex">\(\frac23\times0.39=0.26\)</span> ＝ 1.26；全部 ＝ <span class="arithmatex">\(1+0.39=1.39\)</span>。<span class="arithmatex">\(\frac{1.26}{1.39}\approx90.6\%\)</span>。</p>
+<p><strong>100 Q1.3、104 Q1.2 平均 CPI（1.24）</strong>：整數、浮點的比例先平均：算術 36%、資料搬移 37.5%、邏輯 11.5%（104 年）、分支 12%、跳躍 3%。</p>
+<div class="arithmatex">\[0.36\times1+0.375\times1.4+0.115\times1+0.12\times1.7+0.03\times1.2=1.24\]</div>
+<p>100 年的浮點欄只加到 99%（邏輯 4%），照抄算出 1.235；寫一句「比例和不是 100%，照題目數字算」就好。</p>
+<p><strong>104 Q1.3 支援 update addressing（未修改的比較快，快約 1.12 倍）</strong>：update addressing 是「load／store 順便把基底暫存器加上位移」，可以省掉一條算位址的 add。</p>
+<ul>
+<li>25% 的資料搬移能改：<span class="arithmatex">\(0.25\times0.36=0.09\)</span>，每改一條就少一條算術指令。</li>
+<li>cycle 數（以原本 1 條指令為單位）：原本 <span class="arithmatex">\(0.24+0.36\times1.4+0.18+0.18\times1.7+0.04\times1.2=1.278\)</span>；少了 0.09 條 CPI 1 的指令 → <span class="arithmatex">\(1.278-0.09=1.188\)</span>。</li>
+<li>週期變長 20%：時間 <span class="arithmatex">\(1.188\times1.2=1.4256\)</span>，原本 1.278。</li>
+<li><strong>未修改的比較快</strong>：<span class="arithmatex">\(\frac{1.4256}{1.278}\approx1.12\)</span> 倍。省下的指令（9%）補不回週期變長的 20%。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">103 Q1（12%）：同一個 ISA 的兩種實作 P1（2.5 GHz）、P2（3 GHz），程式 <span class="arithmatex">\(10^6\)</span> 條指令：A 10%、B 20%、C 50%、D 20%。(a) 誰快 (b) 各自的 CPI</p>
+<p>題目給了兩組 CPI，各算一次：</p>
+<table>
+<thead>
+<tr>
+<th>組</th>
+<th>機器</th>
+<th>A、B、C、D 的 CPI</th>
+<th>平均 CPI</th>
+<th>時間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(a)</td>
+<td>P1</td>
+<td>1、2、3、3</td>
+<td><span class="arithmatex">\(0.1+0.4+1.5+0.6=2.6\)</span></td>
+<td><span class="arithmatex">\(\frac{10^6\times2.6}{2.5\times10^9}=1.04\)</span> ms</td>
+</tr>
+<tr>
+<td>(a)</td>
+<td>P2</td>
+<td>2、2、2、2</td>
+<td>2.0</td>
+<td><span class="arithmatex">\(\frac{10^6\times2}{3\times10^9}\approx0.67\)</span> ms</td>
+</tr>
+<tr>
+<td>(b)</td>
+<td>P1</td>
+<td>2、1.5、2、1</td>
+<td><span class="arithmatex">\(0.2+0.3+1.0+0.2=1.7\)</span></td>
+<td>0.68 ms</td>
+</tr>
+<tr>
+<td>(b)</td>
+<td>P2</td>
+<td>1、2、1、1</td>
+<td><span class="arithmatex">\(0.1+0.4+0.5+0.2=1.2\)</span></td>
+<td>0.40 ms</td>
+</tr>
+</tbody>
+</table>
+<p>兩組都是 <strong>P2 比較快</strong>：時脈高、平均 CPI 又低。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q2（12%）：I1 4 GHz、I2 2 GHz。CPI：A 類在 I1／I2 是 2／1、B 類 3／2、C 類 5／2。三個編譯器的指令比例：C1 40%、40%、20%；C2 40%、20%、40%；C3 50%、25%、25%（指令數一樣）。(1) 都用 C1，I1 比 I2 快幾倍 (2) 買哪台、用哪個編譯器</p>
+<p>指令數一樣，比「每條指令平均幾 ns」＝ CPI ÷ 時脈（GHz）：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>I1 的 CPI</th>
+<th>I1 每條（ns）</th>
+<th>I2 的 CPI</th>
+<th>I2 每條（ns）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td><span class="arithmatex">\(0.8+1.2+1.0=3.0\)</span></td>
+<td>0.75</td>
+<td><span class="arithmatex">\(0.4+0.8+0.4=1.6\)</span></td>
+<td>0.80</td>
+</tr>
+<tr>
+<td>C2</td>
+<td><span class="arithmatex">\(0.8+0.6+2.0=3.4\)</span></td>
+<td>0.85</td>
+<td><span class="arithmatex">\(0.4+0.4+0.8=1.6\)</span></td>
+<td>0.80</td>
+</tr>
+<tr>
+<td>C3</td>
+<td><span class="arithmatex">\(1.0+0.75+1.25=3.0\)</span></td>
+<td>0.75</td>
+<td><span class="arithmatex">\(0.5+0.5+0.5=1.5\)</span></td>
+<td>0.75</td>
+</tr>
+</tbody>
+</table>
+<p><strong>(1) 1.067 倍</strong>：都用 C1，<span class="arithmatex">\(\frac{0.80}{0.75}\approx1.067\)</span>。</p>
+<p><strong>(2) 用 C3</strong>：最快的是 0.75 ns，有三個組合並列（I1＋C1、I1＋C3、I2＋C3）。<strong>C3 在兩台機器上都是最快的</strong>，所以選 C3，機器兩台一樣快，任選一台（例如時脈低、通常比較省電的 I2）。寫出比較表、指出並列，再給理由，就能拿到分數。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q1（15%）、104 Q3（10%）：乘法可以快 4 倍、記憶體存取可以快 2 倍。101：程式 200 秒，乘法 50%、記憶體 20%、其他 30%；104：程式 100 秒，乘法 20%、記憶體 50%、其他 30%</p>
+<p><strong>兩種一起做的 Amdahl</strong>：每一部分各自除以自己的加速倍數，再加起來。</p>
+<div class="arithmatex">\[\text{新時間}=\sum_i\frac{f_i}{s_i}\]</div>
+<p><strong>101（C1 1.6、C2 1.11、C3 1.90）</strong>：</p>
+<ul>
+<li>只改乘法：<span class="arithmatex">\(0.5/4+0.5=0.625\)</span>，speedup <span class="arithmatex">\(=1.6\)</span>（200 秒 → 125 秒）。</li>
+<li>只改記憶體：<span class="arithmatex">\(0.2/2+0.8=0.9\)</span>，speedup <span class="arithmatex">\(\approx1.11\)</span>（180 秒）。</li>
+<li>兩個都改：<span class="arithmatex">\(0.5/4+0.2/2+0.3=0.525\)</span>，speedup <span class="arithmatex">\(\approx1.90\)</span>（105 秒）。</li>
+</ul>
+<p><strong>104 Q3.1 兩個都改（1.67）</strong>：<span class="arithmatex">\(0.2/4+0.5/2+0.3=0.6\)</span>，speedup <span class="arithmatex">\(=\frac1{0.6}\approx1.67\)</span>。</p>
+<p><strong>104 Q3.2 什麼程式會讓兩種改進一樣快</strong>：只改乘法省下 <span class="arithmatex">\(f_m-\frac{f_m}4=0.75f_m\)</span>；只改記憶體省下 <span class="arithmatex">\(f_{mem}-\frac{f_{mem}}2=0.5f_{mem}\)</span>。省下的一樣多就平手：</p>
+<div class="arithmatex">\[0.75f_m=0.5f_{mem}\ \Rightarrow\ f_{mem}=1.5f_m\]</div>
+<p>例：乘法 20%、記憶體 30%、其他 50%（兩種都是 1.18 倍）；乘法 30%、記憶體 45%、其他 25%（都是 1.29 倍）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q2（5%）：<span class="arithmatex">\(P=CFV^2\)</span>。新處理器的電容是舊的 80%、電壓降 20%、時脈快 20%，<span class="arithmatex">\(P_{\text{new}}\)</span> 是 <span class="arithmatex">\(P_{\text{old}}\)</span> 的幾倍</p>
+<div class="arithmatex">\[\begin{aligned}\frac{P_{\text{new}}}{P_{\text{old}}}&amp;=0.8\times1.2\times0.8^2\\&amp;=0.8\times1.2\times0.64=0.6144\end{aligned}\]</div>
+<p><strong>0.6144 倍</strong>（省了約 39%）。時脈還快了 20%，靠的是電壓的平方。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">106 Q2（10%）：伺服器平常只用到 60% 的能力，但要耗 90% 的最大功率。新系統可以讓伺服器進入「barely alive」狀態，耗 20% 的最大功率。(1) 關掉 60% 的伺服器省多少電 (2) 讓 60% 進入 barely alive 省多少電</p>
+<p><strong>假設</strong>：剩下的伺服器每台還是耗 90% 的最大功率（題目沒說負載重新分配，照 COD 習題的算法）。設 N 台、每台最大功率 P。原本 <span class="arithmatex">\(0.9NP\)</span>。</p>
+<p><strong>(1) 關掉 60%（省 60%）</strong>：剩 <span class="arithmatex">\(0.4N\times0.9P=0.36NP\)</span>，省 <span class="arithmatex">\(0.54NP\)</span>，是原本的 <span class="arithmatex">\(\frac{0.54}{0.9}=60\%\)</span>。</p>
+<p><strong>(2) 60% barely alive（省約 46.7%）</strong>：<span class="arithmatex">\(0.4N\times0.9P+0.6N\times0.2P=0.36NP+0.12NP=0.48NP\)</span>，省 <span class="arithmatex">\(0.42NP\)</span>，是原本的 <span class="arithmatex">\(\frac{0.42}{0.9}\approx46.7\%\)</span>。</p>
+<p><strong>意思</strong>：barely alive 少省一點電，但需要時能馬上恢復，不用像關機那樣等很久重開。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">105 Q5（20%）：(1) 算術平均和幾何平均的差別，SPECINT2006 用哪一個 (2) 處理器效能成長圖（1978–2012）：縱軸是線性還是 log？直線代表什麼成長？1986–2002 成長快、2002 後變慢的原因 (3) 提升條件分支效能的兩種設計</p>
+<p><strong>(1)</strong> 算術平均是加起來除以 n，適合平均時間（＝ 總時間）；幾何平均是乘起來開 n 次方，適合平均比值，而且<strong>不受參考機器影響</strong>（上面 A、B 兩台的例子）。SPECINT2006 用 SPECratio 的<strong>幾何平均</strong>。</p>
+<p><strong>(2)</strong> 縱軸是 <strong>log 刻度</strong>（1、10、100、1000……每一格是 10 倍）。log 刻度上的直線代表<strong>指數成長</strong>（每年乘上固定倍數）。</p>
+<ul>
+<li><strong>1986–2002 成長快</strong>（每年約 50%）：製程進步（電晶體更快、更多，時脈一直加）；架構創新（RISC、pipeline、superscalar 等指令層級平行、cache）。</li>
+<li><strong>2002 後變慢</strong>（每年約 20% 左右）：<strong>功耗牆</strong>（時脈再加就散熱不了，<a href="#u1-3">1.3</a>）；<strong>指令層級平行挖不出更多</strong>；<strong>記憶體延遲</strong>沒跟上（記憶體牆）。所以改成多核心。</li>
+</ul>
+<p><strong>(3)</strong> 任選兩個：<strong>分支預測</strong>（<a href="#u5">單元 5</a>：2-bit 預測器、branch target buffer）；<strong>提早決定分支</strong>（在 ID 級就比較、算出目標，penalty 只剩 1 cycle）；<strong>delayed branch</strong>（分支後面那個 slot 放一定要執行的指令）；<strong>loop unrolling</strong>（減少分支的次數）；<strong>predication／條件搬移</strong>（把短的 if 改成不分支的指令）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">106 Q1.4（1%）是非：週期和 CPI 都增加 10%、指令數減少 20%，執行時間不變</p>
+<p><strong>錯</strong>。<span class="arithmatex">\(1.1\times1.1\times0.8=0.968\)</span>，時間變成原本的 96.8%，<strong>少了 3.2%</strong>。三個數字要相乘，不能加減（<span class="arithmatex">\(+10\%+10\%-20\%=0\)</span> 是錯的算法）。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">103 Q3（12%）是非：計算機的基本名詞</p>
+<p>這幾句出自 COD 第 1 章的名詞配對習題，對照課本的定義判斷：</p>
+<table>
+<thead>
+<tr>
+<th>敘述</th>
+<th>答案與理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(a) multi-core processor 由多個晶片組成，每個晶片一顆處理器</td>
+<td><strong>錯</strong>。多核心是<strong>同一顆晶片</strong>上有多個處理器（核心）</td>
+</tr>
+<tr>
+<td>(b) server 由幾百到幾千顆處理器、TB 等級的記憶體組成</td>
+<td><strong>錯</strong>。這是 <strong>supercomputer</strong>；server 是透過網路、同時服務多個使用者的電腦</td>
+</tr>
+<tr>
+<td>(c) RAM 的存取時間比硬碟長</td>
+<td><strong>錯</strong>。DRAM 約 50–100 ns，硬碟約 5–10 ms，硬碟慢十萬倍左右</td>
+</tr>
+<tr>
+<td>(d) 組合語言是處理器看得懂的命令</td>
+<td><strong>錯</strong>。處理器看得懂的是<strong>機器語言</strong>（二進位的 instruction）；組合語言是它的符號表示，要經過 assembler 翻譯</td>
+</tr>
+<tr>
+<td>(e) application software 是使用者開發的軟體／程式</td>
+<td><strong>對</strong>。課本習題的定義就是 software/programs developed by the users（相對於系統軟體）</td>
+</tr>
+<tr>
+<td>(f) 0/0 在 IEEE 754 的結果是 NaN</td>
+<td><strong>對</strong>。見 <a href="#u9-dec">9.2</a> 的特殊值</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="_7">觀念小考</h4>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> 關於 MIPS 值（million instructions per second），下面哪一句對？</p>
+<ol>
+<li>同一個程式，MIPS 值高的機器一定比較快</li>
+<li>MIPS 值跟 CPI 無關</li>
+<li>編譯器產生比較多的簡單指令，可能讓 MIPS 變高、執行時間卻變長</li>
+<li>不同 ISA 的機器可以直接用 MIPS 比快慢</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。MIPS <span class="arithmatex">\(=\frac{f}{\text{CPI}\times10^6}\)</span>，不看指令數。100 Q3 就是這個例子：編譯器 2 的 MIPS 比較高，卻慢了 1.6 倍。A 錯在指令數可能不同；B 錯，CPI 在分母；D 錯，不同 ISA 一條指令做的事不一樣多。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-2.</strong> 電壓和時脈都降低 15%，電容不變，動態功耗變成原本的多少？</p>
+<ol>
+<li>85%</li>
+<li>約 61%</li>
+<li>約 72%</li>
+<li>70%</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(0.85^2\times0.85=0.85^3\approx0.614\)</span>。電壓是平方、時脈是一次方，一共三次方。C 的 72% 只算了電壓的平方（<span class="arithmatex">\(0.85^2\)</span>）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> SPEC 用幾何平均來總結 SPECratio，主要原因是？</p>
+<ol>
+<li>幾何平均比較好算</li>
+<li>幾何平均等於總執行時間</li>
+<li>幾何平均一定比算術平均大</li>
+<li>換一台參考機器，兩台受測機器的比較結果不會改變</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。幾何平均的比值相除時，參考機器的時間會消掉，所以結論跟參考機器無關。B 錯，總時間要用算術平均；C 錯，幾何平均一定 ≤ 算術平均。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-4.</strong> 一個程式 30% 是 load／store，其他指令都不存取資料。所有記憶體存取中，資料存取佔幾成？</p>
+<ol>
+<li>約 23%</li>
+<li>30%</li>
+<li>約 43%</li>
+<li>70%</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。每條指令抓指令 1 次，再加平均 0.3 次資料存取，共 1.3 次：<span class="arithmatex">\(\frac{0.3}{1.3}\approx23\%\)</span>。B 忘了每條指令都要抓指令。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 1 GHz 的機器。編譯器 A：<span class="arithmatex">\(2\times10^9\)</span> 條指令，CPI 1.5；編譯器 B：<span class="arithmatex">\(10^9\)</span> 條指令，CPI 2.5。算兩個版本的執行時間和 MIPS 值，誰比較快？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>執行時間</strong>：A <span class="arithmatex">\(=\frac{2\times10^9\times1.5}{10^9}=3\)</span> 秒；B <span class="arithmatex">\(=\frac{10^9\times2.5}{10^9}=2.5\)</span> 秒。</p>
+<p><strong>MIPS</strong>：A <span class="arithmatex">\(=\frac{2\times10^9}{3\times10^6}\approx667\)</span>；B <span class="arithmatex">\(=\frac{10^9}{2.5\times10^6}=400\)</span>。</p>
+<p><strong>B 比較快</strong>（快 <span class="arithmatex">\(\frac{3}{2.5}=1.2\)</span> 倍），雖然 A 的 MIPS 值高了快一倍。B 的指令少一半，每條比較貴，但總時間比較短。</p>
+</details>
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> 40% ALU（CPI 1）、30% load（CPI 4）、20% store（CPI 3）、10% branch（CPI 2），1 GHz，<span class="arithmatex">\(10^9\)</span> 條指令，CPU time？</p>
 <details class="quiz">
@@ -746,7 +1170,7 @@ window.MathJax = {
 <p>位址切成 <strong>tag | index | offset</strong> 三段。offset 由 block 大小決定，index 由「有幾個 set」決定，剩下的都是 tag。會切位址，cache 題就會一半。</p>
 </div>
 <h3 id="u2-0">2.0 觀念課：cache 到底在做什麼</h3>
-<h4 id="_5">一個比喻</h4>
+<h4 id="_8">一個比喻</h4>
 <p>主記憶體像<strong>圖書館</strong>：很大，但每次去都要走很久（約 100 個 cycle）。cache 像你的<strong>書桌</strong>：很小，但伸手就拿得到（約 1 個 cycle）。</p>
 <p>CPU 要一筆資料時，先看書桌：</p>
 <ul>
@@ -756,7 +1180,7 @@ window.MathJax = {
 <h4 id="block">為什麼一次搬一整塊（block）</h4>
 <p>你去圖書館拿一本書時，很可能等一下也會用到<strong>旁邊那幾本</strong>（程式讀陣列時，讀完 <code>a[0]</code> 接著就讀 <code>a[1]</code>）。所以乾脆一次把一整排搬回來，這一整排就叫 <strong>block</strong>。這叫利用<strong>空間區域性</strong>。</p>
 <p>剛用過的書很可能等一下又要用（迴圈一直用同一個變數），所以放在書桌上不急著收，這叫<strong>時間區域性</strong>。cache 就是靠這兩種區域性才有用。</p>
-<h4 id="_6">第一步：書桌有幾個抽屜，每本書放哪個抽屜</h4>
+<h4 id="_9">第一步：書桌有幾個抽屜，每本書放哪個抽屜</h4>
 <p>把書桌想成有 <strong>4 個抽屜</strong>，編號 0–3，這個編號叫 <strong>index</strong>。圖書館的書照順序編號：block 0、1、2、3、…。最簡單的規定是：</p>
 <blockquote>
 <p><strong>第 <span class="arithmatex">\(n\)</span> 號 block 只能放進第 <span class="arithmatex">\(n \bmod 4\)</span> 號抽屜。</strong></p>
@@ -801,7 +1225,7 @@ window.MathJax = {
 <div class="arithmatex">\[\text{block 號碼}=\left\lfloor\frac{\text{位址}}{\text{block 大小}}\right\rfloor,\qquad \text{offset}=\text{位址}\bmod\text{block 大小}\]</div>
 <div class="arithmatex">\[\text{index}=\text{block 號碼}\bmod\text{set 數},\qquad \text{tag}=\left\lfloor\frac{\text{block 號碼}}{\text{set 數}}\right\rfloor\]</div>
 <p>（抽屜正式的名稱是 <strong>set</strong>；direct-mapped 時一個 set 只有一格。）</p>
-<h4 id="_7">第三步：換成二進位，其實是同一件事</h4>
+<h4 id="_10">第三步：換成二進位，其實是同一件事</h4>
 <p>block 大小和 set 數都是 2 的次方。<strong>除以 4 就是把二進位往右切掉 2 位，餘數就是被切掉的那 2 位</strong>。所以：</p>
 <ul>
 <li>最右邊 <span class="arithmatex">\(\log_2(\text{block 大小})\)</span> 位是 offset，</li>
@@ -928,7 +1352,7 @@ window.MathJax = {
 <li><strong>影片</strong>：<a href="https://ocw.nthu.edu.tw/courses/13">清大黃婷婷・計算機結構</a> 第 7 週 Large and fast: exploiting memory hierarchy。</li>
 </ul>
 </div>
-<h4 id="_8">換你試試</h4>
+<h4 id="_11">換你試試</h4>
 <div data-qid="u2-0-t0">
 <p><strong>T-0.</strong> block 8 bytes、4 個 set、direct-mapped（byte address）。位址 100 在第幾個 block？offset、index、tag 是多少？先用十進位算，再用二進位對答案。</p>
 <details class="quiz">
@@ -966,7 +1390,7 @@ window.MathJax = {
 </ol>
 <p><strong>為什麼是這樣</strong>：<span class="arithmatex">\(k\)</span> 個位元能分出 <span class="arithmatex">\(2^k\)</span> 種，所以要分出 <span class="arithmatex">\(B\)</span> 個 byte 需要 <span class="arithmatex">\(\log_2B\)</span> 位、選 <span class="arithmatex">\(S\)</span> 個 set 需要 <span class="arithmatex">\(\log_2S\)</span> 位。容量 ÷ block 大小 ＝ 總格數，再 ÷ 每個 set 幾格 ＝ set 數。</p>
 <p><strong>注意單位</strong>：題目給 word address 時，offset 是「block 裡第幾個 word」，用 word 數算；給 byte address 時用 byte 數算。一個 word 通常是 4 bytes。</p>
-<h4 id="_9">三種映射方式一次比較</h4>
+<h4 id="_12">三種映射方式一次比較</h4>
 <table>
 <thead>
 <tr>
@@ -1018,7 +1442,7 @@ window.MathJax = {
 <p><strong>規律</strong>：容量和 block 大小不變時，associativity 每加倍，set 數就減半 → <strong>index 少 1 位、tag 多 1 位</strong>（offset 不變）。</p>
 <h3 id="u2-2">2.2 Cache 總位元數</h3>
 <p>題目說「16 KB 的 cache」，通常只算 <strong>data</strong>。但硬體裡每一格還要存幾個「管理用」的欄位，題目問<strong>總位元數</strong>時要全部加起來。</p>
-<h4 id="_10">每一格存了哪些東西</h4>
+<h4 id="_13">每一格存了哪些東西</h4>
 <table>
 <thead>
 <tr>
@@ -1690,6 +2114,375 @@ window.MathJax = {
 <p>LRU：A M、B M、C M（踢 A）、A M（踢 B）、B M（踢 C）→ <strong>5 次全 miss</strong>。FIFO 這串的踢法剛好一樣，也是全 miss。</p>
 <p>原因：三個 block 輪流用，但 set 只有兩格。每次要用的，剛好就是上一步被踢掉的那個，這種情況叫 <strong>thrashing</strong>。換替換策略救不了，要讓 set 裝得下正在輪流用的 block，例如改成 3 格以上（提高 associativity），或調整存取順序。</p>
 </details>
+<h3 id="u2-adv">2.9 進階：讓 cache 更快的各種方法</h3>
+<p>105 年一題 20%（降低 miss rate、hit time、miss penalty 各舉兩種方法，解釋 block size 的曲線），110 年有選擇題（TLB miss、loop interchange、way prediction、pipelined cache）和一題 40% 的記憶體階層設計，106 年有是非題。前面幾節是「會算」，這一節是「知道有哪些招、各自的代價」。</p>
+<h4 id="amat">AMAT 的三個數字，各有一套方法</h4>
+<div class="arithmatex">\[\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}\]</div>
+<p>（<a href="#u2-4">2.4</a>）要讓 cache 變快，就是降低其中一個數字，但常常會讓另一個變大：</p>
+<table>
+<thead>
+<tr>
+<th>要降低</th>
+<th>方法</th>
+<th>怎麼做</th>
+<th>代價</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>miss rate</td>
+<td>加大 block</td>
+<td>一次多搬相鄰的資料（空間區域性），compulsory miss 變少</td>
+<td>太大時 block 數變少、miss penalty 變大</td>
+</tr>
+<tr>
+<td>miss rate</td>
+<td>加大 cache</td>
+<td>capacity miss 變少</td>
+<td>hit time 變長、成本和功耗</td>
+</tr>
+<tr>
+<td>miss rate</td>
+<td>提高 associativity</td>
+<td>conflict miss 變少</td>
+<td>比較器變多，hit time 變長</td>
+</tr>
+<tr>
+<td>miss rate</td>
+<td>編譯器改存取順序（loop interchange、blocking）</td>
+<td>讓資料在被踢掉之前用完（<a href="#u7-2">7.2</a>）</td>
+<td>要改程式</td>
+</tr>
+<tr>
+<td>miss rate</td>
+<td>prefetch（預取）</td>
+<td>在用到之前先搬進來</td>
+<td>猜錯會把有用的資料擠掉、浪費頻寬</td>
+</tr>
+<tr>
+<td>miss penalty</td>
+<td>多層 cache（L2、L3）</td>
+<td>L1 miss 先去 L2 找，不用每次都到 DRAM</td>
+<td>面積、成本</td>
+</tr>
+<tr>
+<td>miss penalty</td>
+<td>critical word first、early restart</td>
+<td>先把 CPU 要的那個 word 送過去，CPU 先繼續跑</td>
+<td>控制電路複雜</td>
+</tr>
+<tr>
+<td>miss penalty</td>
+<td>讀 miss 優先（write buffer）</td>
+<td>寫入先放 buffer，讀 miss 不用等前面的寫入寫完</td>
+<td>要檢查 buffer 裡有沒有要讀的位址</td>
+</tr>
+<tr>
+<td>miss penalty</td>
+<td>victim cache</td>
+<td>剛被踢掉的 block 先放進一個小的全關聯 cache，馬上又要用時從這裡拿</td>
+<td>多一塊硬體</td>
+</tr>
+<tr>
+<td>miss penalty（有效值）</td>
+<td>nonblocking cache</td>
+<td>miss 處理時繼續服務其他存取（hit under miss）</td>
+<td>控制電路複雜</td>
+</tr>
+<tr>
+<td>hit time</td>
+<td>小而簡單的 L1（例如 direct-mapped）</td>
+<td>路徑短，可以配合高時脈</td>
+<td>miss rate 高一點</td>
+</tr>
+<tr>
+<td>hit time</td>
+<td>way prediction</td>
+<td>先猜這次會用哪一個 way，只比那一個</td>
+<td>猜錯要多花一個 cycle</td>
+</tr>
+<tr>
+<td>hit time</td>
+<td>不等位址轉換（VIPT）</td>
+<td>用虛擬位址的 page offset 當 index，查 cache 和查 TLB 同時做</td>
+<td>cache 大小受 page size 限制</td>
+</tr>
+<tr>
+<td>頻寬（每 cycle 能做幾次存取）</td>
+<td>pipelined cache access</td>
+<td>把 cache 存取切成幾級，每個 cycle 可以開始一次新的存取</td>
+<td>一次存取要幾個 cycle 才完成（延遲變長）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>背法</strong>：miss rate 的方法都在「讓 cache 裡裝對的東西」；miss penalty 的方法都在「miss 了也少等一點」；hit time 的方法都在「讓命中的路徑短一點」。</p>
+<h4 id="block-miss-rate">為什麼 block 太大，miss rate 反而上升？</h4>
+<p>105 Q2.4 的圖：橫軸 block size（16 到 256 bytes），每條線是一種 cache 容量（4K 到 256K）。</p>
+<ul>
+<li><strong>一開始往下</strong>：block 變大，一次多搬相鄰的資料，利用<strong>空間區域性</strong>（spatial locality），第一次用到的 compulsory miss 變少。</li>
+<li><strong>太大之後往上</strong>：容量固定，block 越大、block 數越少。原本可以放 256 個小 block，現在只能放 16 個大 block，<strong>還要用的資料很快就被擠掉</strong>（conflict、capacity miss 增加），而大 block 裡很多字其實沒用到。容量越小的 cache 越早往上翹（4K 的線在 256 bytes 時明顯上升）。</li>
+<li><strong>另外</strong>：block 越大，搬一次越久，<strong>miss penalty 也變大</strong>，就算 miss rate 沒變，AMAT 也會變差。</li>
+</ul>
+<h4 id="tlb-misspage-faultcache-miss">TLB miss、page fault、cache miss 不一樣</h4>
+<p>查 TLB 是在找「虛擬頁 → 實體頁」的對應。三個都查完，有些組合不可能發生：</p>
+<table>
+<thead>
+<tr>
+<th>TLB</th>
+<th>page table</th>
+<th>cache</th>
+<th>可能嗎</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hit</td>
+<td>（不用查）</td>
+<td>hit 或 miss</td>
+<td>可能</td>
+</tr>
+<tr>
+<td>miss</td>
+<td>hit</td>
+<td>hit</td>
+<td>可能：對應從 page table 找到，資料剛好在 cache</td>
+</tr>
+<tr>
+<td>miss</td>
+<td>hit</td>
+<td>miss</td>
+<td>可能</td>
+</tr>
+<tr>
+<td>miss</td>
+<td>miss（page fault）</td>
+<td>miss</td>
+<td>可能：要從硬碟載入</td>
+</tr>
+<tr>
+<td>hit</td>
+<td>miss</td>
+<td>任何</td>
+<td><strong>不可能</strong>：TLB 裡有的頁一定在記憶體</td>
+</tr>
+<tr>
+<td>miss</td>
+<td>miss</td>
+<td>hit</td>
+<td><strong>不可能</strong>：頁不在記憶體，資料不可能在 cache</td>
+</tr>
+</tbody>
+</table>
+<p><strong>TLB miss 只代表「對應不在 TLB」</strong>：要去查 page table，頁可能在記憶體裡（只是沒快取到對應），資料也可能在 cache 裡。</p>
+<div class="admonition example">
+<p class="admonition-title">105 Q2（20%）：(1) 兩種降低 miss rate 的方法 (2) 兩種降低 hit time 的方法 (3) 兩種降低 miss penalty 的方法 (4) block size 的曲線為什麼先降後升 (5) write miss 時 write-allocate 和 no-write-allocate 的差別</p>
+<p><strong>(1)</strong> 加大 block、加大 cache、提高 associativity、編譯器的 loop interchange／blocking、prefetch（任選兩個，寫出各自減少哪一種 miss）。</p>
+<p><strong>(2)</strong> 小而簡單的 L1（direct-mapped）、way prediction、VIPT（查 cache 和查 TLB 同時做）。</p>
+<p><strong>(3)</strong> 多層 cache、critical word first／early restart、讀 miss 優先於寫入（write buffer）、victim cache。</p>
+<p><strong>(4)</strong> 見上一小節：先是空間區域性讓 compulsory miss 減少；太大時 block 數太少，conflict／capacity miss 增加，miss penalty 也變大。</p>
+<p><strong>(5)</strong> write-allocate：write miss 時先把 block 搬進 cache 再寫，之後再寫這塊就會 hit，通常配 write-back。no-write-allocate：直接寫到下一層、不搬進 cache，通常配 write-through。（<a href="#u2-write">2.5</a>）</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">110 Q1（10%）選擇題（要說明其他選項為什麼錯）</p>
+<p><strong>1.1 記憶體 128 MB、每個 word 8 bytes，至少要幾個位元才能定址到每個 word？（c）24 bits</strong></p>
+<p>word 數 <span class="arithmatex">\(=\frac{128\text{ MB}}{8\text{ B}}=\frac{2^{27}}{2^3}=2^{24}\)</span>，要 24 個位元。8 bits 只能分辨 256 個、16 bits 只有 64K 個，不夠；32 bits 夠但不是「至少」（那是每個 byte 都編號、而且是 4 GB 的量）。</p>
+<p><strong>1.2 發生 TLB miss 時，哪一句對？（c）CPU 沒有拿到資料的實體位址</strong></p>
+<ul>
+<li>(a) 錯：資料可能還在 cache 裡，查完 page table 拿到實體位址後可能 cache hit。</li>
+<li>(b) 錯：頁可能在記憶體裡，只是對應不在 TLB；不在記憶體叫 page fault。</li>
+<li>(d) 錯：不一定「立刻」存取主記憶體，page table entry 可能在 cache 裡；有些系統由 OS 的例外處理程式處理。</li>
+</ul>
+<p><strong>1.3、1.4</strong>（snoopy、coherence miss）在 <a href="#u8-mp">8.4</a> 的觀念小考。</p>
+<p><strong>1.5 哪一句對？（d）把 cache 存取 pipeline 化可以提高頻寬</strong></p>
+<ul>
+<li>(a) 錯：entry 數一樣時，set-associative 的 set 比較少、index 位元少，<strong>tag 反而比較多</strong>；multi-word block 是 offset 位元多，tag 比較少。</li>
+<li>(b) 錯：loop interchange 改存取順序，可以<strong>降低</strong> miss rate（<a href="#u7-2">7.2</a>）。</li>
+<li>(c) 錯：way prediction 降低的是 <strong>hit time</strong>（和功耗），不是 miss penalty。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">106 Q1.1–1.3（3%）是非（錯的要說明）</p>
+<ul>
+<li><strong>1.1 加大 block 是為了利用時間區域性</strong>：<strong>錯</strong>，是<strong>空間</strong>區域性（相鄰的資料）。時間區域性（同一筆資料很快再用）靠的是 cache 夠大、替換策略好。</li>
+<li><strong>1.2 page 變大，page table 會變小</strong>：<strong>對</strong>。page 變大 → 頁數變少 → page table 的 entry 變少。</li>
+<li><strong>1.3 虛擬記憶體通常用 write-back，不用 write-through</strong>：<strong>對</strong>。寫硬碟要幾毫秒，每次寫入都寫回硬碟太慢；改用 dirty bit，被換出去時才寫回。</li>
+</ul>
+</div>
+<div class="admonition example">
+<p class="admonition-title">110 Q4（40%）：設計記憶體階層。Policy 1：只有 2-way 的 L1；Policy 2：direct-mapped 的 L1 ＋ 2-way 的 L2；Policy 3：2-way 的 L1 和 L2</p>
+<p><strong>題目條件</strong>：</p>
+<ul>
+<li>32 位元機器，base CPI 1.0，5 GHz。每個 block 1 個 word（4 bytes）。</li>
+<li>L1 放 8 KB 資料，L2 放 16 KB 資料。page 大小 <span class="arithmatex">\(2^{12}\)</span> bytes。</li>
+<li>TLB 和 page table 的每個 entry 要多 dirty、reference、valid 各 1 位元。</li>
+<li>L1、L2 各有一個 TLB，各 10、20 個 entry；page table 有 30 個 entry；TLB 和 page table 都是全關聯（fully associative）。</li>
+<li>4.3 的時間：L2 5 ns、主記憶體 100 ns、硬碟 1 μs（都含 miss 處理）；L1–L2 之間的傳輸不計，主記憶體和最低層 cache 之間、主記憶體和硬碟之間的傳輸各 50 ns。TLB 放在最低層的 cache，先查 TLB；TLB miss 要花 10 ns 處理例外。miss rate：direct-mapped 的 L1 和它的 TLB 都是 2%、L2 和它的 TLB 都是 0.5%；2-way 時 L1 是 1%、L2 是 0.1%；主記憶體的 miss rate 0.1%。每個位元的製造成本 0.01 美元。</li>
+</ul>
+<p><strong>4.1 TLB 和 page table 的位元數（page table 1290、L1 的 TLB 430、L2 的 TLB 860）</strong></p>
+<ul>
+<li>32 位元位址、page <span class="arithmatex">\(2^{12}\)</span> → offset 12 位元，<strong>VPN 20 位元</strong>，PPN 也是 20 位元（假設實體位址也是 32 位元）。</li>
+<li><strong>全關聯要存 tag</strong>：沒辦法用 VPN 當索引，所以每個 entry 要存整個 VPN 來比對。</li>
+<li>每個 entry ＝ VPN 20 ＋ PPN 20 ＋ dirty、reference、valid 3 ＝ <strong>43 位元</strong>。</li>
+<li>page table：<span class="arithmatex">\(30\times43=1290\)</span>；L1 的 TLB：<span class="arithmatex">\(10\times43=430\)</span>；L2 的 TLB：<span class="arithmatex">\(20\times43=860\)</span>。</li>
+</ul>
+<p><strong>4.2 cache 的位元數（2-way L1 108,544、2-way L2 212,992）</strong></p>
+<p>每個 block ＝ valid 1 ＋ tag ＋ 資料 32 位元；byte offset 2 位元（一個 word 4 bytes）。</p>
+<table>
+<thead>
+<tr>
+<th>cache</th>
+<th>block 數</th>
+<th>set 數</th>
+<th>index</th>
+<th>tag</th>
+<th>每個 block</th>
+<th>總位元</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1 2-way（a）</td>
+<td>2048</td>
+<td>1024</td>
+<td>10</td>
+<td>20</td>
+<td>53</td>
+<td>108,544</td>
+</tr>
+<tr>
+<td>L2 2-way（b）</td>
+<td>4096</td>
+<td>2048</td>
+<td>11</td>
+<td>19</td>
+<td>52</td>
+<td>212,992</td>
+</tr>
+<tr>
+<td>L1 direct-mapped（Policy 2 用）</td>
+<td>2048</td>
+<td>2048</td>
+<td>11</td>
+<td>19</td>
+<td>52</td>
+<td>106,496</td>
+</tr>
+</tbody>
+</table>
+<p>如果 2-way 的 LRU 要每個 set 1 個位元，L1 再加 1024、L2 再加 2048。寫出你有沒有算。</p>
+<p><strong>4.3 建議哪一種（Policy 3）</strong></p>
+<p>題目沒說清楚的地方，先寫假設：(1) L1 hit 的時間算在 base CPI 裡；(2) TLB hit 不另外花時間（跟 cache 同時查）；(3) miss rate 都是「存取這一層時」的比例；(4) 每條指令平均 1 次記憶體存取（只是為了比較，換成別的次數結論一樣）。</p>
+<ul>
+<li><strong>到主記憶體一次</strong>：<span class="arithmatex">\(100+50=150\)</span> ns，再加 0.1% 要去硬碟（<span class="arithmatex">\(1000+50\)</span> ns）：<span class="arithmatex">\(150+0.001\times1050=151.05\)</span> ns。</li>
+<li><strong>TLB miss 一次</strong>：10 ns 例外處理 ＋ 到主記憶體讀 page table（151.05 ns）＝ 161.05 ns。</li>
+<li><strong>Policy 1</strong>（TLB 在 L1，miss 1%；L1 miss 1% 直接到主記憶體）：<span class="arithmatex">\(0.01\times161.05+0.01\times151.05\approx3.12\)</span> ns ＝ 15.6 個 cycle，CPI ≈ 16.6。</li>
+<li><strong>Policy 2</strong>（TLB 在 L2，miss 0.1%；L1 miss 2% 去 L2，L2 miss 0.1%）：<span class="arithmatex">\(0.001\times161.05+0.02\times(5+0.001\times151.05)\approx0.264\)</span> ns ＝ 1.32 個 cycle，CPI ≈ 2.32。</li>
+<li><strong>Policy 3</strong>（同上，但 L1 miss 只有 1%）：<span class="arithmatex">\(0.001\times161.05+0.01\times(5+0.001\times151.05)\approx0.213\)</span> ns ＝ 1.06 個 cycle，CPI ≈ 2.06。</li>
+</ul>
+<p><strong>成本</strong>（cache ＋ 每一層的 TLB ＋ page table，× 0.01 美元）：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>位元數</th>
+<th>成本（美元）</th>
+<th>CPI</th>
+<th>CPI × 成本（越小越好）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Policy 1</td>
+<td>110,264</td>
+<td>1,102.64</td>
+<td>16.6</td>
+<td>18,309</td>
+</tr>
+<tr>
+<td>Policy 2</td>
+<td>322,068</td>
+<td>3,220.68</td>
+<td>2.32</td>
+<td>7,473</td>
+</tr>
+<tr>
+<td>Policy 3</td>
+<td>324,116</td>
+<td>3,241.16</td>
+<td>2.06</td>
+<td>6,686</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建議 Policy 3（兩層 cache、都是 2-way）</strong>：只有一層時，每次 L1 miss 都要到主記憶體，CPI 是兩層的 7 倍以上；Policy 3 只比 Policy 2 貴 0.6%，CPI 卻低約 11%。綜合效能和成本，Policy 3 最划算。</p>
+<p>這題條件寫得不完整，答案會因為假設不同而不一樣。考試時<strong>寫清楚假設、每一步的算式</strong>，結論跟算式一致就能拿分。</p>
+</div>
+<h4 id="_14">觀念小考</h4>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> 下面哪一個方法是用來降低 <strong>hit time</strong> 的？</p>
+<ol>
+<li>victim cache</li>
+<li>加大 block</li>
+<li>way prediction</li>
+<li>多層 cache</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。way prediction 先猜要用的 way，只比那一個，命中的路徑變短。A 和 D 降低 miss penalty；B 降低 miss rate（compulsory miss）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> cache 容量固定，block 加大到某個程度後 miss rate 反而上升，主要原因是？</p>
+<ol>
+<li>block 數變少，還要用的資料很快被擠掉</li>
+<li>compulsory miss 變多</li>
+<li>tag 變長，比較變慢</li>
+<li>時間區域性變差</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。容量 ＝ block 數 × block 大小，block 太大，能同時放的 block 太少，conflict、capacity miss 增加。B 剛好相反，大 block 讓 compulsory miss 變少；C 是 hit time 的問題，而且 block 變大 tag 不會變長。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> 下面哪一種組合<strong>不可能</strong>發生？</p>
+<ol>
+<li>TLB miss、page table hit、cache hit</li>
+<li>TLB miss、page table hit、cache miss</li>
+<li>TLB hit、cache miss</li>
+<li>TLB miss、page fault、cache hit</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。page fault 表示這一頁不在記憶體，cache 裡的資料都來自記憶體，不可能有這一頁的資料。A 是最常見的 TLB miss：查完 page table，資料剛好在 cache。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-4.</strong> 記憶體 256 MB、每個 word 8 bytes，要定址到每個 word，至少要幾個位元？</p>
+<ol>
+<li>24</li>
+<li>25</li>
+<li>28</li>
+<li>32</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(\frac{256\text{ MB}}{8\text{ B}}=\frac{2^{28}}{2^3}=2^{25}\)</span> 個 word。C 的 28 是定址到每個 byte。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> C 語言的二維陣列 <code>x[5000][100]</code> 是一列一列存的（row-major）。下面的迴圈為什麼 miss 很多？怎麼改？</p>
+<pre class="highlight"><code class="language-c">for (j = 0; j &lt; 100; j++)
+    for (i = 0; i &lt; 5000; i++)
+        x[i][j] = 2 * x[i][j];</code></pre>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>為什麼 miss 多</strong>：內層迴圈 i 在變，每次跳到下一列，相鄰兩次存取差了 100 個元素（400 或 800 bytes），每次都在不同的 block。一個 block 搬進來只用到一個元素，等外層 j 加 1、要用同一個 block 的下一個元素時，它早就被擠掉了。</p>
+<p><strong>改法（loop interchange）</strong>：把兩層迴圈對調，內層讓 j 變：</p>
+<pre class="highlight"><code class="language-c">for (i = 0; i &lt; 5000; i++)
+    for (j = 0; j &lt; 100; j++)
+        x[i][j] = 2 * x[i][j];</code></pre>
+<p>現在照記憶體的順序一個接一個存取，一個 block 搬進來，裡面的元素全部用完才換下一塊（空間區域性）。結果一樣、指令數一樣，只是 miss 少很多。</p>
+</details>
 <h3 id="u2-quiz">單元 2 小考</h3>
 <p><strong>2-1.</strong> 32-bit 位址、64 KB direct-mapped、16 B block、write-through：offset、index、tag 各幾位元？總位元數？</p>
 <details class="quiz">
@@ -1761,7 +2554,7 @@ window.MathJax = {
 <p>虛擬位址 ＝ <strong>VPN | page offset</strong>。page offset 由 page 大小決定，直接搬到實體位址；VPN 查 TLB 或 page table 換成 PPN。</p>
 </div>
 <h3 id="u3-0">3.0 觀念課：每個程式都以為自己擁有整棟大樓</h3>
-<h4 id="_11">比喻：門牌對照表</h4>
+<h4 id="_15">比喻：門牌對照表</h4>
 <p>每個程式都以為自己住在一整棟大樓裡，房號從 0 開始（<strong>虛擬位址</strong>）。實際上作業系統只分給它幾個真實的房間（<strong>實體記憶體的 frame</strong>），不常用的東西放在倉庫（<strong>磁碟</strong>）。</p>
 <p>要找東西時，查一張「虛擬房號 → 實體房號」的對照表，這張表就是 <strong>page table</strong>。</p>
 <p><strong>為什麼要這樣做</strong>：</p>
@@ -1816,7 +2609,7 @@ window.MathJax = {
 <li><strong>作業系統角度</strong>：<a href="https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&amp;cid=141&amp;id=999">清大周志遠・作業系統講義</a> Ch8 Memory Management、Ch9 Virtual Memory。這一單元和 OS 的記憶體單元可以一起讀。</li>
 </ul>
 </div>
-<h4 id="_12">換你試試</h4>
+<h4 id="_16">換你試試</h4>
 <p>用上面的 page table（VPN 0→2、VPN 5→0）。</p>
 <p><strong>T-1.</strong> 虛擬位址 0x07 的實體位址？</p>
 <details class="quiz">
@@ -1959,14 +2752,14 @@ window.MathJax = {
 </div>
 <p>4.0 用洗衣服比喻講 pipeline。每種指令實際經過哪些元件（register file、ALU、記憶體、mux），在 <a href="#u4-dp">4.3</a> 的前半；不熟的話，兩節搭配著讀。</p>
 <h3 id="u4-0">4.0 觀念課：洗衣服的流水線</h3>
-<h4 id="_13">比喻：洗、烘、摺</h4>
+<h4 id="_17">比喻：洗、烘、摺</h4>
 <p>洗衣服有三步：洗 30 分、烘 30 分、摺 30 分。有 4 批衣服：</p>
 <ul>
 <li><strong>一批做完才做下一批</strong>：<span class="arithmatex">\(4\times90=360\)</span> 分鐘</li>
 <li><strong>流水線</strong>：第一批洗完拿去烘的同時，第二批開始洗。總時間 <span class="arithmatex">\((3+3)\times30=180\)</span> 分鐘</li>
 </ul>
 <p>每一批從頭到尾還是要 90 分鐘（<strong>延遲沒變</strong>），但每 30 分鐘就有一批完成（<strong>吞吐量變高</strong>）。</p>
-<h4 id="_14">指令的五個步驟</h4>
+<h4 id="_18">指令的五個步驟</h4>
 <table>
 <thead>
 <tr>
@@ -2091,7 +2884,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>影片</strong>：<a href="https://ocw.nthu.edu.tw/courses/13">清大黃婷婷・計算機結構</a> 第 6 週 Enhancing performance with pipelining。</li>
 </ul>
 </div>
-<h4 id="_15">換你試試</h4>
+<h4 id="_19">換你試試</h4>
 <p><strong>T-1.</strong> 10 條指令、5 級 pipeline、每級 200 ps。pipeline 和非 pipeline（每條 1000 ps）各要多久？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2192,7 +2985,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 </div>
 <h3 id="u4-dp">4.3 單週期與多週期 datapath</h3>
 <p>pipeline 之前的兩種 CPU 做法。100、101、102、103、106 年都考過（每次 14–20%）：算每條指令要多久、時脈週期多長、CPI 多少，或填控制訊號。這一節也是看懂 pipeline 五個階段的基礎。</p>
-<h4 id="_16">觀念：一條指令會經過哪些元件</h4>
+<h4 id="_20">觀念：一條指令會經過哪些元件</h4>
 <p>datapath 是 CPU 裡資料走的路線，主要元件：</p>
 <table>
 <thead>
@@ -2312,7 +3105,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li>多週期一次只做一條指令；pipeline（<a href="#u4-0">4.0</a>）讓好幾條指令的不同步驟同時進行，所以 CPI 接近 1、週期又短。</li>
 </ul>
 <p><strong>多週期不一定比單週期快</strong>：步驟的時間不平均時（記憶體 200 ps、暫存器 50 ps），短的步驟也要佔一整個 200 ps 的 cycle，見下面的 100 Q4。</p>
-<h4 id="_17">控制訊號：每條指令要把開關撥到哪</h4>
+<h4 id="_21">控制訊號：每條指令要把開關撥到哪</h4>
 <table>
 <thead>
 <tr>
@@ -2427,7 +3220,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li>要寫暫存器嗎？寫的值從哪裡來、寫到哪一個？（RegWrite、MemtoReg、RegDst）</li>
 <li>要讀或寫記憶體嗎？（MemRead、MemWrite）</li>
 </ol>
-<h4 id="_18">算時間的兩種題目寫法</h4>
+<h4 id="_22">算時間的兩種題目寫法</h4>
 <ul>
 <li><strong>題目給「register file（read or write）」的時間</strong>：讀和寫都要算（106 Q6、102 Q4）。</li>
 <li><strong>題目給每個元件的延遲（含 mux）</strong>：沿著最長的路徑加起來；寫回暫存器在 clock edge 完成，不另外加時間（COD 解答的算法，103 Q5）。</li>
@@ -2589,7 +3382,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>beq</strong>：比較兩個暫存器，第二個輸入是暫存器（ALUSrc＝0）；不寫暫存器也不寫記憶體（RegWrite＝0、MemWrite＝0）；既然不寫暫存器，寫哪個、寫什麼都不重要（RegDst、MemtoReg 是 X）。</li>
 </ul>
 </div>
-<h4 id="_19">觀念小考</h4>
+<h4 id="_23">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 單週期 CPU 的時脈週期由什麼決定？</p>
 <ol>
@@ -2725,7 +3518,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p>猜錯一次要丟掉「branch 決定之前已經進來的指令」。penalty 由<strong>在第幾級決定</strong>決定，pipeline 越深 penalty 越大。</p>
 </div>
 <h3 id="u5-0">5.0 觀念課：還不知道要跳去哪，只好先猜</h3>
-<h4 id="_20">問題在哪</h4>
+<h4 id="_24">問題在哪</h4>
 <p><code>beq</code> 要比較完兩個暫存器，才知道要跳還是不跳。假設在 EX（第 3 級）結束時才知道結果：</p>
 <table>
 <thead>
@@ -2763,7 +3556,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 </table>
 <p>在知道結果之前，pipeline 已經抓了 2 條指令進來。猜對了沒事；<strong>猜錯了，這 2 條要丟掉</strong>，浪費 2 個 cycle。這就是 misprediction penalty：</p>
 <div class="arithmatex">\[\text{penalty}=\text{決定 branch 的那一級}-1\]</div>
-<h4 id="_21">平均多花多少</h4>
+<h4 id="_25">平均多花多少</h4>
 <p>100 條指令裡有 20 條 branch，猜對率 75%：猜錯 <span class="arithmatex">\(20\times0.25=5\)</span> 次，每次 2 cycle，多花 10 cycle。理想 CPI 1 變成 <span class="arithmatex">\(\frac{100+10}{100}=1.1\)</span>。</p>
 <div class="arithmatex">\[\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty}\]</div>
 <h4 id="2-bit-1-bit">2-bit 預測器為什麼比 1-bit 好</h4>
@@ -2779,7 +3572,7 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <li><strong>英文</strong>：<a href="https://safari.ethz.ch/ddca/spring2025/doku.php?id=start">ETH Digital Design &amp; Computer Architecture 2025</a> 的 superscalar 與 branch prediction 講次。114 Q3（dual-path、confidence estimator）就是這門課的題型。</li>
 </ul>
 </div>
-<h4 id="_22">換你試試</h4>
+<h4 id="_26">換你試試</h4>
 <p><strong>T-1.</strong> 30% 是 branch、準確率 80%、penalty 3，CPI？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3028,7 +3821,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf">MIT 6.823 Problem Set 10</a>（<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf">解答</a>）有跟 112 Q3、114 Q5 一樣的 fixed／data-dependent switching 題目。</li>
 </ul>
 </div>
-<h4 id="_23">換你試試</h4>
+<h4 id="_27">換你試試</h4>
 <p>同樣的迴圈，LD 改成 6 個 cycle。</p>
 <p><strong>T-1.</strong> 固定輪流需要幾個 thread？</p>
 <details class="quiz">
@@ -3088,13 +3881,13 @@ BNE  ...</code></pre>
 <li>refresh 的命令要佔用<strong>命令匯流排</strong>（command bus）一段時間，這段時間不能送別的命令。</li>
 <li>正在 refresh 的那個 <strong>bank</strong> 不能被讀寫。</li>
 </ul>
-<h4 id="_24">使用率怎麼算</h4>
+<h4 id="_28">使用率怎麼算</h4>
 <div class="arithmatex">\[\text{使用率}=\frac{\text{這段時間內被 refresh 佔用的總時間}}{\text{這段時間}}\]</div>
 <p><strong>小例子</strong>：1 個 bank、1000 列，每次 refresh 佔用 bus 10 ns，每 64 ms 要全部 refresh 一次。</p>
 <p>64 ms 內被佔用 <span class="arithmatex">\(1000\times10\text{ ns}=10\ \mu\text{s}\)</span>，使用率 <span class="arithmatex">\(=\frac{10\ \mu\text{s}}{64\text{ ms}}\approx0.016\%\)</span>。</p>
 <p>數字很小，但記憶體越大，列數越多（考題常是 <span class="arithmatex">\(2^{19}\)</span> 列以上），使用率就跟著變大到好幾 %，而且 bank 被佔用時讀寫都要等。</p>
 <p><strong>考試技巧</strong>：數字留成 2 的次方和 10 的次方，例如 <span class="arithmatex">\(64\text{ ms}=2^6\times10^6\)</span> ns，就能約分不用計算機。</p>
-<h4 id="_25">資料重用：同一個東西多久會再用到</h4>
+<h4 id="_29">資料重用：同一個東西多久會再用到</h4>
 <p>SRAM／cache 很小，只能留住「很快又會用到」的資料。</p>
 <pre class="highlight"><code class="language-text">for i in 0..2:
   for j in 0..2:
@@ -3112,7 +3905,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://safari.ethz.ch/architecture/fall2022/doku.php?id=exams">ETH 計算機結構考古題（附詳解）</a>，可以找 DRAM refresh 相關的題目練習。</li>
 </ul>
 </div>
-<h4 id="_26">換你試試</h4>
+<h4 id="_30">換你試試</h4>
 <p><strong>T-1.</strong> 4 個 bank × 1024 列，每次 refresh 佔 bus 5 ns，64 ms 一輪，使用率？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3182,7 +3975,7 @@ BNE  ...</code></pre>
 <section class="unit" data-unit="u8">
 <h2 id="u8">單元 8：平行與微架構</h2>
 <h3 id="u8-0">8.0 觀念課：同時做好幾件事的三種方式</h3>
-<h4 id="_27">平行化的上限</h4>
+<h4 id="_31">平行化的上限</h4>
 <p>90% 可以平行的程式，用 <span class="arithmatex">\(N\)</span> 個處理器：</p>
 <table>
 <thead>
@@ -3209,7 +4002,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>處理器加倍，speedup 卻越加越少，因為那 10% 不能平行的部分變成主要的時間。再加上處理器之間要溝通，實際上更低。</p>
-<h4 id="_28">三種平行</h4>
+<h4 id="_32">三種平行</h4>
 <table>
 <thead>
 <tr>
@@ -3237,7 +4030,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>從比喻就能回答 114 Q6：VLIW 比 superscalar 簡單（硬體不用排程）、superscalar 可能更快（現場能應變 cache miss）、VLIW 比 array 彈性（每個槽可以做不同事）、array 最簡單（只要一份指令和控制）。</p>
-<h4 id="_29">記憶體一致性：把指令洗成一疊牌</h4>
+<h4 id="_33">記憶體一致性：把指令洗成一疊牌</h4>
 <p>兩個處理器同時跑（x、y 一開始都是 0）：</p>
 <table>
 <thead>
@@ -3260,7 +4053,7 @@ BNE  ...</code></pre>
 <p><strong>Sequential consistency（SC）</strong> 的意思是：最後的結果，必須等於把兩邊的指令<strong>洗成一疊</strong>（各自的順序不能變）後依序執行的結果。</p>
 <p>把所有洗法列出來，(r1, r2) 只可能是 (0,1)、(1,0)、(1,1)。<strong>(0,0) 不可能</strong>：r1＝0 代表 P1 讀 y 時 P2 還沒寫 y；r2＝0 代表 P2 讀 x 時 P1 還沒寫 x。但兩邊都是「先寫再讀」，一定有一邊的寫入比另一邊的讀取早，矛盾。</p>
 <p>112 Q5 的三個處理器版本，用的就是同一個推理：把「讀到 0」換成「某個讀取在某個寫入之前」，看會不會繞成一個圈。</p>
-<h4 id="_30">頻寬撐不撐得住</h4>
+<h4 id="_34">頻寬撐不撐得住</h4>
 <p>運算再快，資料送不進來也沒用。需要的頻寬 ＝ 每秒運算次數 × 每次運算要從記憶體讀幾個 byte。這個值超過記憶體頻寬，運算單元就會空等。</p>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
@@ -3269,7 +4062,7 @@ BNE  ...</code></pre>
 <li><strong>英文文章</strong>：Russ Cox〈<a href="https://research.swtch.com/hwmm">Hardware Memory Models</a>〉用 litmus test（就是這節 P1、P2 那種小程式）解釋 sequential consistency，例子寫得非常清楚。</li>
 </ul>
 </div>
-<h4 id="_31">換你試試</h4>
+<h4 id="_35">換你試試</h4>
 <p><strong>T-1.</strong> 95% 可平行，處理器無限多，speedup 上限？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3335,7 +4128,7 @@ BNE  ...</code></pre>
 </div>
 <h3 id="u8-mp">8.4 多處理器：cache coherence、UMA／NUMA、互連網路</h3>
 <p>101、106、107、110 年考過：平行加總的程式要怎麼同步、多顆 CPU 的 cache 怎麼保持一致、上百顆處理器要怎麼連。</p>
-<h4 id="_32">共用記憶體的多處理器</h4>
+<h4 id="_36">共用記憶體的多處理器</h4>
 <p><strong>shared-memory multiprocessor</strong>：所有處理器共用<strong>同一個實體位址空間</strong>，用一般的 load、store 溝通。依存取記憶體的時間分成兩種：</p>
 <table>
 <thead>
@@ -3442,7 +4235,7 @@ BNE  ...</code></pre>
 </ul>
 <p>處理器很多、沒有共用的 bus 時，改用 <strong>directory</strong>：每個 block 記錄哪些 cache 有它，要寫時只通知那幾個。</p>
 <p><strong>coherence miss（第 4 種 miss）</strong>：因為別的處理器寫了這個 block，我的被 invalidate，下次讀才 miss。只有多處理器才有。兩顆 CPU 寫同一個 block 裡<strong>不同的字</strong>也會互相 invalidate，叫 <strong>false sharing</strong>。</p>
-<h4 id="_33">互連網路：上百顆處理器怎麼連</h4>
+<h4 id="_37">互連網路：上百顆處理器怎麼連</h4>
 <p>N 顆處理器：</p>
 <table>
 <thead>
@@ -3501,7 +4294,7 @@ BNE  ...</code></pre>
 <li><strong>選 mesh</strong>：線路數只跟處理器數成正比，可以擴充，頻寬也隨處理器數增加；延遲的問題可以靠資料擺放、讓常溝通的處理器靠近一點來改善。</li>
 </ul>
 </div>
-<h4 id="_34">平行加總：要先同步再讀</h4>
+<h4 id="_38">平行加總：要先同步再讀</h4>
 <div class="admonition example">
 <p class="admonition-title">101 Q7（15%）：10 顆處理器加總 100,000 個數，再用下面的程式把 10 個部分和加起來。Pn 是處理器編號，half 是每顆處理器自己的變數</p>
 <pre class="highlight"><code class="language-c">half = 10;
@@ -3555,7 +4348,7 @@ until (half == 1);</code></pre>
 </ul>
 <p><strong>為什麼要處理奇數</strong>：第二輪 half ＝ 5，5 個部分和兩兩相加會剩一個（sum[4]）沒人加，所以讓 P0 先把它加進 sum[0]。驗算：最後 sum[0] 包含 sum[0]～sum[9] 全部，每個剛好一次。</p>
 </div>
-<h4 id="_35">觀念小考</h4>
+<h4 id="_39">觀念小考</h4>
 <div class="mcq" data-ans="1">
 <p><strong>C-1.</strong> 用 write-invalidate 的 snoopy protocol 時，P2 在 bus 上聽到「P1 要寫 X」（write miss），而 P2 的 cache 裡有 X，P2 要做什麼？（110 Q1.3）</p>
 <ol>
@@ -3615,9 +4408,9 @@ until (half == 1);</code></pre>
 </details>
 <h3 id="u8-ooo">8.5 動態排程：Tomasulo、亂序執行與多發</h3>
 <p>100、105、107 年考過：Tomasulo 要幾個比較器、tag 幾位元；SIMD、SIMT、VLIW、superscalar、superpipeline 各是什麼；loop unrolling 為什麼能變快。</p>
-<h4 id="_36">為什麼要亂序執行</h4>
+<h4 id="_40">為什麼要亂序執行</h4>
 <p>in-order 的 pipeline 只要有一條指令卡住（例如 lw cache miss 要等 100 個 cycle），後面<strong>不相干</strong>的指令也全部跟著等。亂序執行（out-of-order）的想法是：<strong>運算元一準備好就執行</strong>，不照程式順序。</p>
-<h4 id="_37">三種相依：只有一種是真的</h4>
+<h4 id="_41">三種相依：只有一種是真的</h4>
 <table>
 <thead>
 <tr>
@@ -3742,7 +4535,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </ol>
 <p><strong>代價</strong>：程式碼變大（可能讓 instruction cache miss 變多），需要更多暫存器。</p>
 </div>
-<h4 id="_38">觀念小考</h4>
+<h4 id="_42">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> register renaming 能消除哪幾種相依？</p>
 <ol>
@@ -3846,7 +4639,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <p><strong>為什麼「反相再加 1」就是取負</strong>：<span class="arithmatex">\(x\)</span> 和 <span class="arithmatex">\(\sim x\)</span> 每一位都相反，加起來是 1111，也就是 −1。所以 <span class="arithmatex">\(x+\sim x=-1\)</span>，移項得 <span class="arithmatex">\(-x=\sim x+1\)</span>。</p>
 <p>例：<span class="arithmatex">\(-3\)</span>：<span class="arithmatex">\(3=0011\)</span>，反相 1100，加 1 得 <strong>1101</strong>。</p>
 <p><strong>溢位</strong>：兩個正數相加得到負數（或兩個負數相加得到正數），結果就超出範圍了。例：<span class="arithmatex">\(5+4=1001\)</span>，讀起來是 −7，溢位。</p>
-<h4 id="_39">浮點數：二進位的科學記號</h4>
+<h4 id="_43">浮點數：二進位的科學記號</h4>
 <div class="arithmatex">\[(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})\]</div>
 <p><strong>每一部分的意思</strong>：</p>
 <ul>
@@ -3879,7 +4672,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <li><strong>英文</strong>：〈<a href="https://teaching.idallen.com/cst8214/08w/notes/ieee754_conversions.txt">IEEE 754 conversions</a>〉一步一步手算十進位和 IEEE 754 互換，適合練習。</li>
 </ul>
 </div>
-<h4 id="_40">換你試試</h4>
+<h4 id="_44">換你試試</h4>
 <p><strong>T-1.</strong> 用 4 位元二補數算 <span class="arithmatex">\(6+3\)</span>，結果是什麼？有沒有溢位？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3911,6 +4704,839 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <p class="admonition-title">111 P1.1（2%）：為什麼需要虛擬記憶體，優缺點</p>
 <p><strong>好處</strong>：程式可以用比實體記憶體更大的位址空間；每個 process 有獨立位址空間，彼此保護；方便共享（共享函式庫）和重新定位。<strong>壞處</strong>：位址轉換的時間與硬體成本（需要 TLB）、page table 佔記憶體、page fault 時要存取磁碟非常慢。</p>
 </div>
+<h3 id="u9-dec">9.2 從位元解回數值：進位轉換、二補數、IEEE 754</h3>
+<p>100 年（10%）和 103 年（14%）都考過：給一串十六進位，問它當成二補數整數、當成單精度浮點數各是多少；十進位轉八進位、十六進位；有號數相加會不會溢位。<a href="#u9-0">9.0</a> 教的是「數值 → 位元」，這一節反過來。</p>
+<h4 id="_45">十六進位、八進位跟二進位怎麼互換？</h4>
+<p><strong>一個十六進位數字 ＝ 4 個位元</strong>，一個八進位數字 ＝ 3 個位元。所以先換成二進位，再從<strong>右邊</strong>開始分組：</p>
+<ul>
+<li><span class="arithmatex">\(520=512+8=1000001000_2\)</span></li>
+<li>每 3 位一組：1｜000｜001｜000 → <strong><span class="arithmatex">\(1010_8\)</span></strong></li>
+<li>每 4 位一組：10｜0000｜1000 → <strong><span class="arithmatex">\(208_{16}\)</span></strong></li>
+</ul>
+<p>十進位換二進位，可以一直除以 2 取餘數，或像上面拆成 2 的次方相加（520 ＝ 512 ＋ 8），數字小時拆比較快。</p>
+<h4 id="1">二補數：最高位元是 1 時怎麼讀？</h4>
+<p>n 位元的二補數，最高位元的權重是 <span class="arithmatex">\(-2^{n-1}\)</span>，其他位元照常：</p>
+<div class="arithmatex">\[\text{值}=-b_{n-1}2^{n-1}+\sum_{i=0}^{n-2}b_i2^i\]</div>
+<p><strong>兩種算法，選一種</strong>：</p>
+<ol>
+<li><strong>當成無號數，再減 <span class="arithmatex">\(2^n\)</span></strong>：8 位元的 <code>1001 1100</code> ＝ 156，<span class="arithmatex">\(156-256=-100\)</span>。</li>
+<li><strong>反相加 1 得到絕對值</strong>：<code>1001 1100</code> 反相 <code>0110 0011</code>，加 1 是 <code>0110 0100</code> ＝ 100，所以是 −100。</li>
+</ol>
+<p><strong>寫成 n 位元的負數</strong>：<span class="arithmatex">\(-x\)</span> 就是 <span class="arithmatex">\(2^n-x\)</span> 的二進位。例：10 位元的 −320 ＝ <span class="arithmatex">\(1024-320=704\)</span> ＝ <strong><code>10 1100 0000</code></strong>。</p>
+<p><strong>溢位</strong>：n 位元二補數的範圍是 <span class="arithmatex">\(-2^{n-1}\)</span> 到 <span class="arithmatex">\(2^{n-1}-1\)</span>（10 位元是 −512 到 511）。<strong>兩個同號的數相加，結果的符號變了</strong>，就是溢位；異號相加永遠不會溢位。</p>
+<h4 id="ieee-754">IEEE 754 單精度：照這四步解</h4>
+<ol>
+<li>十六進位換成 32 位元。</li>
+<li>切成 <strong>s（1 位）、e（8 位）、f（23 位）</strong>。</li>
+<li>先看 e 是不是全 0 或全 1（特殊值，下表）。</li>
+<li>一般情況：<span class="arithmatex">\((-1)^s\times1.f\times2^{e-127}\)</span>。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>e</th>
+<th>f</th>
+<th>代表</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全 0</td>
+<td>0</td>
+<td>±0（有兩個 0：+0、−0）</td>
+</tr>
+<tr>
+<td>全 0</td>
+<td>不是 0</td>
+<td>非正規數（denormal）：<span class="arithmatex">\((-1)^s\times0.f\times2^{-126}\)</span>，用來表示比最小正規數還小的數</td>
+</tr>
+<tr>
+<td>1 到 254</td>
+<td>任何</td>
+<td>正規數：<span class="arithmatex">\((-1)^s\times1.f\times2^{e-127}\)</span></td>
+</tr>
+<tr>
+<td>全 1（255）</td>
+<td>0</td>
+<td>±∞（例如 1/0）</td>
+</tr>
+<tr>
+<td>全 1（255）</td>
+<td>不是 0</td>
+<td><strong>NaN</strong>（not a number）：0/0、∞ − ∞、<span class="arithmatex">\(\sqrt{-1}\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>幾個邊界值</strong>（單精度）：最小的正規數 <span class="arithmatex">\(2^{-126}\approx1.18\times10^{-38}\)</span>；最大的正規數 <span class="arithmatex">\((2-2^{-23})\times2^{127}\approx3.4\times10^{38}\)</span>；最小的非正規數 <span class="arithmatex">\(2^{-149}\approx1.4\times10^{-45}\)</span>。</p>
+<div class="admonition example">
+<p class="admonition-title">100 Q2（10%）：32 位元的 0xA4180000 代表什麼十進位數？(1) 當成二補數整數 (2) 當成單精度 IEEE 754</p>
+<p><strong>換成二進位</strong>：A 4 1 8 0 0 0 0 → <code>1010 0100 0001 1000 0000 0000 0000 0000</code>。</p>
+<p><strong>(1) 二補數（−1,541,931,008）</strong>：最高位元是 1，是負數。當成無號數是 <span class="arithmatex">\(\text{0xA4180000}=2{,}753{,}036{,}288\)</span>，減掉 <span class="arithmatex">\(2^{32}=4{,}294{,}967{,}296\)</span>，得 <strong>−1,541,931,008</strong>。</p>
+<p><strong>(2) IEEE 754（約 <span class="arithmatex">\(-3.296\times10^{-17}\)</span>）</strong>：</p>
+<ul>
+<li><strong>s（1）</strong>：第一位是 1 → 負數。</li>
+<li><strong>e（72）</strong>：接下來 8 位 <code>0100 1000</code> ＝ 72，實際指數 <span class="arithmatex">\(72-127=-55\)</span>。</li>
+<li><strong>f（0.1875）</strong>：剩下 23 位 <code>001 1000 0000 …</code> ＝ <span class="arithmatex">\(0.0011_2=\frac18+\frac1{16}=0.1875\)</span>。</li>
+<li><strong>值</strong>：<span class="arithmatex">\(-1.1875\times2^{-55}\approx-3.296\times10^{-17}\)</span>。</li>
+</ul>
+<p>考試寫到 <span class="arithmatex">\(-1.1875\times2^{-55}\)</span> 就夠了（不能用計算機）。我用程式直接把這 4 個 byte 當成 float 讀出來，是 <span class="arithmatex">\(-3.2959746\times10^{-17}\)</span>，跟手算一樣。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">103 Q2（14%）：(a) <span class="arithmatex">\((520)_{10}\)</span> 的八進位、十六進位 (b) −320 的 10 位元二補數 (c) 10 位元二補數 256 ＋ 257 的結果 (d) −0.75 的 IEEE 754 單精度</p>
+<p><strong>(a)（<span class="arithmatex">\(1010_8\)</span>、<span class="arithmatex">\(208_{16}\)</span>）</strong>：<span class="arithmatex">\(520=1000001000_2\)</span>，三位一組 1｜000｜001｜000，四位一組 10｜0000｜1000（見上面）。</p>
+<p><strong>(b)（<code>10 1100 0000</code>）</strong>：<span class="arithmatex">\(2^{10}-320=704=512+128+64\)</span> → <code>10 1100 0000</code>。</p>
+<p>驗算：反相 <code>01 0011 1111</code>，加 1 是 <code>01 0100 0000</code> ＝ 256 ＋ 64 ＝ 320 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
+<p><strong>(c)（溢位）</strong>：10 位元的範圍是 −512 到 511，<span class="arithmatex">\(256+257=513\)</span> 超過了。</p>
+<ul>
+<li>位元：<code>01 0000 0000</code> ＋ <code>01 0000 0001</code> ＝ <code>10 0000 0001</code>。</li>
+<li>兩個正數相加，最高位元變成 1，讀起來是 <span class="arithmatex">\(513-1024=-511\)</span>。<strong>兩個正數加出負數，溢位</strong>，結果不正確。</li>
+</ul>
+<p><strong>(d)（0xBF400000）</strong>：<span class="arithmatex">\(0.75=0.11_2=1.1_2\times2^{-1}\)</span>。</p>
+<ul>
+<li><span class="arithmatex">\(s=1\)</span>（負數）</li>
+<li><span class="arithmatex">\(e=-1+127=126\)</span> ＝ <code>0111 1110</code></li>
+<li><span class="arithmatex">\(f\)</span> ＝ 小數點後的 1，後面補 0：<code>100 0000 0000 0000 0000 0000</code></li>
+</ul>
+<p>合起來 <code>1 01111110 10000000000000000000000</code> ＝ <strong>0xBF400000</strong>。</p>
+</div>
+<h4 id="_46">觀念小考</h4>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 0xC1480000 當成單精度浮點數是多少？</p>
+<ol>
+<li>12.5</li>
+<li>−12.5</li>
+<li>−6.25</li>
+<li>−25.0</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<code>1100 0001 0100 1000 0…</code>：s ＝ 1；e ＝ <code>1000 0010</code> ＝ 130，指數 3；f ＝ <code>1001</code> → 1.1001₂ ＝ 1.5625。<span class="arithmatex">\(-1.5625\times2^3=-12.5\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-2.</strong> 8 位元二補數 <code>1001 1100</code> 是多少？</p>
+<ol>
+<li>156</li>
+<li>−28</li>
+<li>−100</li>
+<li>−99</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。當成無號數 156，減 256 得 −100。或反相 <code>0110 0011</code> 加 1 得 <code>0110 0100</code> ＝ 100。D 是只反相、忘了加 1。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> 單精度浮點數裡，e 全是 1、f 不是 0，代表？</p>
+<ol>
+<li>+∞</li>
+<li>最大的正規數</li>
+<li>非正規數</li>
+<li>NaN</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。e 全 1：f ＝ 0 是 ±∞，f ≠ 0 是 NaN（例如 0/0）。最大的正規數 e 是 254（<code>1111 1110</code>）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-4.</strong> 8 位元二補數，下面哪一個加法會溢位？</p>
+<ol>
+<li>100 ＋ 50</li>
+<li>−100 ＋ 50</li>
+<li>−60 ＋（−60）</li>
+<li>127 ＋（−1）</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。150 超過 127。兩個同號相加才可能溢位：C 是 −120，還在 −128 以上；B、D 是異號相加，永遠不會溢位。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 0xC0A00000 分別當成 (a) 二補數整數 (b) 單精度浮點數，各是多少？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><code>1100 0000 1010 0000 0000 0000 0000 0000</code></p>
+<p><strong>(a) 二補數</strong>：最高位元 1，是負數。<span class="arithmatex">\(\text{0xC0A00000}=3{,}231{,}711{,}232\)</span>，減 <span class="arithmatex">\(2^{32}\)</span> 得 <strong>−1,063,256,064</strong>。</p>
+<p><strong>(b) 浮點</strong>：s ＝ 1；e ＝ <code>1000 0001</code> ＝ 129，指數 2；f ＝ <code>010 0…</code> ＝ 0.25。<span class="arithmatex">\(-1.25\times2^2=\)</span> <strong>−5.0</strong>。</p>
+<p>同樣 32 個位元，看你怎麼解讀，值完全不同。</p>
+</details>
+<p><strong>W-2.</strong> 把 12.5 寫成單精度浮點數的十六進位。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><span class="arithmatex">\(12.5=1100.1_2=1.1001_2\times2^3\)</span>。</p>
+<ul>
+<li>s ＝ 0</li>
+<li>e ＝ 3 ＋ 127 ＝ 130 ＝ <code>1000 0010</code></li>
+<li>f ＝ <code>1001 000…</code>（小數點後的 1001，補滿 23 位）</li>
+</ul>
+<p><code>0 10000010 10010000000000000000000</code> → 每 4 位一組 <code>0100 0001 0100 1000 0000 …</code> ＝ <strong>0x41480000</strong>。（跟 C-1 只差在 s。）</p>
+</details>
+<h3 id="u9-mips">9.3 MIPS 組合語言：把 C 翻成指令</h3>
+<p>101、102、103 年各考一題 10%：C 程式翻成 MIPS 後挖掉幾個運算元要你填、數一段程式存取記憶體幾次、說出每條指令用哪種定址模式。新版 COD 改用 RISC-V，但觀念一模一樣：<strong>暫存器怎麼分工、陣列位址怎麼算、迴圈和函式怎麼寫</strong>。</p>
+<h4 id="_47">暫存器各管什麼？</h4>
+<p>MIPS 有 32 個 32 位元的暫存器，名字代表用途：</p>
+<table>
+<thead>
+<tr>
+<th>名字</th>
+<th>用途</th>
+<th>呼叫函式時</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$zero</code></td>
+<td>永遠是 0</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>$v0</code>、<code>$v1</code></td>
+<td>函式的回傳值</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>$a0</code>–<code>$a3</code></td>
+<td>函式的參數</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>$t0</code>–<code>$t9</code></td>
+<td>暫存（temporary）</td>
+<td>被呼叫的函式可以隨便改</td>
+</tr>
+<tr>
+<td><code>$s0</code>–<code>$s7</code></td>
+<td>存變數（saved）</td>
+<td>被呼叫的函式要改，得先存到 stack、用完還原</td>
+</tr>
+<tr>
+<td><code>$sp</code></td>
+<td>stack pointer</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>$ra</code></td>
+<td>回傳位址（return address）</td>
+<td><code>jal</code> 會把它設好</td>
+</tr>
+</tbody>
+</table>
+<h4 id="4_1">為什麼陣列的位址要乘 4？</h4>
+<p>一個 int 是 4 bytes，MIPS 用 <strong>byte 位址</strong>。<code>A[i]</code> 的位址 ＝ A 的起點 ＋ <span class="arithmatex">\(4\times i\)</span>。</p>
+<ul>
+<li>乘 4 可以用 <code>sll $t1,$s3,2</code>（左移 2 位），或 <code>add</code> 兩次（<span class="arithmatex">\(i+i=2i\)</span>、<span class="arithmatex">\(2i+2i=4i\)</span>）。</li>
+<li>位移量固定時直接寫在指令裡：<code>A[3]</code> 是 <code>lw $t0,12($s5)</code>（<span class="arithmatex">\(3\times4=12\)</span>）。</li>
+</ul>
+<p><code>lw $t0,8($s0)</code> 的意思：位址 ＝ <code>$s0</code> ＋ 8，從那裡讀一個 word 放進 <code>$t0</code>。</p>
+<h4 id="if">迴圈、if 和函式怎麼寫？</h4>
+<ul>
+<li><strong>條件跳躍</strong>：<code>beq a,b,L</code>（相等就跳到 L）、<code>bne a,b,L</code>（不相等就跳）。比大小用 <code>slt t,a,b</code>（a &lt; b 時 t ＝ 1），再配 <code>beq</code>／<code>bne</code> 跟 <code>$zero</code> 比。</li>
+<li><strong>if-else</strong>：條件<strong>相反</strong>時跳去 else，做完 then 再 <code>j Exit</code> 跳過 else。</li>
+<li><strong>函式</strong>：<code>jal swap</code> 跳去 swap，同時把回來的位址存進 <code>$ra</code>；函式最後 <code>jr $ra</code> 跳回去。參數放 <code>$a0</code>–<code>$a3</code>，回傳值放 <code>$v0</code>。</li>
+</ul>
+<h4 id="_48">三種指令格式</h4>
+<table>
+<thead>
+<tr>
+<th>格式</th>
+<th>欄位（位元數）</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R</td>
+<td>op 6、rs 5、rt 5、rd 5、shamt 5、funct 6</td>
+<td><code>add</code>、<code>sub</code>、<code>slt</code>、<code>sll</code></td>
+</tr>
+<tr>
+<td>I</td>
+<td>op 6、rs 5、rt 5、immediate 16</td>
+<td><code>addi</code>、<code>lw</code>、<code>sw</code>、<code>beq</code></td>
+</tr>
+<tr>
+<td>J</td>
+<td>op 6、address 26</td>
+<td><code>j</code>、<code>jal</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="addressing-mode">五種定址模式（addressing mode）</h4>
+<p>「運算元從哪裡來」：</p>
+<table>
+<thead>
+<tr>
+<th>定址模式</th>
+<th>運算元在哪</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>立即（immediate）</td>
+<td>寫在指令裡的常數</td>
+<td><code>addi $a0,$a0,1</code> 的 1</td>
+</tr>
+<tr>
+<td>暫存器（register）</td>
+<td>暫存器</td>
+<td><code>add $t0,$s1,$s2</code></td>
+</tr>
+<tr>
+<td>基底（base／displacement）</td>
+<td>記憶體，位址 ＝ 暫存器 ＋ 常數</td>
+<td><code>lw $t0,8($s0)</code></td>
+</tr>
+<tr>
+<td>PC-relative</td>
+<td>跳到 PC ＋ 4 ＋ offset × 4</td>
+<td><code>beq</code>、<code>bne</code></td>
+</tr>
+<tr>
+<td>pseudo-direct</td>
+<td>跳到 PC 最高 4 位 ＋ 26 位 address × 4</td>
+<td><code>j</code>、<code>jal</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition example">
+<p class="admonition-title">101 Q3（10%）：<code>swap(int v[], int k)</code> 交換 <code>v[k]</code> 和 <code>v[k+1]</code>。v、k、temp 在 <code>$a0</code>、<code>$a1</code>、<code>$t0</code>，還可以用 <code>$t1</code>、<code>$t2</code>。填 OPA–OPD</p>
+<p><strong>C 程式</strong>：<code>temp = v[k]; v[k] = v[k+1]; v[k+1] = temp;</code></p>
+<p><strong>思路</strong>：先算出 <code>v[k]</code> 的位址放 <code>$t1</code>，<code>v[k+1]</code> 就在它後面 4 bytes，用 <code>4($t1)</code>。</p>
+<pre class="highlight"><code class="language-text">swap: sll $t1,$a1,2   # k*4
+      add $t1,$a0,$t1 # &amp;v[k]
+      lw  $t0,0($t1)  # temp
+      lw  $t2,4($t1)  # v[k+1]
+      sw  $t2,0($t1)  # v[k]=
+      sw  $t0,4($t1)  # v[k+1]=
+      jr  $ra</code></pre>
+<table>
+<thead>
+<tr>
+<th>運算元</th>
+<th>答案</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OPA</td>
+<td><code>$t1</code></td>
+<td>v 的起點 ＋ 4k ＝ <code>v[k]</code> 的位址</td>
+</tr>
+<tr>
+<td>OPB</td>
+<td><code>$t1</code></td>
+<td><code>v[k+1]</code> 在 <code>v[k]</code> 後面 4 bytes</td>
+</tr>
+<tr>
+<td>OPC</td>
+<td><code>$t2</code></td>
+<td><code>v[k]</code> 存進剛讀出的 <code>v[k+1]</code></td>
+</tr>
+<tr>
+<td>OPD</td>
+<td><code>$t0</code></td>
+<td><code>v[k+1]</code> 存進 temp</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">102 Q2（10%）：C 迴圈 <code>Loop: g = g + A[i]; i = i + j; if (i != h) goto Loop;</code>。g、h、i、j 在 <code>$s1</code>–<code>$s4</code>，A 的起點在 <code>$s5</code>，可以用 <code>$t0</code>、<code>$t1</code>。填 OPA–OPE</p>
+<pre class="highlight"><code class="language-text">Loop: add $t1,$s3,$s3 # 2i
+      add $t1,$t1,$t1 # 4i
+      add $t1,$t1,$s5 # &amp;A[i]
+      lw  $t0,0($t1)  # A[i]
+      add $s1,$s1,$t0 # g
+      add $s3,$s3,$s4 # i+=j
+      bne $s3,$s2,Loop</code></pre>
+<table>
+<thead>
+<tr>
+<th>運算元</th>
+<th>答案</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OPA</td>
+<td><code>$s3</code></td>
+<td><span class="arithmatex">\(i+i=2i\)</span></td>
+</tr>
+<tr>
+<td>OPB</td>
+<td><code>$s5</code></td>
+<td><span class="arithmatex">\(4i\)</span> ＋ A 的起點 ＝ <code>A[i]</code> 的位址</td>
+</tr>
+<tr>
+<td>OPC</td>
+<td><code>$t1</code></td>
+<td>從剛算好的位址讀</td>
+</tr>
+<tr>
+<td>OPD</td>
+<td><code>$s1</code></td>
+<td>結果寫回 g</td>
+</tr>
+<tr>
+<td>OPE</td>
+<td><code>$s2</code></td>
+<td>i 跟 h 比，不相等就回到 Loop</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition example">
+<p class="admonition-title">103 Q4（10%）：<code>lw $v1,0($a0)</code>、<code>add $v2,$v2,$v1</code>、<code>sw $v2,0($a1)</code>、<code>addi $a0,$a0,1</code>。(a) 指令記憶體、資料記憶體各存取幾次 (b) 四條指令的定址模式</p>
+<p>（題目寫 <code>$v2</code>，MIPS 其實只有 <code>$v0</code>、<code>$v1</code>，照題目當成一個暫存器就好，不影響答案。）</p>
+<p><strong>(a) 指令記憶體 4 次、資料記憶體 2 次</strong>：每條指令都要抓一次；只有 <code>lw</code>（讀）和 <code>sw</code>（寫）存取資料記憶體。</p>
+<p><strong>(b)</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>定址模式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lw $v1,0($a0)</code></td>
+<td>基底（base／displacement）：位址 ＝ <code>$a0</code> ＋ 0</td>
+</tr>
+<tr>
+<td><code>add $v2,$v2,$v1</code></td>
+<td>暫存器</td>
+</tr>
+<tr>
+<td><code>sw $v2,0($a1)</code></td>
+<td>基底</td>
+</tr>
+<tr>
+<td><code>addi $a0,$a0,1</code></td>
+<td>立即（常數 1 在指令裡），另一個運算元用暫存器</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="_49">觀念小考</h4>
+<div class="mcq" data-ans="4">
+<p><strong>C-1.</strong> <code>beq $s0,$s1,L</code> 的跳躍目標是用哪一種定址模式算的？</p>
+<ol>
+<li>立即</li>
+<li>基底</li>
+<li>pseudo-direct</li>
+<li>PC-relative</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。目標 ＝ PC ＋ 4 ＋ offset × 4，offset 是 16 位元的立即值。<code>j</code> 才是 pseudo-direct（26 位元）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-2.</strong> int 陣列 A 的起點在 <code>$s0</code>。<code>lw $t0,12($s0)</code> 讀的是？</p>
+<ol>
+<li><code>A[12]</code></li>
+<li><code>A[3]</code></li>
+<li><code>A[4]</code></li>
+<li><code>A[48]</code></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。位址 ＝ 起點 ＋ 12 bytes，一個 int 4 bytes，<span class="arithmatex">\(12\div4=3\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-3.</strong> 被呼叫的函式要用 <code>$s0</code>，應該怎麼做？</p>
+<ol>
+<li>直接用，因為 <code>$s</code> 是給被呼叫的函式用的</li>
+<li>先存到 <code>$t0</code></li>
+<li>先把舊的值存到 stack，用完再還原</li>
+<li>不能用 <code>$s0</code></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。<code>$s0</code>–<code>$s7</code> 是 saved register：呼叫的人以為它們不會被改。被呼叫的函式要用，就得先存起來、回去之前還原。<code>$t</code> 暫存器才是可以直接改的。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> f、g、h、i、j 在 <code>$s0</code>–<code>$s4</code>。把 <code>if (i == j) f = g + h; else f = g - h;</code> 翻成 MIPS。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<pre class="highlight"><code class="language-text">      bne $s3,$s4,Else
+      add $s0,$s1,$s2
+      j   Exit
+Else: sub $s0,$s1,$s2
+Exit:</code></pre>
+<p><strong>重點</strong>：條件<strong>相反</strong>時跳去 Else（<code>i == j</code> 的相反是 <code>bne</code>）；then 做完要 <code>j Exit</code> 跳過 else，不然會接著做 <code>sub</code>。</p>
+</details>
+<p><strong>W-2.</strong> h 在 <code>$s2</code>、int 陣列 A 的起點在 <code>$s3</code>。把 <code>A[12] = h + A[8];</code> 翻成 MIPS。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<pre class="highlight"><code class="language-text">lw  $t0,32($s3)
+add $t0,$s2,$t0
+sw  $t0,48($s3)</code></pre>
+<p><code>A[8]</code> 的位移是 <span class="arithmatex">\(8\times4=32\)</span>，<code>A[12]</code> 是 <span class="arithmatex">\(12\times4=48\)</span>。存取記憶體兩次（一次讀、一次寫），抓指令三次。</p>
+</details>
+<h3 id="u9-alu">9.4 ALU 硬體：進位前瞻加法器與乘法器</h3>
+<p>101 年考了兩題（2 位元加法器的進位式 15%、乘法器硬體的是非 10%），102 年考了 16 位元進位前瞻加法器（10%）。這幾題都是 COD 第 3 章和附錄的經典圖，<strong>會寫 g、p 和進位式，會手跑乘法器</strong>就夠了。布林式的化簡見<a href="discrete.html#u7-bool">離散 7.6</a>。</p>
+<h4 id="1_1">一位元全加器：進位什麼時候是 1？</h4>
+<p>三個輸入 a、b、c（從右邊來的進位），輸出 sum 和 carry-out：</p>
+<ul>
+<li><span class="arithmatex">\(\text{sum}=a\oplus b\oplus c\)</span>（1 的個數是奇數）</li>
+<li><span class="arithmatex">\(c_{\text{out}}=ab+ac+bc\)</span>（<strong>至少兩個是 1</strong>）</li>
+</ul>
+<p><strong>ripple-carry 加法器</strong>：把 n 個全加器串起來，每一位都要等右邊那一位的進位算好。每一位約 2 個邏輯閘的延遲，16 位元就要約 32 個閘延遲，位數越多越慢。</p>
+<h4 id="generate-propagate">generate 和 propagate：不用等，直接算出每一位的進位</h4>
+<p>把 <span class="arithmatex">\(c_{i+1}=a_ib_i+(a_i+b_i)c_i\)</span> 拆成兩個訊號：</p>
+<table>
+<thead>
+<tr>
+<th>訊號</th>
+<th>定義</th>
+<th>意思</th>
+<th>比喻（水管）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>generate <span class="arithmatex">\(g_i\)</span></td>
+<td><span class="arithmatex">\(a_ib_i\)</span></td>
+<td>這一位<strong>自己就會產生</strong>進位（1＋1）</td>
+<td>這一段自己有水龍頭</td>
+</tr>
+<tr>
+<td>propagate <span class="arithmatex">\(p_i\)</span></td>
+<td><span class="arithmatex">\(a_i+b_i\)</span></td>
+<td>右邊有進位來，這一位會<strong>傳下去</strong></td>
+<td>這一段的閥門是開的</td>
+</tr>
+</tbody>
+</table>
+<div class="arithmatex">\[c_{i+1}=g_i+p_ic_i\]</div>
+<p>一直代下去，每個進位都只跟 g、p、<span class="arithmatex">\(c_0\)</span> 有關，<strong>全部可以同時算</strong>：</p>
+<div class="arithmatex">\[\begin{aligned}c_1&amp;=g_0+p_0c_0\\c_2&amp;=g_1+p_1g_0+p_1p_0c_0\\c_3&amp;=g_2+p_2g_1+p_2p_1g_0+p_2p_1p_0c_0\\c_4&amp;=g_3+p_3g_2+p_3p_2g_1+p_3p_2p_1g_0+p_3p_2p_1p_0c_0\end{aligned}\]</div>
+<p>讀法：<span class="arithmatex">\(c_4\)</span> 是 1 的情況 ＝ 第 3 位自己產生；或第 2 位產生、第 3 位傳下去；或……；或 <span class="arithmatex">\(c_0\)</span> 是 1、四位都傳下去。</p>
+<h4 id="16">16 位元：再加一層</h4>
+<p>每 4 位一組，每組算出「整組」的 generate 和 propagate（大寫）：</p>
+<ul>
+<li><span class="arithmatex">\(P_i=p_3p_2p_1p_0\)</span>：<strong>四位都會傳</strong>，右邊的進位才會一路傳過整組。</li>
+<li><span class="arithmatex">\(G_i=g_3+p_3g_2+p_3p_2g_1+p_3p_2p_1g_0\)</span>：整組<strong>自己會產生</strong>進位（就是上面 <span class="arithmatex">\(c_4\)</span> 去掉 <span class="arithmatex">\(c_0\)</span> 那項）。</li>
+</ul>
+<p>組和組之間用一樣的式子：</p>
+<div class="arithmatex">\[C_1=G_0+P_0c_0,\quad C_2=G_1+P_1G_0+P_1P_0c_0,\quad\dots\]</div>
+<div class="arithmatex">\[C_4=G_3+P_3G_2+P_3P_2G_1+P_3P_2P_1G_0+P_3P_2P_1P_0c_0\]</div>
+<p>（<span class="arithmatex">\(C_i\)</span> 是第 i 組的進位輸入，<span class="arithmatex">\(C_4\)</span> 是整個 16 位元的進位輸出。）延遲大約是：g、p 一層，P、G 兩層，C 再兩層，共 5 個閘延遲，比 ripple 的 32 個快很多。</p>
+<div class="admonition example">
+<p class="admonition-title">102 Q3（10%）：四個 4 位元 ALU 用進位前瞻組成 16 位元加法器。a ＝ 0001 1010 0011 0011、b ＝ 1110 0101 1110 1011，Carry_In ＝ 0。求 <span class="arithmatex">\(P_0\)</span>–<span class="arithmatex">\(P_3\)</span>、<span class="arithmatex">\(G_0\)</span>–<span class="arithmatex">\(G_3\)</span> 和 <span class="arithmatex">\(C_4\)</span></p>
+<p><strong>第 0 組是最右邊 4 位</strong>（bit 3–0），依序往左。每一位 <span class="arithmatex">\(g=a\cdot b\)</span>、<span class="arithmatex">\(p=a+b\)</span>（下表的位元順序是 bit 3、2、1、0）：</p>
+<table>
+<thead>
+<tr>
+<th>組</th>
+<th>a</th>
+<th>b</th>
+<th>p</th>
+<th>g</th>
+<th><span class="arithmatex">\(P_i\)</span></th>
+<th><span class="arithmatex">\(G_i\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0（bit 3–0）</td>
+<td>0011</td>
+<td>1011</td>
+<td>1011</td>
+<td>0011</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1（bit 7–4）</td>
+<td>0011</td>
+<td>1110</td>
+<td>1111</td>
+<td>0010</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2（bit 11–8）</td>
+<td>1010</td>
+<td>0101</td>
+<td>1111</td>
+<td>0000</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>3（bit 15–12）</td>
+<td>0001</td>
+<td>1110</td>
+<td>1111</td>
+<td>0000</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong><span class="arithmatex">\(P_0\)</span>（0）</strong>：<span class="arithmatex">\(p_2=0\)</span>（第 2 位 a、b 都是 0），整組不能傳。</li>
+<li><strong><span class="arithmatex">\(G_0\)</span>（0）</strong>：<span class="arithmatex">\(g_3+p_3g_2+p_3p_2g_1+p_3p_2p_1g_0=0+1\cdot0+1\cdot0\cdot1+1\cdot0\cdot1\cdot1=0\)</span>。第 0、1 位產生的進位被第 2 位擋掉了。</li>
+<li><strong><span class="arithmatex">\(G_1\)</span>（1）</strong>：<span class="arithmatex">\(g_3+p_3g_2+p_3p_2g_1=0+0+1\cdot1\cdot1=1\)</span>（bit 5 產生，bit 6、7 傳上去）。</li>
+<li><strong><span class="arithmatex">\(P_1\)</span>、<span class="arithmatex">\(P_2\)</span>、<span class="arithmatex">\(P_3\)</span>（1）</strong>：每一位至少有一個 1。<span class="arithmatex">\(G_2\)</span>、<span class="arithmatex">\(G_3\)</span> 沒有任何一位產生進位，是 0。</li>
+<li><strong><span class="arithmatex">\(C_4\)</span>（1）</strong>：<span class="arithmatex">\(G_3+P_3G_2+P_3P_2G_1+\cdots=0+0+1\cdot1\cdot1+\cdots=1\)</span>。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>訊號</th>
+<th><span class="arithmatex">\(P_0\)</span></th>
+<th><span class="arithmatex">\(P_1\)</span></th>
+<th><span class="arithmatex">\(P_2\)</span></th>
+<th><span class="arithmatex">\(P_3\)</span></th>
+<th><span class="arithmatex">\(G_0\)</span></th>
+<th><span class="arithmatex">\(G_1\)</span></th>
+<th><span class="arithmatex">\(G_2\)</span></th>
+<th><span class="arithmatex">\(G_3\)</span></th>
+<th><span class="arithmatex">\(C_4\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>值</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>驗算</strong>：a ＝ 6707、b ＝ 58859，相加 65566 ＞ 65535，確實有進位輸出。</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q8（15%）：2 位元加法器，<span class="arithmatex">\(A_1A_0\)</span> ＋ <span class="arithmatex">\(B_1B_0\)</span>，進位輸入 <span class="arithmatex">\(C_0\)</span>、輸出 <span class="arithmatex">\(C_2\)</span>。(1) 只用 <span class="arithmatex">\(A_i\)</span>、<span class="arithmatex">\(B_i\)</span>、<span class="arithmatex">\(C_0\)</span> 寫出 <span class="arithmatex">\(C_2\)</span> (2) 用 <span class="arithmatex">\(G_i=A_iB_i\)</span>、<span class="arithmatex">\(P_i=A_i+B_i\)</span> 和 <span class="arithmatex">\(C_0\)</span> 寫出 <span class="arithmatex">\(C_2\)</span> (3) (1) 的式子比 (2) 好在哪</p>
+<p><strong>(1)</strong> 先寫 <span class="arithmatex">\(C_1=A_0B_0+A_0C_0+B_0C_0\)</span>，再代進 <span class="arithmatex">\(C_2=A_1B_1+A_1C_1+B_1C_1\)</span>，展開成積之和：</p>
+<div class="arithmatex">\[C_2=A_1B_1+A_1A_0B_0+A_1A_0C_0+A_1B_0C_0+B_1A_0B_0+B_1A_0C_0+B_1B_0C_0\]</div>
+<p><strong>(2)</strong>：<span class="arithmatex">\(C_2=G_1+P_1G_0+P_1P_0C_0\)</span>。</p>
+<p><strong>(3) (1) 的優點：速度</strong>。(1) 直接從輸入算，是<strong>兩層</strong>的 AND-OR，只有 2 個閘延遲；(2) 要先算出 G、P（多一層），共 3 層。</p>
+<p><strong>(1) 的缺點</strong>（順便寫，題目可能想問反過來）：7 個乘積項、OR 閘要 7 個輸入，位數一多，項數爆炸性成長；(2) 只有 3 項，而且 G、P 可以共用、可以一層一層往上組（16 位元的兩層 CLA），這是實際用 (2) 的原因。</p>
+<p>兩個式子我用程式代過全部 32 種輸入，都等於真正的進位。</p>
+</div>
+<h4 id="_50">乘法器：像直式乘法一樣「看一位、加一次、移一位」</h4>
+<p>二進位直式乘法：乘數（multiplier）從最低位開始看，<strong>這一位是 1 就把被乘數（multiplicand）加進去</strong>，每看一位，被乘數就往左移一位。32 位元乘 32 位元，乘積 64 位元。</p>
+<p><strong>基本版</strong>（101 Q4 的 Figure 4.1）：</p>
+<ul>
+<li>被乘數暫存器 <strong>64 位元</strong>，每次<strong>左移</strong>；乘數暫存器 32 位元，每次<strong>右移</strong>（看最低位）；乘積 64 位元、ALU 64 位元。</li>
+</ul>
+<p><strong>改良版</strong>（Figure 4.2）：發現被乘數左移的效果，跟「乘積右移」一樣，而且乘數移出去的位元剛好空出乘積的位置。</p>
+<ul>
+<li>被乘數 <strong>32 位元</strong>、不動；ALU <strong>32 位元</strong>，只加到乘積的<strong>左半邊</strong>。</li>
+<li><strong>乘數一開始放在乘積的右半邊</strong>，左半邊是 0；不需要乘數暫存器。</li>
+<li>每一輪：看乘積的最低位，是 1 就把被乘數加到左半邊；然後整個乘積<strong>右移 1 位</strong>。</li>
+</ul>
+<p><strong>手跑 4 位元：0010（2）× 0011（3）</strong>，乘積一開始是 <code>0000 0011</code>：</p>
+<table>
+<thead>
+<tr>
+<th>輪</th>
+<th>最低位</th>
+<th>動作</th>
+<th>乘積</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td></td>
+<td>初始：左半 0、右半是乘數</td>
+<td>0000 0011</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>左半加 0010</td>
+<td>0010 0011</td>
+</tr>
+<tr>
+<td>1</td>
+<td></td>
+<td>右移 1 位</td>
+<td>0001 0001</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>左半加 0010</td>
+<td>0011 0001</td>
+</tr>
+<tr>
+<td>2</td>
+<td></td>
+<td>右移</td>
+<td>0001 1000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0</td>
+<td>不加，右移</td>
+<td>0000 1100</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0</td>
+<td>不加，右移</td>
+<td>0000 0110</td>
+</tr>
+</tbody>
+</table>
+<p>結果 0110 ＝ 6 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。（左半相加可能有進位，要多留 1 位，右移時移進去。）</p>
+<div class="admonition example">
+<p class="admonition-title">101 Q4（10%）：改良版乘法器（Figure 4.2）和基本版比，下面的敘述對還是錯</p>
+<table>
+<thead>
+<tr>
+<th>敘述</th>
+<th>答案與理由</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1：被乘數、ALU、乘數暫存器和乘積暫存器都是 32 位元</td>
+<td><strong>F</strong>。乘積還是 <strong>64 位元</strong>，而且已經沒有乘數暫存器；32 位元的是被乘數和 ALU</td>
+</tr>
+<tr>
+<td>S2：乘積暫存器每一輪右移兩位</td>
+<td><strong>F</strong>。每一輪右移 <strong>1 位</strong>（看一位乘數）</td>
+</tr>
+<tr>
+<td>S3：原本的乘數暫存器不見了，乘數一開始放在乘積的右半邊</td>
+<td><strong>T</strong>。乘數每移出一位，乘積正好空出一位</td>
+</tr>
+<tr>
+<td>S4：乘積暫存器的左半邊一開始設成 0</td>
+<td><strong>T</strong>。部分和從 0 開始累加</td>
+</tr>
+<tr>
+<td>S5：被乘數暫存器一開始設成 0</td>
+<td><strong>F</strong>。被乘數暫存器放的是被乘數，乘法過程中不變</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="_51">觀念小考</h4>
+<div class="mcq" data-ans="1">
+<p><strong>C-1.</strong> 進位前瞻加法器裡，generate <span class="arithmatex">\(g_i\)</span> 和 propagate <span class="arithmatex">\(p_i\)</span> 的定義是？</p>
+<ol>
+<li><span class="arithmatex">\(g_i=a_ib_i\)</span>、<span class="arithmatex">\(p_i=a_i+b_i\)</span></li>
+<li><span class="arithmatex">\(g_i=a_i+b_i\)</span>、<span class="arithmatex">\(p_i=a_ib_i\)</span></li>
+<li><span class="arithmatex">\(g_i=a_i\oplus b_i\)</span>、<span class="arithmatex">\(p_i=a_ib_i\)</span></li>
+<li><span class="arithmatex">\(g_i=a_ib_ic_i\)</span>、<span class="arithmatex">\(p_i=a_i+b_i+c_i\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。兩個都是 1 才會「自己產生」進位（AND）；至少一個是 1，右邊來的進位就會「傳過去」（OR）。有些課本用 <span class="arithmatex">\(p_i=a_i\oplus b_i\)</span>，算進位的結果一樣。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-2.</strong> 4 位元進位前瞻：a ＝ 1011、b ＝ 0110、<span class="arithmatex">\(c_0=0\)</span>。<span class="arithmatex">\(c_1\)</span>、<span class="arithmatex">\(c_2\)</span> 各是多少？</p>
+<ol>
+<li>1、1</li>
+<li>0、0</li>
+<li>0、1</li>
+<li>1、0</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。由右往左：<span class="arithmatex">\(g_0=1\cdot0=0\)</span>、<span class="arithmatex">\(p_0=1\)</span>；<span class="arithmatex">\(g_1=1\cdot1=1\)</span>。<span class="arithmatex">\(c_1=g_0+p_0c_0=0\)</span>；<span class="arithmatex">\(c_2=g_1+p_1c_1=1\)</span>。驗算 <span class="arithmatex">\(11+6=17=10001_2\)</span>，最後也有進位輸出。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-3.</strong> 改良版乘法器（32 位元）裡，下面哪一個是 64 位元？</p>
+<ol>
+<li>被乘數暫存器</li>
+<li>乘積暫存器</li>
+<li>ALU</li>
+<li>乘數暫存器</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。被乘數和 ALU 都縮成 32 位元；乘數放進乘積的右半邊，所以乘積暫存器是 64 位元，也沒有獨立的乘數暫存器。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-4.</strong> 進位前瞻加法器比 ripple-carry 快，主要是因為？</p>
+<ol>
+<li>用的邏輯閘比較少</li>
+<li>每一位只算 sum，不算進位</li>
+<li>時脈比較高</li>
+<li>每一位的進位都直接用 g、p 和 <span class="arithmatex">\(c_0\)</span> 算，不用等右邊那一位</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。ripple 的第 i 位要等第 i−1 位的進位，延遲跟位數成正比。進位前瞻把每個進位展開成 g、p、<span class="arithmatex">\(c_0\)</span> 的式子，同時算出來。代價是閘<strong>比較多</strong>（A 剛好相反）。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用改良版乘法器手跑 4 位元的 0011（3）× 0101（5），寫出每一輪的乘積暫存器。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>乘積一開始 <code>0000 0101</code>（右半是乘數 0101）：</p>
+<table>
+<thead>
+<tr>
+<th>輪</th>
+<th>最低位</th>
+<th>動作</th>
+<th>乘積</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>左半加 0011</td>
+<td>0011 0101</td>
+</tr>
+<tr>
+<td>1</td>
+<td></td>
+<td>右移</td>
+<td>0001 1010</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0</td>
+<td>不加，右移</td>
+<td>0000 1101</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>左半加 0011</td>
+<td>0011 1101</td>
+</tr>
+<tr>
+<td>3</td>
+<td></td>
+<td>右移</td>
+<td>0001 1110</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0</td>
+<td>不加，右移</td>
+<td>0000 1111</td>
+</tr>
+</tbody>
+</table>
+<p>結果 <code>0000 1111</code> ＝ 15 ＝ 3 × 5 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。乘數 0101 的第 0、2 位是 1，所以只有第 1、3 輪有加。</p>
+</details>
 <h3 id="u9-quiz">單元 9 小考</h3>
 <p><strong>9-1.</strong> <span class="arithmatex">\(-5\)</span> 的 8 位元二補數？<span class="arithmatex">\(100+50\)</span> 在 8 位元有號運算會怎樣？</p>
 <details class="quiz">
