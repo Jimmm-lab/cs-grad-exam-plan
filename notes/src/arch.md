@@ -2336,12 +2336,83 @@ $$\text{penalty}=\text{決定 branch 的那一級}-1$$
 
 $$\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty}$$
 
+#### 三種減少損失的方法
+
+1. **提早決定**：在 ID 就比較兩個暫存器（多加一個比較器），penalty 從 2 降到 1。代價：前一條如果是 ALU 指令、結果正好給 branch 用，要多停 1 個 cycle；前一條是 lw 要停 2 個。
+2. **預測**：
+    - **靜態**（編譯時就決定）：always not taken（照樣抓下一條，最簡單）、always taken、BTFN（往回跳的猜跳，因為多半是迴圈；往前跳的猜不跳）。
+    - **動態**（看執行時的歷史）：1-bit、2-bit 預測器，下面細講。
+3. **delayed branch**：MIPS 規定 branch 後面那一條（delay slot）**一定會執行**，編譯器把一條跟 branch 無關的指令搬進去，那個 cycle 就不會浪費。
+
+#### 猜跳的話，要跳去哪？
+
+猜「跳」就要在下一個 cycle 從目標位址抓指令，但目標位址（PC＋4＋offset×4）要到 ID 才算得出來。**BTB（branch target buffer）**像一個小 cache：用 PC 去查，IF 階段就知道「這是 branch、上次跳去哪」。always not taken 不需要 BTB，因為照樣抓 PC＋4。
+
 #### 2-bit 預測器為什麼比 1-bit 好
+
+2-bit 預測器是一個 0 到 3 的計數器：實際跳了加 1、沒跳減 1，到頭就停；計數是 10 或 11 就預測跳。
+
+<figure class="fig">
+<svg viewBox="0 0 360 158" role="img" aria-label="2-bit 預測器的四個狀態排成一排：11 強跳、10 弱跳、01 弱不跳、00 強不跳。實際沒跳（N）就往右一格，實際跳了（T）就往左一格；11 再遇到 T、00 再遇到 N 都留在原地。左邊兩個狀態預測跳，右邊兩個預測不跳。">
+<rect class="fc" x="28" y="62" width="64" height="48" rx="8"/>
+<text x="60" y="78" text-anchor="middle" dominant-baseline="central" class="mono">11</text>
+<text x="60" y="96" text-anchor="middle" dominant-baseline="central" class="sm">強跳</text>
+<rect class="fc" x="108" y="62" width="64" height="48" rx="8"/>
+<text x="140" y="78" text-anchor="middle" dominant-baseline="central" class="mono">10</text>
+<text x="140" y="96" text-anchor="middle" dominant-baseline="central" class="sm">弱跳</text>
+<rect class="fb" x="188" y="62" width="64" height="48" rx="8"/>
+<text x="220" y="78" text-anchor="middle" dominant-baseline="central" class="mono">01</text>
+<text x="220" y="96" text-anchor="middle" dominant-baseline="central" class="sm">弱不跳</text>
+<rect class="fb" x="268" y="62" width="64" height="48" rx="8"/>
+<text x="300" y="78" text-anchor="middle" dominant-baseline="central" class="mono">00</text>
+<text x="300" y="96" text-anchor="middle" dominant-baseline="central" class="sm">強不跳</text>
+<text x="100" y="14" text-anchor="middle" dominant-baseline="central" class="tc">預測跳</text>
+<text x="260" y="14" text-anchor="middle" dominant-baseline="central" class="tb">預測不跳</text>
+<line class="arw" x1="34" y1="26" x2="166" y2="26"/>
+<line class="arw" x1="194" y1="26" x2="326" y2="26"/>
+<path class="arw" d="M78,61 Q100,34 116.8,53.9"/>
+<polygon class="ah" points="122.0,60.0 113.4,56.8 120.3,51.0"/>
+<text x="100" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">N</text>
+<path class="arw" d="M122,111 Q100,138 83.2,118.1"/>
+<polygon class="ah" points="78.0,112.0 86.6,115.2 79.7,121.0"/>
+<text x="100" y="144" text-anchor="middle" dominant-baseline="central" class="sm mono">T</text>
+<path class="arw" d="M158,61 Q180,34 196.8,53.9"/>
+<polygon class="ah" points="202.0,60.0 193.4,56.8 200.3,51.0"/>
+<text x="180" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">N</text>
+<path class="arw" d="M202,111 Q180,138 163.2,118.1"/>
+<polygon class="ah" points="158.0,112.0 166.6,115.2 159.7,121.0"/>
+<text x="180" y="144" text-anchor="middle" dominant-baseline="central" class="sm mono">T</text>
+<path class="arw" d="M238,61 Q260,34 276.8,53.9"/>
+<polygon class="ah" points="282.0,60.0 273.4,56.8 280.3,51.0"/>
+<text x="260" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">N</text>
+<path class="arw" d="M282,111 Q260,138 243.2,118.1"/>
+<polygon class="ah" points="238.0,112.0 246.6,115.2 239.7,121.0"/>
+<text x="260" y="144" text-anchor="middle" dominant-baseline="central" class="sm mono">T</text>
+<path class="arw" d="M28,74 Q-6,86 19.5,95.3"/>
+<polygon class="ah" points="27.0,98.0 17.9,99.5 21.0,91.0"/>
+<text x="8" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">T</text>
+<path class="arw" d="M332,74 Q366,86 340.5,95.3"/>
+<polygon class="ah" points="333.0,98.0 339.0,91.0 342.1,99.5"/>
+<text x="352" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">N</text>
+</svg>
+<figcaption>實際跳（T）往左一格、沒跳（N）往右一格；要連錯兩次，預測才會改變</figcaption>
+</figure>
 
 迴圈跑 10 次：branch 前 9 次「跳」（回到迴圈開頭），第 10 次「不跳」（離開迴圈）。整個迴圈重複執行 3 次。
 
 - **1-bit**（記住上一次的結果）：離開時猜錯一次；下次重新進迴圈時，它記得「上次沒跳」，又猜錯一次。第一輪錯 1 次，之後每輪錯 2 次，共 **5 次**。
 - **2-bit**（要連錯兩次才改變預測）：離開時猜錯一次，但只從「強烈跳」退到「有點想跳」，下次進迴圈還是猜跳。每輪只錯 1 次，共 **3 次**。
+
+!!! key "分支題要算什麼"
+    | 題目問 | 怎麼算 |
+    |---|---|
+    | 猜錯一次丟幾條 | 在第 $k$ 級結束時決定 → 丟 $k-1$ 條 |
+    | 平均 CPI | $1+$ branch 比例 $\times$ 猜錯率 $\times$ penalty |
+    | always taken／not taken 的準確率 | 看 branch 實際「跳」的比例：always taken 的準確率就是跳的比例 |
+    | 1-bit／2-bit 錯幾次 | 列表一格一格走：狀態、預測、實際、新狀態 |
+    | 深 pipeline 划不划算 | 比「CPI × 週期」，不是只比 CPI |
+
+    名詞對照：misprediction penalty（猜錯的代價）、flush（把抓錯的指令清掉）、BTB（branch target buffer，記目標位址的表）、delay slot（branch 後面一定會執行的那一格）。
 
 !!! read "還不懂？看別人怎麼講"
     - **影片**：[清大黃婷婷・計算機結構](https://ocw.nthu.edu.tw/courses/13) 第 6 週 pipelining 單元（對應 COD 第 4 章，control hazard 和分支預測在同一章）。
@@ -2420,6 +2491,103 @@ $$\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty
 ### 5.2 2-bit 預測器 {#u5-2}
 
 四個狀態：強不跳（00）、弱不跳（01）、弱跳（10）、強跳（11）。狀態 ≥10 就預測跳。實際跳了往上加 1，沒跳往下減 1（到頭就停）。好處是迴圈最後一次不跳，只會讓狀態從「強跳」掉到「弱跳」，下次進迴圈仍然預測跳。
+
+!!! trap "不同課本的 2-bit 圖可能不一樣"
+    上面是「加 1、減 1，到頭就停」的 saturating counter。有的課本的圖在「弱」狀態猜錯時，直接跳到另一邊的「強」狀態。**題目有畫狀態圖，就照題目的圖走**；沒有畫，就先寫出你用的規則再算。
+
+### 5.3 觀念小考 {#u5-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 5 級 pipeline 把 branch 的比較提前到 ID（第 2 級）結束時完成，猜錯的 penalty 是？
+
+1. 0
+2. 1
+3. 2
+4. 3
+
+??? quiz "看解析"
+    **B**。第 $k$ 級結束時決定，前面 $k-1$ 級的指令要丟：$2-1=1$。代價是 ID 要多一個比較器；如果前一條 ALU 指令的結果要給 branch 用，還要多停 1 個 cycle（前一條是 lw 要停 2 個）。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** 預測「跳」的時候，IF 階段除了「要不要跳」，還需要知道什麼？
+
+1. 跳去哪裡（目標位址），通常查 BTB
+2. 下一條指令的 opcode
+3. register file 的內容
+4. 不需要其他資訊
+
+??? quiz "看解析"
+    **A**。猜跳就要馬上從目標位址抓指令，但目標位址要到 ID 才算得出來。BTB 用 PC 查表，IF 就拿到上次跳去的位址。always not taken 不需要，因為照樣抓 PC＋4。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** MIPS 的 delayed branch（branch delay slot）是什麼意思？
+
+1. branch 一定延後一個 cycle 才執行
+2. 硬體自動插入一個 nop
+3. 預測器延後一次才更新
+4. branch 後面那一條指令一定會執行，由編譯器放一條有用的指令進去
+
+??? quiz "看解析"
+    **D**。不管跳不跳，delay slot 裡的指令都會做完，所以那 1 個 cycle 不會浪費。編譯器找不到合適的指令時，才放 nop。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-4.** 2-bit 預測器從 01 開始，下面哪一個結果序列會讓它**每次**都猜錯？
+
+1. T, T, T, T
+2. N, N, N, N
+3. T, N, T, N
+4. T, T, T, N
+
+??? quiz "看解析"
+    **C**。01 猜 N，實際 T → 10；10 猜 T，實際 N → 01；一直在 01 和 10 之間來回，每次都猜反。A 只錯第 1 次；B 全對；D 錯第 1 和第 4 次。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 準確率不變，把 pipeline 從 5 級加深到 15 級（branch 都在倒數第二級決定），branch 造成的額外 CPI 會？
+
+1. 變小，因為時脈變快
+2. 變大，因為猜錯一次要丟更多條指令
+3. 不變，因為準確率一樣
+4. 變成 0
+
+??? quiz "看解析"
+    **B**。penalty 從 3 變成 13，額外 CPI ＝ branch 比例 × 猜錯率 × penalty 跟著變大。時脈變快是另一件事：要比「CPI × 週期」才知道整體划不划算（112 Q1.4）。
+
+</div>
+
+**W-1.** 結果依序是 T、T、T、N，重複 3 輪（和 T-3 一樣），改用 2-bit 預測器、從 11 開始，總共猜錯幾次？跟 1-bit 比較。
+
+??? quiz "看參考答案"
+    | 輪 | T | T | T | N |
+    |---|---|---|---|---|
+    | 1 | 11 猜 T ✓ | 11 猜 T ✓ | 11 猜 T ✓ | 11 猜 T ✗ → 10 |
+    | 2 | 10 猜 T ✓ → 11 | 11 猜 T ✓ | 11 猜 T ✓ | 11 猜 T ✗ → 10 |
+    | 3 | 10 猜 T ✓ → 11 | 11 猜 T ✓ | 11 猜 T ✓ | 11 猜 T ✗ → 10 |
+
+    共 **3 次**，1-bit 是 5 次（T-3）。差別在每一輪的第 1 次：1-bit 記得「上次沒跳」所以猜錯；2-bit 只退到 10，還是猜跳。
+
+**W-2.** 20% 的指令是 branch，其中 60% 會跳，理想 CPI 是 1。比較三種做法的 CPI：(a) 預測不跳，branch 在 EX 決定 (b) 預測不跳，比較提前到 ID (c) 2-bit 預測器準確率 90%、有 BTB，branch 在 EX 決定。
+
+??? quiz "看參考答案"
+    - **(a) 1.24**：預測不跳時，猜錯率就是「會跳」的比例 0.6；penalty 2。$1+0.2\times0.6\times2=1.24$。
+    - **(b) 1.12**：penalty 變成 1。$1+0.2\times0.6\times1=1.12$。
+    - **(c) 1.04**：猜錯率 0.1、penalty 2。$1+0.2\times0.1\times2=1.04$。
+
+    準確率和 penalty 都會影響 CPI。(b) 不需要預測器，但 ID 要多一個比較器，還可能多出資料相依的 stall（這題先不算）。
 
 ### 單元 5 小考 {#u5-quiz}
 

@@ -4306,12 +4306,105 @@ sw  $5, 4($1)</code></pre>
 <h4 id="_25">平均多花多少</h4>
 <p>100 條指令裡有 20 條 branch，猜對率 75%：猜錯 <span class="arithmatex">\(20\times0.25=5\)</span> 次，每次 2 cycle，多花 10 cycle。理想 CPI 1 變成 <span class="arithmatex">\(\frac{100+10}{100}=1.1\)</span>。</p>
 <div class="arithmatex">\[\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty}\]</div>
+<h4 id="_26">三種減少損失的方法</h4>
+<ol>
+<li><strong>提早決定</strong>：在 ID 就比較兩個暫存器（多加一個比較器），penalty 從 2 降到 1。代價：前一條如果是 ALU 指令、結果正好給 branch 用，要多停 1 個 cycle；前一條是 lw 要停 2 個。</li>
+<li><strong>預測</strong>：<ul>
+<li><strong>靜態</strong>（編譯時就決定）：always not taken（照樣抓下一條，最簡單）、always taken、BTFN（往回跳的猜跳，因為多半是迴圈；往前跳的猜不跳）。</li>
+<li><strong>動態</strong>（看執行時的歷史）：1-bit、2-bit 預測器，下面細講。</li>
+</ul>
+</li>
+<li><strong>delayed branch</strong>：MIPS 規定 branch 後面那一條（delay slot）<strong>一定會執行</strong>，編譯器把一條跟 branch 無關的指令搬進去，那個 cycle 就不會浪費。</li>
+</ol>
+<h4 id="_27">猜跳的話，要跳去哪？</h4>
+<p>猜「跳」就要在下一個 cycle 從目標位址抓指令，但目標位址（PC＋4＋offset×4）要到 ID 才算得出來。<strong>BTB（branch target buffer）</strong>像一個小 cache：用 PC 去查，IF 階段就知道「這是 branch、上次跳去哪」。always not taken 不需要 BTB，因為照樣抓 PC＋4。</p>
 <h4 id="2-bit-1-bit">2-bit 預測器為什麼比 1-bit 好</h4>
+<p>2-bit 預測器是一個 0 到 3 的計數器：實際跳了加 1、沒跳減 1，到頭就停；計數是 10 或 11 就預測跳。</p>
+<figure class="fig">
+<svg viewBox="0 0 360 158" role="img" aria-label="2-bit 預測器的四個狀態排成一排：11 強跳、10 弱跳、01 弱不跳、00 強不跳。實際沒跳（N）就往右一格，實際跳了（T）就往左一格；11 再遇到 T、00 再遇到 N 都留在原地。左邊兩個狀態預測跳，右邊兩個預測不跳。">
+<rect class="fc" x="28" y="62" width="64" height="48" rx="8"/>
+<text x="60" y="78" text-anchor="middle" dominant-baseline="central" class="mono">11</text>
+<text x="60" y="96" text-anchor="middle" dominant-baseline="central" class="sm">強跳</text>
+<rect class="fc" x="108" y="62" width="64" height="48" rx="8"/>
+<text x="140" y="78" text-anchor="middle" dominant-baseline="central" class="mono">10</text>
+<text x="140" y="96" text-anchor="middle" dominant-baseline="central" class="sm">弱跳</text>
+<rect class="fb" x="188" y="62" width="64" height="48" rx="8"/>
+<text x="220" y="78" text-anchor="middle" dominant-baseline="central" class="mono">01</text>
+<text x="220" y="96" text-anchor="middle" dominant-baseline="central" class="sm">弱不跳</text>
+<rect class="fb" x="268" y="62" width="64" height="48" rx="8"/>
+<text x="300" y="78" text-anchor="middle" dominant-baseline="central" class="mono">00</text>
+<text x="300" y="96" text-anchor="middle" dominant-baseline="central" class="sm">強不跳</text>
+<text x="100" y="14" text-anchor="middle" dominant-baseline="central" class="tc">預測跳</text>
+<text x="260" y="14" text-anchor="middle" dominant-baseline="central" class="tb">預測不跳</text>
+<line class="arw" x1="34" y1="26" x2="166" y2="26"/>
+<line class="arw" x1="194" y1="26" x2="326" y2="26"/>
+<path class="arw" d="M78,61 Q100,34 116.8,53.9"/>
+<polygon class="ah" points="122.0,60.0 113.4,56.8 120.3,51.0"/>
+<text x="100" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">N</text>
+<path class="arw" d="M122,111 Q100,138 83.2,118.1"/>
+<polygon class="ah" points="78.0,112.0 86.6,115.2 79.7,121.0"/>
+<text x="100" y="144" text-anchor="middle" dominant-baseline="central" class="sm mono">T</text>
+<path class="arw" d="M158,61 Q180,34 196.8,53.9"/>
+<polygon class="ah" points="202.0,60.0 193.4,56.8 200.3,51.0"/>
+<text x="180" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">N</text>
+<path class="arw" d="M202,111 Q180,138 163.2,118.1"/>
+<polygon class="ah" points="158.0,112.0 166.6,115.2 159.7,121.0"/>
+<text x="180" y="144" text-anchor="middle" dominant-baseline="central" class="sm mono">T</text>
+<path class="arw" d="M238,61 Q260,34 276.8,53.9"/>
+<polygon class="ah" points="282.0,60.0 273.4,56.8 280.3,51.0"/>
+<text x="260" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">N</text>
+<path class="arw" d="M282,111 Q260,138 243.2,118.1"/>
+<polygon class="ah" points="238.0,112.0 246.6,115.2 239.7,121.0"/>
+<text x="260" y="144" text-anchor="middle" dominant-baseline="central" class="sm mono">T</text>
+<path class="arw" d="M28,74 Q-6,86 19.5,95.3"/>
+<polygon class="ah" points="27.0,98.0 17.9,99.5 21.0,91.0"/>
+<text x="8" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">T</text>
+<path class="arw" d="M332,74 Q366,86 340.5,95.3"/>
+<polygon class="ah" points="333.0,98.0 339.0,91.0 342.1,99.5"/>
+<text x="352" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">N</text>
+</svg>
+<figcaption>實際跳（T）往左一格、沒跳（N）往右一格；要連錯兩次，預測才會改變</figcaption>
+</figure>
+
 <p>迴圈跑 10 次：branch 前 9 次「跳」（回到迴圈開頭），第 10 次「不跳」（離開迴圈）。整個迴圈重複執行 3 次。</p>
 <ul>
 <li><strong>1-bit</strong>（記住上一次的結果）：離開時猜錯一次；下次重新進迴圈時，它記得「上次沒跳」，又猜錯一次。第一輪錯 1 次，之後每輪錯 2 次，共 <strong>5 次</strong>。</li>
 <li><strong>2-bit</strong>（要連錯兩次才改變預測）：離開時猜錯一次，但只從「強烈跳」退到「有點想跳」，下次進迴圈還是猜跳。每輪只錯 1 次，共 <strong>3 次</strong>。</li>
 </ul>
+<div class="admonition key">
+<p class="admonition-title">分支題要算什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>猜錯一次丟幾條</td>
+<td>在第 <span class="arithmatex">\(k\)</span> 級結束時決定 → 丟 <span class="arithmatex">\(k-1\)</span> 條</td>
+</tr>
+<tr>
+<td>平均 CPI</td>
+<td><span class="arithmatex">\(1+\)</span> branch 比例 <span class="arithmatex">\(\times\)</span> 猜錯率 <span class="arithmatex">\(\times\)</span> penalty</td>
+</tr>
+<tr>
+<td>always taken／not taken 的準確率</td>
+<td>看 branch 實際「跳」的比例：always taken 的準確率就是跳的比例</td>
+</tr>
+<tr>
+<td>1-bit／2-bit 錯幾次</td>
+<td>列表一格一格走：狀態、預測、實際、新狀態</td>
+</tr>
+<tr>
+<td>深 pipeline 划不划算</td>
+<td>比「CPI × 週期」，不是只比 CPI</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：misprediction penalty（猜錯的代價）、flush（把抓錯的指令清掉）、BTB（branch target buffer，記目標位址的表）、delay slot（branch 後面一定會執行的那一格）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -4319,7 +4412,7 @@ sw  $5, 4($1)</code></pre>
 <li><strong>英文</strong>：<a href="https://safari.ethz.ch/ddca/spring2025/doku.php?id=start">ETH Digital Design &amp; Computer Architecture 2025</a> 的 superscalar 與 branch prediction 講次。114 Q3（dual-path、confidence estimator）就是這門課的題型。</li>
 </ul>
 </div>
-<h4 id="_26">換你試試</h4>
+<h4 id="_28">換你試試</h4>
 <p><strong>T-1.</strong> 30% 是 branch、準確率 80%、penalty 3，CPI？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -4436,6 +4529,126 @@ sw  $5, 4($1)</code></pre>
 </div>
 <h3 id="u5-2">5.2 2-bit 預測器</h3>
 <p>四個狀態：強不跳（00）、弱不跳（01）、弱跳（10）、強跳（11）。狀態 ≥10 就預測跳。實際跳了往上加 1，沒跳往下減 1（到頭就停）。好處是迴圈最後一次不跳，只會讓狀態從「強跳」掉到「弱跳」，下次進迴圈仍然預測跳。</p>
+<div class="admonition trap">
+<p class="admonition-title">不同課本的 2-bit 圖可能不一樣</p>
+<p>上面是「加 1、減 1，到頭就停」的 saturating counter。有的課本的圖在「弱」狀態猜錯時，直接跳到另一邊的「強」狀態。<strong>題目有畫狀態圖，就照題目的圖走</strong>；沒有畫，就先寫出你用的規則再算。</p>
+</div>
+<h3 id="u5-concept">5.3 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 5 級 pipeline 把 branch 的比較提前到 ID（第 2 級）結束時完成，猜錯的 penalty 是？</p>
+<ol>
+<li>0</li>
+<li>1</li>
+<li>2</li>
+<li>3</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。第 <span class="arithmatex">\(k\)</span> 級結束時決定，前面 <span class="arithmatex">\(k-1\)</span> 級的指令要丟：<span class="arithmatex">\(2-1=1\)</span>。代價是 ID 要多一個比較器；如果前一條 ALU 指令的結果要給 branch 用，還要多停 1 個 cycle（前一條是 lw 要停 2 個）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> 預測「跳」的時候，IF 階段除了「要不要跳」，還需要知道什麼？</p>
+<ol>
+<li>跳去哪裡（目標位址），通常查 BTB</li>
+<li>下一條指令的 opcode</li>
+<li>register file 的內容</li>
+<li>不需要其他資訊</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。猜跳就要馬上從目標位址抓指令，但目標位址要到 ID 才算得出來。BTB 用 PC 查表，IF 就拿到上次跳去的位址。always not taken 不需要，因為照樣抓 PC＋4。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> MIPS 的 delayed branch（branch delay slot）是什麼意思？</p>
+<ol>
+<li>branch 一定延後一個 cycle 才執行</li>
+<li>硬體自動插入一個 nop</li>
+<li>預測器延後一次才更新</li>
+<li>branch 後面那一條指令一定會執行，由編譯器放一條有用的指令進去</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。不管跳不跳，delay slot 裡的指令都會做完，所以那 1 個 cycle 不會浪費。編譯器找不到合適的指令時，才放 nop。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-4.</strong> 2-bit 預測器從 01 開始，下面哪一個結果序列會讓它<strong>每次</strong>都猜錯？</p>
+<ol>
+<li>T, T, T, T</li>
+<li>N, N, N, N</li>
+<li>T, N, T, N</li>
+<li>T, T, T, N</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。01 猜 N，實際 T → 10；10 猜 T，實際 N → 01；一直在 01 和 10 之間來回，每次都猜反。A 只錯第 1 次；B 全對；D 錯第 1 和第 4 次。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> 準確率不變，把 pipeline 從 5 級加深到 15 級（branch 都在倒數第二級決定），branch 造成的額外 CPI 會？</p>
+<ol>
+<li>變小，因為時脈變快</li>
+<li>變大，因為猜錯一次要丟更多條指令</li>
+<li>不變，因為準確率一樣</li>
+<li>變成 0</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。penalty 從 3 變成 13，額外 CPI ＝ branch 比例 × 猜錯率 × penalty 跟著變大。時脈變快是另一件事：要比「CPI × 週期」才知道整體划不划算（112 Q1.4）。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 結果依序是 T、T、T、N，重複 3 輪（和 T-3 一樣），改用 2-bit 預測器、從 11 開始，總共猜錯幾次？跟 1-bit 比較。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<table>
+<thead>
+<tr>
+<th>輪</th>
+<th>T</th>
+<th>T</th>
+<th>T</th>
+<th>N</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>11 猜 T <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td>11 猜 T <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td>11 猜 T <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td>11 猜 T <svg class="ico ico-no" viewBox="0 0 24 24" role="img" aria-label="錯" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10M17 7L7 17"/></svg> → 10</td>
+</tr>
+<tr>
+<td>2</td>
+<td>10 猜 T <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> → 11</td>
+<td>11 猜 T <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td>11 猜 T <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td>11 猜 T <svg class="ico ico-no" viewBox="0 0 24 24" role="img" aria-label="錯" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10M17 7L7 17"/></svg> → 10</td>
+</tr>
+<tr>
+<td>3</td>
+<td>10 猜 T <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> → 11</td>
+<td>11 猜 T <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td>11 猜 T <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></td>
+<td>11 猜 T <svg class="ico ico-no" viewBox="0 0 24 24" role="img" aria-label="錯" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10M17 7L7 17"/></svg> → 10</td>
+</tr>
+</tbody>
+</table>
+<p>共 <strong>3 次</strong>，1-bit 是 5 次（T-3）。差別在每一輪的第 1 次：1-bit 記得「上次沒跳」所以猜錯；2-bit 只退到 10，還是猜跳。</p>
+</details>
+<p><strong>W-2.</strong> 20% 的指令是 branch，其中 60% 會跳，理想 CPI 是 1。比較三種做法的 CPI：(a) 預測不跳，branch 在 EX 決定 (b) 預測不跳，比較提前到 ID (c) 2-bit 預測器準確率 90%、有 BTB，branch 在 EX 決定。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ul>
+<li><strong>(a) 1.24</strong>：預測不跳時，猜錯率就是「會跳」的比例 0.6；penalty 2。<span class="arithmatex">\(1+0.2\times0.6\times2=1.24\)</span>。</li>
+<li><strong>(b) 1.12</strong>：penalty 變成 1。<span class="arithmatex">\(1+0.2\times0.6\times1=1.12\)</span>。</li>
+<li><strong>(c) 1.04</strong>：猜錯率 0.1、penalty 2。<span class="arithmatex">\(1+0.2\times0.1\times2=1.04\)</span>。</li>
+</ul>
+<p>準確率和 penalty 都會影響 CPI。(b) 不需要預測器，但 ID 要多一個比較器，還可能多出資料相依的 stall（這題先不算）。</p>
+</details>
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> 25% branch、penalty 3、準確率 90%，CPI（理想 1）？</p>
 <details class="quiz">
@@ -4568,7 +4781,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf">MIT 6.823 Problem Set 10</a>（<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf">解答</a>）有跟 112 Q3、114 Q5 一樣的 fixed／data-dependent switching 題目。</li>
 </ul>
 </div>
-<h4 id="_27">換你試試</h4>
+<h4 id="_29">換你試試</h4>
 <p>同樣的迴圈，LD 改成 6 個 cycle。</p>
 <p><strong>T-1.</strong> 固定輪流需要幾個 thread？</p>
 <details class="quiz">
@@ -4628,13 +4841,13 @@ BNE  ...</code></pre>
 <li>refresh 的命令要佔用<strong>命令匯流排</strong>（command bus）一段時間，這段時間不能送別的命令。</li>
 <li>正在 refresh 的那個 <strong>bank</strong> 不能被讀寫。</li>
 </ul>
-<h4 id="_28">使用率怎麼算</h4>
+<h4 id="_30">使用率怎麼算</h4>
 <div class="arithmatex">\[\text{使用率}=\frac{\text{這段時間內被 refresh 佔用的總時間}}{\text{這段時間}}\]</div>
 <p><strong>小例子</strong>：1 個 bank、1000 列，每次 refresh 佔用 bus 10 ns，每 64 ms 要全部 refresh 一次。</p>
 <p>64 ms 內被佔用 <span class="arithmatex">\(1000\times10\text{ ns}=10\ \mu\text{s}\)</span>，使用率 <span class="arithmatex">\(=\frac{10\ \mu\text{s}}{64\text{ ms}}\approx0.016\%\)</span>。</p>
 <p>數字很小，但記憶體越大，列數越多（考題常是 <span class="arithmatex">\(2^{19}\)</span> 列以上），使用率就跟著變大到好幾 %，而且 bank 被佔用時讀寫都要等。</p>
 <p><strong>考試技巧</strong>：數字留成 2 的次方和 10 的次方，例如 <span class="arithmatex">\(64\text{ ms}=2^6\times10^6\)</span> ns，就能約分不用計算機。</p>
-<h4 id="_29">資料重用：同一個東西多久會再用到</h4>
+<h4 id="_31">資料重用：同一個東西多久會再用到</h4>
 <p>SRAM／cache 很小，只能留住「很快又會用到」的資料。</p>
 <pre class="highlight"><code class="language-text">for i in 0..2:
   for j in 0..2:
@@ -4652,7 +4865,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://safari.ethz.ch/architecture/fall2022/doku.php?id=exams">ETH 計算機結構考古題（附詳解）</a>，可以找 DRAM refresh 相關的題目練習。</li>
 </ul>
 </div>
-<h4 id="_30">換你試試</h4>
+<h4 id="_32">換你試試</h4>
 <p><strong>T-1.</strong> 4 個 bank × 1024 列，每次 refresh 佔 bus 5 ns，64 ms 一輪，使用率？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -4722,7 +4935,7 @@ BNE  ...</code></pre>
 <section class="unit" data-unit="u8">
 <h2 id="u8">單元 8：平行與微架構</h2>
 <h3 id="u8-0">8.0 觀念課：同時做好幾件事的三種方式</h3>
-<h4 id="_31">平行化的上限</h4>
+<h4 id="_33">平行化的上限</h4>
 <p>90% 可以平行的程式，用 <span class="arithmatex">\(N\)</span> 個處理器：</p>
 <table>
 <thead>
@@ -4749,7 +4962,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>處理器加倍，speedup 卻越加越少，因為那 10% 不能平行的部分變成主要的時間。再加上處理器之間要溝通，實際上更低。</p>
-<h4 id="_32">三種平行</h4>
+<h4 id="_34">三種平行</h4>
 <table>
 <thead>
 <tr>
@@ -4777,7 +4990,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>從比喻就能回答 114 Q6：VLIW 比 superscalar 簡單（硬體不用排程）、superscalar 可能更快（現場能應變 cache miss）、VLIW 比 array 彈性（每個槽可以做不同事）、array 最簡單（只要一份指令和控制）。</p>
-<h4 id="_33">記憶體一致性：把指令洗成一疊牌</h4>
+<h4 id="_35">記憶體一致性：把指令洗成一疊牌</h4>
 <p>兩個處理器同時跑（x、y 一開始都是 0）：</p>
 <table>
 <thead>
@@ -4800,7 +5013,7 @@ BNE  ...</code></pre>
 <p><strong>Sequential consistency（SC）</strong> 的意思是：最後的結果，必須等於把兩邊的指令<strong>洗成一疊</strong>（各自的順序不能變）後依序執行的結果。</p>
 <p>把所有洗法列出來，(r1, r2) 只可能是 (0,1)、(1,0)、(1,1)。<strong>(0,0) 不可能</strong>：r1＝0 代表 P1 讀 y 時 P2 還沒寫 y；r2＝0 代表 P2 讀 x 時 P1 還沒寫 x。但兩邊都是「先寫再讀」，一定有一邊的寫入比另一邊的讀取早，矛盾。</p>
 <p>112 Q5 的三個處理器版本，用的就是同一個推理：把「讀到 0」換成「某個讀取在某個寫入之前」，看會不會繞成一個圈。</p>
-<h4 id="_34">頻寬撐不撐得住</h4>
+<h4 id="_36">頻寬撐不撐得住</h4>
 <p>運算再快，資料送不進來也沒用。需要的頻寬 ＝ 每秒運算次數 × 每次運算要從記憶體讀幾個 byte。這個值超過記憶體頻寬，運算單元就會空等。</p>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
@@ -4809,7 +5022,7 @@ BNE  ...</code></pre>
 <li><strong>英文文章</strong>：Russ Cox〈<a href="https://research.swtch.com/hwmm">Hardware Memory Models</a>〉用 litmus test（就是這節 P1、P2 那種小程式）解釋 sequential consistency，例子寫得非常清楚。</li>
 </ul>
 </div>
-<h4 id="_35">換你試試</h4>
+<h4 id="_37">換你試試</h4>
 <p><strong>T-1.</strong> 95% 可平行，處理器無限多，speedup 上限？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -4875,7 +5088,7 @@ BNE  ...</code></pre>
 </div>
 <h3 id="u8-mp">8.4 多處理器：cache coherence、UMA／NUMA、互連網路</h3>
 <p>101、106、107、110 年考過：平行加總的程式要怎麼同步、多顆 CPU 的 cache 怎麼保持一致、上百顆處理器要怎麼連。</p>
-<h4 id="_36">共用記憶體的多處理器</h4>
+<h4 id="_38">共用記憶體的多處理器</h4>
 <p><strong>shared-memory multiprocessor</strong>：所有處理器共用<strong>同一個實體位址空間</strong>，用一般的 load、store 溝通。依存取記憶體的時間分成兩種：</p>
 <table>
 <thead>
@@ -4982,7 +5195,7 @@ BNE  ...</code></pre>
 </ul>
 <p>處理器很多、沒有共用的 bus 時，改用 <strong>directory</strong>：每個 block 記錄哪些 cache 有它，要寫時只通知那幾個。</p>
 <p><strong>coherence miss（第 4 種 miss）</strong>：因為別的處理器寫了這個 block，我的被 invalidate，下次讀才 miss。只有多處理器才有。兩顆 CPU 寫同一個 block 裡<strong>不同的字</strong>也會互相 invalidate，叫 <strong>false sharing</strong>。</p>
-<h4 id="_37">互連網路：上百顆處理器怎麼連</h4>
+<h4 id="_39">互連網路：上百顆處理器怎麼連</h4>
 <p>N 顆處理器：</p>
 <table>
 <thead>
@@ -5041,7 +5254,7 @@ BNE  ...</code></pre>
 <li><strong>選 mesh</strong>：線路數只跟處理器數成正比，可以擴充，頻寬也隨處理器數增加；延遲的問題可以靠資料擺放、讓常溝通的處理器靠近一點來改善。</li>
 </ul>
 </div>
-<h4 id="_38">平行加總：要先同步再讀</h4>
+<h4 id="_40">平行加總：要先同步再讀</h4>
 <div class="admonition example">
 <p class="admonition-title">101 Q7（15%）：10 顆處理器加總 100,000 個數，再用下面的程式把 10 個部分和加起來。Pn 是處理器編號，half 是每顆處理器自己的變數</p>
 <pre class="highlight"><code class="language-c">half = 10;
@@ -5095,7 +5308,7 @@ until (half == 1);</code></pre>
 </ul>
 <p><strong>為什麼要處理奇數</strong>：第二輪 half ＝ 5，5 個部分和兩兩相加會剩一個（sum[4]）沒人加，所以讓 P0 先把它加進 sum[0]。驗算：最後 sum[0] 包含 sum[0]～sum[9] 全部，每個剛好一次。</p>
 </div>
-<h4 id="_39">觀念小考</h4>
+<h4 id="_41">觀念小考</h4>
 <div class="mcq" data-ans="1">
 <p><strong>C-1.</strong> 用 write-invalidate 的 snoopy protocol 時，P2 在 bus 上聽到「P1 要寫 X」（write miss），而 P2 的 cache 裡有 X，P2 要做什麼？（110 Q1.3）</p>
 <ol>
@@ -5155,9 +5368,9 @@ until (half == 1);</code></pre>
 </details>
 <h3 id="u8-ooo">8.5 動態排程：Tomasulo、亂序執行與多發</h3>
 <p>100、105、107 年考過：Tomasulo 要幾個比較器、tag 幾位元；SIMD、SIMT、VLIW、superscalar、superpipeline 各是什麼；loop unrolling 為什麼能變快。</p>
-<h4 id="_40">為什麼要亂序執行</h4>
+<h4 id="_42">為什麼要亂序執行</h4>
 <p>in-order 的 pipeline 只要有一條指令卡住（例如 lw cache miss 要等 100 個 cycle），後面<strong>不相干</strong>的指令也全部跟著等。亂序執行（out-of-order）的想法是：<strong>運算元一準備好就執行</strong>，不照程式順序。</p>
-<h4 id="_41">三種相依：只有一種是真的</h4>
+<h4 id="_43">三種相依：只有一種是真的</h4>
 <table>
 <thead>
 <tr>
@@ -5282,7 +5495,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </ol>
 <p><strong>代價</strong>：程式碼變大（可能讓 instruction cache miss 變多），需要更多暫存器。</p>
 </div>
-<h4 id="_42">觀念小考</h4>
+<h4 id="_44">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> register renaming 能消除哪幾種相依？</p>
 <ol>
@@ -5386,7 +5599,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <p><strong>為什麼「反相再加 1」就是取負</strong>：<span class="arithmatex">\(x\)</span> 和 <span class="arithmatex">\(\sim x\)</span> 每一位都相反，加起來是 1111，也就是 −1。所以 <span class="arithmatex">\(x+\sim x=-1\)</span>，移項得 <span class="arithmatex">\(-x=\sim x+1\)</span>。</p>
 <p>例：<span class="arithmatex">\(-3\)</span>：<span class="arithmatex">\(3=0011\)</span>，反相 1100，加 1 得 <strong>1101</strong>。</p>
 <p><strong>溢位</strong>：兩個正數相加得到負數（或兩個負數相加得到正數），結果就超出範圍了。例：<span class="arithmatex">\(5+4=1001\)</span>，讀起來是 −7，溢位。</p>
-<h4 id="_43">浮點數：二進位的科學記號</h4>
+<h4 id="_45">浮點數：二進位的科學記號</h4>
 <div class="arithmatex">\[(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})\]</div>
 <p><strong>每一部分的意思</strong>：</p>
 <ul>
@@ -5419,7 +5632,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <li><strong>英文</strong>：〈<a href="https://teaching.idallen.com/cst8214/08w/notes/ieee754_conversions.txt">IEEE 754 conversions</a>〉一步一步手算十進位和 IEEE 754 互換，適合練習。</li>
 </ul>
 </div>
-<h4 id="_44">換你試試</h4>
+<h4 id="_46">換你試試</h4>
 <p><strong>T-1.</strong> 用 4 位元二補數算 <span class="arithmatex">\(6+3\)</span>，結果是什麼？有沒有溢位？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -5453,7 +5666,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </div>
 <h3 id="u9-dec">9.2 從位元解回數值：進位轉換、二補數、IEEE 754</h3>
 <p>100 年（10%）和 103 年（14%）都考過：給一串十六進位，問它當成二補數整數、當成單精度浮點數各是多少；十進位轉八進位、十六進位；有號數相加會不會溢位。<a href="#u9-0">9.0</a> 教的是「數值 → 位元」，這一節反過來。</p>
-<h4 id="_45">十六進位、八進位跟二進位怎麼互換？</h4>
+<h4 id="_47">十六進位、八進位跟二進位怎麼互換？</h4>
 <p><strong>一個十六進位數字 ＝ 4 個位元</strong>，一個八進位數字 ＝ 3 個位元。所以先換成二進位，再從<strong>右邊</strong>開始分組：</p>
 <ul>
 <li><span class="arithmatex">\(520=512+8=1000001000_2\)</span></li>
@@ -5546,7 +5759,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </ul>
 <p>合起來 <code>1 01111110 10000000000000000000000</code> ＝ <strong>0xBF400000</strong>。</p>
 </div>
-<h4 id="_46">觀念小考</h4>
+<h4 id="_48">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 0xC1480000 當成單精度浮點數是多少？</p>
 <ol>
@@ -5620,7 +5833,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </details>
 <h3 id="u9-mips">9.3 MIPS 組合語言：把 C 翻成指令</h3>
 <p>101、102、103 年各考一題 10%：C 程式翻成 MIPS 後挖掉幾個運算元要你填、數一段程式存取記憶體幾次、說出每條指令用哪種定址模式。新版 COD 改用 RISC-V，但觀念一模一樣：<strong>暫存器怎麼分工、陣列位址怎麼算、迴圈和函式怎麼寫</strong>。</p>
-<h4 id="_47">暫存器各管什麼？</h4>
+<h4 id="_49">暫存器各管什麼？</h4>
 <p>MIPS 有 32 個 32 位元的暫存器，名字代表用途：</p>
 <table>
 <thead>
@@ -5681,7 +5894,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <li><strong>if-else</strong>：條件<strong>相反</strong>時跳去 else，做完 then 再 <code>j Exit</code> 跳過 else。</li>
 <li><strong>函式</strong>：<code>jal swap</code> 跳去 swap，同時把回來的位址存進 <code>$ra</code>；函式最後 <code>jr $ra</code> 跳回去。參數放 <code>$a0</code>–<code>$a3</code>，回傳值放 <code>$v0</code>。</li>
 </ul>
-<h4 id="_48">三種指令格式</h4>
+<h4 id="_50">三種指令格式</h4>
 <table>
 <thead>
 <tr>
@@ -5867,7 +6080,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </tbody>
 </table>
 </div>
-<h4 id="_49">觀念小考</h4>
+<h4 id="_51">觀念小考</h4>
 <div class="mcq" data-ans="4">
 <p><strong>C-1.</strong> <code>beq $s0,$s1,L</code> 的跳躍目標是用哪一種定址模式算的？</p>
 <ol>
@@ -6076,7 +6289,7 @@ sw  $t0,48($s3)</code></pre>
 <p><strong>(1) 的缺點</strong>（順便寫，題目可能想問反過來）：7 個乘積項、OR 閘要 7 個輸入，位數一多，項數爆炸性成長；(2) 只有 3 項，而且 G、P 可以共用、可以一層一層往上組（16 位元的兩層 CLA），這是實際用 (2) 的原因。</p>
 <p>兩個式子我用程式代過全部 32 種輸入，都等於真正的進位。</p>
 </div>
-<h4 id="_50">乘法器：像直式乘法一樣「看一位、加一次、移一位」</h4>
+<h4 id="_52">乘法器：像直式乘法一樣「看一位、加一次、移一位」</h4>
 <p>二進位直式乘法：乘數（multiplier）從最低位開始看，<strong>這一位是 1 就把被乘數（multiplicand）加進去</strong>，每看一位，被乘數就往左移一位。32 位元乘 32 位元，乘積 64 位元。</p>
 <p><strong>基本版</strong>（101 Q4 的 Figure 4.1）：</p>
 <ul>
@@ -6177,7 +6390,7 @@ sw  $t0,48($s3)</code></pre>
 </tbody>
 </table>
 </div>
-<h4 id="_51">觀念小考</h4>
+<h4 id="_53">觀念小考</h4>
 <div class="mcq" data-ans="1">
 <p><strong>C-1.</strong> 進位前瞻加法器裡，generate <span class="arithmatex">\(g_i\)</span> 和 propagate <span class="arithmatex">\(p_i\)</span> 的定義是？</p>
 <ol>
