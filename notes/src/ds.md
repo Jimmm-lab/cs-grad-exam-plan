@@ -1993,6 +1993,66 @@ $h_2$ 不能是 0（不然永遠原地踏步），而且最好和 $M$ 互質，$
 
 **load factor** $\alpha=\frac{\text{放了幾個}}{M}$。$\alpha$ 越接近 1，碰撞越多、越慢。
 
+#### 刪除：為什麼不能直接清空？
+
+open addressing 搜尋時，是沿著探測路線一直走，**走到空格就停**（空格代表「這個 key 從來沒放進來過」）。刪除時如果直接把格子清空，路線就被切斷了：
+
+<figure class="fig">
+<svg viewBox="0 0 360 224" role="img" aria-label="M＝5、linear probing，7、12、2 都算到第 2 格，放在 2、3、4。刪除 12 時如果直接清空第 3 格，找 2 會在第 3 格遇到空格就停下來，以為 2 不存在。改成把第 3 格標成「已刪除」，搜尋會跳過它繼續找，在第 4 格找到 2。">
+<text x="92" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<text x="144" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="196" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="248" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="300" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<text x="8" y="14" text-anchor="start" dominant-baseline="central" class="sm">直接清空第 3 格：找不到 2（錯）</text>
+<rect class="box" x="66" y="54" width="52" height="34"/>
+<text x="92" y="71" text-anchor="middle" dominant-baseline="central" class="mono"></text>
+<rect class="box" x="118" y="54" width="52" height="34"/>
+<text x="144" y="71" text-anchor="middle" dominant-baseline="central" class="mono"></text>
+<rect class="box" x="170" y="54" width="52" height="34"/>
+<text x="196" y="71" text-anchor="middle" dominant-baseline="central" class="mono">7</text>
+<rect class="box" x="222" y="54" width="52" height="34"/>
+<text x="248" y="71" text-anchor="middle" dominant-baseline="central" class="sm"></text>
+<rect class="box" x="274" y="54" width="52" height="34"/>
+<text x="300" y="71" text-anchor="middle" dominant-baseline="central" class="mono">2</text>
+<text x="58" y="71" text-anchor="end" dominant-baseline="central" class="sm">找 2</text>
+<path class="arw-a" d="M196,90 Q222,108 242.2,94.0"/>
+<polygon class="ah-a" points="248.0,90.0 244.5,97.3 240.0,90.7"/>
+<text x="248" y="114" text-anchor="middle" dominant-baseline="central" class="sm tt">空格：停</text>
+<text x="8" y="122" text-anchor="start" dominant-baseline="central" class="sm">標成「已刪除」：跳過它繼續找</text>
+<rect class="box" x="66" y="162" width="52" height="34"/>
+<text x="92" y="179" text-anchor="middle" dominant-baseline="central" class="mono"></text>
+<rect class="box" x="118" y="162" width="52" height="34"/>
+<text x="144" y="179" text-anchor="middle" dominant-baseline="central" class="mono"></text>
+<rect class="box" x="170" y="162" width="52" height="34"/>
+<text x="196" y="179" text-anchor="middle" dominant-baseline="central" class="mono">7</text>
+<rect class="fk" x="222" y="162" width="52" height="34"/>
+<text x="248" y="179" text-anchor="middle" dominant-baseline="central" class="sm">已刪除</text>
+<rect class="fc" x="274" y="162" width="52" height="34"/>
+<text x="300" y="179" text-anchor="middle" dominant-baseline="central" class="mono">2</text>
+<text x="58" y="179" text-anchor="end" dominant-baseline="central" class="sm">找 2</text>
+<path class="arw-a" d="M196,198 Q222,216 242.2,202.0"/>
+<polygon class="ah-a" points="248.0,198.0 244.5,205.3 240.0,198.7"/>
+<path class="arw-a" d="M248,198 Q274,216 294.2,202.0"/>
+<polygon class="ah-a" points="300.0,198.0 296.5,205.3 292.0,198.7"/>
+<text x="334" y="179" text-anchor="start" dominant-baseline="central" class="sm tc">找到</text>
+</svg>
+<figcaption>7、12、2 都算到第 2 格；刪掉 12 之後要找 2，第 3 格必須「還連著」</figcaption>
+</figure>
+
+所以刪除時要把格子標成「**已刪除**」（tombstone）：搜尋遇到它要**繼續走**；插入遇到它可以**直接用**。已刪除的格子太多，搜尋會變慢，就重建整張表（rehash）。chaining 沒有這個問題，直接從串列拿掉就好。
+
+!!! key "雜湊題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | linear／quadratic／double hashing 放在哪 | 列表：key、$h$（和 $h_2$）、探測過的位置、最後放在哪（[4.1](#u4-1)） |
+    | 刪除後再搜尋 | open addressing 要標「已刪除」，搜尋跳過它繼續走 |
+    | chaining 平均搜尋時間 | 失敗、成功都是 $\Theta(1+\alpha)$，$\alpha=n/m$（[4.2](#u4-theory)） |
+    | open addressing 探測幾次 | 失敗最多 $\frac1{1-\alpha}$、成功最多 $\frac1\alpha\ln\frac1{1-\alpha}$ |
+    | 三種探測的缺點 | linear：primary clustering；quadratic：secondary clustering；double：$h_2$ 要選好 |
+
+    名詞對照：collision（碰撞）、open addressing（開放定址）、chaining（鏈結）、load factor（負載因子）、probe（探測）、clustering（群聚）。
+
 !!! read "還不懂？看別人怎麼講"
     - **動畫**：[VisuAlgo Hash Table](https://visualgo.net/en/hashtable)：linear probing、quadratic probing、double hashing 都能自己輸入 key 看探測路線，可以直接拿 115 Q7 的數字試。
 
@@ -2040,6 +2100,25 @@ $h_2$ 不能是 0（不然永遠原地踏步），而且最好和 $M$ 互質，$
 
 <div class="viz" data-viz="hash" data-keys="11,33,66,7,77" data-m="11" data-method="double" data-r="7" data-title="115 Q7：double hashing"></div>
 
+#### quadratic probing 算一次
+
+$M=11$、$h(k)=k\bmod11$，插入 22、33、44、55（全部算到 0）：
+
+| key | 第幾次探測 $i$ | 位置 $(0+i^2)\bmod11$ | linear probing 會放在 |
+|---|---|---|---|
+| 22 | 0 | 0 | 0 |
+| 33 | 1 | 1 | 1 |
+| 44 | 2 | 4 | 2 |
+| 55 | 3 | 9 | 3 |
+
+linear probing 擠成 0–3 一整塊；quadratic 跳開了，但四個 key 走的是**同一條路線** 0 → 1 → 4 → 9（secondary clustering）。另外，quadratic probing 不一定走得遍每一格：$M$ 取質數、而且 $\alpha\le\frac12$ 時，才保證找得到空格。
+
+#### 雜湊函數怎麼設計
+
+- **除法（division）**：$h(k)=k\bmod M$，$M$ 選**不靠近 2 的次方的質數**。$M=2^p$ 時只看得到 $k$ 的最低 $p$ 個位元，其他位元完全沒用到；$M=100$ 也只看最後兩位數。
+- **乘法（multiplication）**：$h(k)=\lfloor M\cdot(kA\bmod1)\rfloor$，$0<A<1$（常用 $A\approx\frac{\sqrt5-1}2\approx0.618$）。$M$ 不挑，常取 2 的次方。
+- **其他課本常見的**：mid-square（平方後取中間幾位）、folding（切成幾段相加）、digit analysis（挑分布最平均的幾位數字）。
+
 ### 4.2 雜湊的理論：chaining、universal、perfect hashing {#u4-theory}
 
 103、104、105 年各考一題觀念或證明：chaining 搜尋要多久、universal hashing 的碰撞機率、perfect hashing、用在認證的雜湊函數要有什麼性質。
@@ -2047,6 +2126,55 @@ $h_2$ 不能是 0（不然永遠原地踏步），而且最好和 $M$ 互質，$
 #### chaining：每一格掛一條串列
 
 除了 [4.0](#u4-0) 的 open addressing（被佔就往別格放），另一種處理碰撞的方法是 **chaining**：每一格放一條 linked list，算到同一格的 key 全部串在一起。
+
+<figure class="fig">
+<svg viewBox="0 0 360 186" role="img" aria-label="M＝5 的 chaining 雜湊表，依序插入 7、12、2、10、15，新的放在串列最前面。第 0 格串著 15、10；第 2 格串著 2、12、7；第 1、3、4 格是空的。">
+<text x="24" y="27" text-anchor="end" dominant-baseline="central" class="sm mono">0</text>
+<rect class="box" x="34" y="12" width="40" height="30"/>
+<circle class="ah" cx="54" cy="27" r="3.5"/>
+<line class="arw" x1="58" y1="27" x2="90.0" y2="27.0"/>
+<polygon class="ah" points="99.0,27.0 90.0,32.0 90.0,22.0"/>
+<rect class="fc" x="100" y="14" width="40" height="26" rx="4"/>
+<text x="120" y="27" text-anchor="middle" dominant-baseline="central" class="mono">15</text>
+<rect class="box" x="140" y="14" width="14" height="26"/>
+<line class="arw" x1="147" y1="27" x2="170.0" y2="27.0"/>
+<polygon class="ah" points="179.0,27.0 170.0,32.0 170.0,22.0"/>
+<rect class="fc" x="180" y="14" width="40" height="26" rx="4"/>
+<text x="200" y="27" text-anchor="middle" dominant-baseline="central" class="mono">10</text>
+<rect class="box" x="220" y="14" width="14" height="26"/>
+<line class="dash" x1="222" y1="38" x2="232" y2="16"/>
+<text x="24" y="61" text-anchor="end" dominant-baseline="central" class="sm mono">1</text>
+<rect class="box" x="34" y="46" width="40" height="30"/>
+<line class="dash" x1="40" y1="70" x2="68" y2="52"/>
+<text x="24" y="95" text-anchor="end" dominant-baseline="central" class="sm mono">2</text>
+<rect class="box" x="34" y="80" width="40" height="30"/>
+<circle class="ah" cx="54" cy="95" r="3.5"/>
+<line class="arw" x1="58" y1="95" x2="90.0" y2="95.0"/>
+<polygon class="ah" points="99.0,95.0 90.0,100.0 90.0,90.0"/>
+<rect class="fb" x="100" y="82" width="40" height="26" rx="4"/>
+<text x="120" y="95" text-anchor="middle" dominant-baseline="central" class="mono">2</text>
+<rect class="box" x="140" y="82" width="14" height="26"/>
+<line class="arw" x1="147" y1="95" x2="170.0" y2="95.0"/>
+<polygon class="ah" points="179.0,95.0 170.0,100.0 170.0,90.0"/>
+<rect class="fb" x="180" y="82" width="40" height="26" rx="4"/>
+<text x="200" y="95" text-anchor="middle" dominant-baseline="central" class="mono">12</text>
+<rect class="box" x="220" y="82" width="14" height="26"/>
+<line class="arw" x1="227" y1="95" x2="250.0" y2="95.0"/>
+<polygon class="ah" points="259.0,95.0 250.0,100.0 250.0,90.0"/>
+<rect class="fb" x="260" y="82" width="40" height="26" rx="4"/>
+<text x="280" y="95" text-anchor="middle" dominant-baseline="central" class="mono">7</text>
+<rect class="box" x="300" y="82" width="14" height="26"/>
+<line class="dash" x1="302" y1="106" x2="312" y2="84"/>
+<text x="24" y="129" text-anchor="end" dominant-baseline="central" class="sm mono">3</text>
+<rect class="box" x="34" y="114" width="40" height="30"/>
+<line class="dash" x1="40" y1="138" x2="68" y2="120"/>
+<text x="24" y="163" text-anchor="end" dominant-baseline="central" class="sm mono">4</text>
+<rect class="box" x="34" y="148" width="40" height="30"/>
+<line class="dash" x1="40" y1="172" x2="68" y2="154"/>
+<text x="220" y="140" text-anchor="middle" dominant-baseline="central" class="sm">新的 key 插在串列最前面：O(1)</text>
+</svg>
+<figcaption>M＝5，依序插入 7、12、2、10、15：撞在同一格的 key 串成一條，表永遠不會「滿」</figcaption>
+</figure>
 
 **simple uniform hashing（簡單均勻雜湊）假設**：每個 key **等機率**落在 m 格中的任一格，而且跟其他 key 落在哪裡**無關**。
 
@@ -2104,6 +2232,17 @@ key 的集合**固定不變**（例如程式語言的保留字）時，可以做
     2. **碰撞**：兩個不同的 key 算出同一個雜湊值。**chaining**：每一格掛一條 linked list，撞在同一格的 key 都串在那條串列上，搜尋時走那一條。
     3. **perfect hashing**：key 集合固定時，兩層雜湊，第二層用大小 $n_j^2$ 的表讓每一格裡完全沒有碰撞，最壞情況 $O(1)$ 搜尋、空間 $O(n)$。
 
+#### open addressing 要探測幾次
+
+假設每個 key 的探測順序都是隨機的（uniform hashing），load factor $\alpha<1$：
+
+| 搜尋 | 平均探測次數最多 | $\alpha=0.5$ | $\alpha=0.75$ | $\alpha=0.9$ |
+|---|---|---|---|---|
+| 失敗 | $\frac1{1-\alpha}$ | 2 | 4 | 10 |
+| 成功 | $\frac1\alpha\ln\frac1{1-\alpha}$ | 1.39 | 1.85 | 2.56 |
+
+**失敗的直覺**：每探測一格，有 $\alpha$ 的機率是佔用的、要繼續。第 1 次一定要探測，要探測第 2 次的機率是 $\alpha$、第 3 次是 $\alpha^2$……加起來 $1+\alpha+\alpha^2+\cdots=\frac1{1-\alpha}$。$\alpha$ 接近 1 時急速變大，所以 open addressing 的表不能放太滿。
+
 #### 觀念小考
 
 <div class="mcq" data-ans="2" markdown="1">
@@ -2152,6 +2291,97 @@ key 的集合**固定不變**（例如程式語言的保留字）時，可以做
 
 ??? quiz "看參考答案"
     碰撞次數 X 只能是 0, 1, 2, …。$E[X]=\sum_k k\Pr[X=k]\ge\sum_{k\ge1}\Pr[X=k]=\Pr[X\ge1]$，因為每個 $k\ge1$ 時 $k\Pr[X=k]\ge\Pr[X=k]$。所以 $\Pr[X\ge1]\le E[X]<\frac12$（這就是 Markov 不等式）。
+
+### 4.3 觀念小考 {#u4-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** open addressing 刪除一個 key 時，為什麼不能直接把格子清空？
+
+1. 會浪費空間
+2. 雜湊函數會跟著改變
+3. 之後的搜尋走到空格就停，找不到排在後面的 key
+4. load factor 會變大
+
+??? quiz "看解析"
+    **C**。空格的意思是「路線到這裡就結束」。直接清空會切斷其他 key 的探測路線，所以要標成「已刪除」，搜尋時跳過、插入時可以重用。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** quadratic probing 的 secondary clustering 是指？
+
+1. $h(k)$ 相同的 key，探測路線完全一樣
+2. 被佔的格子連成一大塊
+3. 所有 key 的雜湊值都一樣
+4. 表滿了插不進去
+
+??? quiz "看解析"
+    **A**。探測位置只跟 $h(k)$ 和 $i$ 有關，起點一樣的 key 就走同一條路。B 是 linear probing 的 primary clustering。double hashing 的步伐 $h_2(k)$ 跟 key 有關，兩種都能避開。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** 用除法 $h(k)=k\bmod M$，$M$ 選哪一個比較好？
+
+1. 64
+2. 100
+3. 128
+4. 97
+
+??? quiz "看解析"
+    **D**。97 是質數，又不靠近 2 的次方。64、128 只看 key 的最低 6、7 個位元；100 只看最後兩位十進位數字，其他部分完全沒用到。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-4.** open addressing（uniform hashing 假設），load factor 0.75 時，失敗的搜尋平均最多探測幾次？
+
+1. 1.33
+2. 4
+3. 0.75
+4. 3
+
+??? quiz "看解析"
+    **B**。$\frac1{1-\alpha}=\frac1{0.25}=4$。A 是 $\frac1\alpha$，不是這個公式。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-5.** $M=7$、quadratic probing、$h(k)=k\bmod7$，依序插入 14、21、7、28，28 放在哪一格？
+
+1. 3
+2. 0
+3. 2
+4. 5
+
+??? quiz "看解析"
+    **C**。四個都算到 0。14 放 0；21 探測 0、1 → 1；7 探測 0、1、4 → 4；28 探測 0、1、4，再來是 $9\bmod7=2$，空的 → **2**。A 是用 linear probing 的答案。
+
+</div>
+
+**W-1.** $M=7$、$h(k)=k\bmod7$、linear probing，依序插入 15、8、22、4，再刪除 8。(a) 用「已刪除」標記時，搜尋 22 會探測哪些格子？(b) 接著插入 29，放在哪一格？(c) 如果刪除時直接清空，搜尋 22 會怎樣？
+
+??? quiz "看參考答案"
+    **插入**：15 → 1；8 → 1 被佔 → 2；22 → 1、2 被佔 → 3；4 → 4。
+
+    - **(a) 探測 1、2、3**：1 是 15，不是；2 是已刪除，繼續；3 找到 22。
+    - **(b) 放在 2**：$29\bmod7=1$，1 被佔；2 是已刪除，可以重用。（嚴格來說要先確定 29 不在表裡：沿路線找到空格 5 才確定，再放回第一個已刪除的格子 2。）
+    - **(c) 找不到**：1 是 15；2 是空格，搜尋停下來，回答「22 不在表裡」，錯了。
+
+**W-2.** $M=5$、chaining、$h(k)=k\bmod5$，依序插入 3、8、13、4、9、20（新的插在串列最前面）。每個 key 被找的機率一樣時，成功的搜尋平均比較幾次？要找的 key 平均落在 5 格中任一格時，失敗的搜尋平均比較幾次？
+
+??? quiz "看參考答案"
+    **表**：第 0 格 20；第 3 格 13 → 8 → 3；第 4 格 9 → 4；第 1、2 格空的。
+
+    - **成功（平均 $\frac{10}6\approx1.67$ 次）**：13、9、20 各比 1 次，8、4 各 2 次，3 要 3 次，共 10 次。
+    - **失敗（平均 $\frac65=1.2$ 次）**：落在第 0、1、2、3、4 格，要把整條串列比完：1、0、0、3、2 次，平均 1.2，剛好等於 $\alpha=\frac65$，跟 [4.2](#u4-theory) 的 $\Theta(1+\alpha)$ 一致。
 
 ### 單元 4 小考 {#u4-quiz}
 

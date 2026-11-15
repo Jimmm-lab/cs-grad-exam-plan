@@ -3396,13 +3396,93 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>碰撞時不是固定走 1 格，而是走 <span class="arithmatex">\(h_2(k)\)</span> 格：第 <span class="arithmatex">\(i\)</span> 次探測位置是 <span class="arithmatex">\((h_1(k)+i\cdot h_2(k))\bmod M\)</span>。不同的 key 就算第一次撞在同一格，之後走的路線也不同，不會擠成一團。</p>
 <p><span class="arithmatex">\(h_2\)</span> 不能是 0（不然永遠原地踏步），而且最好和 <span class="arithmatex">\(M\)</span> 互質，<span class="arithmatex">\(M\)</span> 取質數最簡單。</p>
 <p><strong>load factor</strong> <span class="arithmatex">\(\alpha=\frac{\text{放了幾個}}{M}\)</span>。<span class="arithmatex">\(\alpha\)</span> 越接近 1，碰撞越多、越慢。</p>
+<h4 id="_22">刪除：為什麼不能直接清空？</h4>
+<p>open addressing 搜尋時，是沿著探測路線一直走，<strong>走到空格就停</strong>（空格代表「這個 key 從來沒放進來過」）。刪除時如果直接把格子清空，路線就被切斷了：</p>
+<figure class="fig">
+<svg viewBox="0 0 360 224" role="img" aria-label="M＝5、linear probing，7、12、2 都算到第 2 格，放在 2、3、4。刪除 12 時如果直接清空第 3 格，找 2 會在第 3 格遇到空格就停下來，以為 2 不存在。改成把第 3 格標成「已刪除」，搜尋會跳過它繼續找，在第 4 格找到 2。">
+<text x="92" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<text x="144" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="196" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="248" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="300" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<text x="8" y="14" text-anchor="start" dominant-baseline="central" class="sm">直接清空第 3 格：找不到 2（錯）</text>
+<rect class="box" x="66" y="54" width="52" height="34"/>
+<text x="92" y="71" text-anchor="middle" dominant-baseline="central" class="mono"></text>
+<rect class="box" x="118" y="54" width="52" height="34"/>
+<text x="144" y="71" text-anchor="middle" dominant-baseline="central" class="mono"></text>
+<rect class="box" x="170" y="54" width="52" height="34"/>
+<text x="196" y="71" text-anchor="middle" dominant-baseline="central" class="mono">7</text>
+<rect class="box" x="222" y="54" width="52" height="34"/>
+<text x="248" y="71" text-anchor="middle" dominant-baseline="central" class="sm"></text>
+<rect class="box" x="274" y="54" width="52" height="34"/>
+<text x="300" y="71" text-anchor="middle" dominant-baseline="central" class="mono">2</text>
+<text x="58" y="71" text-anchor="end" dominant-baseline="central" class="sm">找 2</text>
+<path class="arw-a" d="M196,90 Q222,108 242.2,94.0"/>
+<polygon class="ah-a" points="248.0,90.0 244.5,97.3 240.0,90.7"/>
+<text x="248" y="114" text-anchor="middle" dominant-baseline="central" class="sm tt">空格：停</text>
+<text x="8" y="122" text-anchor="start" dominant-baseline="central" class="sm">標成「已刪除」：跳過它繼續找</text>
+<rect class="box" x="66" y="162" width="52" height="34"/>
+<text x="92" y="179" text-anchor="middle" dominant-baseline="central" class="mono"></text>
+<rect class="box" x="118" y="162" width="52" height="34"/>
+<text x="144" y="179" text-anchor="middle" dominant-baseline="central" class="mono"></text>
+<rect class="box" x="170" y="162" width="52" height="34"/>
+<text x="196" y="179" text-anchor="middle" dominant-baseline="central" class="mono">7</text>
+<rect class="fk" x="222" y="162" width="52" height="34"/>
+<text x="248" y="179" text-anchor="middle" dominant-baseline="central" class="sm">已刪除</text>
+<rect class="fc" x="274" y="162" width="52" height="34"/>
+<text x="300" y="179" text-anchor="middle" dominant-baseline="central" class="mono">2</text>
+<text x="58" y="179" text-anchor="end" dominant-baseline="central" class="sm">找 2</text>
+<path class="arw-a" d="M196,198 Q222,216 242.2,202.0"/>
+<polygon class="ah-a" points="248.0,198.0 244.5,205.3 240.0,198.7"/>
+<path class="arw-a" d="M248,198 Q274,216 294.2,202.0"/>
+<polygon class="ah-a" points="300.0,198.0 296.5,205.3 292.0,198.7"/>
+<text x="334" y="179" text-anchor="start" dominant-baseline="central" class="sm tc">找到</text>
+</svg>
+<figcaption>7、12、2 都算到第 2 格；刪掉 12 之後要找 2，第 3 格必須「還連著」</figcaption>
+</figure>
+
+<p>所以刪除時要把格子標成「<strong>已刪除</strong>」（tombstone）：搜尋遇到它要<strong>繼續走</strong>；插入遇到它可以<strong>直接用</strong>。已刪除的格子太多，搜尋會變慢，就重建整張表（rehash）。chaining 沒有這個問題，直接從串列拿掉就好。</p>
+<div class="admonition key">
+<p class="admonition-title">雜湊題要做什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>linear／quadratic／double hashing 放在哪</td>
+<td>列表：key、<span class="arithmatex">\(h\)</span>（和 <span class="arithmatex">\(h_2\)</span>）、探測過的位置、最後放在哪（<a href="#u4-1">4.1</a>）</td>
+</tr>
+<tr>
+<td>刪除後再搜尋</td>
+<td>open addressing 要標「已刪除」，搜尋跳過它繼續走</td>
+</tr>
+<tr>
+<td>chaining 平均搜尋時間</td>
+<td>失敗、成功都是 <span class="arithmatex">\(\Theta(1+\alpha)\)</span>，<span class="arithmatex">\(\alpha=n/m\)</span>（<a href="#u4-theory">4.2</a>）</td>
+</tr>
+<tr>
+<td>open addressing 探測幾次</td>
+<td>失敗最多 <span class="arithmatex">\(\frac1{1-\alpha}\)</span>、成功最多 <span class="arithmatex">\(\frac1\alpha\ln\frac1{1-\alpha}\)</span></td>
+</tr>
+<tr>
+<td>三種探測的缺點</td>
+<td>linear：primary clustering；quadratic：secondary clustering；double：<span class="arithmatex">\(h_2\)</span> 要選好</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：collision（碰撞）、open addressing（開放定址）、chaining（鏈結）、load factor（負載因子）、probe（探測）、clustering（群聚）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/en/hashtable">VisuAlgo Hash Table</a>：linear probing、quadratic probing、double hashing 都能自己輸入 key 看探測路線，可以直接拿 115 Q7 的數字試。</li>
 </ul>
 </div>
-<h4 id="_22">換你試試</h4>
+<h4 id="_23">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7，各放在哪裡？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3504,10 +3584,103 @@ swap(A[i + 1], A[r]);</code></pre>
 </div>
 <div class="viz" data-viz="hash" data-keys="11,33,66,7,77" data-m="11" data-method="double" data-r="7" data-title="115 Q7：double hashing"></div>
 
+<h4 id="quadratic-probing">quadratic probing 算一次</h4>
+<p><span class="arithmatex">\(M=11\)</span>、<span class="arithmatex">\(h(k)=k\bmod11\)</span>，插入 22、33、44、55（全部算到 0）：</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>第幾次探測 <span class="arithmatex">\(i\)</span></th>
+<th>位置 <span class="arithmatex">\((0+i^2)\bmod11\)</span></th>
+<th>linear probing 會放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>22</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>33</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>44</td>
+<td>2</td>
+<td>4</td>
+<td>2</td>
+</tr>
+<tr>
+<td>55</td>
+<td>3</td>
+<td>9</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>linear probing 擠成 0–3 一整塊；quadratic 跳開了，但四個 key 走的是<strong>同一條路線</strong> 0 → 1 → 4 → 9（secondary clustering）。另外，quadratic probing 不一定走得遍每一格：<span class="arithmatex">\(M\)</span> 取質數、而且 <span class="arithmatex">\(\alpha\le\frac12\)</span> 時，才保證找得到空格。</p>
+<h4 id="_24">雜湊函數怎麼設計</h4>
+<ul>
+<li><strong>除法（division）</strong>：<span class="arithmatex">\(h(k)=k\bmod M\)</span>，<span class="arithmatex">\(M\)</span> 選<strong>不靠近 2 的次方的質數</strong>。<span class="arithmatex">\(M=2^p\)</span> 時只看得到 <span class="arithmatex">\(k\)</span> 的最低 <span class="arithmatex">\(p\)</span> 個位元，其他位元完全沒用到；<span class="arithmatex">\(M=100\)</span> 也只看最後兩位數。</li>
+<li><strong>乘法（multiplication）</strong>：<span class="arithmatex">\(h(k)=\lfloor M\cdot(kA\bmod1)\rfloor\)</span>，<span class="arithmatex">\(0&lt;A&lt;1\)</span>（常用 <span class="arithmatex">\(A\approx\frac{\sqrt5-1}2\approx0.618\)</span>）。<span class="arithmatex">\(M\)</span> 不挑，常取 2 的次方。</li>
+<li><strong>其他課本常見的</strong>：mid-square（平方後取中間幾位）、folding（切成幾段相加）、digit analysis（挑分布最平均的幾位數字）。</li>
+</ul>
 <h3 id="u4-theory">4.2 雜湊的理論：chaining、universal、perfect hashing</h3>
 <p>103、104、105 年各考一題觀念或證明：chaining 搜尋要多久、universal hashing 的碰撞機率、perfect hashing、用在認證的雜湊函數要有什麼性質。</p>
 <h4 id="chaining">chaining：每一格掛一條串列</h4>
 <p>除了 <a href="#u4-0">4.0</a> 的 open addressing（被佔就往別格放），另一種處理碰撞的方法是 <strong>chaining</strong>：每一格放一條 linked list，算到同一格的 key 全部串在一起。</p>
+<p><figure class="fig">
+<svg viewBox="0 0 360 186" role="img" aria-label="M＝5 的 chaining 雜湊表，依序插入 7、12、2、10、15，新的放在串列最前面。第 0 格串著 15、10；第 2 格串著 2、12、7；第 1、3、4 格是空的。">
+<text x="24" y="27" text-anchor="end" dominant-baseline="central" class="sm mono">0</text>
+<rect class="box" x="34" y="12" width="40" height="30"/>
+<circle class="ah" cx="54" cy="27" r="3.5"/>
+<line class="arw" x1="58" y1="27" x2="90.0" y2="27.0"/>
+<polygon class="ah" points="99.0,27.0 90.0,32.0 90.0,22.0"/>
+<rect class="fc" x="100" y="14" width="40" height="26" rx="4"/>
+<text x="120" y="27" text-anchor="middle" dominant-baseline="central" class="mono">15</text>
+<rect class="box" x="140" y="14" width="14" height="26"/>
+<line class="arw" x1="147" y1="27" x2="170.0" y2="27.0"/>
+<polygon class="ah" points="179.0,27.0 170.0,32.0 170.0,22.0"/>
+<rect class="fc" x="180" y="14" width="40" height="26" rx="4"/>
+<text x="200" y="27" text-anchor="middle" dominant-baseline="central" class="mono">10</text>
+<rect class="box" x="220" y="14" width="14" height="26"/>
+<line class="dash" x1="222" y1="38" x2="232" y2="16"/>
+<text x="24" y="61" text-anchor="end" dominant-baseline="central" class="sm mono">1</text>
+<rect class="box" x="34" y="46" width="40" height="30"/>
+<line class="dash" x1="40" y1="70" x2="68" y2="52"/>
+<text x="24" y="95" text-anchor="end" dominant-baseline="central" class="sm mono">2</text>
+<rect class="box" x="34" y="80" width="40" height="30"/>
+<circle class="ah" cx="54" cy="95" r="3.5"/>
+<line class="arw" x1="58" y1="95" x2="90.0" y2="95.0"/>
+<polygon class="ah" points="99.0,95.0 90.0,100.0 90.0,90.0"/>
+<rect class="fb" x="100" y="82" width="40" height="26" rx="4"/>
+<text x="120" y="95" text-anchor="middle" dominant-baseline="central" class="mono">2</text>
+<rect class="box" x="140" y="82" width="14" height="26"/>
+<line class="arw" x1="147" y1="95" x2="170.0" y2="95.0"/>
+<polygon class="ah" points="179.0,95.0 170.0,100.0 170.0,90.0"/>
+<rect class="fb" x="180" y="82" width="40" height="26" rx="4"/>
+<text x="200" y="95" text-anchor="middle" dominant-baseline="central" class="mono">12</text>
+<rect class="box" x="220" y="82" width="14" height="26"/>
+<line class="arw" x1="227" y1="95" x2="250.0" y2="95.0"/>
+<polygon class="ah" points="259.0,95.0 250.0,100.0 250.0,90.0"/>
+<rect class="fb" x="260" y="82" width="40" height="26" rx="4"/>
+<text x="280" y="95" text-anchor="middle" dominant-baseline="central" class="mono">7</text>
+<rect class="box" x="300" y="82" width="14" height="26"/>
+<line class="dash" x1="302" y1="106" x2="312" y2="84"/>
+<text x="24" y="129" text-anchor="end" dominant-baseline="central" class="sm mono">3</text>
+<rect class="box" x="34" y="114" width="40" height="30"/>
+<line class="dash" x1="40" y1="138" x2="68" y2="120"/>
+<text x="24" y="163" text-anchor="end" dominant-baseline="central" class="sm mono">4</text>
+<rect class="box" x="34" y="148" width="40" height="30"/>
+<line class="dash" x1="40" y1="172" x2="68" y2="154"/>
+<text x="220" y="140" text-anchor="middle" dominant-baseline="central" class="sm">新的 key 插在串列最前面：O(1)</text>
+</svg></p>
+<figcaption>M＝5，依序插入 7、12、2、10、15：撞在同一格的 key 串成一條，表永遠不會「滿」</figcaption>
+</figure>
 <p><strong>simple uniform hashing（簡單均勻雜湊）假設</strong>：每個 key <strong>等機率</strong>落在 m 格中的任一格，而且跟其他 key 落在哪裡<strong>無關</strong>。</p>
 <p>在這個假設下，n 個 key、m 格，每條串列平均長 <span class="arithmatex">\(\alpha=\frac nm\)</span>（load factor）：</p>
 <table>
@@ -3543,7 +3716,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>第二層：第 j 格有 <span class="arithmatex">\(n_j\)</span> 個 key，就給它一個大小 <span class="arithmatex">\(n_j^2\)</span> 的小表，再挑一個雜湊函數讓這 <span class="arithmatex">\(n_j\)</span> 個 key <strong>完全不碰撞</strong>（下面 105 Q5 證明隨機挑成功的機率至少一半，試幾次就成功）。</li>
 </ol>
 <p>總空間期望值仍然是 <span class="arithmatex">\(O(n)\)</span>，每次搜尋只算兩次雜湊。</p>
-<h4 id="_23">用在認證的雜湊函數</h4>
+<h4 id="_25">用在認證的雜湊函數</h4>
 <p>密碼學用的雜湊函數（例如 SHA-256）把任意長的訊息壓成固定長度的摘要，還要滿足：</p>
 <ul>
 <li><strong>單向（one-way）</strong>：知道 <span class="arithmatex">\(h(m)\)</span>，很難找出 m。</li>
@@ -3570,7 +3743,37 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>perfect hashing</strong>：key 集合固定時，兩層雜湊，第二層用大小 <span class="arithmatex">\(n_j^2\)</span> 的表讓每一格裡完全沒有碰撞，最壞情況 <span class="arithmatex">\(O(1)\)</span> 搜尋、空間 <span class="arithmatex">\(O(n)\)</span>。</li>
 </ol>
 </div>
-<h4 id="_24">觀念小考</h4>
+<h4 id="open-addressing">open addressing 要探測幾次</h4>
+<p>假設每個 key 的探測順序都是隨機的（uniform hashing），load factor <span class="arithmatex">\(\alpha&lt;1\)</span>：</p>
+<table>
+<thead>
+<tr>
+<th>搜尋</th>
+<th>平均探測次數最多</th>
+<th><span class="arithmatex">\(\alpha=0.5\)</span></th>
+<th><span class="arithmatex">\(\alpha=0.75\)</span></th>
+<th><span class="arithmatex">\(\alpha=0.9\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>失敗</td>
+<td><span class="arithmatex">\(\frac1{1-\alpha}\)</span></td>
+<td>2</td>
+<td>4</td>
+<td>10</td>
+</tr>
+<tr>
+<td>成功</td>
+<td><span class="arithmatex">\(\frac1\alpha\ln\frac1{1-\alpha}\)</span></td>
+<td>1.39</td>
+<td>1.85</td>
+<td>2.56</td>
+</tr>
+</tbody>
+</table>
+<p><strong>失敗的直覺</strong>：每探測一格，有 <span class="arithmatex">\(\alpha\)</span> 的機率是佔用的、要繼續。第 1 次一定要探測，要探測第 2 次的機率是 <span class="arithmatex">\(\alpha\)</span>、第 3 次是 <span class="arithmatex">\(\alpha^2\)</span>……加起來 <span class="arithmatex">\(1+\alpha+\alpha^2+\cdots=\frac1{1-\alpha}\)</span>。<span class="arithmatex">\(\alpha\)</span> 接近 1 時急速變大，所以 open addressing 的表不能放太滿。</p>
+<h4 id="_26">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 用 chaining，m ＝ 100 格放 n ＝ 300 個 key，在 simple uniform hashing 下，失敗的搜尋平均要走多長的串列？</p>
 <ol>
@@ -3614,6 +3817,92 @@ swap(A[i + 1], A[r]);</code></pre>
 <details class="quiz">
 <summary>看參考答案</summary>
 <p>碰撞次數 X 只能是 0, 1, 2, …。<span class="arithmatex">\(E[X]=\sum_k k\Pr[X=k]\ge\sum_{k\ge1}\Pr[X=k]=\Pr[X\ge1]\)</span>，因為每個 <span class="arithmatex">\(k\ge1\)</span> 時 <span class="arithmatex">\(k\Pr[X=k]\ge\Pr[X=k]\)</span>。所以 <span class="arithmatex">\(\Pr[X\ge1]\le E[X]&lt;\frac12\)</span>（這就是 Markov 不等式）。</p>
+</details>
+<h3 id="u4-concept">4.3 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> open addressing 刪除一個 key 時，為什麼不能直接把格子清空？</p>
+<ol>
+<li>會浪費空間</li>
+<li>雜湊函數會跟著改變</li>
+<li>之後的搜尋走到空格就停，找不到排在後面的 key</li>
+<li>load factor 會變大</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。空格的意思是「路線到這裡就結束」。直接清空會切斷其他 key 的探測路線，所以要標成「已刪除」，搜尋時跳過、插入時可以重用。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> quadratic probing 的 secondary clustering 是指？</p>
+<ol>
+<li><span class="arithmatex">\(h(k)\)</span> 相同的 key，探測路線完全一樣</li>
+<li>被佔的格子連成一大塊</li>
+<li>所有 key 的雜湊值都一樣</li>
+<li>表滿了插不進去</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。探測位置只跟 <span class="arithmatex">\(h(k)\)</span> 和 <span class="arithmatex">\(i\)</span> 有關，起點一樣的 key 就走同一條路。B 是 linear probing 的 primary clustering。double hashing 的步伐 <span class="arithmatex">\(h_2(k)\)</span> 跟 key 有關，兩種都能避開。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> 用除法 <span class="arithmatex">\(h(k)=k\bmod M\)</span>，<span class="arithmatex">\(M\)</span> 選哪一個比較好？</p>
+<ol>
+<li>64</li>
+<li>100</li>
+<li>128</li>
+<li>97</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。97 是質數，又不靠近 2 的次方。64、128 只看 key 的最低 6、7 個位元；100 只看最後兩位十進位數字，其他部分完全沒用到。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-4.</strong> open addressing（uniform hashing 假設），load factor 0.75 時，失敗的搜尋平均最多探測幾次？</p>
+<ol>
+<li>1.33</li>
+<li>4</li>
+<li>0.75</li>
+<li>3</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(\frac1{1-\alpha}=\frac1{0.25}=4\)</span>。A 是 <span class="arithmatex">\(\frac1\alpha\)</span>，不是這個公式。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-5.</strong> <span class="arithmatex">\(M=7\)</span>、quadratic probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7、28，28 放在哪一格？</p>
+<ol>
+<li>3</li>
+<li>0</li>
+<li>2</li>
+<li>5</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。四個都算到 0。14 放 0；21 探測 0、1 → 1；7 探測 0、1、4 → 4；28 探測 0、1、4，再來是 <span class="arithmatex">\(9\bmod7=2\)</span>，空的 → <strong>2</strong>。A 是用 linear probing 的答案。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> <span class="arithmatex">\(M=7\)</span>、<span class="arithmatex">\(h(k)=k\bmod7\)</span>、linear probing，依序插入 15、8、22、4，再刪除 8。(a) 用「已刪除」標記時，搜尋 22 會探測哪些格子？(b) 接著插入 29，放在哪一格？(c) 如果刪除時直接清空，搜尋 22 會怎樣？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>插入</strong>：15 → 1；8 → 1 被佔 → 2；22 → 1、2 被佔 → 3；4 → 4。</p>
+<ul>
+<li><strong>(a) 探測 1、2、3</strong>：1 是 15，不是；2 是已刪除，繼續；3 找到 22。</li>
+<li><strong>(b) 放在 2</strong>：<span class="arithmatex">\(29\bmod7=1\)</span>，1 被佔；2 是已刪除，可以重用。（嚴格來說要先確定 29 不在表裡：沿路線找到空格 5 才確定，再放回第一個已刪除的格子 2。）</li>
+<li><strong>(c) 找不到</strong>：1 是 15；2 是空格，搜尋停下來，回答「22 不在表裡」，錯了。</li>
+</ul>
+</details>
+<p><strong>W-2.</strong> <span class="arithmatex">\(M=5\)</span>、chaining、<span class="arithmatex">\(h(k)=k\bmod5\)</span>，依序插入 3、8、13、4、9、20（新的插在串列最前面）。每個 key 被找的機率一樣時，成功的搜尋平均比較幾次？要找的 key 平均落在 5 格中任一格時，失敗的搜尋平均比較幾次？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>表</strong>：第 0 格 20；第 3 格 13 → 8 → 3；第 4 格 9 → 4；第 1、2 格空的。</p>
+<ul>
+<li><strong>成功（平均 <span class="arithmatex">\(\frac{10}6\approx1.67\)</span> 次）</strong>：13、9、20 各比 1 次，8、4 各 2 次，3 要 3 次，共 10 次。</li>
+<li><strong>失敗（平均 <span class="arithmatex">\(\frac65=1.2\)</span> 次）</strong>：落在第 0、1、2、3、4 格，要把整條串列比完：1、0、0、3、2 次，平均 1.2，剛好等於 <span class="arithmatex">\(\alpha=\frac65\)</span>，跟 <a href="#u4-theory">4.2</a> 的 <span class="arithmatex">\(\Theta(1+\alpha)\)</span> 一致。</li>
+</ul>
 </details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h=k\bmod7\)</span>，插入 10, 3, 17, 24 的結果？</p>
@@ -3716,7 +4005,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：圖</h2>
 <h3 id="u5-0">5.0 觀念課：用最少的電線連起所有城市</h3>
-<h4 id="_25">圖怎麼存</h4>
+<h4 id="_27">圖怎麼存</h4>
 <p>三個點 A、B、C，邊 A–B（權重 1）、B–C（權重 2）、A–C（權重 3）：</p>
 <p><strong>鄰接矩陣</strong>（<span class="arithmatex">\(V\times V\)</span> 的表，適合邊很多的圖）：</p>
 <table>
@@ -3770,7 +4059,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/zh/mst">VisuAlgo 最小生成樹（中文）</a>：Kruskal 和 Prim 一步一步加邊，還有 Kruskal 為什麼正確的說明；<a href="https://visualgo.net/en/sssp">VisuAlgo 最短路徑</a>：Dijkstra 的過程。</li>
 </ul>
 </div>
-<h4 id="_26">換你試試</h4>
+<h4 id="_28">換你試試</h4>
 <p>圖：A–B 4、A–C 1、B–C 2、B–D 5、C–D 8。</p>
 <p><strong>T-1.</strong> 從 A 開始用 Prim，依序加入哪些邊？總權重？</p>
 <details class="quiz">
@@ -3947,7 +4236,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>DFS（depth-first search，深度優先）</strong>：一直往下走，走到沒有路才退回上一個岔路換別條，像走迷宮。用 <strong>stack</strong>（或遞迴）。</li>
 </ul>
 <p>BFS 一層一層往外，所以第幾層就是「離起點幾條邊」，<strong>無權重的圖可以用 BFS 找最短路徑</strong>。DFS 走的路不一定是最短的。</p>
-<h4 id="_27">手算規則（照字母順序）</h4>
+<h4 id="_29">手算規則（照字母順序）</h4>
 <p><strong>BFS</strong>：</p>
 <ol>
 <li>起點標成「發現了」，放進 queue。</li>
@@ -4219,7 +4508,7 @@ swap(A[i + 1], A[r]);</code></pre>
    b   g      n      a</code></pre>
 <p>驗算：一層一層讀是 i｜c e o｜d l m f h j｜b g n a <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>；preorder 是 i c d b g l e m n o f h a j <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。用程式試過所有可能的樹，只有這一棵兩個序列都對得上。</p>
 </div>
-<h4 id="_28">觀念小考</h4>
+<h4 id="_30">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> BFS 用哪一種資料結構，記住接下來要拜訪的點？</p>
 <ol>
@@ -4353,7 +4642,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>先看直接遞迴的呼叫樹（橘色是「之前算過、又重算一次」的），再把寫法切換成「算過就記在表裡」比較：</p>
 <div class="viz" data-viz="calltree" data-n="5"></div>
 
-<h4 id="_29">寫遞迴式的四步</h4>
+<h4 id="_31">寫遞迴式的四步</h4>
 <ol>
 <li><strong>定義狀態</strong>：用一句話說清楚 <span class="arithmatex">\(g(i,j)\)</span> 是什麼，例如「只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊出 <span class="arithmatex">\(j\)</span> 元的方法數」。</li>
 <li><strong>看最後一步（或第一步）分類</strong>：「有沒有用到第 <span class="arithmatex">\(i\)</span> 種硬幣」。</li>
@@ -4405,7 +4694,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10221988">談硬幣問題的文章</a>（面額 1、2、5 湊 11 元）。注意它算的是「最少幾枚硬幣」，這節和 112 Q4 算的是「有幾種組合」，遞迴式不一樣，可以兩個對照著看。</li>
 </ul>
 </div>
-<h4 id="_30">換你試試</h4>
+<h4 id="_32">換你試試</h4>
 <p><strong>T-1.</strong> 用 1、2、3 元湊 4 元（不計順序），有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -4723,7 +5012,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>節點裡的 key 由小到大排好，孩子夾在 key 之間（左邊的都比較小、右邊的都比較大）。</li>
 <li><strong>所有葉子在同一層</strong>。</li>
 </ul>
-<h4 id="_31">插入：滿了就從中間切開</h4>
+<h4 id="_33">插入：滿了就從中間切開</h4>
 <p>CLRS 的做法是<strong>往下走的時候，遇到滿的節點（<span class="arithmatex">\(2t-1\)</span> 個 key）就先切開</strong>：中間那個 key 往上搬到父親，左右各剩 <span class="arithmatex">\(t-1\)</span> 個。這樣插到葉子時一定有空位，也不用再往回調整。根滿了切開時，樹就長高一層。</p>
 <div class="admonition example">
 <p class="admonition-title">101 Q9（10%）：minimum degree t ＝ 3 的 B-tree，依序插入 B、Q、L、F</p>
@@ -4767,7 +5056,7 @@ swap(A[i + 1], A[r]);</code></pre>
     `-- [Y Z]</code></pre>
 <p>用程式照 CLRS 的插入演算法跑過一遍，四步的結果都一樣。</p>
 </div>
-<h4 id="_32">高度上界</h4>
+<h4 id="_34">高度上界</h4>
 <div class="admonition example">
 <p class="admonition-title">107 Q6(1)（8%）：n 個 key、minimum degree t 的 B-tree，高度最多多少？證明</p>
 <p><strong>答案</strong>：<span class="arithmatex">\(h\le\log_t\frac{n+1}2\)</span>。</p>
@@ -4779,7 +5068,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p class="admonition-title">104 Q4(3)（5%）：B-tree 為什麼能減少讀磁碟的成本？</p>
 <p>讀磁碟的時間主要花在 seek 和 rotational latency（<a href="os.html#u5-0">OS 5.0</a>），一次讀一整個區塊（page），讀幾個 byte 和讀一整頁差不多慢。B-tree 的一個節點就是一頁，放很多 key，所以<strong>分支數很大、樹很矮</strong>（<span class="arithmatex">\(\log_tn\)</span>），找一個 key 只要讀很少頁。讀進記憶體之後，在節點裡找 key 很快。</p>
 </div>
-<h4 id="_33">三種變形</h4>
+<h4 id="_35">三種變形</h4>
 <div class="admonition example">
 <p class="admonition-title">105 Q7(3)（3%）、107 Q6(2)（2%）：B⁺-tree、B*-tree、2-3-4 tree</p>
 <ul>
@@ -5025,7 +5314,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>一直轉到父親的 priority 比它小，或它變成根。</li>
 </ol>
 <p><strong>旋轉不會破壞 BST 的順序</strong>：右旋時，x 是 y 的左孩子，x 轉上去、y 變成 x 的右孩子，原本 x 的右子樹（比 x 大、比 y 小）改掛到 y 的左邊。中序走訪的順序完全不變。</p>
-<h4 id="_34">刪除：把它轉到下面再拿掉</h4>
+<h4 id="_36">刪除：把它轉到下面再拿掉</h4>
 <p>要刪的節點有兩個孩子時，跟 <strong>priority 比較小的那個孩子</strong>旋轉（讓那個孩子上來當父親，heap 規則才會對），一直轉到它只剩一個孩子或沒有孩子，再直接拿掉。</p>
 <div class="admonition example">
 <p class="admonition-title">103 Q8（10%）：(1) 在下面的 treap 插入 (D:9) (2) 接著插入 (F:2)</p>
@@ -5112,7 +5401,7 @@ swap(A[i + 1], A[r]);</code></pre>
             `-- L I:73</code></pre>
 <p><strong>檢查</strong>：中序走訪 A、B、C、D、E、F、G、H、I、K 是照字母順序（BST）；每個節點的 priority 都比孩子小（heap）。我用程式照同樣的步驟插入，也用很多種不同的插入順序建同一組節點，得到的都是這棵樹（形狀唯一）。</p>
 </div>
-<h4 id="_35">觀念小考</h4>
+<h4 id="_37">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 用 min-heap 規則的 treap，根是哪一個節點？</p>
 <ol>
