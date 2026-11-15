@@ -591,6 +591,39 @@ window.MathJax = {
 <li><code>p[1]</code> 就是 <code>*(p+1)</code> ＝ a[2] ＝ 30</li>
 <li><code>p - a</code> ＝ 兩個指標差幾格 ＝ 1</li>
 </ul>
+<figure class="fig">
+<svg viewBox="0 0 360 172" role="img" aria-label="陣列 a 的四格在位址 1000、1004、1008、1012，值是 10、20、30、40。p 存的是 1004，指向 a[1]；p+2 是 1012，指向 a[3]，因為一個 int 佔 4 個 byte。">
+<rect class="box" x="60" y="80" width="70" height="40"/>
+<text x="95" y="100" text-anchor="middle" dominant-baseline="central">10</text>
+<text x="95" y="136" text-anchor="middle" dominant-baseline="central" class="sm mono">a[0]</text>
+<text x="95" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">1000</text>
+<rect class="fb" x="130" y="80" width="70" height="40"/>
+<text x="165" y="100" text-anchor="middle" dominant-baseline="central">20</text>
+<text x="165" y="136" text-anchor="middle" dominant-baseline="central" class="sm mono">a[1]</text>
+<text x="165" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">1004</text>
+<rect class="box" x="200" y="80" width="70" height="40"/>
+<text x="235" y="100" text-anchor="middle" dominant-baseline="central">30</text>
+<text x="235" y="136" text-anchor="middle" dominant-baseline="central" class="sm mono">a[2]</text>
+<text x="235" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">1008</text>
+<rect class="fb" x="270" y="80" width="70" height="40"/>
+<text x="305" y="100" text-anchor="middle" dominant-baseline="central">40</text>
+<text x="305" y="136" text-anchor="middle" dominant-baseline="central" class="sm mono">a[3]</text>
+<text x="305" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">1012</text>
+<text x="52" y="100" text-anchor="end" dominant-baseline="central" class="mono">a</text>
+<text x="52" y="156" text-anchor="end" dominant-baseline="central" class="sm">位址</text>
+<rect class="fa" x="112" y="12" width="106" height="32" rx="6"/>
+<text x="165" y="28" text-anchor="middle" dominant-baseline="central" class="mono">p = 1004</text>
+<line class="arw" x1="165" y1="44" x2="165.0" y2="71.0"/>
+<polygon class="ah" points="165.0,80.0 160.0,71.0 170.0,71.0"/>
+<rect class="fa" x="246" y="12" width="110" height="32" rx="6"/>
+<text x="301" y="28" text-anchor="middle" dominant-baseline="central" class="mono">p+2 = 1012</text>
+<line class="arw" x1="305" y1="44" x2="305.0" y2="71.0"/>
+<polygon class="ah" points="305.0,80.0 300.0,71.0 310.0,71.0"/>
+</svg>
+<figcaption>指標存的是「格子的位址」；p＋2 是往後 2 格（2 個 int ＝ 8 bytes），不是位址加 2</figcaption>
+</figure>
+
+<p><strong>為什麼 <code>p + 2</code> 是往後 2 格，不是位址加 2？</strong> 編譯器知道 p 指的是 int（4 bytes），所以 <code>p + 2</code> 會自動算成位址 <span class="arithmatex">\(1004+2\times4=1012\)</span>。這樣 <code>p[k]</code> 才會剛好是「往後第 k 個元素」。</p>
 <p><strong>追蹤指標題的方法</strong>：把每個指標換成「它指向原陣列的第幾格」，之後 <code>p[k]</code> 一律換成「原陣列第（那格＋k）格」。</p>
 <h4 id="_3">位元運算：對齊後一位一位算</h4>
 <p>以 6（<code>0110</code>）和 3（<code>0011</code>）為例：</p>
@@ -650,8 +683,119 @@ window.MathJax = {
       f(0): 直接 return
    f(1): 回來，印 1
 f(2): 回來，印 2</code></pre>
-<p>輸出 <code>2 1 1 2</code>。<strong>每一層呼叫都有自己的 n</strong>，回來之後 n 還是原本的值。</p>
+<p>輸出 <code>2 1 1 2</code>。<strong>每一層呼叫都有自己的 n</strong>，回來之後 n 還是原本的值。為什麼？每呼叫一次，就在 stack 上疊一塊新的記憶體（stack frame）放這一次的參數和區域變數；return 時把這塊拿掉，回到下面那一塊，裡面的 n 沒被動過：</p>
+<figure class="fig">
+<svg viewBox="0 0 356 214" role="img" aria-label="呼叫 f(2) 時的 stack：第 1 步只有 f(2)，印 2；第 2 步疊上 f(1)，印 1；第 3 步疊上 f(0)，直接 return；第 4 步 f(0) 拿掉，回到 f(1)，印 1；第 5 步回到 f(2)，印 2。每一層都有自己的 n。">
+<rect class="fb" x="4" y="120" width="62" height="36" rx="4"/>
+<text x="35.0" y="132" text-anchor="middle" dominant-baseline="central" class="mono">f(2)</text>
+<text x="35.0" y="147" text-anchor="middle" dominant-baseline="central" class="sm mono">n=2</text>
+<text x="35.0" y="180" text-anchor="middle" dominant-baseline="central">印 2</text>
+<text x="35.0" y="204" text-anchor="middle" dominant-baseline="central" class="sm">第 1 步</text>
+<rect class="fb" x="74" y="120" width="62" height="36" rx="4"/>
+<text x="105.0" y="132" text-anchor="middle" dominant-baseline="central" class="mono">f(2)</text>
+<text x="105.0" y="147" text-anchor="middle" dominant-baseline="central" class="sm mono">n=2</text>
+<rect class="fc" x="74" y="80" width="62" height="36" rx="4"/>
+<text x="105.0" y="92" text-anchor="middle" dominant-baseline="central" class="mono">f(1)</text>
+<text x="105.0" y="107" text-anchor="middle" dominant-baseline="central" class="sm mono">n=1</text>
+<text x="105.0" y="180" text-anchor="middle" dominant-baseline="central">印 1</text>
+<text x="105.0" y="204" text-anchor="middle" dominant-baseline="central" class="sm">第 2 步</text>
+<rect class="fb" x="144" y="120" width="62" height="36" rx="4"/>
+<text x="175.0" y="132" text-anchor="middle" dominant-baseline="central" class="mono">f(2)</text>
+<text x="175.0" y="147" text-anchor="middle" dominant-baseline="central" class="sm mono">n=2</text>
+<rect class="fc" x="144" y="80" width="62" height="36" rx="4"/>
+<text x="175.0" y="92" text-anchor="middle" dominant-baseline="central" class="mono">f(1)</text>
+<text x="175.0" y="107" text-anchor="middle" dominant-baseline="central" class="sm mono">n=1</text>
+<rect class="ft" x="144" y="40" width="62" height="36" rx="4"/>
+<text x="175.0" y="52" text-anchor="middle" dominant-baseline="central" class="mono">f(0)</text>
+<text x="175.0" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono">n=0</text>
+<text x="175.0" y="180" text-anchor="middle" dominant-baseline="central">return</text>
+<text x="175.0" y="204" text-anchor="middle" dominant-baseline="central" class="sm">第 3 步</text>
+<rect class="fb" x="214" y="120" width="62" height="36" rx="4"/>
+<text x="245.0" y="132" text-anchor="middle" dominant-baseline="central" class="mono">f(2)</text>
+<text x="245.0" y="147" text-anchor="middle" dominant-baseline="central" class="sm mono">n=2</text>
+<rect class="fc" x="214" y="80" width="62" height="36" rx="4"/>
+<text x="245.0" y="92" text-anchor="middle" dominant-baseline="central" class="mono">f(1)</text>
+<text x="245.0" y="107" text-anchor="middle" dominant-baseline="central" class="sm mono">n=1</text>
+<text x="245.0" y="180" text-anchor="middle" dominant-baseline="central">印 1</text>
+<text x="245.0" y="204" text-anchor="middle" dominant-baseline="central" class="sm">第 4 步</text>
+<rect class="fb" x="284" y="120" width="62" height="36" rx="4"/>
+<text x="315.0" y="132" text-anchor="middle" dominant-baseline="central" class="mono">f(2)</text>
+<text x="315.0" y="147" text-anchor="middle" dominant-baseline="central" class="sm mono">n=2</text>
+<text x="315.0" y="180" text-anchor="middle" dominant-baseline="central">印 2</text>
+<text x="315.0" y="204" text-anchor="middle" dominant-baseline="central" class="sm">第 5 步</text>
+<line class="dash" x1="0" y1="163" x2="356" y2="163"/>
+</svg>
+<figcaption>每次呼叫疊一塊、return 拿掉一塊；每一塊都有自己的 n</figcaption>
+</figure>
+
 <p><strong>static 變數</strong>不一樣：整個程式只有一份，每次呼叫都看到同一個，而且只在第一次初始化。一般的區域變數每次呼叫都重新建立。</p>
+<h4 id="_5">考題最愛的幾個陷阱</h4>
+<table>
+<thead>
+<tr>
+<th>陷阱</th>
+<th>例子</th>
+<th>結果</th>
+<th>為什麼</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>後置和前置 <code>++</code></td>
+<td><code>i=5; j=i++;</code>／<code>i=5; j=++i;</code></td>
+<td>j＝5、i＝6／j＝6、i＝6</td>
+<td>後置先拿舊值去用，再加 1；前置先加 1 再用</td>
+</tr>
+<tr>
+<td><code>*p++</code></td>
+<td>p 指向 3，<code>v=*p++;</code></td>
+<td>v＝3，之後 p 指向下一格</td>
+<td>後置 <code>++</code> 比 <code>*</code> 先結合，等於 <code>*(p++)</code>：取的是舊位置的值</td>
+</tr>
+<tr>
+<td>整數除法、<code>%</code></td>
+<td><code>7/2</code>、<code>-7/2</code>、<code>-7%3</code></td>
+<td>3、−3、−1</td>
+<td>整數除法往 0 截斷；<code>%</code> 的正負號跟著被除數</td>
+</tr>
+<tr>
+<td>短路求值</td>
+<td><code>if (a != 0 &amp;&amp; b / a &gt; 1)</code></td>
+<td>a 是 0 時不會算 <code>b / a</code></td>
+<td><code>&amp;&amp;</code> 左邊是假就不看右邊；<code>&#124;&#124;</code> 左邊是真就不看右邊</td>
+</tr>
+<tr>
+<td>傳值</td>
+<td><code>void sw(int x, int y)</code> 裡交換 x、y</td>
+<td>呼叫端的變數沒變</td>
+<td>參數是複製一份；要改呼叫端的變數，要傳指標 <code>sw(&amp;a, &amp;b)</code></td>
+</tr>
+<tr>
+<td><code>sizeof</code></td>
+<td><code>int a[10];</code>，<code>sizeof(a)</code>；傳進函式的 <code>int *p</code>，<code>sizeof(p)</code></td>
+<td>40；8（64 位元）</td>
+<td>陣列傳進函式就只剩一個指標</td>
+</tr>
+<tr>
+<td>字元是數字</td>
+<td><code>'a' + 1</code></td>
+<td>98（就是 'b'）</td>
+<td>字元存的是 ASCII 碼</td>
+</tr>
+<tr>
+<td><code>=</code> 和 <code>==</code></td>
+<td><code>if (x = 0)</code></td>
+<td>條件永遠是假，x 還被改成 0</td>
+<td>指定運算的值就是被指定的值</td>
+</tr>
+<tr>
+<td>參數的計算順序</td>
+<td><code>printf("%d %d", f(), f());</code></td>
+<td>不一定，gcc 會先算右邊那個</td>
+<td>C 沒有規定參數由左到右算；考題遇到要寫成好幾行</td>
+</tr>
+</tbody>
+</table>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -660,7 +804,7 @@ f(2): 回來，印 2</code></pre>
 <li><strong>自己驗證</strong>：把考古題的程式打進電腦跑一次，是最快抓到「自以為懂」的方法。</li>
 </ul>
 </div>
-<h4 id="_5">換你試試</h4>
+<h4 id="_6">換你試試</h4>
 <p><strong>T-1.</strong> <code>6 &amp; 3</code>、<code>6 | 3</code>、<code>6 ^ 3</code>、<code>6 &lt;&lt; 1</code> 各是多少？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -998,6 +1142,125 @@ f(3) 回來，印 3</code></pre>
 <li>a[14] ＝ 14＋15 ＝ <strong>29</strong></li>
 </ul>
 </div>
+<h3 id="u1-concept">1.5 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> <code>int x = 3; int y = x++ * 2;</code> 執行完後，x 和 y 是多少？</p>
+<ol>
+<li>x＝4、y＝8</li>
+<li>x＝4、y＝6</li>
+<li>x＝3、y＝6</li>
+<li>x＝3、y＝8</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。後置 <code>x++</code> 先拿舊值 3 去算 <span class="arithmatex">\(3\times2=6\)</span>，算完 x 才變成 4。如果寫 <code>++x * 2</code>，就是 x＝4、y＝8（A）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> <code>int b[5] = {1,2,3,4,5}; int *p = b + 2; int v = *p++;</code> 之後 v 是多少？p 指向哪裡？</p>
+<ol>
+<li>v＝3，p 指向 b[3]</li>
+<li>v＝4，p 指向 b[3]</li>
+<li>v＝4，p 指向 b[2]</li>
+<li>v＝3，p 指向 b[2]</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。<code>*p++</code> 等於 <code>*(p++)</code>：先取 p 現在指的 b[2]＝3，然後 p 往後一格。要先移再取，要寫 <code>*++p</code>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-3.</strong> <code>x &amp; (x - 1)</code> 的效果是？試 x＝12。</p>
+<ol>
+<li>把 x 變成 0</li>
+<li>取出最低位的 1</li>
+<li>把最低位的 1 清掉</li>
+<li>把 x 減 1</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。12 ＝ <code>1100</code>、11 ＝ <code>1011</code>，AND 得 <code>1000</code> ＝ 8：最右邊那個 1 不見了。原因是 x − 1 會把最低位的 1 變 0、它右邊的 0 全變 1，AND 之後這幾位都是 0。B 是 <code>x &amp; -x</code>（<a href="#u1-1">1.1</a> 的 113 Q1a）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-4.</strong> 函式 <code>int c(void) { static int k = 0; return ++k; }</code> 用 <code>for</code> 迴圈呼叫 3 次、每次印出回傳值，會印出什麼？</p>
+<ol>
+<li>1 1 1</li>
+<li>0 1 2</li>
+<li>3 2 1</li>
+<li>1 2 3</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。<code>static</code> 變數只在第一次初始化、之後一直保留，每呼叫一次加 1。如果把三次呼叫寫在同一個 <code>printf</code> 的參數裡，計算順序沒有規定，gcc 實際會印出 C 的 <code>3 2 1</code>，所以要拆成三行或用迴圈。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> 在 C 裡，<code>-7 / 2</code> 和 <code>-7 % 2</code> 各是多少？</p>
+<ol>
+<li>−4、1</li>
+<li>−3、−1</li>
+<li>−3、1</li>
+<li>−4、−1</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。整數除法往 0 截斷：−3.5 → −3；<code>%</code> 要滿足 <span class="arithmatex">\((a/b)\times b+a\%b=a\)</span>：<span class="arithmatex">\(-3\times2+(-1)=-7\)</span>，所以是 −1。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 下面兩個函式都想交換 m、n。呼叫 <code>swapv(m, n)</code> 和 <code>swapp(&amp;m, &amp;n)</code> 之後（m＝1、n＝2），m、n 各是多少？為什麼？</p>
+<pre class="highlight"><code class="language-c">void swapv(int x, int y) { int t = x; x = y; y = t; }
+void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ul>
+<li><strong>swapv(m, n) 之後（m＝1、n＝2，沒換）</strong>：x、y 是 m、n 的<strong>複本</strong>，函式裡換的是複本，return 之後複本就丟掉了。</li>
+<li><strong>swapp(&amp;m, &amp;n) 之後（m＝2、n＝1）</strong>：傳進去的是 m、n 的<strong>位址</strong>，<code>*x</code>、<code>*y</code> 改的就是 m、n 本身。</li>
+</ul>
+<p>我把這兩個函式實際編譯執行過，結果一樣。</p>
+</details>
+<p><strong>W-2.</strong> <code>int g(int n) { if (n &lt;= 0) return 0; return n % 10 + g(n / 10); }</code>，<code>g(1234)</code> 是多少？畫出每一層的 n 和回傳值。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<table>
+<thead>
+<tr>
+<th>呼叫</th>
+<th>n % 10</th>
+<th>回傳</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>g(1234)</td>
+<td>4</td>
+<td>4 ＋ g(123) ＝ 10</td>
+</tr>
+<tr>
+<td>g(123)</td>
+<td>3</td>
+<td>3 ＋ g(12) ＝ 6</td>
+</tr>
+<tr>
+<td>g(12)</td>
+<td>2</td>
+<td>2 ＋ g(1) ＝ 3</td>
+</tr>
+<tr>
+<td>g(1)</td>
+<td>1</td>
+<td>1 ＋ g(0) ＝ 1</td>
+</tr>
+<tr>
+<td>g(0)</td>
+<td>—</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>由下往上算回去：<strong>10</strong>，就是各位數字的和。</p>
+</details>
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> <code>printf("%d", 5 &amp; 3 | 4 ^ 6);</code></p>
 <details class="quiz">
@@ -1129,7 +1392,7 @@ f(3) 回來，印 3</code></pre>
 <p>動畫上面是樹、下面是同一個陣列，交換時兩邊會一起動。「做到哪裡」改成「繼續做 heap sort」可以看完整排序：</p>
 <div class="viz" data-viz="heap" data-nums="5,3,8,1,9,6"></div>
 
-<h4 id="_6">穩定性為什麼重要</h4>
+<h4 id="_7">穩定性為什麼重要</h4>
 <p><strong>穩定（stable）</strong>：值相同的元素，排序後保持原本的先後順序。</p>
 <p>例如先依姓名排好，再依成績排序。如果用穩定的排序，同分的人還會維持姓名順序；不穩定的排序可能把同分的人打亂。radix sort 從個位數排到最高位，每一輪都<strong>必須穩定</strong>，前一輪排好的順序才不會被破壞。</p>
 <div class="admonition read">
@@ -1138,7 +1401,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/zh/sorting">VisuAlgo 排序（中文）</a>：選一種排序、輸入考古題的數字，一步一步看每次比較和交換。insertion、quick、merge、radix 都有。</li>
 </ul>
 </div>
-<h4 id="_7">換你試試</h4>
+<h4 id="_8">換你試試</h4>
 <p><strong>T-1.</strong> 2, 4, 1, 3 用 insertion sort 要 swap 幾次？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1404,7 +1667,7 @@ f(3) 回來，印 3</code></pre>
 <p>把 U 代進 L：<span class="arithmatex">\(L(n)=2\big[L(n/2-1)+\Theta(n/2)\big]+\Theta(n)=2L(n/2-1)+\Theta(n)\)</span>，跟最好情況的遞迴式差不多，<strong>結果還是 <span class="arithmatex">\(\Theta(n\lg n)\)</span></strong>。</p>
 <p><strong>直覺</strong>：切得差的那一層只多花 <span class="arithmatex">\(\Theta(n)\)</span>，下一層切得好時就把它吸收掉了，只是常數變大（大約多一倍的層數），不會變成 <span class="arithmatex">\(n^2\)</span>。</p>
 </div>
-<h4 id="_8">觀念小考</h4>
+<h4 id="_9">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> 用比較排序排 4 個數，最壞情況至少要幾次比較？</p>
 <ol>
@@ -1530,7 +1793,7 @@ f(3) 回來，印 3</code></pre>
 <section class="unit" data-unit="u3">
 <h2 id="u3">單元 3：樹</h2>
 <h3 id="u3-0">3.0 觀念課：三種走訪只差「根」放在哪裡</h3>
-<h4 id="_9">三種走訪</h4>
+<h4 id="_10">三種走訪</h4>
 <p>最小的樹：根 A，左子 B，右子 C。</p>
 <table>
 <thead>
@@ -1562,7 +1825,7 @@ f(3) 回來，印 3</code></pre>
 <p>動畫裡藍色是「現在在哪個節點」，虛線圈是「還沒走完、等著回來的祖先」，綠色是已經輸出的。換一種走訪比較看看，樹也可以自己改（一層一層從左到右寫，<code>#</code> 表示那個位置是空的）：</p>
 <div class="viz" data-viz="traverse" data-tree="A,B,C,D,E,#,F"></div>
 
-<h4 id="_10">為什麼可以由走訪結果重建樹</h4>
+<h4 id="_11">為什麼可以由走訪結果重建樹</h4>
 <ul>
 <li>preorder 的<strong>第一個</strong>、postorder 的<strong>最後一個</strong>一定是根。</li>
 <li>在 inorder 中找到根，<strong>左邊全是左子樹、右邊全是右子樹</strong>。</li>
@@ -1593,7 +1856,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/@erictsai1224tw/AVL_tree">AVL Tree library</a>〉分別寫出 LL、RR、LR、RL 四種情況的旋轉程式碼。</li>
 </ul>
 </div>
-<h4 id="_11">換你試試</h4>
+<h4 id="_12">換你試試</h4>
 <p><strong>T-1.</strong> 樹：A 的左子 B、右子 C；B 的左子 D、右子 E。寫出 preorder、inorder、postorder。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1798,7 +2061,7 @@ f(3) 回來，印 3</code></pre>
 </div>
 <h3 id="u3-expr">3.5 運算式樹：前序、中序、後序式</h3>
 <p>100、102、103、104、106、107 年都考過（六年），題型只有三種：由運算式樹寫出三種式子、中序式轉前序／後序、用 stack 算出後序式（或前序式）的值。</p>
-<h4 id="_12">運算式就是一棵樹</h4>
+<h4 id="_13">運算式就是一棵樹</h4>
 <p>運算子（＋ − × ÷）是內部節點，運算元（數字、變數）是葉子。<span class="arithmatex">\((A+B)\times C\)</span> 的樹：根是 ×，左子樹是 A＋B，右子樹是 C。</p>
 <p>對這棵樹做 <a href="#u3-0">3.0</a> 的三種走訪，就得到三種寫法：</p>
 <table>
@@ -1833,7 +2096,7 @@ f(3) 回來，印 3</code></pre>
 <p>小例子 <code>2 3 4 × +</code>：push 2、3、4；讀到 ×，pop 出 4、3，算 3 × 4 ＝ 12，push；讀到 ＋，pop 出 12、2，算 2 ＋ 12 ＝ 14。</p>
 <p><strong>前序式反過來</strong>：由<strong>右往左</strong>讀，規則一樣，但<strong>先 pop 出來的是左邊的運算元</strong>。</p>
 <p>減法和除法要特別注意左右：後序式 <code>8 5 −</code> 是 8 − 5 ＝ 3，不是 5 − 8。</p>
-<h4 id="_13">中序式轉前序、後序：加括號法最快</h4>
+<h4 id="_14">中序式轉前序、後序：加括號法最快</h4>
 <ol>
 <li>照優先順序（先乘除、後加減；<strong>同優先順序由左往右</strong>）把每一個運算都加上括號。</li>
 <li>後序式：把每個運算子搬到<strong>它那組括號的右括號位置</strong>；前序式：搬到<strong>左括號位置</strong>。</li>
@@ -1968,7 +2231,7 @@ f(3) 回來，印 3</code></pre>
 </ul>
 <p>答案 <strong>A、B、D</strong>。</p>
 </div>
-<h4 id="_14">觀念小考</h4>
+<h4 id="_15">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> 後序式 <code>5 1 2 + 4 × + 3 −</code> 的值是多少？</p>
 <ol>
@@ -2042,7 +2305,7 @@ f(3) 回來，印 3</code></pre>
 </details>
 <h3 id="u3-huff">3.6 Huffman 編碼</h3>
 <p>101、102 年各考一題 10%：給每個符號出現的次數，畫出 Huffman 樹、寫出編碼。</p>
-<h4 id="_15">觀念：常用的字給短的編碼</h4>
+<h4 id="_16">觀念：常用的字給短的編碼</h4>
 <ul>
 <li><strong>固定長度</strong>：6 個符號要 3 位元（<span class="arithmatex">\(2^2=4&lt;6\le8=2^3\)</span>），每個字都用 3 位元。</li>
 <li><strong>變動長度</strong>：常出現的字用短編碼、少見的用長編碼，總長度就變短。摩斯電碼就是這樣：最常用的 E 只有一點。</li>
@@ -2058,7 +2321,7 @@ f(3) 回來，印 3</code></pre>
 <p>用 min-heap（priority queue）挑最小的兩個，n 個符號要 <span class="arithmatex">\(O(n\log n)\)</span>。</p>
 <p><strong>為什麼先合併最小的</strong>：合併一次，等於這兩棵樹底下所有符號的編碼都<strong>多一位</strong>，多出來的總位元數就是新根的頻率。先合併最小的兩個，每次多付的代價最小。</p>
 <p><strong>驗算捷徑</strong>：總位元數 ＝ Σ（頻率 × 編碼長度）＝ <strong>每次合併產生的新頻率全部加起來</strong>。</p>
-<h4 id="_16">考試要注意的規則</h4>
+<h4 id="_17">考試要注意的規則</h4>
 <ul>
 <li>頻率相同時挑哪一個、誰放左邊，會改變<strong>樹的樣子和個別編碼</strong>，但<strong>不會改變總位元數</strong>。</li>
 <li>題目有給規則就照規則（102 Q4）；沒給就寫出自己的規則，例如「頻率小的放左邊，相同時字母小的放左邊」。</li>
@@ -2188,7 +2451,7 @@ f(3) 回來，印 3</code></pre>
 </div>
 <div class="viz" data-viz="huffman" data-freq="A 8, B 15, C 1, D 6, E 15, F 3, G 7" data-left="lex" data-title="102 Q4：照題目的規則合併"></div>
 
-<h4 id="_17">觀念小考</h4>
+<h4 id="_18">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 下面哪一組<strong>不是</strong>前綴碼？</p>
 <ol>
@@ -2276,7 +2539,7 @@ f(3) 回來，印 3</code></pre>
 <section class="unit" data-unit="u4">
 <h2 id="u4">單元 4：雜湊</h2>
 <h3 id="u4-0">4.0 觀念課：依學號尾數分配置物櫃</h3>
-<h4 id="_18">雜湊的想法</h4>
+<h4 id="_19">雜湊的想法</h4>
 <p>有 5 個置物櫃（編號 0–4），每個學號放到「學號 mod 5」那一格。要找人時直接算出櫃子號碼，不用一個個翻，平均 <span class="arithmatex">\(O(1)\)</span>。</p>
 <p><strong>碰撞（collision）</strong>：兩個學號算出同一格，例如 7 和 12 都是 mod 5 ＝ 2。</p>
 <h4 id="linear-probing">linear probing：被佔了就往下一格</h4>
@@ -2324,7 +2587,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/en/hashtable">VisuAlgo Hash Table</a>：linear probing、quadratic probing、double hashing 都能自己輸入 key 看探測路線，可以直接拿 115 Q7 的數字試。</li>
 </ul>
 </div>
-<h4 id="_19">換你試試</h4>
+<h4 id="_20">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7，各放在哪裡？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2465,7 +2728,7 @@ f(3) 回來，印 3</code></pre>
 <li>第二層：第 j 格有 <span class="arithmatex">\(n_j\)</span> 個 key，就給它一個大小 <span class="arithmatex">\(n_j^2\)</span> 的小表，再挑一個雜湊函數讓這 <span class="arithmatex">\(n_j\)</span> 個 key <strong>完全不碰撞</strong>（下面 105 Q5 證明隨機挑成功的機率至少一半，試幾次就成功）。</li>
 </ol>
 <p>總空間期望值仍然是 <span class="arithmatex">\(O(n)\)</span>，每次搜尋只算兩次雜湊。</p>
-<h4 id="_20">用在認證的雜湊函數</h4>
+<h4 id="_21">用在認證的雜湊函數</h4>
 <p>密碼學用的雜湊函數（例如 SHA-256）把任意長的訊息壓成固定長度的摘要，還要滿足：</p>
 <ul>
 <li><strong>單向（one-way）</strong>：知道 <span class="arithmatex">\(h(m)\)</span>，很難找出 m。</li>
@@ -2492,7 +2755,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>perfect hashing</strong>：key 集合固定時，兩層雜湊，第二層用大小 <span class="arithmatex">\(n_j^2\)</span> 的表讓每一格裡完全沒有碰撞，最壞情況 <span class="arithmatex">\(O(1)\)</span> 搜尋、空間 <span class="arithmatex">\(O(n)\)</span>。</li>
 </ol>
 </div>
-<h4 id="_21">觀念小考</h4>
+<h4 id="_22">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 用 chaining，m ＝ 100 格放 n ＝ 300 個 key，在 simple uniform hashing 下，失敗的搜尋平均要走多長的串列？</p>
 <ol>
@@ -2638,7 +2901,7 @@ f(3) 回來，印 3</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：圖</h2>
 <h3 id="u5-0">5.0 觀念課：用最少的電線連起所有城市</h3>
-<h4 id="_22">圖怎麼存</h4>
+<h4 id="_23">圖怎麼存</h4>
 <p>三個點 A、B、C，邊 A–B（權重 1）、B–C（權重 2）、A–C（權重 3）：</p>
 <p><strong>鄰接矩陣</strong>（<span class="arithmatex">\(V\times V\)</span> 的表，適合邊很多的圖）：</p>
 <table>
@@ -2692,7 +2955,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/zh/mst">VisuAlgo 最小生成樹（中文）</a>：Kruskal 和 Prim 一步一步加邊，還有 Kruskal 為什麼正確的說明；<a href="https://visualgo.net/en/sssp">VisuAlgo 最短路徑</a>：Dijkstra 的過程。</li>
 </ul>
 </div>
-<h4 id="_23">換你試試</h4>
+<h4 id="_24">換你試試</h4>
 <p>圖：A–B 4、A–C 1、B–C 2、B–D 5、C–D 8。</p>
 <p><strong>T-1.</strong> 從 A 開始用 Prim，依序加入哪些邊？總權重？</p>
 <details class="quiz">
@@ -2869,7 +3132,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>DFS（depth-first search，深度優先）</strong>：一直往下走，走到沒有路才退回上一個岔路換別條，像走迷宮。用 <strong>stack</strong>（或遞迴）。</li>
 </ul>
 <p>BFS 一層一層往外，所以第幾層就是「離起點幾條邊」，<strong>無權重的圖可以用 BFS 找最短路徑</strong>。DFS 走的路不一定是最短的。</p>
-<h4 id="_24">手算規則（照字母順序）</h4>
+<h4 id="_25">手算規則（照字母順序）</h4>
 <p><strong>BFS</strong>：</p>
 <ol>
 <li>起點標成「發現了」，放進 queue。</li>
@@ -3141,7 +3404,7 @@ f(3) 回來，印 3</code></pre>
    b   g      n      a</code></pre>
 <p>驗算：一層一層讀是 i｜c e o｜d l m f h j｜b g n a <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>；preorder 是 i c d b g l e m n o f h a j <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。用程式試過所有可能的樹，只有這一棵兩個序列都對得上。</p>
 </div>
-<h4 id="_25">觀念小考</h4>
+<h4 id="_26">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> BFS 用哪一種資料結構，記住接下來要拜訪的點？</p>
 <ol>
@@ -3275,7 +3538,7 @@ f(3) 回來，印 3</code></pre>
 <p>先看直接遞迴的呼叫樹（橘色是「之前算過、又重算一次」的），再把寫法切換成「算過就記在表裡」比較：</p>
 <div class="viz" data-viz="calltree" data-n="5"></div>
 
-<h4 id="_26">寫遞迴式的四步</h4>
+<h4 id="_27">寫遞迴式的四步</h4>
 <ol>
 <li><strong>定義狀態</strong>：用一句話說清楚 <span class="arithmatex">\(g(i,j)\)</span> 是什麼，例如「只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊出 <span class="arithmatex">\(j\)</span> 元的方法數」。</li>
 <li><strong>看最後一步（或第一步）分類</strong>：「有沒有用到第 <span class="arithmatex">\(i\)</span> 種硬幣」。</li>
@@ -3327,7 +3590,7 @@ f(3) 回來，印 3</code></pre>
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10221988">談硬幣問題的文章</a>（面額 1、2、5 湊 11 元）。注意它算的是「最少幾枚硬幣」，這節和 112 Q4 算的是「有幾種組合」，遞迴式不一樣，可以兩個對照著看。</li>
 </ul>
 </div>
-<h4 id="_27">換你試試</h4>
+<h4 id="_28">換你試試</h4>
 <p><strong>T-1.</strong> 用 1、2、3 元湊 4 元（不計順序），有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3645,7 +3908,7 @@ f(3) 回來，印 3</code></pre>
 <li>節點裡的 key 由小到大排好，孩子夾在 key 之間（左邊的都比較小、右邊的都比較大）。</li>
 <li><strong>所有葉子在同一層</strong>。</li>
 </ul>
-<h4 id="_28">插入：滿了就從中間切開</h4>
+<h4 id="_29">插入：滿了就從中間切開</h4>
 <p>CLRS 的做法是<strong>往下走的時候，遇到滿的節點（<span class="arithmatex">\(2t-1\)</span> 個 key）就先切開</strong>：中間那個 key 往上搬到父親，左右各剩 <span class="arithmatex">\(t-1\)</span> 個。這樣插到葉子時一定有空位，也不用再往回調整。根滿了切開時，樹就長高一層。</p>
 <div class="admonition example">
 <p class="admonition-title">101 Q9（10%）：minimum degree t ＝ 3 的 B-tree，依序插入 B、Q、L、F</p>
@@ -3689,7 +3952,7 @@ f(3) 回來，印 3</code></pre>
     `-- [Y Z]</code></pre>
 <p>用程式照 CLRS 的插入演算法跑過一遍，四步的結果都一樣。</p>
 </div>
-<h4 id="_29">高度上界</h4>
+<h4 id="_30">高度上界</h4>
 <div class="admonition example">
 <p class="admonition-title">107 Q6(1)（8%）：n 個 key、minimum degree t 的 B-tree，高度最多多少？證明</p>
 <p><strong>答案</strong>：<span class="arithmatex">\(h\le\log_t\frac{n+1}2\)</span>。</p>
@@ -3701,7 +3964,7 @@ f(3) 回來，印 3</code></pre>
 <p class="admonition-title">104 Q4(3)（5%）：B-tree 為什麼能減少讀磁碟的成本？</p>
 <p>讀磁碟的時間主要花在 seek 和 rotational latency（<a href="os.html#u5-0">OS 5.0</a>），一次讀一整個區塊（page），讀幾個 byte 和讀一整頁差不多慢。B-tree 的一個節點就是一頁，放很多 key，所以<strong>分支數很大、樹很矮</strong>（<span class="arithmatex">\(\log_tn\)</span>），找一個 key 只要讀很少頁。讀進記憶體之後，在節點裡找 key 很快。</p>
 </div>
-<h4 id="_30">三種變形</h4>
+<h4 id="_31">三種變形</h4>
 <div class="admonition example">
 <p class="admonition-title">105 Q7(3)（3%）、107 Q6(2)（2%）：B⁺-tree、B*-tree、2-3-4 tree</p>
 <ul>
@@ -3947,7 +4210,7 @@ f(3) 回來，印 3</code></pre>
 <li>一直轉到父親的 priority 比它小，或它變成根。</li>
 </ol>
 <p><strong>旋轉不會破壞 BST 的順序</strong>：右旋時，x 是 y 的左孩子，x 轉上去、y 變成 x 的右孩子，原本 x 的右子樹（比 x 大、比 y 小）改掛到 y 的左邊。中序走訪的順序完全不變。</p>
-<h4 id="_31">刪除：把它轉到下面再拿掉</h4>
+<h4 id="_32">刪除：把它轉到下面再拿掉</h4>
 <p>要刪的節點有兩個孩子時，跟 <strong>priority 比較小的那個孩子</strong>旋轉（讓那個孩子上來當父親，heap 規則才會對），一直轉到它只剩一個孩子或沒有孩子，再直接拿掉。</p>
 <div class="admonition example">
 <p class="admonition-title">103 Q8（10%）：(1) 在下面的 treap 插入 (D:9) (2) 接著插入 (F:2)</p>
@@ -4034,7 +4297,7 @@ f(3) 回來，印 3</code></pre>
             `-- L I:73</code></pre>
 <p><strong>檢查</strong>：中序走訪 A、B、C、D、E、F、G、H、I、K 是照字母順序（BST）；每個節點的 priority 都比孩子小（heap）。我用程式照同樣的步驟插入，也用很多種不同的插入順序建同一組節點，得到的都是這棵樹（形狀唯一）。</p>
 </div>
-<h4 id="_32">觀念小考</h4>
+<h4 id="_33">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 用 min-heap 規則的 treap，根是哪一個節點？</p>
 <ol>

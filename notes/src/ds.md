@@ -57,6 +57,40 @@
 - `p[1]` 就是 `*(p+1)` ＝ a[2] ＝ 30
 - `p - a` ＝ 兩個指標差幾格 ＝ 1
 
+<figure class="fig">
+<svg viewBox="0 0 360 172" role="img" aria-label="陣列 a 的四格在位址 1000、1004、1008、1012，值是 10、20、30、40。p 存的是 1004，指向 a[1]；p+2 是 1012，指向 a[3]，因為一個 int 佔 4 個 byte。">
+<rect class="box" x="60" y="80" width="70" height="40"/>
+<text x="95" y="100" text-anchor="middle" dominant-baseline="central">10</text>
+<text x="95" y="136" text-anchor="middle" dominant-baseline="central" class="sm mono">a[0]</text>
+<text x="95" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">1000</text>
+<rect class="fb" x="130" y="80" width="70" height="40"/>
+<text x="165" y="100" text-anchor="middle" dominant-baseline="central">20</text>
+<text x="165" y="136" text-anchor="middle" dominant-baseline="central" class="sm mono">a[1]</text>
+<text x="165" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">1004</text>
+<rect class="box" x="200" y="80" width="70" height="40"/>
+<text x="235" y="100" text-anchor="middle" dominant-baseline="central">30</text>
+<text x="235" y="136" text-anchor="middle" dominant-baseline="central" class="sm mono">a[2]</text>
+<text x="235" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">1008</text>
+<rect class="fb" x="270" y="80" width="70" height="40"/>
+<text x="305" y="100" text-anchor="middle" dominant-baseline="central">40</text>
+<text x="305" y="136" text-anchor="middle" dominant-baseline="central" class="sm mono">a[3]</text>
+<text x="305" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">1012</text>
+<text x="52" y="100" text-anchor="end" dominant-baseline="central" class="mono">a</text>
+<text x="52" y="156" text-anchor="end" dominant-baseline="central" class="sm">位址</text>
+<rect class="fa" x="112" y="12" width="106" height="32" rx="6"/>
+<text x="165" y="28" text-anchor="middle" dominant-baseline="central" class="mono">p = 1004</text>
+<line class="arw" x1="165" y1="44" x2="165.0" y2="71.0"/>
+<polygon class="ah" points="165.0,80.0 160.0,71.0 170.0,71.0"/>
+<rect class="fa" x="246" y="12" width="110" height="32" rx="6"/>
+<text x="301" y="28" text-anchor="middle" dominant-baseline="central" class="mono">p+2 = 1012</text>
+<line class="arw" x1="305" y1="44" x2="305.0" y2="71.0"/>
+<polygon class="ah" points="305.0,80.0 300.0,71.0 310.0,71.0"/>
+</svg>
+<figcaption>指標存的是「格子的位址」；p＋2 是往後 2 格（2 個 int ＝ 8 bytes），不是位址加 2</figcaption>
+</figure>
+
+**為什麼 `p + 2` 是往後 2 格，不是位址加 2？** 編譯器知道 p 指的是 int（4 bytes），所以 `p + 2` 會自動算成位址 $1004+2\times4=1012$。這樣 `p[k]` 才會剛好是「往後第 k 個元素」。
+
 **追蹤指標題的方法**：把每個指標換成「它指向原陣列的第幾格」，之後 `p[k]` 一律換成「原陣列第（那格＋k）格」。
 
 #### 位元運算：對齊後一位一位算
@@ -94,9 +128,67 @@ f(2): 印 2
 f(2): 回來，印 2
 ```
 
-輸出 `2 1 1 2`。**每一層呼叫都有自己的 n**，回來之後 n 還是原本的值。
+輸出 `2 1 1 2`。**每一層呼叫都有自己的 n**，回來之後 n 還是原本的值。為什麼？每呼叫一次，就在 stack 上疊一塊新的記憶體（stack frame）放這一次的參數和區域變數；return 時把這塊拿掉，回到下面那一塊，裡面的 n 沒被動過：
+
+<figure class="fig">
+<svg viewBox="0 0 356 214" role="img" aria-label="呼叫 f(2) 時的 stack：第 1 步只有 f(2)，印 2；第 2 步疊上 f(1)，印 1；第 3 步疊上 f(0)，直接 return；第 4 步 f(0) 拿掉，回到 f(1)，印 1；第 5 步回到 f(2)，印 2。每一層都有自己的 n。">
+<rect class="fb" x="4" y="120" width="62" height="36" rx="4"/>
+<text x="35.0" y="132" text-anchor="middle" dominant-baseline="central" class="mono">f(2)</text>
+<text x="35.0" y="147" text-anchor="middle" dominant-baseline="central" class="sm mono">n=2</text>
+<text x="35.0" y="180" text-anchor="middle" dominant-baseline="central">印 2</text>
+<text x="35.0" y="204" text-anchor="middle" dominant-baseline="central" class="sm">第 1 步</text>
+<rect class="fb" x="74" y="120" width="62" height="36" rx="4"/>
+<text x="105.0" y="132" text-anchor="middle" dominant-baseline="central" class="mono">f(2)</text>
+<text x="105.0" y="147" text-anchor="middle" dominant-baseline="central" class="sm mono">n=2</text>
+<rect class="fc" x="74" y="80" width="62" height="36" rx="4"/>
+<text x="105.0" y="92" text-anchor="middle" dominant-baseline="central" class="mono">f(1)</text>
+<text x="105.0" y="107" text-anchor="middle" dominant-baseline="central" class="sm mono">n=1</text>
+<text x="105.0" y="180" text-anchor="middle" dominant-baseline="central">印 1</text>
+<text x="105.0" y="204" text-anchor="middle" dominant-baseline="central" class="sm">第 2 步</text>
+<rect class="fb" x="144" y="120" width="62" height="36" rx="4"/>
+<text x="175.0" y="132" text-anchor="middle" dominant-baseline="central" class="mono">f(2)</text>
+<text x="175.0" y="147" text-anchor="middle" dominant-baseline="central" class="sm mono">n=2</text>
+<rect class="fc" x="144" y="80" width="62" height="36" rx="4"/>
+<text x="175.0" y="92" text-anchor="middle" dominant-baseline="central" class="mono">f(1)</text>
+<text x="175.0" y="107" text-anchor="middle" dominant-baseline="central" class="sm mono">n=1</text>
+<rect class="ft" x="144" y="40" width="62" height="36" rx="4"/>
+<text x="175.0" y="52" text-anchor="middle" dominant-baseline="central" class="mono">f(0)</text>
+<text x="175.0" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono">n=0</text>
+<text x="175.0" y="180" text-anchor="middle" dominant-baseline="central">return</text>
+<text x="175.0" y="204" text-anchor="middle" dominant-baseline="central" class="sm">第 3 步</text>
+<rect class="fb" x="214" y="120" width="62" height="36" rx="4"/>
+<text x="245.0" y="132" text-anchor="middle" dominant-baseline="central" class="mono">f(2)</text>
+<text x="245.0" y="147" text-anchor="middle" dominant-baseline="central" class="sm mono">n=2</text>
+<rect class="fc" x="214" y="80" width="62" height="36" rx="4"/>
+<text x="245.0" y="92" text-anchor="middle" dominant-baseline="central" class="mono">f(1)</text>
+<text x="245.0" y="107" text-anchor="middle" dominant-baseline="central" class="sm mono">n=1</text>
+<text x="245.0" y="180" text-anchor="middle" dominant-baseline="central">印 1</text>
+<text x="245.0" y="204" text-anchor="middle" dominant-baseline="central" class="sm">第 4 步</text>
+<rect class="fb" x="284" y="120" width="62" height="36" rx="4"/>
+<text x="315.0" y="132" text-anchor="middle" dominant-baseline="central" class="mono">f(2)</text>
+<text x="315.0" y="147" text-anchor="middle" dominant-baseline="central" class="sm mono">n=2</text>
+<text x="315.0" y="180" text-anchor="middle" dominant-baseline="central">印 2</text>
+<text x="315.0" y="204" text-anchor="middle" dominant-baseline="central" class="sm">第 5 步</text>
+<line class="dash" x1="0" y1="163" x2="356" y2="163"/>
+</svg>
+<figcaption>每次呼叫疊一塊、return 拿掉一塊；每一塊都有自己的 n</figcaption>
+</figure>
 
 **static 變數**不一樣：整個程式只有一份，每次呼叫都看到同一個，而且只在第一次初始化。一般的區域變數每次呼叫都重新建立。
+
+#### 考題最愛的幾個陷阱
+
+| 陷阱 | 例子 | 結果 | 為什麼 |
+|---|---|---|---|
+| 後置和前置 `++` | `i=5; j=i++;`／`i=5; j=++i;` | j＝5、i＝6／j＝6、i＝6 | 後置先拿舊值去用，再加 1；前置先加 1 再用 |
+| `*p++` | p 指向 3，`v=*p++;` | v＝3，之後 p 指向下一格 | 後置 `++` 比 `*` 先結合，等於 `*(p++)`：取的是舊位置的值 |
+| 整數除法、`%` | `7/2`、`-7/2`、`-7%3` | 3、−3、−1 | 整數除法往 0 截斷；`%` 的正負號跟著被除數 |
+| 短路求值 | `if (a != 0 && b / a > 1)` | a 是 0 時不會算 `b / a` | `&&` 左邊是假就不看右邊；<code>&#124;&#124;</code> 左邊是真就不看右邊 |
+| 傳值 | `void sw(int x, int y)` 裡交換 x、y | 呼叫端的變數沒變 | 參數是複製一份；要改呼叫端的變數，要傳指標 `sw(&a, &b)` |
+| `sizeof` | `int a[10];`，`sizeof(a)`；傳進函式的 `int *p`，`sizeof(p)` | 40；8（64 位元） | 陣列傳進函式就只剩一個指標 |
+| 字元是數字 | `'a' + 1` | 98（就是 'b'） | 字元存的是 ASCII 碼 |
+| `=` 和 `==` | `if (x = 0)` | 條件永遠是假，x 還被改成 0 | 指定運算的值就是被指定的值 |
+| 參數的計算順序 | `printf("%d %d", f(), f());` | 不一定，gcc 會先算右邊那個 | C 沒有規定參數由左到右算；考題遇到要寫成好幾行 |
 
 !!! read "還不懂？看別人怎麼講"
     - **完整的優先順序表**：cppreference〈[C 運算子優先順序](https://zh.cppreference.com/w/c/language/operator_precedence)〉（中文）。
@@ -276,6 +368,106 @@ f(2): 回來，印 2
     - a[0] ＝ 0＋1＋…＋7 ＝ **28**
     - a[5] ＝ 5＋…＋12 ＝ **68**
     - a[14] ＝ 14＋15 ＝ **29**
+
+### 1.5 觀念小考 {#u1-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** `int x = 3; int y = x++ * 2;` 執行完後，x 和 y 是多少？
+
+1. x＝4、y＝8
+2. x＝4、y＝6
+3. x＝3、y＝6
+4. x＝3、y＝8
+
+??? quiz "看解析"
+    **B**。後置 `x++` 先拿舊值 3 去算 $3\times2=6$，算完 x 才變成 4。如果寫 `++x * 2`，就是 x＝4、y＝8（A）。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** `int b[5] = {1,2,3,4,5}; int *p = b + 2; int v = *p++;` 之後 v 是多少？p 指向哪裡？
+
+1. v＝3，p 指向 b[3]
+2. v＝4，p 指向 b[3]
+3. v＝4，p 指向 b[2]
+4. v＝3，p 指向 b[2]
+
+??? quiz "看解析"
+    **A**。`*p++` 等於 `*(p++)`：先取 p 現在指的 b[2]＝3，然後 p 往後一格。要先移再取，要寫 `*++p`。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-3.** `x & (x - 1)` 的效果是？試 x＝12。
+
+1. 把 x 變成 0
+2. 取出最低位的 1
+3. 把最低位的 1 清掉
+4. 把 x 減 1
+
+??? quiz "看解析"
+    **C**。12 ＝ `1100`、11 ＝ `1011`，AND 得 `1000` ＝ 8：最右邊那個 1 不見了。原因是 x − 1 會把最低位的 1 變 0、它右邊的 0 全變 1，AND 之後這幾位都是 0。B 是 `x & -x`（[1.1](#u1-1) 的 113 Q1a）。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** 函式 `int c(void) { static int k = 0; return ++k; }` 用 `for` 迴圈呼叫 3 次、每次印出回傳值，會印出什麼？
+
+1. 1 1 1
+2. 0 1 2
+3. 3 2 1
+4. 1 2 3
+
+??? quiz "看解析"
+    **D**。`static` 變數只在第一次初始化、之後一直保留，每呼叫一次加 1。如果把三次呼叫寫在同一個 `printf` 的參數裡，計算順序沒有規定，gcc 實際會印出 C 的 `3 2 1`，所以要拆成三行或用迴圈。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 在 C 裡，`-7 / 2` 和 `-7 % 2` 各是多少？
+
+1. −4、1
+2. −3、−1
+3. −3、1
+4. −4、−1
+
+??? quiz "看解析"
+    **B**。整數除法往 0 截斷：−3.5 → −3；`%` 要滿足 $(a/b)\times b+a\%b=a$：$-3\times2+(-1)=-7$，所以是 −1。
+
+</div>
+
+**W-1.** 下面兩個函式都想交換 m、n。呼叫 `swapv(m, n)` 和 `swapp(&m, &n)` 之後（m＝1、n＝2），m、n 各是多少？為什麼？
+
+```c
+void swapv(int x, int y) { int t = x; x = y; y = t; }
+void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }
+```
+
+??? quiz "看參考答案"
+    - **swapv(m, n) 之後（m＝1、n＝2，沒換）**：x、y 是 m、n 的**複本**，函式裡換的是複本，return 之後複本就丟掉了。
+    - **swapp(&m, &n) 之後（m＝2、n＝1）**：傳進去的是 m、n 的**位址**，`*x`、`*y` 改的就是 m、n 本身。
+
+    我把這兩個函式實際編譯執行過，結果一樣。
+
+**W-2.** `int g(int n) { if (n <= 0) return 0; return n % 10 + g(n / 10); }`，`g(1234)` 是多少？畫出每一層的 n 和回傳值。
+
+??? quiz "看參考答案"
+    | 呼叫 | n % 10 | 回傳 |
+    |---|---|---|
+    | g(1234) | 4 | 4 ＋ g(123) ＝ 10 |
+    | g(123) | 3 | 3 ＋ g(12) ＝ 6 |
+    | g(12) | 2 | 2 ＋ g(1) ＝ 3 |
+    | g(1) | 1 | 1 ＋ g(0) ＝ 1 |
+    | g(0) | — | 0 |
+
+    由下往上算回去：**10**，就是各位數字的和。
 
 ### 單元 1 小考 {#u1-quiz}
 
