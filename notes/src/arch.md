@@ -3108,6 +3108,101 @@ BNE   x1, x2, loop
 
 ### 7.0 觀念課：會漏電的記憶體 {#u7-0}
 
+#### DRAM 長什麼樣：channel、rank、bank、列
+
+<figure class="fig">
+<svg viewBox="0 0 360 214" role="img" aria-label="左邊：一個 channel 裡有好幾個 rank，每個 rank 有好幾個 bank。右邊：一個 bank 是一格一格排成的二維陣列，讀寫時先把一整列讀進 row buffer，再從 row buffer 取需要的那幾格。refresh 也是一列一列做。">
+<rect class="box" x="6" y="22" width="150" height="160" rx="8"/>
+<text x="81" y="12" text-anchor="middle" dominant-baseline="central" class="sm mono">channel</text>
+<rect class="fb" x="16" y="40" width="130" height="58" rx="6"/>
+<text x="81" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono tb">rank 0</text>
+<rect class="box" x="24" y="64" width="24" height="26" rx="3"/>
+<text x="36" y="77" text-anchor="middle" dominant-baseline="central" class="sm mono">B0</text>
+<rect class="box" x="54" y="64" width="24" height="26" rx="3"/>
+<text x="66" y="77" text-anchor="middle" dominant-baseline="central" class="sm mono">B1</text>
+<rect class="fa" x="84" y="64" width="24" height="26" rx="3"/>
+<text x="96" y="77" text-anchor="middle" dominant-baseline="central" class="sm mono">B2</text>
+<rect class="box" x="114" y="64" width="24" height="26" rx="3"/>
+<text x="126" y="77" text-anchor="middle" dominant-baseline="central" class="sm mono">B3</text>
+<rect class="fb" x="16" y="112" width="130" height="58" rx="6"/>
+<text x="81" y="124" text-anchor="middle" dominant-baseline="central" class="sm mono tb">rank 1</text>
+<rect class="box" x="24" y="136" width="24" height="26" rx="3"/>
+<text x="36" y="149" text-anchor="middle" dominant-baseline="central" class="sm mono">B0</text>
+<rect class="box" x="54" y="136" width="24" height="26" rx="3"/>
+<text x="66" y="149" text-anchor="middle" dominant-baseline="central" class="sm mono">B1</text>
+<rect class="box" x="84" y="136" width="24" height="26" rx="3"/>
+<text x="96" y="149" text-anchor="middle" dominant-baseline="central" class="sm mono">B2</text>
+<rect class="box" x="114" y="136" width="24" height="26" rx="3"/>
+<text x="126" y="149" text-anchor="middle" dominant-baseline="central" class="sm mono">B3</text>
+<line class="dash" x1="108" y1="64" x2="184" y2="30"/>
+<line class="dash" x1="108" y1="90" x2="184" y2="140"/>
+<rect class="box" x="184" y="30" width="20" height="18"/>
+<rect class="box" x="204" y="30" width="20" height="18"/>
+<rect class="box" x="224" y="30" width="20" height="18"/>
+<rect class="box" x="244" y="30" width="20" height="18"/>
+<rect class="box" x="264" y="30" width="20" height="18"/>
+<rect class="box" x="284" y="30" width="20" height="18"/>
+<rect class="box" x="304" y="30" width="20" height="18"/>
+<rect class="box" x="324" y="30" width="20" height="18"/>
+<rect class="box" x="184" y="48" width="20" height="18"/>
+<rect class="box" x="204" y="48" width="20" height="18"/>
+<rect class="box" x="224" y="48" width="20" height="18"/>
+<rect class="box" x="244" y="48" width="20" height="18"/>
+<rect class="box" x="264" y="48" width="20" height="18"/>
+<rect class="box" x="284" y="48" width="20" height="18"/>
+<rect class="box" x="304" y="48" width="20" height="18"/>
+<rect class="box" x="324" y="48" width="20" height="18"/>
+<rect class="box" x="184" y="66" width="20" height="18"/>
+<rect class="box" x="204" y="66" width="20" height="18"/>
+<rect class="box" x="224" y="66" width="20" height="18"/>
+<rect class="box" x="244" y="66" width="20" height="18"/>
+<rect class="box" x="264" y="66" width="20" height="18"/>
+<rect class="box" x="284" y="66" width="20" height="18"/>
+<rect class="box" x="304" y="66" width="20" height="18"/>
+<rect class="box" x="324" y="66" width="20" height="18"/>
+<rect class="fa" x="184" y="84" width="20" height="18"/>
+<rect class="fa" x="204" y="84" width="20" height="18"/>
+<rect class="fa" x="224" y="84" width="20" height="18"/>
+<rect class="fa" x="244" y="84" width="20" height="18"/>
+<rect class="fa" x="264" y="84" width="20" height="18"/>
+<rect class="fa" x="284" y="84" width="20" height="18"/>
+<rect class="fa" x="304" y="84" width="20" height="18"/>
+<rect class="fa" x="324" y="84" width="20" height="18"/>
+<rect class="box" x="184" y="102" width="20" height="18"/>
+<rect class="box" x="204" y="102" width="20" height="18"/>
+<rect class="box" x="224" y="102" width="20" height="18"/>
+<rect class="box" x="244" y="102" width="20" height="18"/>
+<rect class="box" x="264" y="102" width="20" height="18"/>
+<rect class="box" x="284" y="102" width="20" height="18"/>
+<rect class="box" x="304" y="102" width="20" height="18"/>
+<rect class="box" x="324" y="102" width="20" height="18"/>
+<rect class="box" x="184" y="120" width="20" height="18"/>
+<rect class="box" x="204" y="120" width="20" height="18"/>
+<rect class="box" x="224" y="120" width="20" height="18"/>
+<rect class="box" x="244" y="120" width="20" height="18"/>
+<rect class="box" x="264" y="120" width="20" height="18"/>
+<rect class="box" x="284" y="120" width="20" height="18"/>
+<rect class="box" x="304" y="120" width="20" height="18"/>
+<rect class="box" x="324" y="120" width="20" height="18"/>
+<text x="264" y="16" text-anchor="middle" dominant-baseline="central" class="sm">bank：列 × 行</text>
+<text x="178" y="93" text-anchor="end" dominant-baseline="central" class="sm ta">列</text>
+<line class="arw-a" x1="264" y1="140" x2="264.0" y2="154.0"/>
+<polygon class="ah-a" points="264.0,162.0 259.5,154.0 268.5,154.0"/>
+<rect class="fk" x="184" y="164" width="160" height="22" rx="3"/>
+<text x="264" y="175" text-anchor="middle" dominant-baseline="central" class="sm mono">row buffer</text>
+<text x="264" y="202" text-anchor="middle" dominant-baseline="central" class="sm">一次讀出一整列</text>
+</svg>
+<figcaption>一個 bank 是一張「列 × 行」的表；讀寫和 refresh 都是一次處理一整列</figcaption>
+</figure>
+
+- **channel**：一組獨立的匯流排，有自己的 command bus，不同 channel 可以同時工作。
+- **rank**：掛在同一個 channel 上的一組晶片，輪流使用這個 channel。
+- **bank**：rank 裡可以各自獨立動作的單位；每個 bank 是一個「列 × 行」的二維陣列。
+- **讀寫一格的步驟**：先 **activate**（把整列讀進 row buffer）→ 再 **read／write**（從 row buffer 取那幾行）→ 要換列之前 **precharge**（關掉這一列）。
+- **row buffer hit**：要的資料剛好在已經打開的那一列，直接讀，最快；**row buffer conflict**：打開的是別列，要先 precharge 再 activate，最慢。
+
+所以總列數 ＝ channel 數 × 每個 channel 的 rank 數 × 每個 rank 的 bank 數 × 每個 bank 的列數，[7.1](#u7-1) 的 112 Q2 就是這樣算。
+
 #### DRAM 為什麼要 refresh
 
 DRAM 的每個位元是一顆很小的電容，有電是 1、沒電是 0。電容會**慢慢漏電**，大約 64 ms 後就分不出 0 和 1。所以記憶體控制器必須在 64 ms 內，把每一列（row）讀出來再寫回去一次，這叫 **refresh**。
@@ -3144,7 +3239,82 @@ for i in 0..2:
 - A[i] 在內層迴圈一直用同一個 → 每次都馬上重用，**RI ＝ 1**，放一個暫存器就夠
 - B[j] 每 3 次才輪回同一個 → **RI ＝ 3**，要留住全部 3 個 B 才有重用
 
+<figure class="fig">
+<svg viewBox="0 0 360 166" role="img" aria-label="迴圈 i 在外、j 在內，依序用 A0B0、A0B1、A0B2、A1B0……。A 的同一個元素連續用 3 次，每次都是馬上再用（RI 1）；B 的同一個元素每隔 3 次才再用到（RI 3）。">
+<rect class="fa" x="46" y="44" width="30" height="26" rx="3"/>
+<text x="61" y="57" text-anchor="middle" dominant-baseline="central" class="sm mono ta">A0</text>
+<rect class="fa" x="46" y="100" width="30" height="26" rx="3"/>
+<text x="61" y="113" text-anchor="middle" dominant-baseline="central" class="sm mono ta">B0</text>
+<text x="61" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<rect class="fa" x="80" y="44" width="30" height="26" rx="3"/>
+<text x="95" y="57" text-anchor="middle" dominant-baseline="central" class="sm mono ta">A0</text>
+<rect class="fb" x="80" y="100" width="30" height="26" rx="3"/>
+<text x="95" y="113" text-anchor="middle" dominant-baseline="central" class="sm mono tb">B1</text>
+<text x="95" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<rect class="fa" x="114" y="44" width="30" height="26" rx="3"/>
+<text x="129" y="57" text-anchor="middle" dominant-baseline="central" class="sm mono ta">A0</text>
+<rect class="fc" x="114" y="100" width="30" height="26" rx="3"/>
+<text x="129" y="113" text-anchor="middle" dominant-baseline="central" class="sm mono tc">B2</text>
+<text x="129" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<rect class="fb" x="148" y="44" width="30" height="26" rx="3"/>
+<text x="163" y="57" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A1</text>
+<rect class="fa" x="148" y="100" width="30" height="26" rx="3"/>
+<text x="163" y="113" text-anchor="middle" dominant-baseline="central" class="sm mono ta">B0</text>
+<text x="163" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<rect class="fb" x="182" y="44" width="30" height="26" rx="3"/>
+<text x="197" y="57" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A1</text>
+<rect class="fb" x="182" y="100" width="30" height="26" rx="3"/>
+<text x="197" y="113" text-anchor="middle" dominant-baseline="central" class="sm mono tb">B1</text>
+<text x="197" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<rect class="fb" x="216" y="44" width="30" height="26" rx="3"/>
+<text x="231" y="57" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A1</text>
+<rect class="fc" x="216" y="100" width="30" height="26" rx="3"/>
+<text x="231" y="113" text-anchor="middle" dominant-baseline="central" class="sm mono tc">B2</text>
+<text x="231" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<rect class="fc" x="250" y="44" width="30" height="26" rx="3"/>
+<text x="265" y="57" text-anchor="middle" dominant-baseline="central" class="sm mono tc">A2</text>
+<rect class="fa" x="250" y="100" width="30" height="26" rx="3"/>
+<text x="265" y="113" text-anchor="middle" dominant-baseline="central" class="sm mono ta">B0</text>
+<text x="265" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<rect class="fc" x="284" y="44" width="30" height="26" rx="3"/>
+<text x="299" y="57" text-anchor="middle" dominant-baseline="central" class="sm mono tc">A2</text>
+<rect class="fb" x="284" y="100" width="30" height="26" rx="3"/>
+<text x="299" y="113" text-anchor="middle" dominant-baseline="central" class="sm mono tb">B1</text>
+<text x="299" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<rect class="fc" x="318" y="44" width="30" height="26" rx="3"/>
+<text x="333" y="57" text-anchor="middle" dominant-baseline="central" class="sm mono tc">A2</text>
+<rect class="fc" x="318" y="100" width="30" height="26" rx="3"/>
+<text x="333" y="113" text-anchor="middle" dominant-baseline="central" class="sm mono tc">B2</text>
+<text x="333" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<text x="38" y="57" text-anchor="end" dominant-baseline="central" class="sm mono">A</text>
+<text x="38" y="113" text-anchor="end" dominant-baseline="central" class="sm mono">B</text>
+<text x="38" y="84" text-anchor="end" dominant-baseline="central" class="sm">第幾次</text>
+<path class="arw-a" d="M65,42 Q78,30 86.6,37.9"/>
+<polygon class="ah-a" points="91.0,42.0 84.2,40.5 89.0,35.4"/>
+<path class="arw-a" d="M99,42 Q112,30 120.6,37.9"/>
+<polygon class="ah-a" points="125.0,42.0 118.2,40.5 123.0,35.4"/>
+<text x="95" y="18" text-anchor="middle" dominant-baseline="central" class="sm ta">馬上再用：RI 1</text>
+<path class="arw-a" d="M61,128 Q112,152 156.7,131.0"/>
+<polygon class="ah-a" points="163.0,128.0 158.4,134.6 155.0,127.4"/>
+<path class="arw-a" d="M163,128 Q214,152 258.7,131.0"/>
+<polygon class="ah-a" points="265.0,128.0 260.4,134.6 257.0,127.4"/>
+<text x="269" y="150" text-anchor="start" dominant-baseline="central" class="sm ta">隔 3 次：RI 3</text>
+</svg>
+<figcaption>同一個顏色是同一個元素：A 一用完馬上再用，B 要隔 3 次才輪回來</figcaption>
+</figure>
+
 **迴圈順序決定誰的 RI 小**。考題要你選迴圈順序、分配 SRAM，原則是：RI 小於 SRAM 容量的資料才留得住，留得住的資料就不用一直回 DRAM 讀。
+
+!!! key "DRAM 題要算什麼"
+    | 題目問 | 怎麼算 |
+    |---|---|
+    | 一段時間內 refresh 幾次 | 總列數 ×（這段時間 ÷ refresh 間隔） |
+    | command bus 使用率 | 這條 bus 負責的 refresh 次數 × 每次佔用時間 ÷ 這段時間（每個 channel 各算各的） |
+    | bank 使用率 | 一個 bank 的列數 × 輪數 × 每次佔用 bank 的時間 ÷ 這段時間 |
+    | 部分列可以比較久才 refresh | 次數變成原本的 $\sum\left(\text{比例}\times\frac{\text{原間隔}}{\text{新間隔}}\right)$ 倍 |
+    | 迴圈的 RI | 同一個元素兩次被用到之間，用過幾個不同的元素；RI 1 放暫存器，RI ≤ SRAM 容量才留得住 |
+
+    名詞對照：refresh（更新）、retention time（資料保存時間）、row buffer（列緩衝區）、activate／precharge（開列／關列）、reuse interval（重用間隔）。
 
 !!! read "還不懂？看別人怎麼講"
     - **英文**：〈[Retrospective: RAIDR](https://arxiv.org/abs/2306.16024)〉（Mutlu 團隊）：114 Q1.2「70% 的列可以 256 ms 才 refresh」就是 RAIDR 的想法：把列依保存時間分組，各組用不同的 refresh 頻率。
@@ -3194,6 +3364,98 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
     | 4.2 k, m, n | 1 | $N$ | $MN$ |
 
     4.3（$M=500$、$N=1000$、$K=30$，MAC 單元＋32 個元素的 SRAM）：選 **m, n, k**。Z 的 RI 是 1，放在 MAC 輸出的 flip-flop；A 的 RI 是 $K=30$，**一整列 A（30 個）剛好放進 SRAM**，每列只從 DRAM 讀一次；B 的 RI 是 $NK=30000$，放不下，只能串流讀取。這樣每次 MAC 大約只需讀一次 DRAM（讀 B），Z 每個元素只寫一次，A 幾乎不用重讀。k, m, n 順序下 B 和 Z 的 RI 都遠大於 32，沒辦法用 SRAM 保住。
+
+### 7.3 觀念小考 {#u7-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** DRAM 為什麼要 refresh？
+
+1. 為了讓讀取更快
+2. 為了清掉舊資料
+3. 電容會漏電，要在資料消失前讀出來再寫回去
+4. 為了讓 cache 保持一致
+
+??? quiz "看解析"
+    **C**。DRAM 用電容存電荷代表 0、1，電荷會慢慢漏掉，大約 64 ms 就分不出來了，所以每一列都要定期讀出來再寫回去。SRAM 用正反器存，不用 refresh。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** 8 個 bank × $2^{14}$ 列，64 ms 一輪，每次 refresh 佔 command bus 4 ns，使用率是？
+
+1. 0.8192%
+2. 0.4096%
+3. 1.6384%
+4. 8.192%
+
+??? quiz "看解析"
+    **A**。$\frac{2^3\times2^{14}\times4}{2^6\times10^6}=\frac{2^{11}\times4}{10^6}=\frac{8192}{10^6}=0.8192\%$。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** row buffer hit 為什麼比較快？
+
+1. 不用經過 command bus
+2. 資料其實在 cache 裡
+3. 那一列不需要 refresh
+4. 那一列已經讀到 row buffer，不用再 activate（也不用先 precharge 別列）
+
+??? quiz "看解析"
+    **D**。activate 要把一整列從陣列讀進 row buffer，很花時間。要的資料剛好在已經打開的那一列，就直接從 row buffer 讀。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-4.** 迴圈 `for i: for j: use A[i]*B[j]`，A、B 各 4 個元素。A 和 B 的 RI 各是多少？
+
+1. A 4、B 1
+2. A 1、B 4
+3. 都是 4
+4. 都是 1
+
+??? quiz "看解析"
+    **B**。內層迴圈 i 不變，A[i] 一直重用（RI 1）；B[j] 要等 j 繞完一圈 4 個才輪回來（RI 4）。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 原本每一列都 64 ms refresh 一次；現在有一半的列可以改成 128 ms 一次。refresh 的次數變成原本的幾倍？
+
+1. 0.5
+2. 0.75
+3. 0.25
+4. 1.5
+
+??? quiz "看解析"
+    **B**。$0.5\times1+0.5\times\frac{64}{128}=0.5+0.25=0.75$。A 是把所有列都當成 128 ms。
+
+</div>
+
+**W-1.** 2 個 channel × 4 rank × 8 bank × $2^{15}$ 列，64 ms 一輪；每次 refresh 佔 command bus 5 ns、佔 bank 50 ns。一個 channel 的 command bus 使用率是多少？一個 bank 被 refresh 佔用的比例是多少？
+
+??? quiz "看參考答案"
+    - **總列數（$2^{21}$）**：$2\times4\times8\times2^{15}=2^1\times2^2\times2^3\times2^{15}$。
+    - **一個 channel 的 command bus（8.192%）**：它負責一半的列，$2^{20}$ 次 × 5 ns：$\frac{2^{20}\times5}{2^6\times10^6}=\frac{2^{14}\times5}{10^6}=\frac{81920}{10^6}$。
+    - **一個 bank（2.56%）**：只有自己的 $2^{15}$ 列 × 50 ns：$\frac{2^{15}\times50}{2^6\times10^6}=\frac{2^9\times50}{10^6}=\frac{25600}{10^6}$。
+
+**W-2.** 矩陣乘向量 `y[i] += M[i][j] * x[j]`，$N\times N$ 矩陣，i 在外、j 在內。M、x、y 的 RI 各是多少？SRAM 只能放 $N$ 個元素，該放誰？
+
+??? quiz "看參考答案"
+    | 資料 | RI | 為什麼 |
+    |---|---|---|
+    | y[i] | 1 | 內層迴圈 i 不變，一直加到同一個 y[i] |
+    | x[j] | $N$ | 要等 j 繞完一圈 $N$ 個才輪回來 |
+    | M[i][j] | 沒有重用 | 每個元素只用一次 |
+
+    y[i] 放暫存器；**x 整條放進 SRAM**（剛好 $N$ 個），x 只要從 DRAM 讀一次；M 沒有重用，只能一路串流讀進來。如果把迴圈改成 j 在外、i 在內，變成 x[j] 的 RI 是 1、y 的 RI 是 $N$，就改成把 y 放進 SRAM。
 
 ### 單元 7 小考 {#u7-quiz}
 
