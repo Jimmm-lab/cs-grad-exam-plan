@@ -4774,6 +4774,322 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>switch-on-stall 需要的 thread 比較少，因為不會讓「其實可以繼續跑」的 thread 被迫讓位。</p>
+<figure class="fig">
+<svg viewBox="0 0 360 228" role="img" aria-label="上面一排是固定輪流：4 個 thread 每個 cycle 換一個，T1 的 LD 在第 0 個 cycle、ADD 在第 4 個 cycle，剛好等滿 4 個 cycle。下面一排是卡住才換：2 個 thread，各連續發 ADD、BNE、LD 三條，另一個在等的 3 個 cycle 剛好被填滿，T1 的 LD 在第 2 個 cycle、ADD 在第 6 個 cycle。">
+<text x="4" y="14" text-anchor="start" dominant-baseline="central" class="sm">固定輪流：4 個 thread</text>
+<rect class="fa" x="44" y="56" width="26" height="30"/>
+<text x="57" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="57" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fb" x="70" y="56" width="26" height="30"/>
+<text x="83" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="83" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fc" x="96" y="56" width="26" height="30"/>
+<text x="109" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="109" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tc">T3</text>
+<rect class="fk" x="122" y="56" width="26" height="30"/>
+<text x="135" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="135" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tk">T4</text>
+<rect class="fa" x="148" y="56" width="26" height="30"/>
+<text x="161" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="161" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fb" x="174" y="56" width="26" height="30"/>
+<text x="187" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="187" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fc" x="200" y="56" width="26" height="30"/>
+<text x="213" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="213" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tc">T3</text>
+<rect class="fk" x="226" y="56" width="26" height="30"/>
+<text x="239" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="239" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tk">T4</text>
+<rect class="fa" x="252" y="56" width="26" height="30"/>
+<text x="265" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="265" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fb" x="278" y="56" width="26" height="30"/>
+<text x="291" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="291" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fc" x="304" y="56" width="26" height="30"/>
+<text x="317" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="317" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tc">T3</text>
+<rect class="fk" x="330" y="56" width="26" height="30"/>
+<text x="343" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="343" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tk">T4</text>
+<path class="arw-a" d="M57,54 Q109,34 154.5,51.5"/>
+<polygon class="ah-a" points="161.0,54.0 153.0,55.2 155.9,47.8"/>
+<text x="109" y="38" text-anchor="middle" dominant-baseline="central" class="sm ta">4 cycle</text>
+<text x="4" y="104" text-anchor="start" dominant-baseline="central" class="sm">卡住才換：2 個 thread</text>
+<rect class="fa" x="44" y="146" width="26" height="30"/>
+<text x="57" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="57" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fa" x="70" y="146" width="26" height="30"/>
+<text x="83" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="83" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fa" x="96" y="146" width="26" height="30"/>
+<text x="109" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="109" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fb" x="122" y="146" width="26" height="30"/>
+<text x="135" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="135" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fb" x="148" y="146" width="26" height="30"/>
+<text x="161" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="161" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fb" x="174" y="146" width="26" height="30"/>
+<text x="187" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="187" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fa" x="200" y="146" width="26" height="30"/>
+<text x="213" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="213" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fa" x="226" y="146" width="26" height="30"/>
+<text x="239" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="239" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fa" x="252" y="146" width="26" height="30"/>
+<text x="265" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="265" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fb" x="278" y="146" width="26" height="30"/>
+<text x="291" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="291" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fb" x="304" y="146" width="26" height="30"/>
+<text x="317" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="317" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fb" x="330" y="146" width="26" height="30"/>
+<text x="343" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="343" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<path class="arw-a" d="M109,144 Q161,124 206.5,141.5"/>
+<polygon class="ah-a" points="213.0,144.0 205.0,145.2 207.9,137.8"/>
+<text x="161" y="128" text-anchor="middle" dominant-baseline="central" class="sm ta">4 cycle</text>
+<text x="57" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<text x="83" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="109" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="135" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="161" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<text x="187" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<text x="213" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<text x="239" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<text x="265" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<text x="291" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<text x="317" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<text x="343" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">11</text>
+<text x="38" y="190" text-anchor="end" dominant-baseline="central" class="sm">cycle</text>
+<text x="180" y="214" text-anchor="middle" dominant-baseline="central" class="sm">L＝LD　A＝ADD　B＝BNE</text>
+</svg>
+<figcaption>兩種方法都讓每個 cycle 都有指令可發；固定輪流要 4 個 thread，卡住才換只要 2 個</figcaption>
+</figure>
+
+<h4 id="_29">硬體多執行緒的三種做法</h4>
+<p>上面算 thread 數的題目，是在問「要幾個 thread 才不會浪費」。課本（COD 6.4）把硬體多執行緒分成三種：</p>
+<figure class="fig">
+<svg viewBox="0 0 360 262" role="img" aria-label="四種處理器的 issue slot：每一列是一個 cycle、每一列 4 格是一個 cycle 能發的 4 條指令，顏色代表不同 thread，空白是浪費。單一 thread 有整列空白也有半列空白；coarse-grained 只在長 stall 時換 thread；fine-grained 每個 cycle 換一個 thread，整列空白不見了，但每列還是沒填滿；SMT 同一個 cycle 可以混不同 thread，幾乎填滿。">
+<text x="51" y="14" text-anchor="middle" dominant-baseline="central" class="sm">單一 thread</text>
+<rect class="fa" x="19" y="36" width="16" height="16"/>
+<rect class="fa" x="35" y="36" width="16" height="16"/>
+<rect class="box" x="51" y="36" width="16" height="16"/>
+<rect class="box" x="67" y="36" width="16" height="16"/>
+<rect class="fa" x="19" y="52" width="16" height="16"/>
+<rect class="box" x="35" y="52" width="16" height="16"/>
+<rect class="box" x="51" y="52" width="16" height="16"/>
+<rect class="box" x="67" y="52" width="16" height="16"/>
+<rect class="box" x="19" y="68" width="16" height="16"/>
+<rect class="box" x="35" y="68" width="16" height="16"/>
+<rect class="box" x="51" y="68" width="16" height="16"/>
+<rect class="box" x="67" y="68" width="16" height="16"/>
+<rect class="box" x="19" y="84" width="16" height="16"/>
+<rect class="box" x="35" y="84" width="16" height="16"/>
+<rect class="box" x="51" y="84" width="16" height="16"/>
+<rect class="box" x="67" y="84" width="16" height="16"/>
+<rect class="fa" x="19" y="100" width="16" height="16"/>
+<rect class="fa" x="35" y="100" width="16" height="16"/>
+<rect class="fa" x="51" y="100" width="16" height="16"/>
+<rect class="box" x="67" y="100" width="16" height="16"/>
+<rect class="fa" x="19" y="116" width="16" height="16"/>
+<rect class="box" x="35" y="116" width="16" height="16"/>
+<rect class="box" x="51" y="116" width="16" height="16"/>
+<rect class="box" x="67" y="116" width="16" height="16"/>
+<rect class="box" x="19" y="132" width="16" height="16"/>
+<rect class="box" x="35" y="132" width="16" height="16"/>
+<rect class="box" x="51" y="132" width="16" height="16"/>
+<rect class="box" x="67" y="132" width="16" height="16"/>
+<rect class="fa" x="19" y="148" width="16" height="16"/>
+<rect class="fa" x="35" y="148" width="16" height="16"/>
+<rect class="box" x="51" y="148" width="16" height="16"/>
+<rect class="box" x="67" y="148" width="16" height="16"/>
+<text x="51" y="180" text-anchor="middle" dominant-baseline="central" class="sm">一般超純量</text>
+<text x="137" y="14" text-anchor="middle" dominant-baseline="central" class="sm mono">coarse</text>
+<rect class="fa" x="105" y="36" width="16" height="16"/>
+<rect class="fa" x="121" y="36" width="16" height="16"/>
+<rect class="box" x="137" y="36" width="16" height="16"/>
+<rect class="box" x="153" y="36" width="16" height="16"/>
+<rect class="fa" x="105" y="52" width="16" height="16"/>
+<rect class="box" x="121" y="52" width="16" height="16"/>
+<rect class="box" x="137" y="52" width="16" height="16"/>
+<rect class="box" x="153" y="52" width="16" height="16"/>
+<rect class="box" x="105" y="68" width="16" height="16"/>
+<rect class="box" x="121" y="68" width="16" height="16"/>
+<rect class="box" x="137" y="68" width="16" height="16"/>
+<rect class="box" x="153" y="68" width="16" height="16"/>
+<rect class="fb" x="105" y="84" width="16" height="16"/>
+<rect class="fb" x="121" y="84" width="16" height="16"/>
+<rect class="fb" x="137" y="84" width="16" height="16"/>
+<rect class="box" x="153" y="84" width="16" height="16"/>
+<rect class="fb" x="105" y="100" width="16" height="16"/>
+<rect class="fb" x="121" y="100" width="16" height="16"/>
+<rect class="box" x="137" y="100" width="16" height="16"/>
+<rect class="box" x="153" y="100" width="16" height="16"/>
+<rect class="fb" x="105" y="116" width="16" height="16"/>
+<rect class="box" x="121" y="116" width="16" height="16"/>
+<rect class="box" x="137" y="116" width="16" height="16"/>
+<rect class="box" x="153" y="116" width="16" height="16"/>
+<rect class="fb" x="105" y="132" width="16" height="16"/>
+<rect class="fb" x="121" y="132" width="16" height="16"/>
+<rect class="box" x="137" y="132" width="16" height="16"/>
+<rect class="box" x="153" y="132" width="16" height="16"/>
+<rect class="box" x="105" y="148" width="16" height="16"/>
+<rect class="box" x="121" y="148" width="16" height="16"/>
+<rect class="box" x="137" y="148" width="16" height="16"/>
+<rect class="box" x="153" y="148" width="16" height="16"/>
+<text x="137" y="180" text-anchor="middle" dominant-baseline="central" class="sm">粗粒度</text>
+<text x="223" y="14" text-anchor="middle" dominant-baseline="central" class="sm mono">fine</text>
+<rect class="fa" x="191" y="36" width="16" height="16"/>
+<rect class="fa" x="207" y="36" width="16" height="16"/>
+<rect class="box" x="223" y="36" width="16" height="16"/>
+<rect class="box" x="239" y="36" width="16" height="16"/>
+<rect class="fb" x="191" y="52" width="16" height="16"/>
+<rect class="fb" x="207" y="52" width="16" height="16"/>
+<rect class="fb" x="223" y="52" width="16" height="16"/>
+<rect class="box" x="239" y="52" width="16" height="16"/>
+<rect class="fc" x="191" y="68" width="16" height="16"/>
+<rect class="box" x="207" y="68" width="16" height="16"/>
+<rect class="box" x="223" y="68" width="16" height="16"/>
+<rect class="box" x="239" y="68" width="16" height="16"/>
+<rect class="fk" x="191" y="84" width="16" height="16"/>
+<rect class="fk" x="207" y="84" width="16" height="16"/>
+<rect class="box" x="223" y="84" width="16" height="16"/>
+<rect class="box" x="239" y="84" width="16" height="16"/>
+<rect class="fa" x="191" y="100" width="16" height="16"/>
+<rect class="fa" x="207" y="100" width="16" height="16"/>
+<rect class="fa" x="223" y="100" width="16" height="16"/>
+<rect class="box" x="239" y="100" width="16" height="16"/>
+<rect class="fb" x="191" y="116" width="16" height="16"/>
+<rect class="box" x="207" y="116" width="16" height="16"/>
+<rect class="box" x="223" y="116" width="16" height="16"/>
+<rect class="box" x="239" y="116" width="16" height="16"/>
+<rect class="fc" x="191" y="132" width="16" height="16"/>
+<rect class="fc" x="207" y="132" width="16" height="16"/>
+<rect class="box" x="223" y="132" width="16" height="16"/>
+<rect class="box" x="239" y="132" width="16" height="16"/>
+<rect class="fk" x="191" y="148" width="16" height="16"/>
+<rect class="box" x="207" y="148" width="16" height="16"/>
+<rect class="box" x="223" y="148" width="16" height="16"/>
+<rect class="box" x="239" y="148" width="16" height="16"/>
+<text x="223" y="180" text-anchor="middle" dominant-baseline="central" class="sm">細粒度</text>
+<text x="309" y="14" text-anchor="middle" dominant-baseline="central" class="sm mono">SMT</text>
+<rect class="fa" x="277" y="36" width="16" height="16"/>
+<rect class="fa" x="293" y="36" width="16" height="16"/>
+<rect class="fb" x="309" y="36" width="16" height="16"/>
+<rect class="fc" x="325" y="36" width="16" height="16"/>
+<rect class="fb" x="277" y="52" width="16" height="16"/>
+<rect class="fb" x="293" y="52" width="16" height="16"/>
+<rect class="fk" x="309" y="52" width="16" height="16"/>
+<rect class="fk" x="325" y="52" width="16" height="16"/>
+<rect class="fc" x="277" y="68" width="16" height="16"/>
+<rect class="fa" x="293" y="68" width="16" height="16"/>
+<rect class="fa" x="309" y="68" width="16" height="16"/>
+<rect class="box" x="325" y="68" width="16" height="16"/>
+<rect class="fk" x="277" y="84" width="16" height="16"/>
+<rect class="fk" x="293" y="84" width="16" height="16"/>
+<rect class="fb" x="309" y="84" width="16" height="16"/>
+<rect class="fc" x="325" y="84" width="16" height="16"/>
+<rect class="fa" x="277" y="100" width="16" height="16"/>
+<rect class="fb" x="293" y="100" width="16" height="16"/>
+<rect class="fb" x="309" y="100" width="16" height="16"/>
+<rect class="fc" x="325" y="100" width="16" height="16"/>
+<rect class="fc" x="277" y="116" width="16" height="16"/>
+<rect class="fk" x="293" y="116" width="16" height="16"/>
+<rect class="fk" x="309" y="116" width="16" height="16"/>
+<rect class="fa" x="325" y="116" width="16" height="16"/>
+<rect class="fb" x="277" y="132" width="16" height="16"/>
+<rect class="fb" x="293" y="132" width="16" height="16"/>
+<rect class="fc" x="309" y="132" width="16" height="16"/>
+<rect class="box" x="325" y="132" width="16" height="16"/>
+<rect class="fa" x="277" y="148" width="16" height="16"/>
+<rect class="fk" x="293" y="148" width="16" height="16"/>
+<rect class="fk" x="309" y="148" width="16" height="16"/>
+<rect class="fc" x="325" y="148" width="16" height="16"/>
+<text x="309" y="180" text-anchor="middle" dominant-baseline="central" class="sm">同時多執行緒</text>
+<rect class="fa" x="40" y="226" width="14" height="14"/>
+<text x="60" y="233" text-anchor="start" dominant-baseline="central" class="sm mono">T1</text>
+<rect class="fb" x="102" y="226" width="14" height="14"/>
+<text x="122" y="233" text-anchor="start" dominant-baseline="central" class="sm mono">T2</text>
+<rect class="fc" x="164" y="226" width="14" height="14"/>
+<text x="184" y="233" text-anchor="start" dominant-baseline="central" class="sm mono">T3</text>
+<rect class="fk" x="226" y="226" width="14" height="14"/>
+<text x="246" y="233" text-anchor="start" dominant-baseline="central" class="sm mono">T4</text>
+<rect class="box" x="288" y="226" width="14" height="14"/>
+<text x="308" y="233" text-anchor="start" dominant-baseline="central" class="sm">浪費</text>
+</svg>
+<figcaption>每一列是一個 cycle、4 格是 4 個 issue slot；顏色是不同 thread，白格是浪費</figcaption>
+</figure>
+
+<table>
+<thead>
+<tr>
+<th>做法</th>
+<th>什麼時候換 thread</th>
+<th>好處</th>
+<th>代價</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>coarse-grained（粗粒度）</td>
+<td>遇到很長的 stall（例如 cache miss 要到記憶體）才換</td>
+<td>單一 thread 幾乎不會變慢</td>
+<td>換的時候 pipeline 要重新填，短的 stall 藏不住</td>
+</tr>
+<tr>
+<td>fine-grained（細粒度）</td>
+<td>每個 cycle 都換，輪流發（在等的 thread 跳過）</td>
+<td>短的、長的 stall 都藏得住</td>
+<td>單一 thread 變慢：要等其他 thread 輪一圈</td>
+</tr>
+<tr>
+<td>SMT（同時多執行緒）</td>
+<td>同一個 cycle 就從好幾個 thread 發指令</td>
+<td>整個 cycle 空著（垂直浪費）和一個 cycle 沒填滿（水平浪費）都能補</td>
+<td>需要多發射、動態排程的處理器，硬體最複雜</td>
+</tr>
+</tbody>
+</table>
+<p>題目的 <strong>fixed switching</strong> 就是 fine-grained；<strong>data-dependent switching</strong>（卡住才換）比較像 coarse-grained 的「遇到事件才換」，只是題目假設換 thread 不用代價。</p>
+<p><strong>硬體要多準備什麼</strong>：每個 thread 都要有自己的 <strong>PC 和一整組暫存器</strong>；cache、ALU 這些共用。切換由硬體做，比 OS 的 context switch 快得多，所以 fine-grained 可以每個 cycle 都換。</p>
+<div class="admonition key">
+<p class="admonition-title">多執行緒題要算什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>單一 thread 一輪幾個 cycle</td>
+<td>一條一條排時間：要等資料的指令，跳到資料好的那個 cycle</td>
+</tr>
+<tr>
+<td>fixed switching 要幾個 thread</td>
+<td>每組相依：距離 <span class="arithmatex">\(d\)</span> 條、延遲 <span class="arithmatex">\(L\)</span> → <span class="arithmatex">\(N\ge\lceil L/d\rceil\)</span>，取最大的</td>
+</tr>
+<tr>
+<td>data-dependent 要幾個 thread</td>
+<td>一輪的 cycle 數 <span class="arithmatex">\(P\)</span>、發出的指令數 <span class="arithmatex">\(I\)</span> → <span class="arithmatex">\(N=\lceil P/I\rceil\)</span></td>
+</tr>
+<tr>
+<td>是哪一種多執行緒</td>
+<td>同一個 cycle 混不同 thread → SMT；每個 cycle 換 → fine；長 stall 才換 → coarse</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：hardware multithreading（硬體多執行緒）、issue slot（發射槽）、SMT（simultaneous multithreading）、thread-level parallelism（執行緒層級平行）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -4781,7 +5097,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf">MIT 6.823 Problem Set 10</a>（<a href="https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf">解答</a>）有跟 112 Q3、114 Q5 一樣的 fixed／data-dependent switching 題目。</li>
 </ul>
 </div>
-<h4 id="_29">換你試試</h4>
+<h4 id="_30">換你試試</h4>
 <p>同樣的迴圈，LD 改成 6 個 cycle。</p>
 <p><strong>T-1.</strong> 固定輪流需要幾個 thread？</p>
 <details class="quiz">
@@ -4818,6 +5134,150 @@ BNE  ...</code></pre>
 <p>3.3 Data-dependent：每輪 54 cycle、發 6 條指令 → <span class="arithmatex">\(\lceil54/6\rceil=\)</span> <strong>9 個 thread</strong>。</p>
 <p>MIT 6.823 的 Problem Set 10 有一模一樣的題目，可以拿來練（連結在最後）。</p>
 </div>
+<h3 id="u6-concept">6.2 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> 哪一種做法可以在<strong>同一個 cycle</strong> 發出不同 thread 的指令？</p>
+<ol>
+<li>coarse-grained</li>
+<li>fine-grained</li>
+<li>SMT</li>
+<li>三種都不行</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。SMT 在多發射的處理器上，同一個 cycle 的幾個 issue slot 可以分給不同 thread。fine-grained 每個 cycle 只發一個 thread 的指令，只是每個 cycle 換人。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-2.</strong> fine-grained（每個 cycle 換 thread）最大的缺點是？</p>
+<ol>
+<li>長的 stall 藏不住</li>
+<li>單一 thread 的執行變慢</li>
+<li>一定要亂序執行的處理器</li>
+<li>換 thread 時要清空 pipeline</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。每個 cycle 都輪到別人，一個本來可以連續跑的 thread，也要等其他 thread 輪一圈。A、D 是 coarse-grained 的缺點；C 是 SMT 的需求。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> 硬體多執行緒，每個 thread 一定要有自己的什麼？</p>
+<ol>
+<li>L1 cache</li>
+<li>ALU</li>
+<li>分支預測器</li>
+<li>PC 和暫存器</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。這是 thread 的狀態，換人時不能被別人覆蓋。cache、ALU、分支預測器都可以共用：共用會互相干擾、變慢，但不會算錯。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-4.</strong> fixed switching，LD 的延遲是 12，用到它的指令跟 LD 距離 3 條。至少要幾個 thread？</p>
+<ol>
+<li>4</li>
+<li>3</li>
+<li>12</li>
+<li>36</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。<span class="arithmatex">\(N\)</span> 個 thread 輪流時，距離 3 條的兩條指令相隔 <span class="arithmatex">\(3N\)</span> 個 cycle：<span class="arithmatex">\(3N\ge12\)</span>，<span class="arithmatex">\(N\ge4\)</span>。C 是把距離當成 1 條。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> data-dependent switching：一個 thread 一輪 21 個 cycle、發 5 條指令。至少要幾個 thread，才能每個 cycle 都有指令發？</p>
+<ol>
+<li>4</li>
+<li>5</li>
+<li>21</li>
+<li>6</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(21\div5=4.2\)</span>：4 個 thread 一輪只發 20 條，還空 1 個 cycle，所以要無條件進位，<span class="arithmatex">\(\lceil21/5\rceil=5\)</span>。</p>
+</details>
+</div>
+<div>
+<p><strong>W-1.</strong> 每個 thread 跑下面的迴圈。延遲：LD 8、FMUL 4、FADD 4、整數指令和 branch 1（延遲 <span class="arithmatex">\(L\)</span> 表示用到結果的指令，最早在 <span class="arithmatex">\(L\)</span> 個 cycle 後發）。(a) fixed switching 要幾個 thread？(b) data-dependent switching 呢？</p>
+<pre class="highlight"><code class="language-text">LD    f1, 0(x1)
+ADDI  x1, x1, 8
+FMUL  f2, f1, f0
+FADD  f3, f3, f2
+BNE   x1, x2, loop</code></pre>
+</div>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>(a) fixed：4 個</strong></p>
+<table>
+<thead>
+<tr>
+<th>相依</th>
+<th>距離</th>
+<th>條件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LD → FMUL（f1）</td>
+<td>2 條</td>
+<td><span class="arithmatex">\(2N\ge8\)</span> → <span class="arithmatex">\(N\ge4\)</span></td>
+</tr>
+<tr>
+<td>FMUL → FADD（f2）</td>
+<td>1 條</td>
+<td><span class="arithmatex">\(N\ge4\)</span></td>
+</tr>
+<tr>
+<td>FADD → 下一輪 FADD（f3）</td>
+<td>5 條</td>
+<td><span class="arithmatex">\(5N\ge4\)</span> → <span class="arithmatex">\(N\ge1\)</span></td>
+</tr>
+<tr>
+<td>ADDI → BNE、下一輪 LD（x1）</td>
+<td>3、4 條</td>
+<td>延遲 1，一定夠</td>
+</tr>
+</tbody>
+</table>
+<p>取最大的，<span class="arithmatex">\(N=4\)</span>。</p>
+<p><strong>(b) data-dependent：3 個</strong>。單一 thread 一輪：LD（0）、ADDI（1）、FMUL 要等 f1 到第 8 個 cycle、FADD 要等 f2 到 12、BNE（13）、下一輪 LD（14）。週期 14 個 cycle、發 5 條 → <span class="arithmatex">\(\lceil14/5\rceil=3\)</span>。</p>
+<p>我寫了一個小模擬器跑過，兩個答案都對；用它重算 114 Q5 和 112 Q3，結果也跟上面一樣。</p>
+</details>
+<p><strong>W-2.</strong> 比較 coarse-grained、fine-grained、SMT 各在什麼時候換 thread。為什麼 SMT 一定要搭配多發射的處理器？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<table>
+<thead>
+<tr>
+<th>做法</th>
+<th>什麼時候換</th>
+<th>補得到哪種浪費</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>coarse-grained</td>
+<td>遇到很長的 stall 才換</td>
+<td>長 stall 造成的整段空白</td>
+</tr>
+<tr>
+<td>fine-grained</td>
+<td>每個 cycle 都換</td>
+<td>每個 cycle 都有人發，整列空白（垂直浪費）不見</td>
+</tr>
+<tr>
+<td>SMT</td>
+<td>不用換：同一個 cycle 混好幾個 thread</td>
+<td>垂直浪費和一個 cycle 沒填滿的水平浪費都補</td>
+</tr>
+</tbody>
+</table>
+<p>SMT 要在同一個 cycle 發好幾條<strong>不同 thread</strong> 的指令，處理器本來就要能一次發多條（multiple issue），還要有動態排程、暫存器重新命名，才能把不同 thread 的指令混在一起發。單發射的處理器每個 cycle 只發一條，沒有水平浪費可以補，最多做到 fine-grained。</p>
+</details>
 <h3 id="u6-quiz">單元 6 小考</h3>
 <p><strong>6-1.</strong> 迴圈只有兩條相依指令：LD（延遲 20）、緊接著用它的 ADD，再加一條 BNE。Fixed switching 需要幾個 thread？</p>
 <details class="quiz">
@@ -4841,13 +5301,13 @@ BNE  ...</code></pre>
 <li>refresh 的命令要佔用<strong>命令匯流排</strong>（command bus）一段時間，這段時間不能送別的命令。</li>
 <li>正在 refresh 的那個 <strong>bank</strong> 不能被讀寫。</li>
 </ul>
-<h4 id="_30">使用率怎麼算</h4>
+<h4 id="_31">使用率怎麼算</h4>
 <div class="arithmatex">\[\text{使用率}=\frac{\text{這段時間內被 refresh 佔用的總時間}}{\text{這段時間}}\]</div>
 <p><strong>小例子</strong>：1 個 bank、1000 列，每次 refresh 佔用 bus 10 ns，每 64 ms 要全部 refresh 一次。</p>
 <p>64 ms 內被佔用 <span class="arithmatex">\(1000\times10\text{ ns}=10\ \mu\text{s}\)</span>，使用率 <span class="arithmatex">\(=\frac{10\ \mu\text{s}}{64\text{ ms}}\approx0.016\%\)</span>。</p>
 <p>數字很小，但記憶體越大，列數越多（考題常是 <span class="arithmatex">\(2^{19}\)</span> 列以上），使用率就跟著變大到好幾 %，而且 bank 被佔用時讀寫都要等。</p>
 <p><strong>考試技巧</strong>：數字留成 2 的次方和 10 的次方，例如 <span class="arithmatex">\(64\text{ ms}=2^6\times10^6\)</span> ns，就能約分不用計算機。</p>
-<h4 id="_31">資料重用：同一個東西多久會再用到</h4>
+<h4 id="_32">資料重用：同一個東西多久會再用到</h4>
 <p>SRAM／cache 很小，只能留住「很快又會用到」的資料。</p>
 <pre class="highlight"><code class="language-text">for i in 0..2:
   for j in 0..2:
@@ -4865,7 +5325,7 @@ BNE  ...</code></pre>
 <li><strong>練習</strong>：<a href="https://safari.ethz.ch/architecture/fall2022/doku.php?id=exams">ETH 計算機結構考古題（附詳解）</a>，可以找 DRAM refresh 相關的題目練習。</li>
 </ul>
 </div>
-<h4 id="_32">換你試試</h4>
+<h4 id="_33">換你試試</h4>
 <p><strong>T-1.</strong> 4 個 bank × 1024 列，每次 refresh 佔 bus 5 ns，64 ms 一輪，使用率？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -4935,7 +5395,7 @@ BNE  ...</code></pre>
 <section class="unit" data-unit="u8">
 <h2 id="u8">單元 8：平行與微架構</h2>
 <h3 id="u8-0">8.0 觀念課：同時做好幾件事的三種方式</h3>
-<h4 id="_33">平行化的上限</h4>
+<h4 id="_34">平行化的上限</h4>
 <p>90% 可以平行的程式，用 <span class="arithmatex">\(N\)</span> 個處理器：</p>
 <table>
 <thead>
@@ -4962,7 +5422,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>處理器加倍，speedup 卻越加越少，因為那 10% 不能平行的部分變成主要的時間。再加上處理器之間要溝通，實際上更低。</p>
-<h4 id="_34">三種平行</h4>
+<h4 id="_35">三種平行</h4>
 <table>
 <thead>
 <tr>
@@ -4990,7 +5450,7 @@ BNE  ...</code></pre>
 </tbody>
 </table>
 <p>從比喻就能回答 114 Q6：VLIW 比 superscalar 簡單（硬體不用排程）、superscalar 可能更快（現場能應變 cache miss）、VLIW 比 array 彈性（每個槽可以做不同事）、array 最簡單（只要一份指令和控制）。</p>
-<h4 id="_35">記憶體一致性：把指令洗成一疊牌</h4>
+<h4 id="_36">記憶體一致性：把指令洗成一疊牌</h4>
 <p>兩個處理器同時跑（x、y 一開始都是 0）：</p>
 <table>
 <thead>
@@ -5013,7 +5473,7 @@ BNE  ...</code></pre>
 <p><strong>Sequential consistency（SC）</strong> 的意思是：最後的結果，必須等於把兩邊的指令<strong>洗成一疊</strong>（各自的順序不能變）後依序執行的結果。</p>
 <p>把所有洗法列出來，(r1, r2) 只可能是 (0,1)、(1,0)、(1,1)。<strong>(0,0) 不可能</strong>：r1＝0 代表 P1 讀 y 時 P2 還沒寫 y；r2＝0 代表 P2 讀 x 時 P1 還沒寫 x。但兩邊都是「先寫再讀」，一定有一邊的寫入比另一邊的讀取早，矛盾。</p>
 <p>112 Q5 的三個處理器版本，用的就是同一個推理：把「讀到 0」換成「某個讀取在某個寫入之前」，看會不會繞成一個圈。</p>
-<h4 id="_36">頻寬撐不撐得住</h4>
+<h4 id="_37">頻寬撐不撐得住</h4>
 <p>運算再快，資料送不進來也沒用。需要的頻寬 ＝ 每秒運算次數 × 每次運算要從記憶體讀幾個 byte。這個值超過記憶體頻寬，運算單元就會空等。</p>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
@@ -5022,7 +5482,7 @@ BNE  ...</code></pre>
 <li><strong>英文文章</strong>：Russ Cox〈<a href="https://research.swtch.com/hwmm">Hardware Memory Models</a>〉用 litmus test（就是這節 P1、P2 那種小程式）解釋 sequential consistency，例子寫得非常清楚。</li>
 </ul>
 </div>
-<h4 id="_37">換你試試</h4>
+<h4 id="_38">換你試試</h4>
 <p><strong>T-1.</strong> 95% 可平行，處理器無限多，speedup 上限？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -5088,7 +5548,7 @@ BNE  ...</code></pre>
 </div>
 <h3 id="u8-mp">8.4 多處理器：cache coherence、UMA／NUMA、互連網路</h3>
 <p>101、106、107、110 年考過：平行加總的程式要怎麼同步、多顆 CPU 的 cache 怎麼保持一致、上百顆處理器要怎麼連。</p>
-<h4 id="_38">共用記憶體的多處理器</h4>
+<h4 id="_39">共用記憶體的多處理器</h4>
 <p><strong>shared-memory multiprocessor</strong>：所有處理器共用<strong>同一個實體位址空間</strong>，用一般的 load、store 溝通。依存取記憶體的時間分成兩種：</p>
 <table>
 <thead>
@@ -5195,7 +5655,7 @@ BNE  ...</code></pre>
 </ul>
 <p>處理器很多、沒有共用的 bus 時，改用 <strong>directory</strong>：每個 block 記錄哪些 cache 有它，要寫時只通知那幾個。</p>
 <p><strong>coherence miss（第 4 種 miss）</strong>：因為別的處理器寫了這個 block，我的被 invalidate，下次讀才 miss。只有多處理器才有。兩顆 CPU 寫同一個 block 裡<strong>不同的字</strong>也會互相 invalidate，叫 <strong>false sharing</strong>。</p>
-<h4 id="_39">互連網路：上百顆處理器怎麼連</h4>
+<h4 id="_40">互連網路：上百顆處理器怎麼連</h4>
 <p>N 顆處理器：</p>
 <table>
 <thead>
@@ -5254,7 +5714,7 @@ BNE  ...</code></pre>
 <li><strong>選 mesh</strong>：線路數只跟處理器數成正比，可以擴充，頻寬也隨處理器數增加；延遲的問題可以靠資料擺放、讓常溝通的處理器靠近一點來改善。</li>
 </ul>
 </div>
-<h4 id="_40">平行加總：要先同步再讀</h4>
+<h4 id="_41">平行加總：要先同步再讀</h4>
 <div class="admonition example">
 <p class="admonition-title">101 Q7（15%）：10 顆處理器加總 100,000 個數，再用下面的程式把 10 個部分和加起來。Pn 是處理器編號，half 是每顆處理器自己的變數</p>
 <pre class="highlight"><code class="language-c">half = 10;
@@ -5308,7 +5768,7 @@ until (half == 1);</code></pre>
 </ul>
 <p><strong>為什麼要處理奇數</strong>：第二輪 half ＝ 5，5 個部分和兩兩相加會剩一個（sum[4]）沒人加，所以讓 P0 先把它加進 sum[0]。驗算：最後 sum[0] 包含 sum[0]～sum[9] 全部，每個剛好一次。</p>
 </div>
-<h4 id="_41">觀念小考</h4>
+<h4 id="_42">觀念小考</h4>
 <div class="mcq" data-ans="1">
 <p><strong>C-1.</strong> 用 write-invalidate 的 snoopy protocol 時，P2 在 bus 上聽到「P1 要寫 X」（write miss），而 P2 的 cache 裡有 X，P2 要做什麼？（110 Q1.3）</p>
 <ol>
@@ -5368,9 +5828,9 @@ until (half == 1);</code></pre>
 </details>
 <h3 id="u8-ooo">8.5 動態排程：Tomasulo、亂序執行與多發</h3>
 <p>100、105、107 年考過：Tomasulo 要幾個比較器、tag 幾位元；SIMD、SIMT、VLIW、superscalar、superpipeline 各是什麼；loop unrolling 為什麼能變快。</p>
-<h4 id="_42">為什麼要亂序執行</h4>
+<h4 id="_43">為什麼要亂序執行</h4>
 <p>in-order 的 pipeline 只要有一條指令卡住（例如 lw cache miss 要等 100 個 cycle），後面<strong>不相干</strong>的指令也全部跟著等。亂序執行（out-of-order）的想法是：<strong>運算元一準備好就執行</strong>，不照程式順序。</p>
-<h4 id="_43">三種相依：只有一種是真的</h4>
+<h4 id="_44">三種相依：只有一種是真的</h4>
 <table>
 <thead>
 <tr>
@@ -5495,7 +5955,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </ol>
 <p><strong>代價</strong>：程式碼變大（可能讓 instruction cache miss 變多），需要更多暫存器。</p>
 </div>
-<h4 id="_44">觀念小考</h4>
+<h4 id="_45">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> register renaming 能消除哪幾種相依？</p>
 <ol>
@@ -5599,7 +6059,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <p><strong>為什麼「反相再加 1」就是取負</strong>：<span class="arithmatex">\(x\)</span> 和 <span class="arithmatex">\(\sim x\)</span> 每一位都相反，加起來是 1111，也就是 −1。所以 <span class="arithmatex">\(x+\sim x=-1\)</span>，移項得 <span class="arithmatex">\(-x=\sim x+1\)</span>。</p>
 <p>例：<span class="arithmatex">\(-3\)</span>：<span class="arithmatex">\(3=0011\)</span>，反相 1100，加 1 得 <strong>1101</strong>。</p>
 <p><strong>溢位</strong>：兩個正數相加得到負數（或兩個負數相加得到正數），結果就超出範圍了。例：<span class="arithmatex">\(5+4=1001\)</span>，讀起來是 −7，溢位。</p>
-<h4 id="_45">浮點數：二進位的科學記號</h4>
+<h4 id="_46">浮點數：二進位的科學記號</h4>
 <div class="arithmatex">\[(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})\]</div>
 <p><strong>每一部分的意思</strong>：</p>
 <ul>
@@ -5632,7 +6092,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <li><strong>英文</strong>：〈<a href="https://teaching.idallen.com/cst8214/08w/notes/ieee754_conversions.txt">IEEE 754 conversions</a>〉一步一步手算十進位和 IEEE 754 互換，適合練習。</li>
 </ul>
 </div>
-<h4 id="_46">換你試試</h4>
+<h4 id="_47">換你試試</h4>
 <p><strong>T-1.</strong> 用 4 位元二補數算 <span class="arithmatex">\(6+3\)</span>，結果是什麼？有沒有溢位？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -5666,7 +6126,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </div>
 <h3 id="u9-dec">9.2 從位元解回數值：進位轉換、二補數、IEEE 754</h3>
 <p>100 年（10%）和 103 年（14%）都考過：給一串十六進位，問它當成二補數整數、當成單精度浮點數各是多少；十進位轉八進位、十六進位；有號數相加會不會溢位。<a href="#u9-0">9.0</a> 教的是「數值 → 位元」，這一節反過來。</p>
-<h4 id="_47">十六進位、八進位跟二進位怎麼互換？</h4>
+<h4 id="_48">十六進位、八進位跟二進位怎麼互換？</h4>
 <p><strong>一個十六進位數字 ＝ 4 個位元</strong>，一個八進位數字 ＝ 3 個位元。所以先換成二進位，再從<strong>右邊</strong>開始分組：</p>
 <ul>
 <li><span class="arithmatex">\(520=512+8=1000001000_2\)</span></li>
@@ -5759,7 +6219,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </ul>
 <p>合起來 <code>1 01111110 10000000000000000000000</code> ＝ <strong>0xBF400000</strong>。</p>
 </div>
-<h4 id="_48">觀念小考</h4>
+<h4 id="_49">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 0xC1480000 當成單精度浮點數是多少？</p>
 <ol>
@@ -5833,7 +6293,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </details>
 <h3 id="u9-mips">9.3 MIPS 組合語言：把 C 翻成指令</h3>
 <p>101、102、103 年各考一題 10%：C 程式翻成 MIPS 後挖掉幾個運算元要你填、數一段程式存取記憶體幾次、說出每條指令用哪種定址模式。新版 COD 改用 RISC-V，但觀念一模一樣：<strong>暫存器怎麼分工、陣列位址怎麼算、迴圈和函式怎麼寫</strong>。</p>
-<h4 id="_49">暫存器各管什麼？</h4>
+<h4 id="_50">暫存器各管什麼？</h4>
 <p>MIPS 有 32 個 32 位元的暫存器，名字代表用途：</p>
 <table>
 <thead>
@@ -5894,7 +6354,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <li><strong>if-else</strong>：條件<strong>相反</strong>時跳去 else，做完 then 再 <code>j Exit</code> 跳過 else。</li>
 <li><strong>函式</strong>：<code>jal swap</code> 跳去 swap，同時把回來的位址存進 <code>$ra</code>；函式最後 <code>jr $ra</code> 跳回去。參數放 <code>$a0</code>–<code>$a3</code>，回傳值放 <code>$v0</code>。</li>
 </ul>
-<h4 id="_50">三種指令格式</h4>
+<h4 id="_51">三種指令格式</h4>
 <table>
 <thead>
 <tr>
@@ -6080,7 +6540,7 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </tbody>
 </table>
 </div>
-<h4 id="_51">觀念小考</h4>
+<h4 id="_52">觀念小考</h4>
 <div class="mcq" data-ans="4">
 <p><strong>C-1.</strong> <code>beq $s0,$s1,L</code> 的跳躍目標是用哪一種定址模式算的？</p>
 <ol>
@@ -6289,7 +6749,7 @@ sw  $t0,48($s3)</code></pre>
 <p><strong>(1) 的缺點</strong>（順便寫，題目可能想問反過來）：7 個乘積項、OR 閘要 7 個輸入，位數一多，項數爆炸性成長；(2) 只有 3 項，而且 G、P 可以共用、可以一層一層往上組（16 位元的兩層 CLA），這是實際用 (2) 的原因。</p>
 <p>兩個式子我用程式代過全部 32 種輸入，都等於真正的進位。</p>
 </div>
-<h4 id="_52">乘法器：像直式乘法一樣「看一位、加一次、移一位」</h4>
+<h4 id="_53">乘法器：像直式乘法一樣「看一位、加一次、移一位」</h4>
 <p>二進位直式乘法：乘數（multiplier）從最低位開始看，<strong>這一位是 1 就把被乘數（multiplicand）加進去</strong>，每看一位，被乘數就往左移一位。32 位元乘 32 位元，乘積 64 位元。</p>
 <p><strong>基本版</strong>（101 Q4 的 Figure 4.1）：</p>
 <ul>
@@ -6390,7 +6850,7 @@ sw  $t0,48($s3)</code></pre>
 </tbody>
 </table>
 </div>
-<h4 id="_53">觀念小考</h4>
+<h4 id="_54">觀念小考</h4>
 <div class="mcq" data-ans="1">
 <p><strong>C-1.</strong> 進位前瞻加法器裡，generate <span class="arithmatex">\(g_i\)</span> 和 propagate <span class="arithmatex">\(p_i\)</span> 的定義是？</p>
 <ol>

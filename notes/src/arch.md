@@ -2654,6 +2654,282 @@ ADD 和 LD 相鄰（距離 1 條指令），相隔 $N$ 個 cycle，必須 $\ge4$
 
 switch-on-stall 需要的 thread 比較少，因為不會讓「其實可以繼續跑」的 thread 被迫讓位。
 
+<figure class="fig">
+<svg viewBox="0 0 360 228" role="img" aria-label="上面一排是固定輪流：4 個 thread 每個 cycle 換一個，T1 的 LD 在第 0 個 cycle、ADD 在第 4 個 cycle，剛好等滿 4 個 cycle。下面一排是卡住才換：2 個 thread，各連續發 ADD、BNE、LD 三條，另一個在等的 3 個 cycle 剛好被填滿，T1 的 LD 在第 2 個 cycle、ADD 在第 6 個 cycle。">
+<text x="4" y="14" text-anchor="start" dominant-baseline="central" class="sm">固定輪流：4 個 thread</text>
+<rect class="fa" x="44" y="56" width="26" height="30"/>
+<text x="57" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="57" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fb" x="70" y="56" width="26" height="30"/>
+<text x="83" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="83" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fc" x="96" y="56" width="26" height="30"/>
+<text x="109" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="109" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tc">T3</text>
+<rect class="fk" x="122" y="56" width="26" height="30"/>
+<text x="135" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="135" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tk">T4</text>
+<rect class="fa" x="148" y="56" width="26" height="30"/>
+<text x="161" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="161" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fb" x="174" y="56" width="26" height="30"/>
+<text x="187" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="187" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fc" x="200" y="56" width="26" height="30"/>
+<text x="213" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="213" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tc">T3</text>
+<rect class="fk" x="226" y="56" width="26" height="30"/>
+<text x="239" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="239" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tk">T4</text>
+<rect class="fa" x="252" y="56" width="26" height="30"/>
+<text x="265" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="265" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fb" x="278" y="56" width="26" height="30"/>
+<text x="291" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="291" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fc" x="304" y="56" width="26" height="30"/>
+<text x="317" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="317" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tc">T3</text>
+<rect class="fk" x="330" y="56" width="26" height="30"/>
+<text x="343" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="343" y="78" text-anchor="middle" dominant-baseline="central" class="sm mono tk">T4</text>
+<path class="arw-a" d="M57,54 Q109,34 154.5,51.5"/>
+<polygon class="ah-a" points="161.0,54.0 153.0,55.2 155.9,47.8"/>
+<text x="109" y="38" text-anchor="middle" dominant-baseline="central" class="sm ta">4 cycle</text>
+<text x="4" y="104" text-anchor="start" dominant-baseline="central" class="sm">卡住才換：2 個 thread</text>
+<rect class="fa" x="44" y="146" width="26" height="30"/>
+<text x="57" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="57" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fa" x="70" y="146" width="26" height="30"/>
+<text x="83" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="83" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fa" x="96" y="146" width="26" height="30"/>
+<text x="109" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="109" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fb" x="122" y="146" width="26" height="30"/>
+<text x="135" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="135" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fb" x="148" y="146" width="26" height="30"/>
+<text x="161" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="161" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fb" x="174" y="146" width="26" height="30"/>
+<text x="187" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="187" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fa" x="200" y="146" width="26" height="30"/>
+<text x="213" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="213" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fa" x="226" y="146" width="26" height="30"/>
+<text x="239" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="239" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fa" x="252" y="146" width="26" height="30"/>
+<text x="265" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="265" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T1</text>
+<rect class="fb" x="278" y="146" width="26" height="30"/>
+<text x="291" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="291" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fb" x="304" y="146" width="26" height="30"/>
+<text x="317" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="317" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<rect class="fb" x="330" y="146" width="26" height="30"/>
+<text x="343" y="156" text-anchor="middle" dominant-baseline="central" class="sm mono">L</text>
+<text x="343" y="168" text-anchor="middle" dominant-baseline="central" class="sm mono tb">T2</text>
+<path class="arw-a" d="M109,144 Q161,124 206.5,141.5"/>
+<polygon class="ah-a" points="213.0,144.0 205.0,145.2 207.9,137.8"/>
+<text x="161" y="128" text-anchor="middle" dominant-baseline="central" class="sm ta">4 cycle</text>
+<text x="57" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<text x="83" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="109" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="135" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="161" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<text x="187" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<text x="213" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<text x="239" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<text x="265" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<text x="291" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<text x="317" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<text x="343" y="190" text-anchor="middle" dominant-baseline="central" class="sm mono">11</text>
+<text x="38" y="190" text-anchor="end" dominant-baseline="central" class="sm">cycle</text>
+<text x="180" y="214" text-anchor="middle" dominant-baseline="central" class="sm">L＝LD　A＝ADD　B＝BNE</text>
+</svg>
+<figcaption>兩種方法都讓每個 cycle 都有指令可發；固定輪流要 4 個 thread，卡住才換只要 2 個</figcaption>
+</figure>
+
+#### 硬體多執行緒的三種做法
+
+上面算 thread 數的題目，是在問「要幾個 thread 才不會浪費」。課本（COD 6.4）把硬體多執行緒分成三種：
+
+<figure class="fig">
+<svg viewBox="0 0 360 262" role="img" aria-label="四種處理器的 issue slot：每一列是一個 cycle、每一列 4 格是一個 cycle 能發的 4 條指令，顏色代表不同 thread，空白是浪費。單一 thread 有整列空白也有半列空白；coarse-grained 只在長 stall 時換 thread；fine-grained 每個 cycle 換一個 thread，整列空白不見了，但每列還是沒填滿；SMT 同一個 cycle 可以混不同 thread，幾乎填滿。">
+<text x="51" y="14" text-anchor="middle" dominant-baseline="central" class="sm">單一 thread</text>
+<rect class="fa" x="19" y="36" width="16" height="16"/>
+<rect class="fa" x="35" y="36" width="16" height="16"/>
+<rect class="box" x="51" y="36" width="16" height="16"/>
+<rect class="box" x="67" y="36" width="16" height="16"/>
+<rect class="fa" x="19" y="52" width="16" height="16"/>
+<rect class="box" x="35" y="52" width="16" height="16"/>
+<rect class="box" x="51" y="52" width="16" height="16"/>
+<rect class="box" x="67" y="52" width="16" height="16"/>
+<rect class="box" x="19" y="68" width="16" height="16"/>
+<rect class="box" x="35" y="68" width="16" height="16"/>
+<rect class="box" x="51" y="68" width="16" height="16"/>
+<rect class="box" x="67" y="68" width="16" height="16"/>
+<rect class="box" x="19" y="84" width="16" height="16"/>
+<rect class="box" x="35" y="84" width="16" height="16"/>
+<rect class="box" x="51" y="84" width="16" height="16"/>
+<rect class="box" x="67" y="84" width="16" height="16"/>
+<rect class="fa" x="19" y="100" width="16" height="16"/>
+<rect class="fa" x="35" y="100" width="16" height="16"/>
+<rect class="fa" x="51" y="100" width="16" height="16"/>
+<rect class="box" x="67" y="100" width="16" height="16"/>
+<rect class="fa" x="19" y="116" width="16" height="16"/>
+<rect class="box" x="35" y="116" width="16" height="16"/>
+<rect class="box" x="51" y="116" width="16" height="16"/>
+<rect class="box" x="67" y="116" width="16" height="16"/>
+<rect class="box" x="19" y="132" width="16" height="16"/>
+<rect class="box" x="35" y="132" width="16" height="16"/>
+<rect class="box" x="51" y="132" width="16" height="16"/>
+<rect class="box" x="67" y="132" width="16" height="16"/>
+<rect class="fa" x="19" y="148" width="16" height="16"/>
+<rect class="fa" x="35" y="148" width="16" height="16"/>
+<rect class="box" x="51" y="148" width="16" height="16"/>
+<rect class="box" x="67" y="148" width="16" height="16"/>
+<text x="51" y="180" text-anchor="middle" dominant-baseline="central" class="sm">一般超純量</text>
+<text x="137" y="14" text-anchor="middle" dominant-baseline="central" class="sm mono">coarse</text>
+<rect class="fa" x="105" y="36" width="16" height="16"/>
+<rect class="fa" x="121" y="36" width="16" height="16"/>
+<rect class="box" x="137" y="36" width="16" height="16"/>
+<rect class="box" x="153" y="36" width="16" height="16"/>
+<rect class="fa" x="105" y="52" width="16" height="16"/>
+<rect class="box" x="121" y="52" width="16" height="16"/>
+<rect class="box" x="137" y="52" width="16" height="16"/>
+<rect class="box" x="153" y="52" width="16" height="16"/>
+<rect class="box" x="105" y="68" width="16" height="16"/>
+<rect class="box" x="121" y="68" width="16" height="16"/>
+<rect class="box" x="137" y="68" width="16" height="16"/>
+<rect class="box" x="153" y="68" width="16" height="16"/>
+<rect class="fb" x="105" y="84" width="16" height="16"/>
+<rect class="fb" x="121" y="84" width="16" height="16"/>
+<rect class="fb" x="137" y="84" width="16" height="16"/>
+<rect class="box" x="153" y="84" width="16" height="16"/>
+<rect class="fb" x="105" y="100" width="16" height="16"/>
+<rect class="fb" x="121" y="100" width="16" height="16"/>
+<rect class="box" x="137" y="100" width="16" height="16"/>
+<rect class="box" x="153" y="100" width="16" height="16"/>
+<rect class="fb" x="105" y="116" width="16" height="16"/>
+<rect class="box" x="121" y="116" width="16" height="16"/>
+<rect class="box" x="137" y="116" width="16" height="16"/>
+<rect class="box" x="153" y="116" width="16" height="16"/>
+<rect class="fb" x="105" y="132" width="16" height="16"/>
+<rect class="fb" x="121" y="132" width="16" height="16"/>
+<rect class="box" x="137" y="132" width="16" height="16"/>
+<rect class="box" x="153" y="132" width="16" height="16"/>
+<rect class="box" x="105" y="148" width="16" height="16"/>
+<rect class="box" x="121" y="148" width="16" height="16"/>
+<rect class="box" x="137" y="148" width="16" height="16"/>
+<rect class="box" x="153" y="148" width="16" height="16"/>
+<text x="137" y="180" text-anchor="middle" dominant-baseline="central" class="sm">粗粒度</text>
+<text x="223" y="14" text-anchor="middle" dominant-baseline="central" class="sm mono">fine</text>
+<rect class="fa" x="191" y="36" width="16" height="16"/>
+<rect class="fa" x="207" y="36" width="16" height="16"/>
+<rect class="box" x="223" y="36" width="16" height="16"/>
+<rect class="box" x="239" y="36" width="16" height="16"/>
+<rect class="fb" x="191" y="52" width="16" height="16"/>
+<rect class="fb" x="207" y="52" width="16" height="16"/>
+<rect class="fb" x="223" y="52" width="16" height="16"/>
+<rect class="box" x="239" y="52" width="16" height="16"/>
+<rect class="fc" x="191" y="68" width="16" height="16"/>
+<rect class="box" x="207" y="68" width="16" height="16"/>
+<rect class="box" x="223" y="68" width="16" height="16"/>
+<rect class="box" x="239" y="68" width="16" height="16"/>
+<rect class="fk" x="191" y="84" width="16" height="16"/>
+<rect class="fk" x="207" y="84" width="16" height="16"/>
+<rect class="box" x="223" y="84" width="16" height="16"/>
+<rect class="box" x="239" y="84" width="16" height="16"/>
+<rect class="fa" x="191" y="100" width="16" height="16"/>
+<rect class="fa" x="207" y="100" width="16" height="16"/>
+<rect class="fa" x="223" y="100" width="16" height="16"/>
+<rect class="box" x="239" y="100" width="16" height="16"/>
+<rect class="fb" x="191" y="116" width="16" height="16"/>
+<rect class="box" x="207" y="116" width="16" height="16"/>
+<rect class="box" x="223" y="116" width="16" height="16"/>
+<rect class="box" x="239" y="116" width="16" height="16"/>
+<rect class="fc" x="191" y="132" width="16" height="16"/>
+<rect class="fc" x="207" y="132" width="16" height="16"/>
+<rect class="box" x="223" y="132" width="16" height="16"/>
+<rect class="box" x="239" y="132" width="16" height="16"/>
+<rect class="fk" x="191" y="148" width="16" height="16"/>
+<rect class="box" x="207" y="148" width="16" height="16"/>
+<rect class="box" x="223" y="148" width="16" height="16"/>
+<rect class="box" x="239" y="148" width="16" height="16"/>
+<text x="223" y="180" text-anchor="middle" dominant-baseline="central" class="sm">細粒度</text>
+<text x="309" y="14" text-anchor="middle" dominant-baseline="central" class="sm mono">SMT</text>
+<rect class="fa" x="277" y="36" width="16" height="16"/>
+<rect class="fa" x="293" y="36" width="16" height="16"/>
+<rect class="fb" x="309" y="36" width="16" height="16"/>
+<rect class="fc" x="325" y="36" width="16" height="16"/>
+<rect class="fb" x="277" y="52" width="16" height="16"/>
+<rect class="fb" x="293" y="52" width="16" height="16"/>
+<rect class="fk" x="309" y="52" width="16" height="16"/>
+<rect class="fk" x="325" y="52" width="16" height="16"/>
+<rect class="fc" x="277" y="68" width="16" height="16"/>
+<rect class="fa" x="293" y="68" width="16" height="16"/>
+<rect class="fa" x="309" y="68" width="16" height="16"/>
+<rect class="box" x="325" y="68" width="16" height="16"/>
+<rect class="fk" x="277" y="84" width="16" height="16"/>
+<rect class="fk" x="293" y="84" width="16" height="16"/>
+<rect class="fb" x="309" y="84" width="16" height="16"/>
+<rect class="fc" x="325" y="84" width="16" height="16"/>
+<rect class="fa" x="277" y="100" width="16" height="16"/>
+<rect class="fb" x="293" y="100" width="16" height="16"/>
+<rect class="fb" x="309" y="100" width="16" height="16"/>
+<rect class="fc" x="325" y="100" width="16" height="16"/>
+<rect class="fc" x="277" y="116" width="16" height="16"/>
+<rect class="fk" x="293" y="116" width="16" height="16"/>
+<rect class="fk" x="309" y="116" width="16" height="16"/>
+<rect class="fa" x="325" y="116" width="16" height="16"/>
+<rect class="fb" x="277" y="132" width="16" height="16"/>
+<rect class="fb" x="293" y="132" width="16" height="16"/>
+<rect class="fc" x="309" y="132" width="16" height="16"/>
+<rect class="box" x="325" y="132" width="16" height="16"/>
+<rect class="fa" x="277" y="148" width="16" height="16"/>
+<rect class="fk" x="293" y="148" width="16" height="16"/>
+<rect class="fk" x="309" y="148" width="16" height="16"/>
+<rect class="fc" x="325" y="148" width="16" height="16"/>
+<text x="309" y="180" text-anchor="middle" dominant-baseline="central" class="sm">同時多執行緒</text>
+<rect class="fa" x="40" y="226" width="14" height="14"/>
+<text x="60" y="233" text-anchor="start" dominant-baseline="central" class="sm mono">T1</text>
+<rect class="fb" x="102" y="226" width="14" height="14"/>
+<text x="122" y="233" text-anchor="start" dominant-baseline="central" class="sm mono">T2</text>
+<rect class="fc" x="164" y="226" width="14" height="14"/>
+<text x="184" y="233" text-anchor="start" dominant-baseline="central" class="sm mono">T3</text>
+<rect class="fk" x="226" y="226" width="14" height="14"/>
+<text x="246" y="233" text-anchor="start" dominant-baseline="central" class="sm mono">T4</text>
+<rect class="box" x="288" y="226" width="14" height="14"/>
+<text x="308" y="233" text-anchor="start" dominant-baseline="central" class="sm">浪費</text>
+</svg>
+<figcaption>每一列是一個 cycle、4 格是 4 個 issue slot；顏色是不同 thread，白格是浪費</figcaption>
+</figure>
+
+| 做法 | 什麼時候換 thread | 好處 | 代價 |
+|---|---|---|---|
+| coarse-grained（粗粒度） | 遇到很長的 stall（例如 cache miss 要到記憶體）才換 | 單一 thread 幾乎不會變慢 | 換的時候 pipeline 要重新填，短的 stall 藏不住 |
+| fine-grained（細粒度） | 每個 cycle 都換，輪流發（在等的 thread 跳過） | 短的、長的 stall 都藏得住 | 單一 thread 變慢：要等其他 thread 輪一圈 |
+| SMT（同時多執行緒） | 同一個 cycle 就從好幾個 thread 發指令 | 整個 cycle 空著（垂直浪費）和一個 cycle 沒填滿（水平浪費）都能補 | 需要多發射、動態排程的處理器，硬體最複雜 |
+
+題目的 **fixed switching** 就是 fine-grained；**data-dependent switching**（卡住才換）比較像 coarse-grained 的「遇到事件才換」，只是題目假設換 thread 不用代價。
+
+**硬體要多準備什麼**：每個 thread 都要有自己的 **PC 和一整組暫存器**；cache、ALU 這些共用。切換由硬體做，比 OS 的 context switch 快得多，所以 fine-grained 可以每個 cycle 都換。
+
+!!! key "多執行緒題要算什麼"
+    | 題目問 | 怎麼算 |
+    |---|---|
+    | 單一 thread 一輪幾個 cycle | 一條一條排時間：要等資料的指令，跳到資料好的那個 cycle |
+    | fixed switching 要幾個 thread | 每組相依：距離 $d$ 條、延遲 $L$ → $N\ge\lceil L/d\rceil$，取最大的 |
+    | data-dependent 要幾個 thread | 一輪的 cycle 數 $P$、發出的指令數 $I$ → $N=\lceil P/I\rceil$ |
+    | 是哪一種多執行緒 | 同一個 cycle 混不同 thread → SMT；每個 cycle 換 → fine；長 stall 才換 → coarse |
+
+    名詞對照：hardware multithreading（硬體多執行緒）、issue slot（發射槽）、SMT（simultaneous multithreading）、thread-level parallelism（執行緒層級平行）。
+
 !!! read "還不懂？看別人怎麼講"
     - **英文講義**：Onur Mutlu〈[Fine-Grained Multithreading](https://safari.ethz.ch/architecture/fall2020/lib/exe/fetch.php?media=onur-comparch-fall2020-lecture28-fgmt-afterlecture.pdf)〉（ETH 計算機結構第 28 講）。112、114 年的多執行緒題就是這門課的風格。
     - **練習**：[MIT 6.823 Problem Set 10](https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10.pdf)（[解答](https://csg.csail.mit.edu/6.823S21/StudyMaterials/quiz4/pset10_sol.pdf)）有跟 112 Q3、114 Q5 一樣的 fixed／data-dependent switching 題目。
@@ -2700,6 +2976,121 @@ switch-on-stall 需要的 thread 比較少，因為不會讓「其實可以繼�
     3.3 Data-dependent：每輪 54 cycle、發 6 條指令 → $\lceil54/6\rceil=$ **9 個 thread**。
 
     MIT 6.823 的 Problem Set 10 有一模一樣的題目，可以拿來練（連結在最後）。
+
+### 6.2 觀念小考 {#u6-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** 哪一種做法可以在**同一個 cycle** 發出不同 thread 的指令？
+
+1. coarse-grained
+2. fine-grained
+3. SMT
+4. 三種都不行
+
+??? quiz "看解析"
+    **C**。SMT 在多發射的處理器上，同一個 cycle 的幾個 issue slot 可以分給不同 thread。fine-grained 每個 cycle 只發一個 thread 的指令，只是每個 cycle 換人。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-2.** fine-grained（每個 cycle 換 thread）最大的缺點是？
+
+1. 長的 stall 藏不住
+2. 單一 thread 的執行變慢
+3. 一定要亂序執行的處理器
+4. 換 thread 時要清空 pipeline
+
+??? quiz "看解析"
+    **B**。每個 cycle 都輪到別人，一個本來可以連續跑的 thread，也要等其他 thread 輪一圈。A、D 是 coarse-grained 的缺點；C 是 SMT 的需求。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** 硬體多執行緒，每個 thread 一定要有自己的什麼？
+
+1. L1 cache
+2. ALU
+3. 分支預測器
+4. PC 和暫存器
+
+??? quiz "看解析"
+    **D**。這是 thread 的狀態，換人時不能被別人覆蓋。cache、ALU、分支預測器都可以共用：共用會互相干擾、變慢，但不會算錯。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-4.** fixed switching，LD 的延遲是 12，用到它的指令跟 LD 距離 3 條。至少要幾個 thread？
+
+1. 4
+2. 3
+3. 12
+4. 36
+
+??? quiz "看解析"
+    **A**。$N$ 個 thread 輪流時，距離 3 條的兩條指令相隔 $3N$ 個 cycle：$3N\ge12$，$N\ge4$。C 是把距離當成 1 條。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** data-dependent switching：一個 thread 一輪 21 個 cycle、發 5 條指令。至少要幾個 thread，才能每個 cycle 都有指令發？
+
+1. 4
+2. 5
+3. 21
+4. 6
+
+??? quiz "看解析"
+    **B**。$21\div5=4.2$：4 個 thread 一輪只發 20 條，還空 1 個 cycle，所以要無條件進位，$\lceil21/5\rceil=5$。
+
+</div>
+
+<div markdown="1">
+
+**W-1.** 每個 thread 跑下面的迴圈。延遲：LD 8、FMUL 4、FADD 4、整數指令和 branch 1（延遲 $L$ 表示用到結果的指令，最早在 $L$ 個 cycle 後發）。(a) fixed switching 要幾個 thread？(b) data-dependent switching 呢？
+
+```text
+LD    f1, 0(x1)
+ADDI  x1, x1, 8
+FMUL  f2, f1, f0
+FADD  f3, f3, f2
+BNE   x1, x2, loop
+```
+
+</div>
+
+??? quiz "看參考答案"
+    **(a) fixed：4 個**
+
+    | 相依 | 距離 | 條件 |
+    |---|---|---|
+    | LD → FMUL（f1） | 2 條 | $2N\ge8$ → $N\ge4$ |
+    | FMUL → FADD（f2） | 1 條 | $N\ge4$ |
+    | FADD → 下一輪 FADD（f3） | 5 條 | $5N\ge4$ → $N\ge1$ |
+    | ADDI → BNE、下一輪 LD（x1） | 3、4 條 | 延遲 1，一定夠 |
+
+    取最大的，$N=4$。
+
+    **(b) data-dependent：3 個**。單一 thread 一輪：LD（0）、ADDI（1）、FMUL 要等 f1 到第 8 個 cycle、FADD 要等 f2 到 12、BNE（13）、下一輪 LD（14）。週期 14 個 cycle、發 5 條 → $\lceil14/5\rceil=3$。
+
+    我寫了一個小模擬器跑過，兩個答案都對；用它重算 114 Q5 和 112 Q3，結果也跟上面一樣。
+
+**W-2.** 比較 coarse-grained、fine-grained、SMT 各在什麼時候換 thread。為什麼 SMT 一定要搭配多發射的處理器？
+
+??? quiz "看參考答案"
+    | 做法 | 什麼時候換 | 補得到哪種浪費 |
+    |---|---|---|
+    | coarse-grained | 遇到很長的 stall 才換 | 長 stall 造成的整段空白 |
+    | fine-grained | 每個 cycle 都換 | 每個 cycle 都有人發，整列空白（垂直浪費）不見 |
+    | SMT | 不用換：同一個 cycle 混好幾個 thread | 垂直浪費和一個 cycle 沒填滿的水平浪費都補 |
+
+    SMT 要在同一個 cycle 發好幾條**不同 thread** 的指令，處理器本來就要能一次發多條（multiple issue），還要有動態排程、暫存器重新命名，才能把不同 thread 的指令混在一起發。單發射的處理器每個 cycle 只發一條，沒有水平浪費可以補，最多做到 fine-grained。
 
 ### 單元 6 小考 {#u6-quiz}
 
