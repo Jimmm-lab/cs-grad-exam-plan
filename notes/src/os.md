@@ -40,13 +40,16 @@
 
 ## 單元 1：行程、執行緒與 CPU 排程 {#u1}
 
+!!! key "一句話重點"
+    行程（process）是「正在跑的程式」，作業系統用 PCB 記住它跑到哪裡。CPU 只有一個時，排程演算法決定誰先跑；算等待時間只要畫 Gantt chart，用「完成 − 到達 − 執行時間」。
+
 ### 1.0 觀念課：食譜和正在做菜的廚師 {#u1-0}
 
-#### 程式和行程差在哪
+#### 程式和行程差在哪？
 
 **程式（program）** 是食譜，靜靜放在磁碟上。**行程（process）** 是正在照著食譜做菜的廚師：他做到第幾步（**program counter**）、手邊有哪些材料（**暫存器、記憶體**），這些「進度」都屬於這個行程。
 
-同一份食譜可以有好幾個廚師同時在做，就像同一個程式可以開好幾個行程。作業系統用 **PCB** 記錄每個行程的進度，換人做的時候先把現在的進度存進 PCB，再把下一個人的進度讀出來，這就是 **context switch**。換人本身不做任何有用的工作，所以是額外開銷。
+同一份食譜可以有好幾個廚師同時在做，就像同一個程式可以開好幾個行程。作業系統用 **PCB**（process control block）記錄每個行程的進度，換人做的時候先把現在的進度存進 PCB，再把下一個人的進度讀出來，這就是 **context switch**。換人本身不做任何有用的工作，所以是額外開銷。
 
 #### 行程的五種狀態
 
@@ -58,9 +61,43 @@
 | waiting | 在等某件事（I/O、子行程結束） | 自己發出 I/O 請求或等待 |
 | terminated | 結束 | 執行完畢 |
 
+<figure class="fig">
+<svg viewBox="0 0 360 270" role="img" aria-label="行程的五種狀態：new 經 admitted 到 ready；ready 被排程選中到 running；running 時間片用完回 ready；running 發出 I/O 或等事件到 waiting；waiting 等到 I/O 完成回 ready；running 結束到 terminated。">
+<rect class="box" x="15" y="19" width="90" height="34" rx="17"/>
+<text x="60" y="36" text-anchor="middle" dominant-baseline="central">new</text>
+<rect class="box" x="241" y="19" width="110" height="34" rx="17"/>
+<text x="296" y="36" text-anchor="middle" dominant-baseline="central">terminated</text>
+<rect class="fb" x="20" y="120" width="100" height="36" rx="18"/>
+<text x="70" y="138" text-anchor="middle" dominant-baseline="central">ready</text>
+<rect class="fa" x="240" y="120" width="100" height="36" rx="18"/>
+<text x="290" y="138" text-anchor="middle" dominant-baseline="central">running</text>
+<rect class="ft" x="125" y="224" width="110" height="36" rx="18"/>
+<text x="180" y="242" text-anchor="middle" dominant-baseline="central">waiting</text>
+<line class="arw" x1="60" y1="53" x2="65.2" y2="111.0"/>
+<polygon class="ah" points="66.0,120.0 60.2,111.5 70.2,110.6"/>
+<text x="72" y="88" text-anchor="start" dominant-baseline="central" class="sm">admitted</text>
+<line class="arw" x1="120" y1="128" x2="231.0" y2="128.0"/>
+<polygon class="ah" points="240.0,128.0 231.0,133.0 231.0,123.0"/>
+<text x="180" y="114" text-anchor="middle" dominant-baseline="central" class="sm">dispatch（被排程選中）</text>
+<line class="arw" x1="240" y1="148" x2="129.0" y2="148.0"/>
+<polygon class="ah" points="120.0,148.0 129.0,143.0 129.0,153.0"/>
+<text x="180" y="164" text-anchor="middle" dominant-baseline="central" class="sm">interrupt（時間片用完）</text>
+<line class="arw" x1="292" y1="120" x2="295.5" y2="62.0"/>
+<polygon class="ah" points="296.0,53.0 300.5,62.3 290.5,61.7"/>
+<text x="300" y="88" text-anchor="start" dominant-baseline="central" class="sm">exit</text>
+<line class="arw" x1="282" y1="156" x2="220.4" y2="217.6"/>
+<polygon class="ah" points="214.0,224.0 216.8,214.1 223.9,221.2"/>
+<text x="258" y="200" text-anchor="start" dominant-baseline="central" class="sm">I/O、等事件</text>
+<line class="arw" x1="146" y1="224" x2="84.4" y2="162.4"/>
+<polygon class="ah" points="78.0,156.0 87.9,158.8 80.8,165.9"/>
+<text x="102" y="200" text-anchor="end" dominant-baseline="central" class="sm">I/O 完成</text>
+</svg>
+<figcaption>只有 ready 會被排程器選去跑；I/O 完成的行程先回 ready 排隊，不會直接回 running</figcaption>
+</figure>
+
 最常考的兩條路：running → waiting（**發 I/O 請求**）、running → ready（**時間片用完**或被更高優先權的搶走）。
 
-#### 排程：誰先用 CPU
+#### 排程：誰先用 CPU？
 
 只有一個 CPU、很多行程在 ready queue 等。三個常用的衡量指標：
 
@@ -68,7 +105,7 @@
 - **turnaround time**：從進來到完成的總時間 ＝ waiting ＋ 執行時間
 - **response time**：從進來到第一次被執行
 
-**為什麼短的先做，平均等待時間最短**：P1 要 4、P2 要 1，同時到達。
+**為什麼短的先做，平均等待時間最短？** P1 要 4、P2 要 1，同時到達：
 
 | 順序 | P1 等 | P2 等 | 平均 |
 |---|---|---|---|
@@ -85,15 +122,24 @@
 
 P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時間：P1 $8-5=3$、P2 $7-3=4$，平均 3.5。
 
-**為什麼「等待 ＝ 完成 − 到達 − 執行時間」**：從到達到完成的這段時間（turnaround）裡，行程不是在跑就是在 ready queue 等（這裡不考慮 I/O），所以扣掉跑的時間，剩下的就是等的時間。
+**為什麼「等待 ＝ 完成 − 到達 − 執行時間」？** 從到達到完成的這段時間（turnaround）裡，行程不是在跑就是在 ready queue 等（這裡不考慮 I/O），所以扣掉跑的時間，剩下的就是等的時間。
 
 動畫可以切換演算法、改行程（每個寫「名稱 到達時間 burst」，有 priority 就寫在最後）：
 
 <div class="viz" data-viz="sched" data-procs="P1 0 5, P2 0 3" data-algo="rr" data-q="2"></div>
 
-#### thread 和 process
+#### thread 和 process 差在哪？
 
-同一個 process 裡的 threads **共用**程式碼、全域資料、開啟的檔案，但各自有自己的 **program counter、暫存器、stack**。像同一個廚房裡的幾個廚師，共用冰箱和爐子，但各自做到不同步驟。
+同一個 process 裡的 threads 像同一個廚房裡的幾個廚師：共用冰箱和爐子，但各自做到不同步驟。
+
+| | 不同的 process | 同一個 process 裡的 threads |
+|---|---|---|
+| 程式碼、全域變數、heap、開啟的檔案 | 各自一份 | **共用** |
+| program counter、暫存器、stack | 各自一份 | **各自一份** |
+| 建立、切換的成本 | 大（要換整個位址空間） | 小 |
+| 一個出錯 | 不影響別的 process | 可能拖垮整個 process |
+
+所以 threads 之間交換資料很方便（直接讀寫同一個變數），但也因此要處理同步（[單元 2](#u2)）。
 
 !!! read "還不懂？看別人怎麼講"
     - **影片與講義**：[清大周志遠・作業系統（YouTube 播放清單）](https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ)，[講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999)的 Ch3 Processes、Ch4 Threads、Ch5 CPU Scheduling。
@@ -127,6 +173,37 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
 
 ### 1.1 行程 {#u1-1}
 
+#### 一個行程在記憶體裡長什麼樣子？
+
+<figure class="fig">
+<svg viewBox="0 0 360 270" role="img" aria-label="行程在記憶體裡的配置：由低位址往高位址依序是 text（程式碼）、data（全域變數）、heap（malloc 動態配置，往上長）、中間空的、stack（區域變數和函式呼叫，往下長）。">
+<rect class="fk" x="110" y="20" width="160" height="50"/>
+<text x="190.0" y="45.0" text-anchor="middle" dominant-baseline="central">stack</text>
+<rect class="box" x="110" y="70" width="160" height="70"/>
+<text x="190.0" y="105.0" text-anchor="middle" dominant-baseline="central" class="sm">（還沒用到）</text>
+<rect class="fc" x="110" y="140" width="160" height="46"/>
+<text x="190.0" y="163.0" text-anchor="middle" dominant-baseline="central">heap</text>
+<rect class="fb" x="110" y="186" width="160" height="36"/>
+<text x="190.0" y="204.0" text-anchor="middle" dominant-baseline="central">data</text>
+<rect class="fa" x="110" y="222" width="160" height="36"/>
+<text x="190.0" y="240.0" text-anchor="middle" dominant-baseline="central">text</text>
+<line class="arw" x1="288" y1="40" x2="288.0" y2="79.0"/>
+<polygon class="ah" points="288.0,88.0 283.0,79.0 293.0,79.0"/>
+<text x="296" y="64" text-anchor="start" dominant-baseline="central" class="sm">往下長</text>
+<line class="arw" x1="288" y1="170" x2="288.0" y2="131.0"/>
+<polygon class="ah" points="288.0,122.0 293.0,131.0 283.0,131.0"/>
+<text x="296" y="146" text-anchor="start" dominant-baseline="central" class="sm">往上長</text>
+<text x="100" y="22" text-anchor="end" dominant-baseline="central" class="sm">高位址</text>
+<text x="100" y="256" text-anchor="end" dominant-baseline="central" class="sm">低位址</text>
+<text x="100" y="45" text-anchor="end" dominant-baseline="central" class="sm">區域變數、</text>
+<text x="100" y="62" text-anchor="end" dominant-baseline="central" class="sm">函式呼叫</text>
+<text x="100" y="163" text-anchor="end" dominant-baseline="central" class="sm">malloc／new</text>
+<text x="100" y="204" text-anchor="end" dominant-baseline="central" class="sm">全域變數</text>
+<text x="100" y="240" text-anchor="end" dominant-baseline="central" class="sm">程式碼</text>
+</svg>
+<figcaption>heap 往上長、stack 往下長，中間空著，兩邊都有空間可以長大</figcaption>
+</figure>
+
 - **記憶體配置**：text（程式碼）、data（全域變數）、**heap**（動態配置）、stack（函式呼叫）。（114 Q8b 填空）
 - **PCB 的七個欄位**（112 Q5a）：process state、program counter、CPU registers、CPU-scheduling information、memory-management information、accounting information、I/O status information。
 - **degree of multiprogramming**：目前在記憶體中的 process 數量。（115 Q1a）
@@ -134,17 +211,29 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
 - 每個 thread 有自己的 **program counter**，記錄下一條要執行的指令。（113 Q8a）
 - **Pthreads** 是 **POSIX** 標準定義的 thread API。（114 Q8i）
 
+#### user thread 和 kernel thread 怎麼對應？
+
+| 模型 | 對應方式 | 好處 | 壞處 |
+|---|---|---|---|
+| many-to-one | 很多個 user thread 對到 1 個 kernel thread | 切換不用進 kernel，快 | 一個 thread 呼叫會卡住的 system call，整個 process 都卡住；不能同時用多顆 CPU |
+| one-to-one | 每個 user thread 一個 kernel thread（Linux、Windows） | 真的能平行；一個卡住不影響別人 | 每建一個 thread 就要建 kernel thread，數量受限 |
+| many-to-many | 很多個 user thread 對到較少的 kernel thread | 兼顧兩者 | 實作複雜 |
+
 !!! example "115 Q2a（6%）：process 在什麼情況下會交出 CPU？之後會放到哪個 queue？"
-    1. 發出 I/O 請求 → 放進 **I/O wait queue**
-    2. 建立子行程並等待它結束 → 放進 **wait queue**
-    3. 被中斷強制移走，或 time slice 用完 → 放回 **ready queue**
+    對照上面的狀態圖，從 running 出去的三條路：
+
+    1. **發出 I/O 請求** → running 變 waiting，放進 **I/O wait queue**。
+    2. **建立子行程並等它結束**（或等其他事件）→ 放進 **wait queue**。
+    3. **被中斷強制移走，或 time slice 用完** → 回到 ready，放回 **ready queue**。
 
 !!! example "115 Q2b（4%）：從 processor affinity 的角度解釋 warm cache"
-    process 在某個 core 上跑一段時間後，它的資料已經在那個 core 的 cache 裡（cache 是「熱」的）。如果把它移到別的 core，舊 cache 要作廢、新 cache 要重新載入，成本很高。所以排程器盡量讓 process 留在同一個 core，這就是 **processor affinity**。
+    - **warm cache 是什麼**：process 在某個 core 上跑一段時間後，它的資料已經在那個 core 的 cache 裡（cache 是「熱」的）。
+    - **換 core 的代價**：移到別的 core，舊 cache 的資料用不到、新 core 的 cache 要一筆一筆 miss 重新載入，成本很高。
+    - **processor affinity**：所以排程器盡量讓 process 留在同一個 core 上跑。
 
 !!! example "114 Q6b（4%）：兩種 IPC 模型"
-    - **shared memory**：建立一塊共享記憶體，process 直接讀寫，快，但要自己做同步。
-    - **message passing**：透過 kernel 的 send／receive 傳訊息，較慢（每次都要 system call），但不用處理衝突，也適合分散式系統。
+    - **shared memory**：建立一塊共享記憶體，process 直接讀寫。快（建好之後不用經過 kernel），但要自己做同步。
+    - **message passing**：透過 kernel 的 send／receive 傳訊息。較慢（每次都要 system call），但不用處理衝突，也適合分散式系統（[6.3](#u6-dist)）。
 
 ### 1.2 CPU 排程計算 {#u1-2}
 
@@ -156,16 +245,51 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
 
 **做法**：畫 Gantt chart，算每個 process 的完成時間，等待時間 ＝ 完成時間 $-$ 到達時間 $-$ burst time。
 
-!!! example "113 Q6a（6%）：五個 process 都在時間 0 到達，burst 10、1、2、1、5，priority 3、1、3、4、2（數字小優先）"
-    **SJF**：P2(1)、P4(1)、P3(2)、P5(5)、P1(10)
+#### 五種演算法怎麼選、各有什麼問題？
+
+| 演算法 | 會搶嗎（preemptive） | 每次選誰 | 好處 | 問題 |
+|---|---|---|---|---|
+| FCFS | 不會 | 最早到的 | 簡單 | **convoy effect**：一個長的卡在前面，後面一群短的都要等 |
+| SJF | 不會 | burst 最短的 | 不搶的演算法裡平均等待最短 | 要預先知道 burst；長的可能一直輪不到（starvation） |
+| SRTF（會搶的 SJF） | 會 | **剩餘時間**最短的；新來的比較短就搶走 CPU | 所有演算法裡平均等待最短 | context switch 多；starvation |
+| Priority | 兩種都有 | priority 最高的（通常數字小） | 照重要性排 | starvation，用 **aging**（等越久 priority 越高）解決 |
+| Round Robin | 會 | 輪流，每人最多一個 quantum | response time 好、公平 | quantum 太大就變 FCFS；太小 context switch 太多 |
+
+**multilevel feedback queue**：好幾個 queue，越上面 priority 越高、quantum 越小。新來的先進最上面；用完整個 quantum 還沒做完就降一級。這樣互動型（常常等 I/O、用不完 quantum）的留在上面，計算型的自動沉下去。
+
+#### 有到達時間時：搶先和不搶先差在哪？
+
+P1、P2、P3、P4 的到達時間 0、1、2、3，burst 8、4、9、5。
+
+**SRTF（會搶）**：
+
+| 時間 | 發生什麼事 | 執行 |
+|---|---|---|
+| 0 | 只有 P1 | P1 |
+| 1 | P2 到，剩 4 ＜ P1 剩 7 → **搶走** | P2 |
+| 2、3 | P3（9）、P4（5）到，都比 P2 剩的長 | P2 |
+| 5 | P2 做完；剩 P1 7、P3 9、P4 5，挑 P4 | P4 |
+| 10 | P4 做完；P1 7 ＜ P3 9 | P1 |
+| 17 | P1 做完 | P3（到 26） |
+
+等待 ＝ 完成 − 到達 − burst：P1 $17-0-8=9$、P2 $5-1-4=0$、P3 $26-2-9=15$、P4 $10-3-5=2$，平均 $\frac{26}4=$ **6.5**。
+
+**SJF（不搶）**：P1 先跑到 8 不能被搶；之後 P2（4）、P4（5）、P3（9）。等待 P1 0、P2 $8-1=7$、P4 $12-3=9$、P3 $17-2=15$，平均 $\frac{31}4=7.75$。會搶的 SRTF 比較短。
+
+<div class="viz" data-viz="sched" data-procs="P1 0 8, P2 1 4, P3 2 9, P4 3 5" data-algo="srtf" data-title="切換成 SJF（不搶）對照"></div>
+
+!!! example "113 Q6a（6%）：五個 process 都在時間 0 到達，burst 10、1、2、1、5，priority 3、1、3、4、2（數字小優先）。求 SJF、non-preemptive priority、RR（q＝1）的平均等待時間"
+    **題目條件**：都在時間 0 到達，所以**等待時間 ＝ 開始時間**（不搶先時）；同時符合條件時照編號。
+
+    **SJF（3.2）**：照 burst 由短到長 P2(1)、P4(1)、P3(2)、P5(5)、P1(10)。
 
     | | P2 | P4 | P3 | P5 | P1 |
     |---|---|---|---|---|---|
     | 開始 | 0 | 1 | 2 | 4 | 9 |
 
-    都在時間 0 到達，所以等待時間就是開始時間。平均等待 $=\frac{0+1+2+4+9}{5}=\frac{16}{5}=3.2$。
+    平均等待 $=\frac{0+1+2+4+9}{5}=\frac{16}{5}=3.2$。
 
-    **Non-preemptive priority**（數字小的先）：P2(1)、P5(2)、P1(3)、P3(3)、P4(4)。P1、P3 同為 3，照編號 P1 先。
+    **Non-preemptive priority（8.2）**：數字小的先 P2(1)、P5(2)、P1(3)、P3(3)、P4(4)。P1、P3 同為 3，照編號 P1 先。
 
     | | P2 | P5 | P1 | P3 | P4 |
     |---|---|---|---|---|---|
@@ -173,9 +297,7 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
 
     等待（＝開始時間）$0+1+6+16+18=41$，平均 $\frac{41}{5}=8.2$。
 
-    **RR（q＝1，佇列初始順序 P1–P5）**：完成時間 P1＝19、P2＝2、P3＝7、P4＝4、P5＝14。等待 ＝ 完成 $-$ burst：$9,1,5,3,9$，平均 $\frac{27}{5}=5.4$。
-
-    RR 的 Gantt chart 最容易算錯，畫的時候把每一輪寫成一列：
+    **RR，q＝1（5.4）**：佇列初始順序 P1–P5。RR 的 Gantt chart 最容易算錯，把每一輪寫成一列：
     `P1 P2 P3 P4 P5 | P1 P3 P5 | P1 P5 | P1 P5 | P1 P5 | P1 P1 P1 P1 P1`
 
     加上時間（每格 1）：
@@ -184,7 +306,7 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
     |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
     | 執行 | P1 | **P2** | P3 | **P4** | P5 | P1 | **P3** | P5 | P1 | P5 | P1 | P5 | P1 | **P5** | P1 ×5 |
 
-    粗體是該行程最後一次跑，下一格的時間就是它的完成時間：P2＝2、P4＝4、P3＝7、P5＝14、P1＝19。
+    粗體是該行程最後一次跑，下一格的時間就是它的完成時間：P2＝2、P4＝4、P3＝7、P5＝14、P1＝19。等待 ＝ 完成 − burst：9、1、5、3、9，平均 $\frac{27}{5}=5.4$。
 
 <div class="viz" data-viz="sched" data-procs="P1 0 10 3, P2 0 1 1, P3 0 2 3, P4 0 1 4, P5 0 5 2" data-algo="rr" data-q="1" data-title="113 Q6a：切換成 SJF、Priority 對照上面的答案"></div>
 
@@ -458,6 +580,97 @@ printf("%d\n", v);
     - **C（P2）**：P2 開的 thread 把 P2 的 value 減成 100。`++value` 先加再印，所以印 101。
 
     兩個都是 101，但原因不同：一個是「沒被減、先印」，一個是「被減了、又加回來」。
+
+### 1.4 觀念小考 {#u1-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 一個 running 的行程發出 I/O 請求，它的狀態會變成什麼？
+
+1. ready
+2. waiting
+3. new
+4. terminated
+
+??? quiz "看解析"
+    **B. waiting**。它要等 I/O，不能繼續用 CPU。等 I/O 完成會先回 **ready** 排隊（A 是時間片用完或被搶時的去處）。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-2.** 幾個行程都在時間 0 到達，下面哪一種演算法的平均等待時間一定最短？
+
+1. FCFS
+2. Round Robin
+3. SJF
+4. Priority
+
+??? quiz "看解析"
+    **C. SJF**。短的先做，後面的人多等的時間最少（觀念課的例子）。都在時間 0 到達時，SRTF 跟 SJF 一樣，因為沒有新來的可以搶。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** Round Robin 的 time quantum 設得非常大（比每個行程的 burst 都長），會變成哪一種？
+
+1. FCFS
+2. SJF
+3. SRTF
+4. Priority
+
+??? quiz "看解析"
+    **A. FCFS**。每個行程都在一個 quantum 內做完，不會被換下來，就是照到達順序一個接一個做。反過來 quantum 太小，大部分時間都花在 context switch。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** 同一個 process 裡的兩個 thread，**共用**下面哪一個？
+
+1. program counter
+2. 暫存器
+3. stack
+4. 全域變數
+
+??? quiz "看解析"
+    **D. 全域變數**（還有程式碼、heap、開啟的檔案）。A、B、C 每個 thread 各有一份，因為它們各自做到不同步驟、各自呼叫不同的函式。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** priority 排程中，低 priority 的行程一直輪不到（starvation），常用的解法是？
+
+1. 把 quantum 調大
+2. aging：等越久，priority 越高
+3. 改成 FCFS
+4. 增加 CPU 數量
+
+??? quiz "看解析"
+    **B. aging**。等得夠久，priority 總會升到最高，一定輪得到。
+
+</div>
+
+**W-1.** P1、P2、P3 在時間 0 依序到達，burst 24、3、3。FCFS 的平均等待時間是多少？如果順序改成 P2、P3、P1 呢？用這個例子說明 convoy effect。
+
+??? quiz "看參考答案"
+    - **FCFS（P1、P2、P3）（17）**：等待 0、24、27，平均 $\frac{51}{3}=17$。
+    - **改成 P2、P3、P1（3）**：等待 P2 0、P3 3、P1 6，平均 $\frac93=3$。
+
+    **convoy effect**：一個很長的行程排在前面，後面一群短的都被它卡住（像一台慢車後面跟著一長串車）。短的先做，平均等待從 17 降到 3。
+
+**W-2.** P1、P2、P3、P4 的到達時間 0、1、2、3，burst 8、4、9、5。分別用 SJF（不搶）和 SRTF（會搶）畫 Gantt chart，算平均等待時間。
+
+??? quiz "看參考答案"
+    **SRTF（6.5）**：P1 0–1、P2 1–5（P2 到的時候剩 4 ＜ P1 剩 7，搶走）、P4 5–10、P1 10–17、P3 17–26。等待 P1 9、P2 0、P3 15、P4 2，平均 $\frac{26}{4}=6.5$。
+
+    **SJF（7.75）**：P1 0–8（不能被搶）、P2 8–12、P4 12–17、P3 17–26。等待 P1 0、P2 7、P4 9、P3 15，平均 $\frac{31}{4}=7.75$。
+
+    可以把這組數字貼進 [1.2](#u1-2) 的動畫，切換演算法對照。
 
 ### 單元 1 小考 {#u1-quiz}
 
