@@ -1963,6 +1963,68 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p>四個都成立才會死結。<strong>破壞任何一個就不會死結</strong>，這就是 deadlock prevention 的思路，例如「一次把兩支筷子都拿到才開始吃」破壞了 hold and wait。</p>
+<h4 id="cycle">資源分配圖：有 cycle 一定死結嗎？</h4>
+<p>畫法：process 畫圓、資源畫方框，框裡的點是這種資源有幾份。<strong>P → R</strong>（request edge）表示 P 在等 R；<strong>R → P</strong>（assignment edge）表示 R 的一份已經分給 P。</p>
+<figure class="fig">
+<svg viewBox="0 0 360 384" role="img" aria-label="兩張資源分配圖。(a) R1、R2 各 1 份：P1 拿著 R1 在等 R2，P2 拿著 R2 在等 R1，形成 cycle，死結。(b) R1、R2 各 2 份：R1 分給 P2、P3，R2 分給 P1、P4；P1 在等 R1，P3 在等 R2，有 cycle P1→R1→P3→R2→P1，但 P2、P4 沒有在等，做完會放出資源，所以沒有死結。">
+<text x="6" y="14" text-anchor="start" dominant-baseline="central" class="sm">(a) 每種資源 1 份：有 cycle 就死結</text>
+<circle class="fa" cx="70" cy="104" r="19"/>
+<text x="70" y="104" text-anchor="middle" dominant-baseline="central" class="mono">P1</text>
+<circle class="fa" cx="290" cy="104" r="19"/>
+<text x="290" y="104" text-anchor="middle" dominant-baseline="central" class="mono">P2</text>
+<rect class="box" x="153" y="49" width="54" height="30" rx="4"/>
+<circle style="fill:var(--ink)" cx="180" cy="64" r="4"/>
+<text x="180" y="39" text-anchor="middle" dominant-baseline="central" class="sm mono">R1</text>
+<rect class="box" x="153" y="131" width="54" height="30" rx="4"/>
+<circle style="fill:var(--ink)" cx="180" cy="146" r="4"/>
+<text x="180" y="172" text-anchor="middle" dominant-baseline="central" class="sm mono">R2</text>
+<line class="arw-a" x1="175.301" y1="65.7087" x2="98.2" y2="93.7"/>
+<polygon class="ah-a" points="89.7,96.8 96.5,89.0 99.9,98.4"/>
+<line class="arw-a" x1="89.6186" y1="111.491" x2="142.6" y2="131.7"/>
+<polygon class="ah-a" points="151.0,134.9 140.8,136.4 144.4,127.0"/>
+<line class="arw-a" x1="184.671" y1="144.216" x2="262.0" y2="114.7"/>
+<polygon class="ah-a" points="270.4,111.5 263.8,119.4 260.2,110.0"/>
+<line class="arw-a" x1="270.264" y1="96.8234" x2="217.5" y2="77.6"/>
+<polygon class="ah-a" points="209.0,74.5 219.2,72.9 215.7,82.3"/>
+<text x="6" y="200" text-anchor="start" dominant-baseline="central" class="sm">(b) 每種資源 2 份：有 cycle 但沒有死結</text>
+<circle class="fa" cx="60" cy="296" r="19"/>
+<text x="60" y="296" text-anchor="middle" dominant-baseline="central" class="mono">P1</text>
+<circle class="fa" cx="300" cy="296" r="19"/>
+<text x="300" y="296" text-anchor="middle" dominant-baseline="central" class="mono">P3</text>
+<rect class="box" x="153" y="235" width="54" height="30" rx="4"/>
+<circle style="fill:var(--ink)" cx="170" cy="250" r="4"/>
+<circle style="fill:var(--ink)" cx="190" cy="250" r="4"/>
+<text x="180" y="225" text-anchor="middle" dominant-baseline="central" class="sm mono">R1</text>
+<rect class="box" x="153" y="327" width="54" height="30" rx="4"/>
+<circle style="fill:var(--ink)" cx="170" cy="342" r="4"/>
+<circle style="fill:var(--ink)" cx="190" cy="342" r="4"/>
+<text x="180" y="368" text-anchor="middle" dominant-baseline="central" class="sm mono">R2</text>
+<circle class="fc" cx="48" cy="234" r="19"/>
+<text x="48" y="234" text-anchor="middle" dominant-baseline="central" class="mono">P2</text>
+<circle class="fc" cx="312" cy="360" r="19"/>
+<text x="312" y="360" text-anchor="middle" dominant-baseline="central" class="mono">P4</text>
+<line class="arw-a" x1="79.6087" y1="288.483" x2="142.6" y2="264.3"/>
+<polygon class="ah-a" points="151.0,261.1 144.4,269.0 140.8,259.7"/>
+<line class="arw-a" x1="194.613" y1="251.929" x2="272.3" y2="284.4"/>
+<polygon class="ah-a" points="280.6,287.9 270.4,289.0 274.3,279.8"/>
+<line class="arw-a" x1="280.391" y1="303.517" x2="217.4" y2="327.7"/>
+<polygon class="ah-a" points="209.0,330.9 215.6,323.0 219.2,332.3"/>
+<line class="arw-a" x1="165.387" y1="340.071" x2="87.7" y2="307.6"/>
+<polygon class="ah-a" points="79.4,304.1 89.6,303.0 85.7,312.2"/>
+<line class="arw" x1="165.042" y1="249.35" x2="77.7" y2="237.9"/>
+<polygon class="ah" points="68.8,236.7 78.4,232.9 77.1,242.9"/>
+<line class="arw" x1="194.946" y1="342.73" x2="282.3" y2="355.6"/>
+<polygon class="ah" points="291.2,356.9 281.6,360.6 283.1,350.7"/>
+</svg>
+<figcaption>P → R：在等這個資源；R → P：已經分給它；框裡的點是份數</figcaption>
+</figure>
+
+<ul>
+<li><strong>每種資源只有 1 份</strong>：有 cycle 就是死結。(a) 裡 P1、P2 互等，誰都動不了。</li>
+<li><strong>有資源不只 1 份</strong>：有 cycle <strong>不一定</strong>死結。(b) 有 cycle P1 → R1 → P3 → R2 → P1，但 P4 沒有在等任何東西，做完會放出一份 R2 給 P3；P3 做完再放出 R1 給 P1。</li>
+<li><strong>沒有 cycle</strong>：一定沒有死結。</li>
+</ul>
+<p>所以 cycle 是死結的<strong>必要條件</strong>；只有在每種資源都只有 1 份時，才是充分條件。</p>
 <h4 id="_14">避免死結：銀行家只借「還得回來」的錢</h4>
 <p>Banker's algorithm 的想法：銀行只在「借出去之後，<strong>仍然存在某個順序</strong>能讓每個客戶都借滿、用完、還錢」時才借。這種狀態叫 <strong>safe state</strong>。</p>
 <p><strong>小例子</strong>：一種資源共 10 份。</p>
@@ -1992,6 +2054,142 @@ signal(empty);</code></pre>
 </table>
 <p>可用 <span class="arithmatex">\(10-4-2=4\)</span>。P2 還需要 3 ≤ 4 → P2 可以做完，還回 2 份 → 可用 6。P1 還需要 4 ≤ 6 → 也能做完。存在順序 P2 → P1，所以是 <strong>safe</strong>。</p>
 <p>判斷方法就是：<strong>反覆找一個「還需要 ≤ 目前可用」的行程，讓它做完、把它持有的加回可用</strong>。全部都能做完就是 safe。</p>
+<h4 id="bankers-algorithm">多種資源：矩陣版的 Banker's algorithm</h4>
+<p>資源有 A、B、C 三種，總數 (9, 5, 6)：</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>Allocation（持有）</th>
+<th>Max（最多）</th>
+<th>Need ＝ Max − Allocation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>1 1 0</td>
+<td>5 3 2</td>
+<td>4 2 2</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>2 0 1</td>
+<td>3 2 2</td>
+<td>1 2 1</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>3 0 2</td>
+<td>6 0 4</td>
+<td>3 0 2</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>1 2 1</td>
+<td>2 2 3</td>
+<td>1 0 2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Available（2, 2, 2）</strong>：總數減掉所有 Allocation 的和 (7, 3, 4)。</p>
+<p><strong>safety 演算法</strong>：Work 從 Available 開始，每次從 P0 往下找第一個 Need ≤ Work（<strong>三種資源都要 ≤</strong>）的行程，讓它做完、Work 加上它的 Allocation：</p>
+<table>
+<thead>
+<tr>
+<th>步驟</th>
+<th>找到</th>
+<th>為什麼</th>
+<th>Work 變成</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>P1</td>
+<td>P0 的 A 要 4 ＞ 2 不行；P1 的 (1, 2, 1) ≤ (2, 2, 2)</td>
+<td>4 2 3</td>
+</tr>
+<tr>
+<td>2</td>
+<td>P0</td>
+<td>(4, 2, 2) ≤ (4, 2, 3)</td>
+<td>5 3 3</td>
+</tr>
+<tr>
+<td>3</td>
+<td>P2</td>
+<td>(3, 0, 2) ≤ (5, 3, 3)</td>
+<td>8 3 5</td>
+</tr>
+<tr>
+<td>4</td>
+<td>P3</td>
+<td>(1, 0, 2) ≤ (8, 3, 5)</td>
+<td>9 5 6</td>
+</tr>
+</tbody>
+</table>
+<p>全部做得完：<strong>safe</strong>，順序 P1、P0、P2、P3（順序不唯一，寫出一個就好）。最後的 Work 一定等於總數，可以拿來驗算。</p>
+<p><strong>有人提出申請（resource-request）</strong>：P3 申請 (1, 0, 1)。</p>
+<ol>
+<li><strong>Request ≤ Need 嗎</strong>：(1, 0, 1) ≤ (1, 0, 2)，是。不是的話是錯誤：超過它事先宣告的最大需求。</li>
+<li><strong>Request ≤ Available 嗎</strong>：(1, 0, 1) ≤ (2, 2, 2)，是。不是的話只能等。</li>
+<li><strong>假裝給它</strong>：Available 變 (1, 2, 1)、P3 的 Allocation 變 (2, 2, 2)、Need 變 (0, 0, 1)。</li>
+<li><strong>跑 safety</strong>：P1（(1, 2, 1) ≤ (1, 2, 1)）→ Work (3, 2, 2)；P2 → (6, 2, 4)；P0 → (7, 3, 4)；P3 → (9, 5, 6)。safe，<strong>可以給</strong>。</li>
+</ol>
+<p>再換成 P0 申請 (2, 0, 0)：前兩步都通過，假裝給它之後 Available 剩 (0, 2, 2)。四個行程都還要至少 1 份 A，Work 裡的 A 是 0，一個都做不完：<strong>unsafe，不給</strong>，P0 先等。</p>
+<div class="admonition trap">
+<p class="admonition-title">unsafe 不等於死結</p>
+<p>unsafe 只是「系統沒辦法保證」：process 不一定真的會要到 Max，之後也可能平安做完。但 Banker's algorithm 保守地不讓系統進入 unsafe state。</p>
+</div>
+<h4 id="_15">偵測和復原：允許死結，發生了再處理</h4>
+<ul>
+<li><strong>偵測</strong>：步驟跟 safety 一樣，只是把 Need 換成<strong>現在的 Request</strong>（正在等的量）。跑完還做不完的那些 process，就是死結的。每種資源只有 1 份時，也可以畫 <strong>wait-for graph</strong>（把資源節點拿掉，P → Q 表示 P 在等 Q），有 cycle 就是死結。</li>
+<li><strong>復原</strong>：<ul>
+<li><strong>終止 process</strong>：全部終止（快，但代價大），或一次終止一個、每次重新偵測。</li>
+<li><strong>搶資源</strong>：選一個 victim、把它的資源拿走並 rollback；要把「被選過幾次」算進成本，不然同一個 process 可能一直被犧牲（starvation）。</li>
+</ul>
+</li>
+</ul>
+<div class="admonition key">
+<p class="admonition-title">死結題要做什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>會不會死結（資源分配圖）</td>
+<td>找 cycle；每種資源 1 份時 cycle 就是死結，多份時再看有沒有人能先做完</td>
+</tr>
+<tr>
+<td>是不是 safe state</td>
+<td>算 Need ＝ Max − Allocation 和 Available；反覆找 Need ≤ Work 的做完，Work 加上它的 Allocation</td>
+</tr>
+<tr>
+<td>某個申請能不能給</td>
+<td>Request ≤ Need → Request ≤ Available → 假裝給 → 跑 safety</td>
+</tr>
+<tr>
+<td>哪些 process 死結了</td>
+<td>偵測演算法：同 safety，但用現在的 Request；做不完的就是</td>
+</tr>
+<tr>
+<td>某個做法破壞哪個條件</td>
+<td>一次申請全部 → hold and wait；照編號申請 → circular wait；搶資源 → no preemption</td>
+</tr>
+<tr>
+<td>保證不死結的 process 數上限</td>
+<td><span class="arithmatex">\(n(k-1)+1\le m\)</span>（<a href="#u3-more">3.2</a>）</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：safe state（安全狀態）、resource-allocation graph（資源分配圖）、request／assignment edge（申請邊／分配邊）、wait-for graph（等待圖）、victim（被犧牲的 process）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -1999,7 +2197,7 @@ signal(empty);</code></pre>
 <li><strong>影片</strong>：<a href="https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ">周志遠・作業系統播放清單</a>的 Deadlocks 單元。</li>
 </ul>
 </div>
-<h4 id="_15">換你試試</h4>
+<h4 id="_16">換你試試</h4>
 <p><strong>T-1.</strong> 「要求行程一開始就申請所有需要的資源」破壞的是哪個條件？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2035,7 +2233,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u3-more">3.2 死結的考古題補充：哲學家、磁帶機、wait-die</h3>
 <p>100、101、103、104、105、107 年考過的死結題：條件和預防、避免的差別，加上三種固定題型。</p>
-<h4 id="_16">四個條件是「必要」不是「充分」</h4>
+<h4 id="_17">四個條件是「必要」不是「充分」</h4>
 <p>四個條件<strong>同時</strong>成立才可能死結，只有其中一個成立不會死結（101 Q2(b)）。102 Q5(2) 的是非題「四個條件中任何一個成立，死結就一定發生」是<strong>錯</strong>的。</p>
 <h4 id="preventionavoidance">預防（prevention）和避免（avoidance）差在哪</h4>
 <table>
@@ -2078,7 +2276,7 @@ signal(empty);</code></pre>
 </ul>
 <p><strong>一般公式</strong>：m 份資源、n 個 process、每個最多需要 k 份，不會死結的條件是 <span class="arithmatex">\(n(k-1)+1\le m\)</span>（每個人都只差一份時，還剩一份給某個人）。這題 <span class="arithmatex">\(n\times1+1\le6\)</span>，<span class="arithmatex">\(n\le5\)</span>。</p>
 </div>
-<h4 id="_17">哲學家：筷子放在中間</h4>
+<h4 id="_18">哲學家：筷子放在中間</h4>
 <div class="admonition example">
 <p class="admonition-title">100 Q3（15%）：哲學家用餐問題，筷子放在桌子中間，任何兩支都可以用；每次只要一支。找一個簡單的規則，判斷某個請求能不能給、又不會造成死結</p>
 <p><strong>規則</strong>：哲學家要拿<strong>第一支</strong>筷子時，如果桌上<strong>只剩最後一支</strong>、而且<strong>沒有任何人已經拿著兩支</strong>，就不給；其他情況都可以給。</p>
@@ -2122,7 +2320,7 @@ signal(empty);</code></pre>
 </ul>
 <p>107 Q7(9) 的是非題「wait-die 是 preemptive 的死結預防方法」是<strong>錯</strong>的：wait-die 不搶別人的資源，搶的是 wound-wait。</p>
 </div>
-<h4 id="_18">觀念小考</h4>
+<h4 id="_19">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> 10 份資源、n 個 process，每個最多需要 3 份。n 最大是多少時保證不會死結？</p>
 <ol>
@@ -2162,6 +2360,189 @@ signal(empty);</code></pre>
 <p><strong>D</strong>。A 說的是 detection and recovery；B 剛好相反，需要事先知道最大需求的是 avoidance（Banker's algorithm）。</p>
 </details>
 </div>
+<h3 id="u3-concept">3.3 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="1">
+<p><strong>C-1.</strong> 每種資源都只有 1 份時，資源分配圖有 cycle，表示？</p>
+<ol>
+<li>一定死結</li>
+<li>可能死結，也可能沒有</li>
+<li>一定沒有死結</li>
+<li>要看有幾個 process</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。只有 1 份時，cycle 上每個 process 等的資源都在下一個人手上，又沒有別份可以用，大家都動不了。資源有好幾份時才是 B（像圖 (b)）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-2.</strong> Banker's algorithm 收到一個 Request，但它比這個 process 的 Need 還大，會怎麼處理？</p>
+<ol>
+<li>讓它等，直到資源夠</li>
+<li>直接給，再跑 safety</li>
+<li>當成錯誤：它超過了自己事先宣告的最大需求</li>
+<li>把別人的資源搶過來給它</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。Need 是「最多還會再要多少」，超過就表示它違反了事先的宣告。Request ≤ Need、但 ＞ Available 時，才是 A（等）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-3.</strong> unsafe state 的意思是？</p>
+<ol>
+<li>系統已經死結了</li>
+<li>系統沒辦法保證避開死結，之後可能死結、也可能沒事</li>
+<li>一定會死結</li>
+<li>有 process 正在等資源</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。safe 一定不會死結；unsafe 只是「可能」，因為 process 不一定真的會要到 Max。Banker's algorithm 保守地不進入 unsafe state。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-4.</strong> 死結偵測演算法和 safety 演算法差在哪？</p>
+<ol>
+<li>偵測演算法不需要 Available</li>
+<li>偵測演算法只能用在單一資源</li>
+<li>兩個完全一樣</li>
+<li>偵測用「現在的 Request」，safety 用「Need（最多還要多少）」</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。步驟一樣：反覆找能被滿足的 process，讓它做完、放出資源。safety 問「最壞情況下大家都做得完嗎」，所以用 Need；偵測問「現在卡住的是誰」，所以用 Request。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> 用「搶資源」復原死結時，為什麼要把被選為 victim 的次數算進成本？</p>
+<ol>
+<li>讓死結更快被偵測到</li>
+<li>避免同一個 process 一直被選中、永遠做不完（starvation）</li>
+<li>減少 context switch</li>
+<li>讓 Banker's algorithm 可以使用</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。如果每次都選代價最小的那個，可能永遠是同一個 process 被 rollback。把次數算進去，被選越多次的越不會再被選。</p>
+</details>
+</div>
+<div>
+<p><strong>W-1.</strong> 三種資源 A、B、C，總數 (6, 4, 7)。(a) 是 safe 嗎？寫出順序。(b) P2 申請 (1, 0, 1)，能不能給？</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>Allocation</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>1 0 2</td>
+<td>3 2 2</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>0 1 1</td>
+<td>1 2 3</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>2 1 0</td>
+<td>4 2 1</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>1 1 2</td>
+<td>2 1 4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>Need 和 Available</strong>：Need 是 P0 (2, 2, 0)、P1 (1, 1, 2)、P2 (2, 1, 1)、P3 (1, 0, 2)。Allocation 加起來 (4, 3, 5)，Available ＝ (2, 1, 2)。</p>
+<p><strong>(a) safe</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>步驟</th>
+<th>找到</th>
+<th>為什麼</th>
+<th>Work</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>P1</td>
+<td>P0 的 B 要 2 ＞ 1 不行；P1 的 (1, 1, 2) ≤ (2, 1, 2)</td>
+<td>2 2 3</td>
+</tr>
+<tr>
+<td>2</td>
+<td>P0</td>
+<td>(2, 2, 0) ≤ (2, 2, 3)</td>
+<td>3 2 5</td>
+</tr>
+<tr>
+<td>3</td>
+<td>P2</td>
+<td>(2, 1, 1) ≤ (3, 2, 5)</td>
+<td>5 3 5</td>
+</tr>
+<tr>
+<td>4</td>
+<td>P3</td>
+<td>(1, 0, 2) ≤ (5, 3, 5)</td>
+<td>6 4 7</td>
+</tr>
+</tbody>
+</table>
+<p>順序 P1、P0、P2、P3，最後 Work 等於總數 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
+<p><strong>(b) 可以給</strong>：(1, 0, 1) ≤ Need (2, 1, 1)，也 ≤ Available (2, 1, 2)。假裝給它：Available 變 (1, 1, 1)、P2 的 Need 變 (1, 1, 0)。safety：P0 的 A 要 2 不行、P1 的 C 要 2 不行；P2 的 (1, 1, 0) ≤ (1, 1, 1) → Work (4, 2, 2)；接著 P0 → (5, 2, 4)、P1 → (5, 3, 5)、P3 → (6, 4, 7)。safe，所以給。我用程式跑過，結果一樣。</p>
+</details>
+<div>
+<p><strong>W-2.</strong> 三種資源 A、B、C，總數 (3, 2, 1)，目前全部分配出去。(a) 有沒有死結？(b) 如果 P2 改成在等 1 份 C（Request 變 0 0 1）呢？</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>Allocation</th>
+<th>Request（現在在等）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>1 0 1</td>
+<td>0 1 0</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>1 1 0</td>
+<td>0 0 1</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>0 1 0</td>
+<td>0 0 0</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>1 0 0</td>
+<td>0 0 0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>(a) 沒有死結</strong>：Available (0, 0, 0)。P2 不用再等 → 做完，Work (0, 1, 0)；P0 要 1 份 B → 可以，Work (1, 1, 1)；P1 要 1 份 C → 可以，Work (2, 2, 1)；P3 → Work (3, 2, 1)。全部做得完。</p>
+<p><strong>(b) P0、P1、P2 死結</strong>：Work (0, 0, 0)，只有 P3 不用等 → 做完，Work (1, 0, 0)。剩下 P0 要 B、P1 和 P2 要 C，Work 裡都沒有，誰都做不完。P0 拿著唯一的那份 C，P1、P2 在等它；P0 要的 B 在 P1、P2 手上：互相等，就是死結。</p>
+</details>
 <h3 id="u3-quiz">單元 3 小考</h3>
 <p><strong>3-1.</strong> 為什麼「依編號遞增順序申請資源」能防止死結？</p>
 <details class="quiz">
@@ -2189,7 +2570,7 @@ signal(empty);</code></pre>
 <li>重新執行剛剛那條指令。</li>
 </ol>
 <p>只在用到時才載入 page，叫 <strong>demand paging</strong>。</p>
-<h4 id="_19">踢誰出去：三種策略</h4>
+<h4 id="_20">踢誰出去：三種策略</h4>
 <p>3 個 frame，存取順序 7, 0, 1, 2, 0, 3, 0, 4：</p>
 <table>
 <thead>
@@ -2328,7 +2709,7 @@ signal(empty);</code></pre>
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10373783">談 FIFO、LRU、OPT 的文章</a>。</li>
 </ul>
 </div>
-<h4 id="_20">換你試試</h4>
+<h4 id="_21">換你試試</h4>
 <p><strong>T-1.</strong> 3 個 frame，存取 1, 2, 3, 1, 4, 1。FIFO 和 LRU 各幾次 page fault？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2473,7 +2854,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u4-pf">4.4 程式寫法與 page fault：二維陣列、次數的上下界</h3>
 <p>103、110 年各考一題「初始化二維陣列會發生幾次 page fault」（10%），兩題幾乎一樣，只換了數字和存放方式。103、106 年也各考一題 page fault 次數的上下界（10%）。</p>
-<h4 id="_21">陣列在記憶體裡是一長條</h4>
+<h4 id="_22">陣列在記憶體裡是一長條</h4>
 <p>記憶體是一維的，二維陣列要排成一長條，有兩種排法：</p>
 <table>
 <thead>
@@ -2497,13 +2878,13 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p><span class="arithmatex">\(n\times n\)</span> 的陣列裡，A[i][j] 是第幾個元素（從 0 數）：row-major 是 <span class="arithmatex">\(i\times n+j\)</span>，column-major 是 <span class="arithmatex">\(j\times n+i\)</span>。</p>
-<h4 id="_22">迴圈順序要跟著排法走</h4>
+<h4 id="_23">迴圈順序要跟著排法走</h4>
 <p>像書架上的書一排一排放好：照順序一本一本拿，一排拿完才走到下一排；如果每次都換一排只拿一本，每拿一本都要走一趟。</p>
 <ul>
 <li><strong>順序一致</strong>（row-major 用「i 在外、j 在內」；column-major 用「j 在外、i 在內」）：連續存取，一頁的元素全部用完才換下一頁 → <strong>page fault 次數 ＝ 陣列佔幾頁</strong>。</li>
 <li><strong>順序相反</strong>：每次存取都跳到另一頁。內層迴圈一圈會碰到很多頁，frame 卻只有幾個，回到同一頁時它早就被換掉 → <strong>每一次存取都 page fault</strong>。</li>
 </ul>
-<h4 id="_23">解題步驟</h4>
+<h4 id="_24">解題步驟</h4>
 <ol>
 <li><strong>一頁放幾個元素</strong> ＝ page 大小 ÷ 元素大小；<strong>陣列佔幾頁</strong> ＝ 元素總數 ÷ 一頁放幾個。</li>
 <li><strong>程式在 page 0，不會被換掉</strong>：每個指令都要從 page 0 讀，用 LRU 時它永遠是最近用過的。所以三個 frame 裡，陣列只能用 <strong>2 個</strong>。</li>
@@ -2540,7 +2921,7 @@ signal(empty);</code></pre>
 </ul>
 <p><strong>補充</strong>：如果 <span class="arithmatex">\(p\le m\)</span>，所有 page 都裝得下，不會有任何 page 被換掉，剛好 p 次。上界 n 要在 <span class="arithmatex">\(p&gt;m\)</span> 時才可能發生，例如只有 1 個 frame、reference string 每次都換一個 page。</p>
 </div>
-<h4 id="_24">觀念小考</h4>
+<h4 id="_25">觀念小考</h4>
 <div class="mcq" data-ans="1">
 <p><strong>C-1.</strong> C 語言的 <code>int a[100][100]</code>（row-major），要把整個陣列設成 0，哪一種迴圈順序 page fault 最少？</p>
 <ol>
@@ -2608,7 +2989,7 @@ signal(empty);</code></pre>
 <li><strong>limit register</strong>：這段有多長，邏輯位址超過就 trap（存取違規）。</li>
 </ul>
 <p>102 Q5(3) 的是非題「relocation register 是 1877、邏輯位址 123，實體位址是 2000」是<strong>對</strong>的。</p>
-<h4 id="_25">有一堆空洞時，要放哪一個</h4>
+<h4 id="_26">有一堆空洞時，要放哪一個</h4>
 <p>process 來來去去，記憶體裡會有很多大小不一的空洞（hole）。新的 process 要放進去：</p>
 <table>
 <thead>
@@ -2674,7 +3055,7 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p>這一組 best fit 最好，四個都放得下。用程式模擬過。</p>
-<h4 id="_26">兩種碎片</h4>
+<h4 id="_27">兩種碎片</h4>
 <table>
 <thead>
 <tr>
@@ -2805,7 +3186,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q7(2)（4%）：外部碎片和內部碎片的差別</p>
 <p>外部碎片：空的記憶體總量夠，但被切成很多不連續的小洞，放不下新的要求。內部碎片：分配出去的區塊比實際需要的大，多出來的部分在區塊裡面沒用到、別人也不能用。</p>
 </div>
-<h4 id="_27">觀念小考</h4>
+<h4 id="_28">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 空洞依序是 50K、300K、120K，要放 100K。best fit 會放在哪裡？</p>
 <ol>
@@ -2887,7 +3268,7 @@ signal(empty);</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：儲存、檔案與 I/O</h2>
 <h3 id="u5-0">5.0 觀念課：硬碟像一台唱片機</h3>
-<h4 id="_28">讀一個區塊要花三段時間</h4>
+<h4 id="_29">讀一個區塊要花三段時間</h4>
 <p>硬碟是好幾片疊在一起旋轉的碟片，讀寫頭裝在一支可以前後移動的手臂上，像唱片機。</p>
 <table>
 <thead>
@@ -2962,7 +3343,7 @@ signal(empty);</code></pre>
 <li><strong>練習（英文）</strong>：恐龍書官網的 <a href="https://www.os-book.com/OS10/regular-exercises/PDF-regular-exer-dir/11.pdf">Mass-Storage 習題</a>。</li>
 </ul>
 </div>
-<h4 id="_29">換你試試</h4>
+<h4 id="_30">換你試試</h4>
 <p><strong>T-1.</strong> 10000 RPM 的硬碟，平均 rotational latency？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3040,7 +3421,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u5-sched">5.4 磁碟排程：讀寫頭怎麼移動</h3>
 <p>101、102、104、107、110 年都考過（每次 6–10%）：給一串要求的磁柱（cylinder）編號，照某種演算法排出服務順序、算讀寫頭總共移動多遠。規則固定、只要加減法，是最容易拿的分數。</p>
-<h4 id="_30">觀念：讀寫頭像電梯</h4>
+<h4 id="_31">觀念：讀寫頭像電梯</h4>
 <p>很多要求在等，讀寫頭一次只能停在一個位置。移動越遠，seek time 越長（見 <a href="#u5-0">5.0</a>），所以目標是<strong>總移動距離越短越好</strong>，又不能讓某些要求等太久。</p>
 <table>
 <thead>
@@ -3091,13 +3472,13 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p><strong>為什麼 C-SCAN 比較公平</strong>：SCAN 回頭時，剛掃過的一端要等來回一趟；中間的位置來回各被掃一次。C-SCAN 永遠同一個方向掃，每個位置等的時間差不多。</p>
-<h4 id="_31">題目沒講清楚的，要自己寫假設</h4>
+<h4 id="_32">題目沒講清楚的，要自己寫假設</h4>
 <ol>
 <li><strong>方向</strong>：「前一個要求在 125、現在在 175」代表正往<strong>編號大的</strong>方向走。只給現在位置時，寫「假設往編號大的方向移動」。</li>
 <li><strong>盡頭在哪</strong>：SCAN、C-SCAN 走到磁柱編號的最大值（0–999 就是 999）或 0。</li>
 <li><strong>C-SCAN、C-LOOK 跳回去那一段算不算距離</strong>：回程不服務要求，但手臂確實有移動，各本書算法不同。<strong>兩個都寫最保險</strong>，例如「含跳回 1925，不含 925」。</li>
 </ol>
-<h4 id="_32">算距離的捷徑</h4>
+<h4 id="_33">算距離的捷徑</h4>
 <p>電梯類（SCAN、LOOK）只要算<strong>轉折點</strong>：例如 LOOK 往上走到最大的要求再回頭到最小的要求，距離 ＝（最大 − 起點）＋（最大 − 最小），不用一段一段加。</p>
 <div class="viz" data-viz="disk" data-reqs="98,183,37,122,14,124,65,67" data-head="53" data-dir="down" data-max="199" data-algo="sstf" data-title="102 Q7 的資料：切換演算法和方向，比較總距離"></div>
 
@@ -3257,7 +3638,7 @@ signal(empty);</code></pre>
 <p><strong>服務順序：F, D, A, H, G, E, B, J, I, C</strong>。</p>
 <p>如果不分批，截止時間又都不一樣，SCAN-EDF 就等於單純的 EDF：F, D, H, A, G, B, J, E, I, C。考試寫出你用的分批方法。</p>
 </div>
-<h4 id="_33">觀念小考</h4>
+<h4 id="_34">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 哪一種演算法可能讓某些要求等非常久（starvation）？</p>
 <ol>
@@ -3335,7 +3716,7 @@ signal(empty);</code></pre>
 </details>
 <h3 id="u5-more">5.5 檔案系統與 I/O 的考古題補充：目錄、mount、開檔表、I/O 方式</h3>
 <p>104、105、107 年的「File System and I/O」小題，每題 2–4%，加起來將近 25%：目錄有哪幾種結構、mount point 是什麼、開檔時 UNIX 記住哪些資訊、CPU 怎麼知道 I/O 做完了、memory-mapped I/O。都是恐龍書的名詞，<strong>會講「為什麼要這樣做」</strong>就能拿分。</p>
-<h4 id="_34">目錄結構：檔案越來越多，怎麼放？</h4>
+<h4 id="_35">目錄結構：檔案越來越多，怎麼放？</h4>
 <table>
 <thead>
 <tr>
@@ -3473,7 +3854,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q7(4)（3%）：什麼是 memory-mapped I/O？為什麼需要它？</p>
 <p>把裝置的控制暫存器（和緩衝區）對應到記憶體位址空間，CPU 用一般的 load／store 指令讀寫裝置。<strong>需要的原因</strong>：不用額外的 I/O 指令，程式和硬體都比較簡單；大量資料（例如畫面）可以直接寫到對應的記憶體，速度快。</p>
 </div>
-<h4 id="_35">觀念小考</h4>
+<h4 id="_36">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> acyclic-graph 目錄讓同一個檔案出現在好幾個目錄。刪除檔案時最需要處理的問題是？</p>
 <ol>
@@ -3568,9 +3949,9 @@ signal(empty);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_36">最小權限</h4>
+<h4 id="_37">最小權限</h4>
 <p><strong>principle of least privilege</strong>（最小權限）和 <strong>need-to-know</strong> 是同一類想法：每個行程、每個使用者只拿到<strong>完成目前工作需要</strong>的權限和資源。出事時，損害才會被限制在小範圍。兩者在恐龍書裡的說法有一點差別，是非題考過，見 <a href="#u6-more">6.2</a>。</p>
-<h4 id="_37">存取矩陣：誰能對什麼做什麼</h4>
+<h4 id="_38">存取矩陣：誰能對什麼做什麼</h4>
 <p>把權限畫成一張表：列是使用者（domain），欄是檔案（object），格子裡是權限。</p>
 <table>
 <thead>
@@ -3600,7 +3981,7 @@ signal(empty);</code></pre>
 <li>照<strong>欄</strong>存（每個檔案記錄誰能用它）→ <strong>access control list（ACL）</strong></li>
 <li>照<strong>列</strong>存（每個使用者帶著自己能用什麼）→ <strong>capability list</strong></li>
 </ul>
-<h4 id="_38">惡意程式的名詞</h4>
+<h4 id="_39">惡意程式的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -3638,7 +4019,7 @@ signal(empty);</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/izkd4JwXRwub_ZmhSMTlNw">OS 筆記 Chapter 14: Protection</a>〉：保護的原則、存取矩陣、ACL 與 capability 的實作、權限撤銷，就是這節表格的完整版。</li>
 </ul>
 </div>
-<h4 id="_39">換你試試</h4>
+<h4 id="_40">換你試試</h4>
 <p><strong>T-1.</strong> 有人偷改了資料庫裡的成績，破壞的是 CIA 的哪一項？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3765,7 +4146,7 @@ signal(empty);</code></pre>
 </table>
 <p><span class="arithmatex">\(H(m)\)</span> 是 <a href="ds.html#u4-theory">資結 4.2</a> 的密碼學雜湊函數，先把訊息壓短再簽。</p>
 <p><strong>公鑰怎麼發</strong>（105 Q4(4)）：公鑰可以公開，問題是怎麼確定這把公鑰真的是對方的（不然中間人可以換成自己的）。做法是<strong>數位憑證</strong>（digital certificate）：可信任的憑證機構（CA）用它的私鑰簽署「這把公鑰屬於某某人」，CA 的公鑰事先內建在瀏覽器或作業系統裡。</p>
-<h4 id="_40">攻擊手法的名詞</h4>
+<h4 id="_41">攻擊手法的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -3846,7 +4227,7 @@ signal(empty);</code></pre>
 <li>「location transparency 能在不同時間把同一個檔名對應到不同位置，所以比 location independence 強」：<strong>錯</strong>，說反了。能動態改變對應位置的是 <strong>location independence</strong>，它比 location transparency 強。</li>
 </ol>
 </div>
-<h4 id="_41">觀念小考</h4>
+<h4 id="_42">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 哪一種方法能提供 nonrepudiation（送的人事後不能否認）？</p>
 <ol>
@@ -3888,7 +4269,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u6-dist">6.3 分散式系統與網路：CSMA/CD、token passing、事件的先後</h3>
 <p>101 年（區域網路怎麼避免碰撞，10%）、102 年（分散式系統的事件順序，10%）、104 年（分散式檔案系統的名詞，1%）考過。另外 102 年的分散式檔案系統命名在 <a href="#u6-more">6.2</a>，atomic transaction、two-phase locking 在 <a href="#u2-more">2.2</a>，分散式檔案系統的 cache 在 <a href="#u6-1">6.1</a>。</p>
-<h4 id="_42">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
+<h4 id="_43">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
 <p>同一條線上的電腦同時送資料，訊號會疊在一起變成雜訊，叫<strong>碰撞</strong>（collision）。兩種做法：</p>
 <p><strong>CSMA/CD</strong>（carrier sense multiple access with collision detection，乙太網路用的）：</p>
 <ol>
@@ -3933,7 +4314,7 @@ signal(empty);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_43">分散式系統裡，為什麼很難知道誰先發生？</h4>
+<h4 id="_44">分散式系統裡，為什麼很難知道誰先發生？</h4>
 <p>分散式系統的電腦<strong>沒有共用的時鐘、也沒有共用的記憶體</strong>，只能傳訊息。每台電腦的時鐘快慢不一樣（會漂移），訊息在網路上要花多久也不固定。所以 A 機器記錄 10:00:01、B 機器記錄 10:00:02，<strong>不能保證 A 的事件真的比較早</strong>。</p>
 <h4 id="happened-before">happened-before（→）：只用能確定的事排順序</h4>
 <p>Lamport 定義的 happened-before 關係，A → B 讀作「A 在 B 之前發生」：</p>
@@ -4027,7 +4408,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q6(3)（1%）：分散式檔案系統的 component unit 是什麼？</p>
 <p><strong>可以放在同一台機器上、跟其他 unit 互不相關的最小一組檔案</strong>。同一個 component unit 裡的檔案一定放在同一個地方，命名和搬移都以它為單位。</p>
 </div>
-<h4 id="_44">觀念小考</h4>
+<h4 id="_45">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> CSMA/CD 偵測到碰撞之後，為什麼要等一段<strong>隨機</strong>的時間再重傳？</p>
 <ol>

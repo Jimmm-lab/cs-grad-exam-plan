@@ -1105,6 +1105,70 @@ P1 拿著資源 R1、在等 R2；P2 拿著 R2、在等 R1。兩人都不放手�
 
 四個都成立才會死結。**破壞任何一個就不會死結**，這就是 deadlock prevention 的思路，例如「一次把兩支筷子都拿到才開始吃」破壞了 hold and wait。
 
+#### 資源分配圖：有 cycle 一定死結嗎？
+
+畫法：process 畫圓、資源畫方框，框裡的點是這種資源有幾份。**P → R**（request edge）表示 P 在等 R；**R → P**（assignment edge）表示 R 的一份已經分給 P。
+
+<figure class="fig">
+<svg viewBox="0 0 360 384" role="img" aria-label="兩張資源分配圖。(a) R1、R2 各 1 份：P1 拿著 R1 在等 R2，P2 拿著 R2 在等 R1，形成 cycle，死結。(b) R1、R2 各 2 份：R1 分給 P2、P3，R2 分給 P1、P4；P1 在等 R1，P3 在等 R2，有 cycle P1→R1→P3→R2→P1，但 P2、P4 沒有在等，做完會放出資源，所以沒有死結。">
+<text x="6" y="14" text-anchor="start" dominant-baseline="central" class="sm">(a) 每種資源 1 份：有 cycle 就死結</text>
+<circle class="fa" cx="70" cy="104" r="19"/>
+<text x="70" y="104" text-anchor="middle" dominant-baseline="central" class="mono">P1</text>
+<circle class="fa" cx="290" cy="104" r="19"/>
+<text x="290" y="104" text-anchor="middle" dominant-baseline="central" class="mono">P2</text>
+<rect class="box" x="153" y="49" width="54" height="30" rx="4"/>
+<circle style="fill:var(--ink)" cx="180" cy="64" r="4"/>
+<text x="180" y="39" text-anchor="middle" dominant-baseline="central" class="sm mono">R1</text>
+<rect class="box" x="153" y="131" width="54" height="30" rx="4"/>
+<circle style="fill:var(--ink)" cx="180" cy="146" r="4"/>
+<text x="180" y="172" text-anchor="middle" dominant-baseline="central" class="sm mono">R2</text>
+<line class="arw-a" x1="175.301" y1="65.7087" x2="98.2" y2="93.7"/>
+<polygon class="ah-a" points="89.7,96.8 96.5,89.0 99.9,98.4"/>
+<line class="arw-a" x1="89.6186" y1="111.491" x2="142.6" y2="131.7"/>
+<polygon class="ah-a" points="151.0,134.9 140.8,136.4 144.4,127.0"/>
+<line class="arw-a" x1="184.671" y1="144.216" x2="262.0" y2="114.7"/>
+<polygon class="ah-a" points="270.4,111.5 263.8,119.4 260.2,110.0"/>
+<line class="arw-a" x1="270.264" y1="96.8234" x2="217.5" y2="77.6"/>
+<polygon class="ah-a" points="209.0,74.5 219.2,72.9 215.7,82.3"/>
+<text x="6" y="200" text-anchor="start" dominant-baseline="central" class="sm">(b) 每種資源 2 份：有 cycle 但沒有死結</text>
+<circle class="fa" cx="60" cy="296" r="19"/>
+<text x="60" y="296" text-anchor="middle" dominant-baseline="central" class="mono">P1</text>
+<circle class="fa" cx="300" cy="296" r="19"/>
+<text x="300" y="296" text-anchor="middle" dominant-baseline="central" class="mono">P3</text>
+<rect class="box" x="153" y="235" width="54" height="30" rx="4"/>
+<circle style="fill:var(--ink)" cx="170" cy="250" r="4"/>
+<circle style="fill:var(--ink)" cx="190" cy="250" r="4"/>
+<text x="180" y="225" text-anchor="middle" dominant-baseline="central" class="sm mono">R1</text>
+<rect class="box" x="153" y="327" width="54" height="30" rx="4"/>
+<circle style="fill:var(--ink)" cx="170" cy="342" r="4"/>
+<circle style="fill:var(--ink)" cx="190" cy="342" r="4"/>
+<text x="180" y="368" text-anchor="middle" dominant-baseline="central" class="sm mono">R2</text>
+<circle class="fc" cx="48" cy="234" r="19"/>
+<text x="48" y="234" text-anchor="middle" dominant-baseline="central" class="mono">P2</text>
+<circle class="fc" cx="312" cy="360" r="19"/>
+<text x="312" y="360" text-anchor="middle" dominant-baseline="central" class="mono">P4</text>
+<line class="arw-a" x1="79.6087" y1="288.483" x2="142.6" y2="264.3"/>
+<polygon class="ah-a" points="151.0,261.1 144.4,269.0 140.8,259.7"/>
+<line class="arw-a" x1="194.613" y1="251.929" x2="272.3" y2="284.4"/>
+<polygon class="ah-a" points="280.6,287.9 270.4,289.0 274.3,279.8"/>
+<line class="arw-a" x1="280.391" y1="303.517" x2="217.4" y2="327.7"/>
+<polygon class="ah-a" points="209.0,330.9 215.6,323.0 219.2,332.3"/>
+<line class="arw-a" x1="165.387" y1="340.071" x2="87.7" y2="307.6"/>
+<polygon class="ah-a" points="79.4,304.1 89.6,303.0 85.7,312.2"/>
+<line class="arw" x1="165.042" y1="249.35" x2="77.7" y2="237.9"/>
+<polygon class="ah" points="68.8,236.7 78.4,232.9 77.1,242.9"/>
+<line class="arw" x1="194.946" y1="342.73" x2="282.3" y2="355.6"/>
+<polygon class="ah" points="291.2,356.9 281.6,360.6 283.1,350.7"/>
+</svg>
+<figcaption>P → R：在等這個資源；R → P：已經分給它；框裡的點是份數</figcaption>
+</figure>
+
+- **每種資源只有 1 份**：有 cycle 就是死結。(a) 裡 P1、P2 互等，誰都動不了。
+- **有資源不只 1 份**：有 cycle **不一定**死結。(b) 有 cycle P1 → R1 → P3 → R2 → P1，但 P4 沒有在等任何東西，做完會放出一份 R2 給 P3；P3 做完再放出 R1 給 P1。
+- **沒有 cycle**：一定沒有死結。
+
+所以 cycle 是死結的**必要條件**；只有在每種資源都只有 1 份時，才是充分條件。
+
 #### 避免死結：銀行家只借「還得回來」的錢
 
 Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在某個順序**能讓每個客戶都借滿、用完、還錢」時才借。這種狀態叫 **safe state**。
@@ -1119,6 +1183,61 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 可用 $10-4-2=4$。P2 還需要 3 ≤ 4 → P2 可以做完，還回 2 份 → 可用 6。P1 還需要 4 ≤ 6 → 也能做完。存在順序 P2 → P1，所以是 **safe**。
 
 判斷方法就是：**反覆找一個「還需要 ≤ 目前可用」的行程，讓它做完、把它持有的加回可用**。全部都能做完就是 safe。
+
+#### 多種資源：矩陣版的 Banker's algorithm
+
+資源有 A、B、C 三種，總數 (9, 5, 6)：
+
+| 行程 | Allocation（持有） | Max（最多） | Need ＝ Max − Allocation |
+|---|---|---|---|
+| P0 | 1 1 0 | 5 3 2 | 4 2 2 |
+| P1 | 2 0 1 | 3 2 2 | 1 2 1 |
+| P2 | 3 0 2 | 6 0 4 | 3 0 2 |
+| P3 | 1 2 1 | 2 2 3 | 1 0 2 |
+
+**Available（2, 2, 2）**：總數減掉所有 Allocation 的和 (7, 3, 4)。
+
+**safety 演算法**：Work 從 Available 開始，每次從 P0 往下找第一個 Need ≤ Work（**三種資源都要 ≤**）的行程，讓它做完、Work 加上它的 Allocation：
+
+| 步驟 | 找到 | 為什麼 | Work 變成 |
+|---|---|---|---|
+| 1 | P1 | P0 的 A 要 4 ＞ 2 不行；P1 的 (1, 2, 1) ≤ (2, 2, 2) | 4 2 3 |
+| 2 | P0 | (4, 2, 2) ≤ (4, 2, 3) | 5 3 3 |
+| 3 | P2 | (3, 0, 2) ≤ (5, 3, 3) | 8 3 5 |
+| 4 | P3 | (1, 0, 2) ≤ (8, 3, 5) | 9 5 6 |
+
+全部做得完：**safe**，順序 P1、P0、P2、P3（順序不唯一，寫出一個就好）。最後的 Work 一定等於總數，可以拿來驗算。
+
+**有人提出申請（resource-request）**：P3 申請 (1, 0, 1)。
+
+1. **Request ≤ Need 嗎**：(1, 0, 1) ≤ (1, 0, 2)，是。不是的話是錯誤：超過它事先宣告的最大需求。
+2. **Request ≤ Available 嗎**：(1, 0, 1) ≤ (2, 2, 2)，是。不是的話只能等。
+3. **假裝給它**：Available 變 (1, 2, 1)、P3 的 Allocation 變 (2, 2, 2)、Need 變 (0, 0, 1)。
+4. **跑 safety**：P1（(1, 2, 1) ≤ (1, 2, 1)）→ Work (3, 2, 2)；P2 → (6, 2, 4)；P0 → (7, 3, 4)；P3 → (9, 5, 6)。safe，**可以給**。
+
+再換成 P0 申請 (2, 0, 0)：前兩步都通過，假裝給它之後 Available 剩 (0, 2, 2)。四個行程都還要至少 1 份 A，Work 裡的 A 是 0，一個都做不完：**unsafe，不給**，P0 先等。
+
+!!! trap "unsafe 不等於死結"
+    unsafe 只是「系統沒辦法保證」：process 不一定真的會要到 Max，之後也可能平安做完。但 Banker's algorithm 保守地不讓系統進入 unsafe state。
+
+#### 偵測和復原：允許死結，發生了再處理
+
+- **偵測**：步驟跟 safety 一樣，只是把 Need 換成**現在的 Request**（正在等的量）。跑完還做不完的那些 process，就是死結的。每種資源只有 1 份時，也可以畫 **wait-for graph**（把資源節點拿掉，P → Q 表示 P 在等 Q），有 cycle 就是死結。
+- **復原**：
+    - **終止 process**：全部終止（快，但代價大），或一次終止一個、每次重新偵測。
+    - **搶資源**：選一個 victim、把它的資源拿走並 rollback；要把「被選過幾次」算進成本，不然同一個 process 可能一直被犧牲（starvation）。
+
+!!! key "死結題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | 會不會死結（資源分配圖） | 找 cycle；每種資源 1 份時 cycle 就是死結，多份時再看有沒有人能先做完 |
+    | 是不是 safe state | 算 Need ＝ Max − Allocation 和 Available；反覆找 Need ≤ Work 的做完，Work 加上它的 Allocation |
+    | 某個申請能不能給 | Request ≤ Need → Request ≤ Available → 假裝給 → 跑 safety |
+    | 哪些 process 死結了 | 偵測演算法：同 safety，但用現在的 Request；做不完的就是 |
+    | 某個做法破壞哪個條件 | 一次申請全部 → hold and wait；照編號申請 → circular wait；搶資源 → no preemption |
+    | 保證不死結的 process 數上限 | $n(k-1)+1\le m$（[3.2](#u3-more)） |
+
+    名詞對照：safe state（安全狀態）、resource-allocation graph（資源分配圖）、request／assignment edge（申請邊／分配邊）、wait-for graph（等待圖）、victim（被犧牲的 process）。
 
 !!! read "還不懂？看別人怎麼講"
     - **講義**：[周志遠講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999)的 Ch7 Deadlocks。考試也可能出多種資源的矩陣版 Banker's algorithm，步驟跟這節一樣：反覆找「還需要 ≤ 可用」的行程。
@@ -1256,6 +1375,127 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
     **D**。A 說的是 detection and recovery；B 剛好相反，需要事先知道最大需求的是 avoidance（Banker's algorithm）。
 
 </div>
+
+### 3.3 觀念小考 {#u3-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-1.** 每種資源都只有 1 份時，資源分配圖有 cycle，表示？
+
+1. 一定死結
+2. 可能死結，也可能沒有
+3. 一定沒有死結
+4. 要看有幾個 process
+
+??? quiz "看解析"
+    **A**。只有 1 份時，cycle 上每個 process 等的資源都在下一個人手上，又沒有別份可以用，大家都動不了。資源有好幾份時才是 B（像圖 (b)）。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-2.** Banker's algorithm 收到一個 Request，但它比這個 process 的 Need 還大，會怎麼處理？
+
+1. 讓它等，直到資源夠
+2. 直接給，再跑 safety
+3. 當成錯誤：它超過了自己事先宣告的最大需求
+4. 把別人的資源搶過來給它
+
+??? quiz "看解析"
+    **C**。Need 是「最多還會再要多少」，超過就表示它違反了事先的宣告。Request ≤ Need、但 ＞ Available 時，才是 A（等）。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-3.** unsafe state 的意思是？
+
+1. 系統已經死結了
+2. 系統沒辦法保證避開死結，之後可能死結、也可能沒事
+3. 一定會死結
+4. 有 process 正在等資源
+
+??? quiz "看解析"
+    **B**。safe 一定不會死結；unsafe 只是「可能」，因為 process 不一定真的會要到 Max。Banker's algorithm 保守地不進入 unsafe state。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** 死結偵測演算法和 safety 演算法差在哪？
+
+1. 偵測演算法不需要 Available
+2. 偵測演算法只能用在單一資源
+3. 兩個完全一樣
+4. 偵測用「現在的 Request」，safety 用「Need（最多還要多少）」
+
+??? quiz "看解析"
+    **D**。步驟一樣：反覆找能被滿足的 process，讓它做完、放出資源。safety 問「最壞情況下大家都做得完嗎」，所以用 Need；偵測問「現在卡住的是誰」，所以用 Request。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 用「搶資源」復原死結時，為什麼要把被選為 victim 的次數算進成本？
+
+1. 讓死結更快被偵測到
+2. 避免同一個 process 一直被選中、永遠做不完（starvation）
+3. 減少 context switch
+4. 讓 Banker's algorithm 可以使用
+
+??? quiz "看解析"
+    **B**。如果每次都選代價最小的那個，可能永遠是同一個 process 被 rollback。把次數算進去，被選越多次的越不會再被選。
+
+</div>
+
+<div markdown="1">
+
+**W-1.** 三種資源 A、B、C，總數 (6, 4, 7)。(a) 是 safe 嗎？寫出順序。(b) P2 申請 (1, 0, 1)，能不能給？
+
+| 行程 | Allocation | Max |
+|---|---|---|
+| P0 | 1 0 2 | 3 2 2 |
+| P1 | 0 1 1 | 1 2 3 |
+| P2 | 2 1 0 | 4 2 1 |
+| P3 | 1 1 2 | 2 1 4 |
+
+</div>
+
+??? quiz "看參考答案"
+    **Need 和 Available**：Need 是 P0 (2, 2, 0)、P1 (1, 1, 2)、P2 (2, 1, 1)、P3 (1, 0, 2)。Allocation 加起來 (4, 3, 5)，Available ＝ (2, 1, 2)。
+
+    **(a) safe**：
+
+    | 步驟 | 找到 | 為什麼 | Work |
+    |---|---|---|---|
+    | 1 | P1 | P0 的 B 要 2 ＞ 1 不行；P1 的 (1, 1, 2) ≤ (2, 1, 2) | 2 2 3 |
+    | 2 | P0 | (2, 2, 0) ≤ (2, 2, 3) | 3 2 5 |
+    | 3 | P2 | (2, 1, 1) ≤ (3, 2, 5) | 5 3 5 |
+    | 4 | P3 | (1, 0, 2) ≤ (5, 3, 5) | 6 4 7 |
+
+    順序 P1、P0、P2、P3，最後 Work 等於總數 ✓。
+
+    **(b) 可以給**：(1, 0, 1) ≤ Need (2, 1, 1)，也 ≤ Available (2, 1, 2)。假裝給它：Available 變 (1, 1, 1)、P2 的 Need 變 (1, 1, 0)。safety：P0 的 A 要 2 不行、P1 的 C 要 2 不行；P2 的 (1, 1, 0) ≤ (1, 1, 1) → Work (4, 2, 2)；接著 P0 → (5, 2, 4)、P1 → (5, 3, 5)、P3 → (6, 4, 7)。safe，所以給。我用程式跑過，結果一樣。
+
+<div markdown="1">
+
+**W-2.** 三種資源 A、B、C，總數 (3, 2, 1)，目前全部分配出去。(a) 有沒有死結？(b) 如果 P2 改成在等 1 份 C（Request 變 0 0 1）呢？
+
+| 行程 | Allocation | Request（現在在等） |
+|---|---|---|
+| P0 | 1 0 1 | 0 1 0 |
+| P1 | 1 1 0 | 0 0 1 |
+| P2 | 0 1 0 | 0 0 0 |
+| P3 | 1 0 0 | 0 0 0 |
+
+</div>
+
+??? quiz "看參考答案"
+    **(a) 沒有死結**：Available (0, 0, 0)。P2 不用再等 → 做完，Work (0, 1, 0)；P0 要 1 份 B → 可以，Work (1, 1, 1)；P1 要 1 份 C → 可以，Work (2, 2, 1)；P3 → Work (3, 2, 1)。全部做得完。
+
+    **(b) P0、P1、P2 死結**：Work (0, 0, 0)，只有 P3 不用等 → 做完，Work (1, 0, 0)。剩下 P0 要 B、P1 和 P2 要 C，Work 裡都沒有，誰都做不完。P0 拿著唯一的那份 C，P1、P2 在等它；P0 要的 B 在 P1、P2 手上：互相等，就是死結。
 
 ### 單元 3 小考 {#u3-quiz}
 
