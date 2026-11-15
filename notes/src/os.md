@@ -2219,6 +2219,137 @@ kernel 自己要記憶體時常用 buddy system：
 
 隨機讀取時，seek 和 rotational latency 遠大於 transfer，所以把同一個檔案的區塊**放在一起**（111 Q7 的 clustering）可以省下大量時間。
 
+#### 檔案的區塊怎麼配置：連續、鏈結、索引
+
+一個檔案有好幾個區塊，要記錄它們在磁碟的哪裡。三種方法：
+
+<figure class="fig">
+<svg viewBox="0 0 360 290" role="img" aria-label="同一個 4 個區塊的檔案，三種放法。連續配置：放在第 4 到 7 塊，記起點 4、長度 4。鏈結配置：放在第 2、9、5、12 塊，每一塊記下一塊在哪。索引配置：第 6 塊是索引區塊，裡面列出 2、9、5、12。">
+<text x="20" y="10" text-anchor="start" dominant-baseline="central" class="sm">連續：記「起點 4、長度 4」</text>
+<rect class="box" x="20" y="40" width="20" height="24"/>
+<text x="30" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<rect class="box" x="40" y="40" width="20" height="24"/>
+<text x="50" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<rect class="box" x="60" y="40" width="20" height="24"/>
+<text x="70" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<rect class="box" x="80" y="40" width="20" height="24"/>
+<text x="90" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<rect class="fb" x="100" y="40" width="20" height="24"/>
+<text x="110" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono tb">4</text>
+<rect class="fb" x="120" y="40" width="20" height="24"/>
+<text x="130" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono tb">5</text>
+<rect class="fb" x="140" y="40" width="20" height="24"/>
+<text x="150" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono tb">6</text>
+<rect class="fb" x="160" y="40" width="20" height="24"/>
+<text x="170" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono tb">7</text>
+<rect class="box" x="180" y="40" width="20" height="24"/>
+<text x="190" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<rect class="box" x="200" y="40" width="20" height="24"/>
+<text x="210" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<rect class="box" x="220" y="40" width="20" height="24"/>
+<text x="230" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<rect class="box" x="240" y="40" width="20" height="24"/>
+<text x="250" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">11</text>
+<rect class="box" x="260" y="40" width="20" height="24"/>
+<text x="270" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">12</text>
+<rect class="box" x="280" y="40" width="20" height="24"/>
+<text x="290" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">13</text>
+<rect class="box" x="300" y="40" width="20" height="24"/>
+<text x="310" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">14</text>
+<rect class="box" x="320" y="40" width="20" height="24"/>
+<text x="330" y="52" text-anchor="middle" dominant-baseline="central" class="sm mono">15</text>
+<text x="20" y="98" text-anchor="start" dominant-baseline="central" class="sm">鏈結：每一塊記「下一塊」</text>
+<rect class="box" x="20" y="128" width="20" height="24"/>
+<text x="30" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<rect class="box" x="40" y="128" width="20" height="24"/>
+<text x="50" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<rect class="fb" x="60" y="128" width="20" height="24"/>
+<text x="70" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono tb">2</text>
+<rect class="box" x="80" y="128" width="20" height="24"/>
+<text x="90" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<rect class="box" x="100" y="128" width="20" height="24"/>
+<text x="110" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<rect class="fb" x="120" y="128" width="20" height="24"/>
+<text x="130" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono tb">5</text>
+<rect class="box" x="140" y="128" width="20" height="24"/>
+<text x="150" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<rect class="box" x="160" y="128" width="20" height="24"/>
+<text x="170" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<rect class="box" x="180" y="128" width="20" height="24"/>
+<text x="190" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<rect class="fb" x="200" y="128" width="20" height="24"/>
+<text x="210" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono tb">9</text>
+<rect class="box" x="220" y="128" width="20" height="24"/>
+<text x="230" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<rect class="box" x="240" y="128" width="20" height="24"/>
+<text x="250" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">11</text>
+<rect class="fb" x="260" y="128" width="20" height="24"/>
+<text x="270" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono tb">12</text>
+<rect class="box" x="280" y="128" width="20" height="24"/>
+<text x="290" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">13</text>
+<rect class="box" x="300" y="128" width="20" height="24"/>
+<text x="310" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">14</text>
+<rect class="box" x="320" y="128" width="20" height="24"/>
+<text x="330" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono">15</text>
+<path class="arw-a" d="M70,127 Q140,106 204.3,125.3"/>
+<polygon class="ah-a" points="210.0,127.0 203.2,128.6 205.3,121.9"/>
+<path class="arw-a" d="M210,153 Q170,174 135.3,155.8"/>
+<polygon class="ah-a" points="130.0,153.0 136.9,152.7 133.7,158.9"/>
+<path class="arw-a" d="M130,127 Q200,106 264.3,125.3"/>
+<polygon class="ah-a" points="270.0,127.0 263.2,128.6 265.3,121.9"/>
+<text x="20" y="186" text-anchor="start" dominant-baseline="central" class="sm">索引：第 6 塊列出 2、9、5、12</text>
+<rect class="box" x="20" y="216" width="20" height="24"/>
+<text x="30" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<rect class="box" x="40" y="216" width="20" height="24"/>
+<text x="50" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<rect class="fb" x="60" y="216" width="20" height="24"/>
+<text x="70" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono tb">2</text>
+<rect class="box" x="80" y="216" width="20" height="24"/>
+<text x="90" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<rect class="box" x="100" y="216" width="20" height="24"/>
+<text x="110" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<rect class="fb" x="120" y="216" width="20" height="24"/>
+<text x="130" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono tb">5</text>
+<rect class="fk" x="140" y="216" width="20" height="24"/>
+<text x="150" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<rect class="box" x="160" y="216" width="20" height="24"/>
+<text x="170" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<rect class="box" x="180" y="216" width="20" height="24"/>
+<text x="190" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<rect class="fb" x="200" y="216" width="20" height="24"/>
+<text x="210" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono tb">9</text>
+<rect class="box" x="220" y="216" width="20" height="24"/>
+<text x="230" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<rect class="box" x="240" y="216" width="20" height="24"/>
+<text x="250" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">11</text>
+<rect class="fb" x="260" y="216" width="20" height="24"/>
+<text x="270" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono tb">12</text>
+<rect class="box" x="280" y="216" width="20" height="24"/>
+<text x="290" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">13</text>
+<rect class="box" x="300" y="216" width="20" height="24"/>
+<text x="310" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">14</text>
+<rect class="box" x="320" y="216" width="20" height="24"/>
+<text x="330" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">15</text>
+<path class="arw" d="M150,241 Q110,258.8 75.5,243.4"/>
+<polygon class="ah" points="70.0,241.0 76.9,240.2 74.1,246.6"/>
+<path class="arw" d="M150,241 Q180,255.6 204.6,243.6"/>
+<polygon class="ah" points="210.0,241.0 206.1,246.8 203.1,240.5"/>
+<path class="arw" d="M150,241 Q140,249.2 134.6,244.8"/>
+<polygon class="ah" points="130.0,241.0 136.9,242.1 132.4,247.5"/>
+<path class="arw" d="M150,241 Q210,265.2 264.4,243.2"/>
+<polygon class="ah" points="270.0,241.0 265.7,246.5 263.1,240.0"/>
+</svg>
+<figcaption>同一個 4 塊的檔案：連續放、一塊接一塊串起來、或用一個索引區塊列出全部</figcaption>
+</figure>
+
+| 方法 | 怎麼記 | 優點 | 缺點 |
+|---|---|---|---|
+| 連續配置（contiguous） | 起點和長度 | 循序、隨機讀都快：第 $i$ 塊就在「起點 ＋ $i$」 | 外部碎片；檔案很難變大 |
+| 鏈結配置（linked） | 每一塊存「下一塊在哪」 | 沒有外部碎片，檔案好變大 | 隨機讀要從頭一塊一塊走；一個指標壞掉，後面全斷 |
+| 索引配置（indexed） | 一個索引區塊列出所有區塊 | 隨機讀快、沒有外部碎片 | 索引區塊要額外空間；大檔案要多層索引 |
+
+**FAT**（file allocation table）是鏈結配置的變形：把每一塊的「下一塊」集中放在磁碟開頭的一張表，表可以整張讀進記憶體，隨機讀時在記憶體裡查表就好，不用真的去讀每一塊。下面的 i-node 就是索引配置，用多層索引支援大檔案。
+
 #### 檔案的區塊放在哪：i-node
 
 i-node 像一本書的**目錄頁**：前面幾格直接寫「第 1 章在第幾頁」（direct pointer），後面一格寫「其他章節的目錄在第幾頁」（indirect pointer），那一頁整頁都是指標。
@@ -2239,7 +2370,84 @@ i-node 像一本書的**目錄頁**：前面幾格直接寫「第 1 章在第幾
 - **RAID 1**（mirroring）：每份資料存兩份，壞一顆沒關係，但容量剩一半。
 - **RAID 5**（分散的 parity）：多存一份 XOR 校驗。
 
+<figure class="fig">
+<svg viewBox="0 0 360 196" role="img" aria-label="RAID 0：A1、A3 在第一顆，A2、A4 在第二顆，分散存放。RAID 1：兩顆存一模一樣的 A1、A2。RAID 5：三顆硬碟，每一列有兩個資料區塊和一個 parity，parity 輪流放在不同顆。">
+<rect class="box" x="24" y="30" width="36" height="78" rx="10"/>
+<rect class="fb" x="28" y="36" width="28" height="18" rx="3"/>
+<text x="42" y="45" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A1</text>
+<rect class="fb" x="28" y="58" width="28" height="18" rx="3"/>
+<text x="42" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A3</text>
+<rect class="fb" x="28" y="80" width="28" height="18" rx="3"/>
+<text x="42" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A5</text>
+<rect class="box" x="66" y="30" width="36" height="78" rx="10"/>
+<rect class="fb" x="70" y="36" width="28" height="18" rx="3"/>
+<text x="84" y="45" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A2</text>
+<rect class="fb" x="70" y="58" width="28" height="18" rx="3"/>
+<text x="84" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A4</text>
+<rect class="fb" x="70" y="80" width="28" height="18" rx="3"/>
+<text x="84" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A6</text>
+<text x="63" y="16" text-anchor="middle" dominant-baseline="central" class="sm mono">RAID 0</text>
+<text x="63" y="130" text-anchor="middle" dominant-baseline="central" class="sm">分散：快</text>
+<text x="63" y="148" text-anchor="middle" dominant-baseline="central" class="sm">壞一顆就全毀</text>
+<rect class="box" x="120" y="30" width="36" height="78" rx="10"/>
+<rect class="fb" x="124" y="36" width="28" height="18" rx="3"/>
+<text x="138" y="45" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A1</text>
+<rect class="fb" x="124" y="58" width="28" height="18" rx="3"/>
+<text x="138" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A2</text>
+<rect class="fb" x="124" y="80" width="28" height="18" rx="3"/>
+<text x="138" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A3</text>
+<rect class="box" x="162" y="30" width="36" height="78" rx="10"/>
+<rect class="fb" x="166" y="36" width="28" height="18" rx="3"/>
+<text x="180" y="45" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A1</text>
+<rect class="fb" x="166" y="58" width="28" height="18" rx="3"/>
+<text x="180" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A2</text>
+<rect class="fb" x="166" y="80" width="28" height="18" rx="3"/>
+<text x="180" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A3</text>
+<text x="159" y="16" text-anchor="middle" dominant-baseline="central" class="sm mono">RAID 1</text>
+<text x="159" y="130" text-anchor="middle" dominant-baseline="central" class="sm">鏡像：存兩份</text>
+<text x="159" y="148" text-anchor="middle" dominant-baseline="central" class="sm">容量剩一半</text>
+<rect class="box" x="216" y="30" width="36" height="78" rx="10"/>
+<rect class="fb" x="220" y="36" width="28" height="18" rx="3"/>
+<text x="234" y="45" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A1</text>
+<rect class="fb" x="220" y="58" width="28" height="18" rx="3"/>
+<text x="234" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">B1</text>
+<rect class="fk" x="220" y="80" width="28" height="18" rx="3"/>
+<text x="234" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono ">Pc</text>
+<rect class="box" x="258" y="30" width="36" height="78" rx="10"/>
+<rect class="fb" x="262" y="36" width="28" height="18" rx="3"/>
+<text x="276" y="45" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A2</text>
+<rect class="fk" x="262" y="58" width="28" height="18" rx="3"/>
+<text x="276" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ">Pb</text>
+<rect class="fb" x="262" y="80" width="28" height="18" rx="3"/>
+<text x="276" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono tb">C1</text>
+<rect class="box" x="300" y="30" width="36" height="78" rx="10"/>
+<rect class="fk" x="304" y="36" width="28" height="18" rx="3"/>
+<text x="318" y="45" text-anchor="middle" dominant-baseline="central" class="sm mono ">Pa</text>
+<rect class="fb" x="304" y="58" width="28" height="18" rx="3"/>
+<text x="318" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">B2</text>
+<rect class="fb" x="304" y="80" width="28" height="18" rx="3"/>
+<text x="318" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono tb">C2</text>
+<text x="276" y="16" text-anchor="middle" dominant-baseline="central" class="sm mono">RAID 5</text>
+<text x="276" y="130" text-anchor="middle" dominant-baseline="central" class="sm">parity 輪流放</text>
+<text x="276" y="148" text-anchor="middle" dominant-baseline="central" class="sm">能壞一顆</text>
+<rect class="fk" x="110" y="172" width="14" height="14"/>
+<text x="130" y="179" text-anchor="start" dominant-baseline="central" class="sm">P：parity（XOR）</text>
+</svg>
+<figcaption>RAID 5 的 parity 輪流放在不同顆：每次寫入都要更新 parity，集中在一顆會變成瓶頸</figcaption>
+</figure>
+
 **XOR 為什麼能救回資料**：資料 1100 和 1010，parity ＝ 1100 XOR 1010 ＝ 0110。第二顆壞了，把剩下的 XOR 起來：1100 XOR 0110 ＝ 1010，就是原本的資料。RAID 6 再多一份不同算法的校驗（P＋Q），可以同時壞兩顆。
+
+!!! key "儲存與檔案題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | 讀一個區塊多久 | seek ＋ 平均 rotational latency（轉半圈）＋ transfer |
+    | i-node 最大檔案 | 一塊放幾個指標 $k$ ＝ 區塊大小 ÷ 指標大小；資料區塊數 ＝ direct 個數 ＋ $k$ ＋ $k^2$ ＋ $k^3$ |
+    | 三種配置方式比較 | 連續：快但有碎片；鏈結：好長大但隨機讀慢；索引：隨機讀快但要索引區塊 |
+    | RAID 能壞幾顆、容量剩多少 | RAID 0 不能壞；RAID 1 剩一半；RAID 5 能壞 1 顆，剩 $\frac{n-1}{n}$；RAID 6 能壞 2 顆 |
+    | 磁碟排程總距離 | 照演算法排出順序，相鄰的相減再加總（[5.4](#u5-sched)） |
+
+    名詞對照：seek time（尋軌時間）、rotational latency（旋轉延遲）、transfer time（傳輸時間）、i-node（索引節點）、striping（分散存放）、mirroring（鏡像）、parity（同位）。
 
 !!! read "還不懂？看別人怎麼講"
     - **中文筆記（資工所考生整理）**：[I/O 運作方式、Interrupt 與 DMA](https://saberliou.github.io/PrepareCSEMaster/OperatingSystem/Chapter02.html)：polling、interrupt、DMA 的比較，對應 5.3 的 I/O 名詞。
@@ -2612,6 +2820,99 @@ i-node 像一本書的**目錄頁**：前面幾格直接寫「第 1 章在第幾
     **裝置很快、資料馬上就會好**的時候。這時 CPU 只要檢查幾次 status register 就等到了；如果改用 interrupt，要存目前的狀態、跳去 handler、再恢復，這些開銷可能比等幾個 cycle 還久。
 
     反過來，裝置很慢（例如鍵盤、磁碟）或事件不常發生時，polling 會讓 CPU 大部分時間在空轉，用 interrupt 才能讓 CPU 先去做別的事。
+
+### 5.6 觀念小考 {#u5-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 5400 RPM 的硬碟，平均 rotational latency 大約是多少？
+
+1. 11.1 ms
+2. 5.56 ms
+3. 2.78 ms
+4. 0.18 ms
+
+??? quiz "看解析"
+    **B**。一圈 $\frac{60}{5400}$ 秒 ≈ 11.1 ms，平均要等半圈，約 5.56 ms。A 是轉一整圈的時間。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-2.** 要直接讀一個檔案的第 100 塊，哪一種配置方式最慢？
+
+1. 連續配置
+2. 索引配置
+3. FAT（表已經讀進記憶體）
+4. 鏈結配置（每一塊存下一塊的位置）
+
+??? quiz "看解析"
+    **D**。要從第 1 塊開始，一塊一塊讀出「下一塊在哪」，讀了 99 塊才知道第 100 塊在哪。FAT 把這些指標集中在記憶體裡，查表就好；連續配置直接算位置；索引配置查索引區塊。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** 4 顆一樣大的硬碟做 RAID 5，可以用來存資料的容量是幾顆硬碟的量？
+
+1. 3 顆
+2. 2 顆
+3. 4 顆
+4. 1 顆
+
+??? quiz "看解析"
+    **A**。每一列有 1 塊 parity，其他 3 塊是資料，容量是 $\frac{n-1}{n}$。B 是 RAID 1（存兩份）的結果。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-4.** 區塊 2 KB、指標 4 bytes，i-node 有 10 個 direct、1 個 single indirect、1 個 double indirect，最大的檔案有幾個資料區塊？
+
+1. $10+512$
+2. $10+2\times512$
+3. $10+512+512^2$
+4. $512^3$
+
+??? quiz "看解析"
+    **C**。一個區塊放 $2048\div4=512$ 個指標。single indirect 指到 512 塊；double indirect 指到 512 個索引區塊，每個再指到 512 塊，共 $512^2$。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** RAID 5 為什麼把 parity 輪流放在每一顆，而不是集中在同一顆？
+
+1. 讓總容量變大
+2. 每次寫入都要更新 parity，集中在一顆會變成瓶頸
+3. 讓讀取不用經過 parity
+4. 這樣才能同時壞兩顆
+
+??? quiz "看解析"
+    **B**。parity 集中在一顆是 RAID 4，所有寫入都要動到那一顆。D 是 RAID 6（P＋Q 兩份校驗）才做得到。
+
+</div>
+
+**W-1.** 7200 RPM、平均 seek 8 ms、傳輸率 100 MB/s（1 MB 以 $10^6$ bytes、1 KB 以 $10^3$ bytes 計）。讀一個 4 KB 的區塊平均要多久？讀一個連續存放的 4 MB 檔案呢？如果那 1000 個區塊散落在磁碟各處呢？
+
+??? quiz "看參考答案"
+    - **平均 rotational latency（4.17 ms）**：一圈 $\frac{60}{7200}$ 秒 ≈ 8.33 ms，半圈約 4.17 ms。
+    - **一個 4 KB 區塊（約 12.21 ms）**：$8+4.17+\frac{4000}{100\times10^6}\text{ s}=8+4.17+0.04$。
+    - **連續的 4 MB（約 52.17 ms）**：只要一次 seek 和一次等轉，再連續傳 $\frac{4\times10^6}{100\times10^6}$ s ＝ 40 ms：$8+4.17+40$。
+    - **散落的 1000 塊（約 12.2 秒）**：每塊都要 seek 和等轉，$1000\times12.21$ ms。
+
+    同樣的資料量，放在一起快了二百多倍：時間幾乎都花在 seek 和等轉，不是傳輸。
+
+**W-2.** 區塊 4 KB、指標 4 bytes，i-node 有 12 個 direct，single、double、triple indirect 各 1 個。(a) 最大檔案大約多大？(b) 要讀一個檔案的第 3,000,000 個 byte（從 0 算），i-node 已經在記憶體裡，要讀幾次磁碟？
+
+??? quiz "看參考答案"
+    **(a) 約 4 TB**：一塊放 $4096\div4=1024=2^{10}$ 個指標。資料區塊數 $12+2^{10}+2^{20}+2^{30}$，每塊 4 KB：
+
+    $$48\text{ KB}+4\text{ MB}+4\text{ GB}+4\text{ TB}\approx4\text{ TB}$$
+
+    **(b) 2 次**：$3000000\div4096=732$ 餘 1728，是第 732 塊（從 0 算）。direct 管第 0–11 塊，single indirect 管第 12–1035 塊，所以在 single indirect 的範圍：先讀那個索引區塊，再讀資料區塊。
 
 ### 單元 5 小考 {#u5-quiz}
 
