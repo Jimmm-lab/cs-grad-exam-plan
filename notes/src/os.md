@@ -723,9 +723,54 @@ printf("%d\n", v);
 2. **progress**：沒人在裡面時，想進去的人不能一直被擋著。
 3. **bounded waiting**：排隊的人等待的次數有上限，不會一直被插隊（不會餓死）。
 
+#### 為什麼「先檢查 lock，再把它設成佔用」不行？
+
+最直覺的寫法：
+
+```c
+while (lock == 1)
+    ;          /* wait */
+lock = 1;
+/* critical section */
+lock = 0;
+```
+
+「檢查」和「設定」是兩個動作，中間可以被切換：
+
+| 時間 | Thread 1 | Thread 2 | lock |
+|---|---|---|---|
+| 1 | 檢查：lock 是 0，可以進 | | 0 |
+| 2 | | 檢查：lock 還是 0，可以進 | 0 |
+| 3 | lock ＝ 1，進去 | | 1 |
+| 4 | | lock ＝ 1，也進去 | 1 |
+
+兩個都在 critical section 裡，**違反 mutual exclusion**。問題出在「檢查」和「設定」之間有空檔。
+
+#### Peterson's solution：兩個人互相禮讓
+
+只用一般的讀寫，兩個 process（i 和 j）也能做到。共用兩個變數：`flag[i]` 表示「i 想進去」，`turn` 表示「輪到誰」。
+
+```c
+/* process i; the other is j */
+flag[i] = true;
+turn = j;
+while (flag[j] && turn == j)
+    ;          /* wait */
+/* critical section */
+flag[i] = false;
+```
+
+**白話**：我舉手說想進去，然後**把機會先讓給對方**（turn ＝ j）。只有在「對方也舉手、而且輪到對方」時我才等。
+
+- **mutual exclusion**：兩個都舉手時，turn 只能是 i 或 j 其中一個（後寫的那個會蓋掉先寫的），所以只有一個人能通過 while。
+- **progress**：對方沒舉手（flag[j] 是 false），我馬上就能進去。
+- **bounded waiting**：對方出來會把 flag 放下；就算它馬上又想進去，也會先把 turn 讓給我，所以我最多等它一次。
+
+（現代 CPU 會重排記憶體存取，實際上要配合 memory barrier 才保證正確；考試照課本的三個性質論證即可。）
+
 #### 硬體怎麼幫忙：不可分割的指令
 
-自己寫「先檢查 lock 是不是空的，再把它設成佔用」不行，因為兩個 thread 可能**同時檢查到空的**，又出現上面那種交錯。
+所以要把「檢查」和「設定」合成一步，中間不能被插隊。
 
 `test_and_set` 這類指令把「讀舊值、設成 true」**合成一個不可分割的動作**：
 
@@ -741,7 +786,72 @@ semaphore 是一個整數，像停車場門口的「剩餘車位」看板：
 
 初始值 1 的 semaphore 就是一把 lock（一次一台車）；初始值 $n$ 就能管理 $n$ 份資源。
 
-**生產者－消費者**用三個 semaphore：`empty`（空格數，初始 $n$）、`full`（有資料的格數，初始 0）、`mutex`（保護 buffer，初始 1）。生產者先 `wait(empty)` 再放資料再 `signal(full)`，消費者反過來。
+#### 生產者－消費者：三個 semaphore 各管什麼？
+
+<figure class="fig">
+<svg viewBox="0 0 360 170" role="img" aria-label="生產者把資料放進 5 格的 buffer，消費者從 buffer 拿走。現在 3 格有資料、2 格是空的，所以 full 是 3、empty 是 2；mutex 是 1，保證同時只有一個人在動 buffer。">
+<rect class="fc" x="90" y="60" width="36" height="40"/>
+<text x="108.0" y="80.0" text-anchor="middle" dominant-baseline="central" class="sm">資料</text>
+<rect class="fc" x="126" y="60" width="36" height="40"/>
+<text x="144.0" y="80.0" text-anchor="middle" dominant-baseline="central" class="sm">資料</text>
+<rect class="fc" x="162" y="60" width="36" height="40"/>
+<text x="180.0" y="80.0" text-anchor="middle" dominant-baseline="central" class="sm">資料</text>
+<rect class="box" x="198" y="60" width="36" height="40"/>
+<rect class="box" x="234" y="60" width="36" height="40"/>
+<text x="180.0" y="46" text-anchor="middle" class="sm">buffer（5 格）</text>
+<rect class="fb" x="6" y="62" width="64" height="36" rx="8"/>
+<text x="38" y="80" text-anchor="middle" dominant-baseline="central">生產者</text>
+<line class="arw" x1="70.0" y1="80.0" x2="79.0" y2="80.0"/>
+<polygon class="ah" points="88.0,80.0 79.0,85.0 79.0,75.0"/>
+<rect class="fa" x="290" y="62" width="64" height="36" rx="8"/>
+<text x="322" y="80" text-anchor="middle" dominant-baseline="central">消費者</text>
+<line class="arw" x1="272.0" y1="80.0" x2="279.0" y2="80.0"/>
+<polygon class="ah" points="288.0,80.0 279.0,85.0 279.0,75.0"/>
+<text x="144" y="128" text-anchor="middle" class="tc">full ＝ 3</text>
+<text x="234" y="128" text-anchor="middle" class="sm">empty ＝ 2</text>
+<text x="180" y="156" text-anchor="middle" class="sm">mutex ＝ 1：同時只有一個人在動 buffer</text>
+</svg>
+<figcaption>empty 數空格、full 數有資料的格子，mutex 讓兩邊不會同時改 buffer</figcaption>
+</figure>
+
+`empty`（空格數，初始 $n$）、`full`（有資料的格數，初始 0）、`mutex`（保護 buffer，初始 1）：
+
+```c
+/* producer */
+wait(empty);
+wait(mutex);
+/*   put item into buffer */
+signal(mutex);
+signal(full);
+
+/* consumer */
+wait(full);
+wait(mutex);
+/*   take item from buffer */
+signal(mutex);
+signal(empty);
+```
+
+- buffer 滿了（empty ＝ 0）：生產者卡在 `wait(empty)`，等消費者拿走一個、`signal(empty)`。
+- buffer 空了（full ＝ 0）：消費者卡在 `wait(full)`。
+
+!!! trap "常考：wait 的順序不能反"
+    生產者如果寫成先 `wait(mutex)` 再 `wait(empty)`：buffer 滿的時候，它**拿著 mutex** 卡在 `wait(empty)`；消費者要先拿 mutex 才能拿資料，也卡住，兩邊永遠等下去，就是**死結**（[單元 3](#u3)）。所以要先等「有沒有空間」，再拿 mutex。
+
+#### busy waiting 和 blocking 差在哪？
+
+- **busy waiting（spinlock）**：一直跑迴圈檢查，等的時候還佔著 CPU。等很短時（多處理器、critical section 很短）反而好，因為不用 context switch。
+- **blocking**：semaphore 的 `wait()` 拿不到時，把自己放進 semaphore 的等待佇列、讓出 CPU；`signal()` 時再被叫醒放回 ready queue。等很久時比較省 CPU。
+
+#### readers–writers：讀可以一起，寫要獨佔
+
+很多人讀同一份資料不會出事，但有人在寫的時候，誰都不能讀、也不能有第二個人寫。第一種解法（readers 優先）：
+
+- 用 `read_count` 數現在有幾個 reader，`mutex` 保護這個計數。
+- **第一個進來的 reader** `wait(rw_mutex)`，把 writer 擋在外面；**最後一個離開的 reader** `signal(rw_mutex)`。
+- writer 直接 `wait(rw_mutex)`、寫完 `signal(rw_mutex)`。
+
+缺點：只要一直有 reader 進來，writer 永遠輪不到（starvation）。
 
 !!! read "還不懂？看別人怎麼講"
     - **講義**：[周志遠講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999)的 Ch6 Process Synchronization。裡面的 producer／consumer 例子，counter 最後可能是 4、5 或 6（正確應該是 5），跟這節 `counter++` 的交錯是同一件事。
@@ -870,6 +980,101 @@ semaphore 是一個整數，像停車場門口的「剩餘車位」看板：
     **A**。一旦開始放 lock（進入 shrinking phase），就不能再拿新的。
 
 </div>
+
+### 2.3 觀念小考 {#u2-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 用 `while (lock == 1); lock = 1;` 當作進入 critical section 的方法，會出什麼問題？
+
+1. 一定會死結
+2. 兩個 thread 可能同時通過檢查，一起進去，違反 mutual exclusion
+3. 沒有問題
+4. 只會違反 bounded waiting
+
+??? quiz "看解析"
+    **B**。「檢查」和「設定」中間可以被切換：兩個 thread 都看到 lock 是 0，然後都把它設成 1、都進去。要用 `test_and_set` 這種不可分割的指令，或 Peterson's solution。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** 要保證 P1 的敘述 S1 一定在 P2 的敘述 S2 之前執行，用一個 semaphore `synch`，初始值和寫法是？
+
+1. 初始 0；P1：`S1; signal(synch);`，P2：`wait(synch); S2;`
+2. 初始 1；P1：`S1; signal(synch);`，P2：`wait(synch); S2;`
+3. 初始 0；P1：`wait(synch); S1;`，P2：`S2; signal(synch);`
+4. 初始 1；P1：`wait(synch); S1;`，P2：`signal(synch); S2;`
+
+??? quiz "看解析"
+    **A**。初始 0：P2 先跑到 `wait` 會被擋住，直到 P1 做完 S1、`signal` 之後才能做 S2。B 初始 1 的話，P2 一開始就能直接通過，S2 可能比 S1 早。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-3.** 生產者寫成「先 `wait(mutex)`，再 `wait(empty)`」，什麼時候會出事？
+
+1. buffer 空的時候
+2. 只有一個生產者的時候
+3. buffer 滿的時候：生產者拿著 mutex 等空格，消費者拿不到 mutex，兩邊都卡住
+4. 不會出事，順序無所謂
+
+??? quiz "看解析"
+    **C**。這是死結：生產者握著 mutex 等 empty，消費者要 mutex 才能拿資料、`signal(empty)`。正確順序是先等資源（empty），再拿 mutex。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** Peterson's solution 裡，`turn = j` 這一行的作用是？
+
+1. 宣告自己要進 critical section
+2. 讓 j 不能再進來
+3. 把 flag[j] 設成 false
+4. 把優先權讓給對方：兩個都想進去時，後寫 turn 的那個要等
+
+??? quiz "看解析"
+    **D**。A 是 `flag[i] = true` 的作用。兩個人都舉手時，turn 最後的值只會是其中一個，所以只有一個能進去（mutual exclusion）。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 什麼情況下 spinlock（busy waiting）比會讓出 CPU 的 semaphore 好？
+
+1. 單處理器、等很久的時候
+2. 多處理器、critical section 很短的時候
+3. 等 I/O 的時候
+4. 永遠比較好
+
+??? quiz "看解析"
+    **B**。等的時間比 context switch 還短，空轉一下反而比較快。單處理器上 spin 沒有意義：持有 lock 的人根本沒機會跑。
+
+</div>
+
+**W-1.** 生產者－消費者為什麼需要三個 semaphore？各自的初始值和用途？
+
+??? quiz "看參考答案"
+    | semaphore | 初始值 | 用途 |
+    |---|---|---|
+    | empty | $n$（buffer 大小） | 數空格；生產者放之前 `wait(empty)`，滿了就等 |
+    | full | 0 | 數有資料的格子；消費者拿之前 `wait(full)`，空了就等 |
+    | mutex | 1 | 保證同時只有一個人在改 buffer（mutual exclusion） |
+
+    empty、full 負責「先後條件」（有空間才放、有資料才拿），mutex 負責「互斥」，兩種工作要分開。
+
+**W-2.** 用 Peterson's solution 的程式碼說明：為什麼兩個 process 不可能同時在 critical section 裡？
+
+??? quiz "看參考答案"
+    假設 i 和 j 都在 critical section 裡，那它們都通過了 while，而且 flag[i]、flag[j] 都是 true。
+
+    - i 通過 while，表示當時 `turn == i`（因為 flag[j] 是 true）。
+    - j 通過 while，表示當時 `turn == j`。
+
+    turn 只有一個值，兩個人最後都寫了 turn（i 寫 j、j 寫 i），**後寫的那個**把 turn 設成對方，自己就會卡在 while。所以不可能兩個都通過，矛盾。∎
 
 ### 單元 2 小考 {#u2-quiz}
 
