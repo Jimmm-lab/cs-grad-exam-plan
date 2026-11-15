@@ -1223,7 +1223,17 @@ $$h\ge\lg(n!)\ge\frac n2\lg\frac n2=\Omega(n\log n)$$
 - 在 inorder 中找到根，**左邊全是左子樹、右邊全是右子樹**。
 - 知道左子樹有幾個節點，就能把 preorder／postorder 也切開，對左右子樹遞迴。
 
-只有 preorder ＋ postorder 時，沒辦法知道「只有一個子節點時是左還是右」，所以不能唯一決定。
+只有 preorder ＋ postorder 時，沒辦法知道「只有一個子節點時是左還是右」，所以不能唯一決定。最小的例子：A 的**左**子節點是 B，和 A 的**右**子節點是 B，兩棵樹的 preorder 都是 AB、postorder 都是 BA；只有 inorder（BA 和 AB）分得出來。
+
+#### 二元樹的數量關係（常考填空）
+
+- 第 $i$ 層最多 $2^{i-1}$ 個節點（根是第 1 層）；高度 $h$ 的二元樹最多 $2^h-1$ 個節點。
+- $n$ 個節點的二元樹，高度最少 $\lceil\lg(n+1)\rceil$、最多 $n$（一條斜線）。
+- **葉節點數 $n_0$ ＝ 有兩個子節點的節點數 $n_2$ ＋ 1**。
+
+**為什麼 $n_0=n_2+1$？** 用兩種方法數邊：除了根，每個節點都有一條往上的邊，共 $n-1$ 條；從上往下數，有一個子節點的貢獻 1 條、兩個子節點的貢獻 2 條，共 $n_1+2n_2$ 條。所以 $n_0+n_1+n_2-1=n_1+2n_2$，消掉得 $n_0=n_2+1$。
+
+**名詞**：complete binary tree（完全二元樹）是除了最後一層都滿、最後一層靠左排，可以直接放進陣列（[2.0](#u2-0) 的 heap）。full binary tree 各課本定義不同：有的指每一層都滿（高度 $h$ 剛好 $2^h-1$ 個節點），有的指每個節點都是 0 或 2 個子節點。題目沒有定義時，寫出你用的那一種。
 
 #### BST：左小右大
 
@@ -1250,9 +1260,60 @@ $$h\ge\lg(n!)\ge\frac n2\lg\frac n2=\Omega(n\log n)$$
 
 **旋轉到底動了什麼**：右旋 $z$（左子節點是 $y$）時只改兩條線：$y$ 升上去當這棵子樹的根、$z$ 變成 $y$ 的右子節點；$y$ 原本的右子樹（比 $y$ 大、比 $z$ 小）改接到 $z$ 的左邊。三個部分的大小順序都沒變，所以 inorder 不變。左旋左右對調。
 
+<figure class="fig">
+<svg viewBox="0 0 360 204" role="img" aria-label="右旋 z：左邊是旋轉前，z 的左子節點是 y，y 的子樹是 T1、T2，z 的右子樹是 T3。右邊是旋轉後，y 升上來當根，z 變成 y 的右子節點，原本 y 的右子樹 T2 改接到 z 的左邊。兩邊的 inorder 都是 T1 y T2 z T3。">
+<line class="ln" x1="93.1475" y1="41.7569" x2="66.8525" y2="70.2431"/>
+<line class="ln" x1="116.292" y1="40.243" x2="140" y2="60"/>
+<line class="ln" x1="45.5211" y1="94.091" x2="30" y2="112"/>
+<line class="ln" x1="66.4789" y1="94.091" x2="82" y2="112"/>
+<polygon class="box" points="30,112 9,158 51,158"/>
+<text x="30" y="143" text-anchor="middle" dominant-baseline="central" class="sm mono">T1</text>
+<polygon class="fa" points="82,112 61,158 103,158"/>
+<text x="82" y="143" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T2</text>
+<polygon class="box" points="140,60 119,106 161,106"/>
+<text x="140" y="91" text-anchor="middle" dominant-baseline="central" class="sm mono">T3</text>
+<circle class="fb" cx="104" cy="30" r="16"/>
+<text x="104" y="30" text-anchor="middle" dominant-baseline="central" class="mono">z</text>
+<circle class="fc" cx="56" cy="82" r="16"/>
+<text x="56" y="82" text-anchor="middle" dominant-baseline="central" class="mono">y</text>
+<line class="arw-a" x1="164" y1="96" x2="182.0" y2="96.0"/>
+<polygon class="ah-a" points="191.0,96.0 182.0,101.0 182.0,91.0"/>
+<text x="177" y="78" text-anchor="middle" dominant-baseline="central" class="sm ta">右旋</text>
+<line class="ln" x1="266.852" y1="41.7569" x2="293.148" y2="70.2431"/>
+<line class="ln" x1="243.708" y1="40.243" x2="220" y2="60"/>
+<line class="ln" x1="293.521" y1="94.091" x2="278" y2="112"/>
+<line class="ln" x1="314.479" y1="94.091" x2="330" y2="112"/>
+<polygon class="box" points="220,60 199,106 241,106"/>
+<text x="220" y="91" text-anchor="middle" dominant-baseline="central" class="sm mono">T1</text>
+<polygon class="fa" points="278,112 257,158 299,158"/>
+<text x="278" y="143" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T2</text>
+<polygon class="box" points="330,112 309,158 351,158"/>
+<text x="330" y="143" text-anchor="middle" dominant-baseline="central" class="sm mono">T3</text>
+<circle class="fb" cx="304" cy="82" r="16"/>
+<text x="304" y="82" text-anchor="middle" dominant-baseline="central" class="mono">z</text>
+<circle class="fc" cx="256" cy="30" r="16"/>
+<text x="256" y="30" text-anchor="middle" dominant-baseline="central" class="mono">y</text>
+<text x="180" y="190" text-anchor="middle" dominant-baseline="central" class="sm">inorder 兩邊都是 T1 y T2 z T3</text>
+</svg>
+<figcaption>右旋只改兩條線：y 升上去，T2（比 y 大、比 z 小）從 y 的右邊改接到 z 的左邊</figcaption>
+</figure>
+
 動畫裡節點右上角的數字是**平衡因子 bf ＝ 左子樹高 − 右子樹高**，變成 ±2 就要轉。把「要插入的數」改成 1,3,2 或 1,2,3 看看另外兩種情況：
 
 <div class="viz" data-viz="avl" data-keys="3,2,1"></div>
+
+!!! key "樹的題目要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | 三種走訪 | 根放在前、中、後；每棵子樹遞迴套用 |
+    | 由走訪重建 | preorder 第一個（postorder 最後一個）是根，在 inorder 切成左右，再照個數切另一個走訪 |
+    | BST 插入 | 一路比大小往下，放在第一個空位 |
+    | BST 刪除 | 葉節點直接刪；一個子節點就接上；兩個子節點用 inorder successor（或 predecessor）取代 |
+    | AVL 插入 | 從新節點往上找第一個 bf ＝ ±2 的節點，看新節點在它哪一側：LL、RR、LR、RL |
+    | 節點數 | $n_0=n_2+1$；高度 $h$ 最多 $2^h-1$ 個節點 |
+    | Optimal BST | $c(i,j)=\min_r\{c(i,r-1)+c(r+1,j)\}+w(i,j)$，從短的區間填到長的 |
+
+    名詞對照：traversal（走訪）、inorder successor（中序後繼：右子樹最小的）、balance factor（平衡因子）、rotation（旋轉）。
 
 !!! read "還不懂？看別人怎麼講"
     - **動畫**：[VisuAlgo BST／AVL](https://visualgo.net/en/bst)：可以切換成 AVL tree，插入數字時會標出哪個節點不平衡、做了哪種旋轉。
@@ -1349,6 +1410,18 @@ $$h\ge\lg(n!)\ge\frac n2\lg\frac n2=\Omega(n\log n)$$
 <div class="viz" data-viz="avl" data-base="8,3,9,2,6" data-keys="1" data-title="114 Q3(a)：插入 1（LL）"></div>
 
 <div class="viz" data-viz="avl" data-base="8,3,9,2,6" data-keys="4" data-title="114 Q3(b)：插入 4（LR）"></div>
+
+#### AVL 的高度為什麼是 $O(\log n)$？
+
+問反過來：高度 $h$ 的 AVL tree **最少**有幾個節點？設為 $N(h)$（只有根時高度 1）。要讓節點最少，根的兩棵子樹高度要差 1：一棵高 $h-1$、一棵高 $h-2$，各自也用最少的節點：
+
+$$N(h)=N(h-1)+N(h-2)+1,\qquad N(1)=1,\ N(2)=2$$
+
+| $h$ | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|---|---|
+| $N(h)$ | 1 | 2 | 4 | 7 | 12 | 20 | 33 |
+
+這跟費氏數列一樣是指數成長（$N(h)=F_{h+2}-1$），所以 $n$ 個節點的 AVL tree 高度是 $O(\log n)$，大約不超過 $1.44\lg n$。搜尋、插入、刪除都是 $O(\log n)$。
 
 ### 3.4 Optimal BST（動態規劃） {#u3-4}
 
@@ -1737,6 +1810,129 @@ $w(i,j)$ 是 $i..j$ 的頻率總和。這樣算出的是 $\sum(\text{頻率}\tim
 
 ??? quiz "看參考答案"
     每合併一次，新根底下的所有符號都往下多一層，也就是編碼都多一位。多出來的位元數 ＝ 這些符號的頻率加起來 ＝ 新根的頻率。從全部是單點開始，一路合併到一棵樹，每個符號的編碼長度就是它被「往下壓」的次數，所以全部合併的新頻率加起來，就是 Σ 頻率 × 編碼長度。
+
+### 3.7 觀念小考 {#u3-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 只知道一棵二元樹的 preorder 是 AB、postorder 是 BA，這棵樹是？
+
+1. A 的左子節點是 B
+2. 沒辦法確定：B 可能是 A 的左子節點，也可能是右子節點
+3. A 的右子節點是 B
+4. B 是根
+
+??? quiz "看解析"
+    **B**。兩種樹的 preorder 都是 AB、postorder 都是 BA。只有 preorder ＋ postorder 時，「只有一個子節點」分不出左右；有 inorder（BA 或 AB）就能確定。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-2.** 一棵二元樹有 10 個葉節點、5 個「只有一個子節點」的節點，總共有幾個節點？
+
+1. 19
+2. 25
+3. 24
+4. 20
+
+??? quiz "看解析"
+    **C. 24**。$n_2=n_0-1=9$，總數 $n_0+n_1+n_2=10+5+9=24$。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** BST 刪除一個有兩個子節點的節點，用 inorder successor 取代。inorder successor 是？
+
+1. 左子樹最大的
+2. 父節點
+3. 右子節點本身
+4. 右子樹最小的：從右子節點一直往左走到底
+
+??? quiz "看解析"
+    **D**。它是比被刪的節點大的數裡最小的，放上來之後左小右大還是成立。它一定沒有左子節點，所以從原本的位置拿走很簡單（最多接上它的右子節點）。A 是 predecessor。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-4.** 依序插入 10、20、30、25、28 到空的 AVL tree，插入 28 時要做哪一種旋轉？
+
+1. LR：先對 25 左旋，再對 30 右旋
+2. LL：對 30 右旋
+3. RR：對 20 左旋
+4. RL：先對 25 右旋，再對 30 左旋
+
+??? quiz "看解析"
+    **A**。插入 30 時已經對 10 左旋（RR），樹變成 20（左 10、右 30）。25 放在 30 的左邊，28 放在 25 的右邊。往上找第一個不平衡的是 30（左高 2、右高 0），新節點在它**左**子樹的**右**邊 → LR。轉完 28 當這棵子樹的根，左 25、右 30。我用程式跑過，結果一樣。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 高度 4 的 AVL tree（只有根時高度 1）最少有幾個節點？
+
+1. 4
+2. 7
+3. 8
+4. 15
+
+??? quiz "看解析"
+    **B. 7**。$N(h)=N(h-1)+N(h-2)+1$：$N(1)=1$、$N(2)=2$、$N(3)=4$、$N(4)=7$。D 是高度 4 最多的節點數 $2^4-1$。
+
+</div>
+
+**W-1.** inorder 是 D B G E A C F、postorder 是 D G E B F C A，畫出這棵樹，寫出 preorder。
+
+??? quiz "看參考答案"
+    1. postorder 最後的 **A** 是根。inorder `D B G E | A | C F`：左子樹 4 個、右子樹 2 個。
+    2. postorder 照個數切：左子樹 D G E B、右子樹 F C。
+    3. 左子樹：postorder 最後的 **B** 是根；inorder `D | B | G E` → 左 D、右邊是 G E。G E 的 postorder 是 G E，根 **E**，inorder `G E` → G 是 E 的左子節點。
+    4. 右子樹：postorder F C，根 **C**；inorder `C F` → F 是 C 的右子節點。
+
+    ```text
+          A
+        /   \
+       B     C
+      / \     \
+     D   E     F
+        /
+       G
+    ```
+
+    preorder（根左右）：**A B D E G C F**。
+
+**W-2.** 依序插入 50、30、70、20、40、60、80、35、45 到空的 BST，再刪除 30（用 inorder successor），畫出刪除前後的樹。
+
+??? quiz "看參考答案"
+    **刪除前**：
+
+    ```text
+            50
+          /    \
+        30      70
+       /  \    /  \
+      20  40  60  80
+         /  \
+        35  45
+    ```
+
+    **刪除 30**：有兩個子節點，inorder successor 是右子樹（40 那棵）最小的 **35**。35 搬到 30 的位置；35 原本是葉節點，直接拿掉。
+
+    ```text
+            50
+          /    \
+        35      70
+       /  \    /  \
+      20  40  60  80
+            \
+            45
+    ```
+
+    檢查：inorder 是 20 35 40 45 50 60 70 80，由小到大 ✓。
 
 ### 單元 3 小考 {#u3-quiz}
 

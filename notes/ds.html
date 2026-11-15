@@ -2422,7 +2422,15 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>在 inorder 中找到根，<strong>左邊全是左子樹、右邊全是右子樹</strong>。</li>
 <li>知道左子樹有幾個節點，就能把 preorder／postorder 也切開，對左右子樹遞迴。</li>
 </ul>
-<p>只有 preorder ＋ postorder 時，沒辦法知道「只有一個子節點時是左還是右」，所以不能唯一決定。</p>
+<p>只有 preorder ＋ postorder 時，沒辦法知道「只有一個子節點時是左還是右」，所以不能唯一決定。最小的例子：A 的<strong>左</strong>子節點是 B，和 A 的<strong>右</strong>子節點是 B，兩棵樹的 preorder 都是 AB、postorder 都是 BA；只有 inorder（BA 和 AB）分得出來。</p>
+<h4 id="_13">二元樹的數量關係（常考填空）</h4>
+<ul>
+<li>第 <span class="arithmatex">\(i\)</span> 層最多 <span class="arithmatex">\(2^{i-1}\)</span> 個節點（根是第 1 層）；高度 <span class="arithmatex">\(h\)</span> 的二元樹最多 <span class="arithmatex">\(2^h-1\)</span> 個節點。</li>
+<li><span class="arithmatex">\(n\)</span> 個節點的二元樹，高度最少 <span class="arithmatex">\(\lceil\lg(n+1)\rceil\)</span>、最多 <span class="arithmatex">\(n\)</span>（一條斜線）。</li>
+<li><strong>葉節點數 <span class="arithmatex">\(n_0\)</span> ＝ 有兩個子節點的節點數 <span class="arithmatex">\(n_2\)</span> ＋ 1</strong>。</li>
+</ul>
+<p><strong>為什麼 <span class="arithmatex">\(n_0=n_2+1\)</span>？</strong> 用兩種方法數邊：除了根，每個節點都有一條往上的邊，共 <span class="arithmatex">\(n-1\)</span> 條；從上往下數，有一個子節點的貢獻 1 條、兩個子節點的貢獻 2 條，共 <span class="arithmatex">\(n_1+2n_2\)</span> 條。所以 <span class="arithmatex">\(n_0+n_1+n_2-1=n_1+2n_2\)</span>，消掉得 <span class="arithmatex">\(n_0=n_2+1\)</span>。</p>
+<p><strong>名詞</strong>：complete binary tree（完全二元樹）是除了最後一層都滿、最後一層靠左排，可以直接放進陣列（<a href="#u2-0">2.0</a> 的 heap）。full binary tree 各課本定義不同：有的指每一層都滿（高度 <span class="arithmatex">\(h\)</span> 剛好 <span class="arithmatex">\(2^h-1\)</span> 個節點），有的指每個節點都是 0 或 2 個子節點。題目沒有定義時，寫出你用的那一種。</p>
 <h4 id="bst">BST：左小右大</h4>
 <p>二元搜尋樹的規則：<strong>左子樹所有值 &lt; 節點 &lt; 右子樹所有值</strong>。所以 BST 的 inorder 走訪一定是<strong>由小到大</strong>排好的，這可以用來檢查自己畫的 BST 對不對。</p>
 <h4 id="avl">AVL：不讓樹長歪</h4>
@@ -2437,9 +2445,89 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>3 的左邊高 2、右邊高 0，不平衡；新節點在「左子樹的左邊」→ LL 情況 → 對 3 右旋。旋轉後中間值 2 變成根，<strong>inorder 仍然是 1, 2, 3</strong>，旋轉不會破壞 BST 的順序。</p>
 <p>如果插入順序是 1、3、2，新節點在「右子樹的左邊」（RL），要轉兩次，結果一樣是 2 當根、1 和 3 在兩邊。</p>
 <p><strong>旋轉到底動了什麼</strong>：右旋 <span class="arithmatex">\(z\)</span>（左子節點是 <span class="arithmatex">\(y\)</span>）時只改兩條線：<span class="arithmatex">\(y\)</span> 升上去當這棵子樹的根、<span class="arithmatex">\(z\)</span> 變成 <span class="arithmatex">\(y\)</span> 的右子節點；<span class="arithmatex">\(y\)</span> 原本的右子樹（比 <span class="arithmatex">\(y\)</span> 大、比 <span class="arithmatex">\(z\)</span> 小）改接到 <span class="arithmatex">\(z\)</span> 的左邊。三個部分的大小順序都沒變，所以 inorder 不變。左旋左右對調。</p>
+<figure class="fig">
+<svg viewBox="0 0 360 204" role="img" aria-label="右旋 z：左邊是旋轉前，z 的左子節點是 y，y 的子樹是 T1、T2，z 的右子樹是 T3。右邊是旋轉後，y 升上來當根，z 變成 y 的右子節點，原本 y 的右子樹 T2 改接到 z 的左邊。兩邊的 inorder 都是 T1 y T2 z T3。">
+<line class="ln" x1="93.1475" y1="41.7569" x2="66.8525" y2="70.2431"/>
+<line class="ln" x1="116.292" y1="40.243" x2="140" y2="60"/>
+<line class="ln" x1="45.5211" y1="94.091" x2="30" y2="112"/>
+<line class="ln" x1="66.4789" y1="94.091" x2="82" y2="112"/>
+<polygon class="box" points="30,112 9,158 51,158"/>
+<text x="30" y="143" text-anchor="middle" dominant-baseline="central" class="sm mono">T1</text>
+<polygon class="fa" points="82,112 61,158 103,158"/>
+<text x="82" y="143" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T2</text>
+<polygon class="box" points="140,60 119,106 161,106"/>
+<text x="140" y="91" text-anchor="middle" dominant-baseline="central" class="sm mono">T3</text>
+<circle class="fb" cx="104" cy="30" r="16"/>
+<text x="104" y="30" text-anchor="middle" dominant-baseline="central" class="mono">z</text>
+<circle class="fc" cx="56" cy="82" r="16"/>
+<text x="56" y="82" text-anchor="middle" dominant-baseline="central" class="mono">y</text>
+<line class="arw-a" x1="164" y1="96" x2="182.0" y2="96.0"/>
+<polygon class="ah-a" points="191.0,96.0 182.0,101.0 182.0,91.0"/>
+<text x="177" y="78" text-anchor="middle" dominant-baseline="central" class="sm ta">右旋</text>
+<line class="ln" x1="266.852" y1="41.7569" x2="293.148" y2="70.2431"/>
+<line class="ln" x1="243.708" y1="40.243" x2="220" y2="60"/>
+<line class="ln" x1="293.521" y1="94.091" x2="278" y2="112"/>
+<line class="ln" x1="314.479" y1="94.091" x2="330" y2="112"/>
+<polygon class="box" points="220,60 199,106 241,106"/>
+<text x="220" y="91" text-anchor="middle" dominant-baseline="central" class="sm mono">T1</text>
+<polygon class="fa" points="278,112 257,158 299,158"/>
+<text x="278" y="143" text-anchor="middle" dominant-baseline="central" class="sm mono ta">T2</text>
+<polygon class="box" points="330,112 309,158 351,158"/>
+<text x="330" y="143" text-anchor="middle" dominant-baseline="central" class="sm mono">T3</text>
+<circle class="fb" cx="304" cy="82" r="16"/>
+<text x="304" y="82" text-anchor="middle" dominant-baseline="central" class="mono">z</text>
+<circle class="fc" cx="256" cy="30" r="16"/>
+<text x="256" y="30" text-anchor="middle" dominant-baseline="central" class="mono">y</text>
+<text x="180" y="190" text-anchor="middle" dominant-baseline="central" class="sm">inorder 兩邊都是 T1 y T2 z T3</text>
+</svg>
+<figcaption>右旋只改兩條線：y 升上去，T2（比 y 大、比 z 小）從 y 的右邊改接到 z 的左邊</figcaption>
+</figure>
+
 <p>動畫裡節點右上角的數字是<strong>平衡因子 bf ＝ 左子樹高 − 右子樹高</strong>，變成 ±2 就要轉。把「要插入的數」改成 1,3,2 或 1,2,3 看看另外兩種情況：</p>
 <div class="viz" data-viz="avl" data-keys="3,2,1"></div>
 
+<div class="admonition key">
+<p class="admonition-title">樹的題目要做什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>三種走訪</td>
+<td>根放在前、中、後；每棵子樹遞迴套用</td>
+</tr>
+<tr>
+<td>由走訪重建</td>
+<td>preorder 第一個（postorder 最後一個）是根，在 inorder 切成左右，再照個數切另一個走訪</td>
+</tr>
+<tr>
+<td>BST 插入</td>
+<td>一路比大小往下，放在第一個空位</td>
+</tr>
+<tr>
+<td>BST 刪除</td>
+<td>葉節點直接刪；一個子節點就接上；兩個子節點用 inorder successor（或 predecessor）取代</td>
+</tr>
+<tr>
+<td>AVL 插入</td>
+<td>從新節點往上找第一個 bf ＝ ±2 的節點，看新節點在它哪一側：LL、RR、LR、RL</td>
+</tr>
+<tr>
+<td>節點數</td>
+<td><span class="arithmatex">\(n_0=n_2+1\)</span>；高度 <span class="arithmatex">\(h\)</span> 最多 <span class="arithmatex">\(2^h-1\)</span> 個節點</td>
+</tr>
+<tr>
+<td>Optimal BST</td>
+<td><span class="arithmatex">\(c(i,j)=\min_r\{c(i,r-1)+c(r+1,j)\}+w(i,j)\)</span>，從短的區間填到長的</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：traversal（走訪）、inorder successor（中序後繼：右子樹最小的）、balance factor（平衡因子）、rotation（旋轉）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -2447,7 +2535,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/@erictsai1224tw/AVL_tree">AVL Tree library</a>〉分別寫出 LL、RR、LR、RL 四種情況的旋轉程式碼。</li>
 </ul>
 </div>
-<h4 id="_13">換你試試</h4>
+<h4 id="_14">換你試試</h4>
 <p><strong>T-1.</strong> 樹：A 的左子 B、右子 C；B 的左子 D、右子 E。寫出 preorder、inorder、postorder。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2551,6 +2639,36 @@ swap(A[i + 1], A[r]);</code></pre>
 
 <div class="viz" data-viz="avl" data-base="8,3,9,2,6" data-keys="4" data-title="114 Q3(b)：插入 4（LR）"></div>
 
+<h4 id="avl-olog-n">AVL 的高度為什麼是 <span class="arithmatex">\(O(\log n)\)</span>？</h4>
+<p>問反過來：高度 <span class="arithmatex">\(h\)</span> 的 AVL tree <strong>最少</strong>有幾個節點？設為 <span class="arithmatex">\(N(h)\)</span>（只有根時高度 1）。要讓節點最少，根的兩棵子樹高度要差 1：一棵高 <span class="arithmatex">\(h-1\)</span>、一棵高 <span class="arithmatex">\(h-2\)</span>，各自也用最少的節點：</p>
+<div class="arithmatex">\[N(h)=N(h-1)+N(h-2)+1,\qquad N(1)=1,\ N(2)=2\]</div>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(h\)</span></th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(N(h)\)</span></td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>7</td>
+<td>12</td>
+<td>20</td>
+<td>33</td>
+</tr>
+</tbody>
+</table>
+<p>這跟費氏數列一樣是指數成長（<span class="arithmatex">\(N(h)=F_{h+2}-1\)</span>），所以 <span class="arithmatex">\(n\)</span> 個節點的 AVL tree 高度是 <span class="arithmatex">\(O(\log n)\)</span>，大約不超過 <span class="arithmatex">\(1.44\lg n\)</span>。搜尋、插入、刪除都是 <span class="arithmatex">\(O(\log n)\)</span>。</p>
 <h3 id="u3-4">3.4 Optimal BST（動態規劃）</h3>
 <div class="arithmatex">\[c(i,j)=\min_{i\le r\le j}\{c(i,r-1)+c(r+1,j)\}+w(i,j)\]</div>
 <p><span class="arithmatex">\(w(i,j)\)</span> 是 <span class="arithmatex">\(i..j\)</span> 的頻率總和。這樣算出的是 <span class="arithmatex">\(\sum(\text{頻率}\times\text{深度})\)</span>，根的深度算 1。</p>
@@ -2652,7 +2770,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </div>
 <h3 id="u3-expr">3.5 運算式樹：前序、中序、後序式</h3>
 <p>100、102、103、104、106、107 年都考過（六年），題型只有三種：由運算式樹寫出三種式子、中序式轉前序／後序、用 stack 算出後序式（或前序式）的值。</p>
-<h4 id="_14">運算式就是一棵樹</h4>
+<h4 id="_15">運算式就是一棵樹</h4>
 <p>運算子（＋ − × ÷）是內部節點，運算元（數字、變數）是葉子。<span class="arithmatex">\((A+B)\times C\)</span> 的樹：根是 ×，左子樹是 A＋B，右子樹是 C。</p>
 <p>對這棵樹做 <a href="#u3-0">3.0</a> 的三種走訪，就得到三種寫法：</p>
 <table>
@@ -2687,7 +2805,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>小例子 <code>2 3 4 × +</code>：push 2、3、4；讀到 ×，pop 出 4、3，算 3 × 4 ＝ 12，push；讀到 ＋，pop 出 12、2，算 2 ＋ 12 ＝ 14。</p>
 <p><strong>前序式反過來</strong>：由<strong>右往左</strong>讀，規則一樣，但<strong>先 pop 出來的是左邊的運算元</strong>。</p>
 <p>減法和除法要特別注意左右：後序式 <code>8 5 −</code> 是 8 − 5 ＝ 3，不是 5 − 8。</p>
-<h4 id="_15">中序式轉前序、後序：加括號法最快</h4>
+<h4 id="_16">中序式轉前序、後序：加括號法最快</h4>
 <ol>
 <li>照優先順序（先乘除、後加減；<strong>同優先順序由左往右</strong>）把每一個運算都加上括號。</li>
 <li>後序式：把每個運算子搬到<strong>它那組括號的右括號位置</strong>；前序式：搬到<strong>左括號位置</strong>。</li>
@@ -2822,7 +2940,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </ul>
 <p>答案 <strong>A、B、D</strong>。</p>
 </div>
-<h4 id="_16">觀念小考</h4>
+<h4 id="_17">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> 後序式 <code>5 1 2 + 4 × + 3 −</code> 的值是多少？</p>
 <ol>
@@ -2896,7 +3014,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </details>
 <h3 id="u3-huff">3.6 Huffman 編碼</h3>
 <p>101、102 年各考一題 10%：給每個符號出現的次數，畫出 Huffman 樹、寫出編碼。</p>
-<h4 id="_17">觀念：常用的字給短的編碼</h4>
+<h4 id="_18">觀念：常用的字給短的編碼</h4>
 <ul>
 <li><strong>固定長度</strong>：6 個符號要 3 位元（<span class="arithmatex">\(2^2=4&lt;6\le8=2^3\)</span>），每個字都用 3 位元。</li>
 <li><strong>變動長度</strong>：常出現的字用短編碼、少見的用長編碼，總長度就變短。摩斯電碼就是這樣：最常用的 E 只有一點。</li>
@@ -2912,7 +3030,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>用 min-heap（priority queue）挑最小的兩個，n 個符號要 <span class="arithmatex">\(O(n\log n)\)</span>。</p>
 <p><strong>為什麼先合併最小的</strong>：合併一次，等於這兩棵樹底下所有符號的編碼都<strong>多一位</strong>，多出來的總位元數就是新根的頻率。先合併最小的兩個，每次多付的代價最小。</p>
 <p><strong>驗算捷徑</strong>：總位元數 ＝ Σ（頻率 × 編碼長度）＝ <strong>每次合併產生的新頻率全部加起來</strong>。</p>
-<h4 id="_18">考試要注意的規則</h4>
+<h4 id="_19">考試要注意的規則</h4>
 <ul>
 <li>頻率相同時挑哪一個、誰放左邊，會改變<strong>樹的樣子和個別編碼</strong>，但<strong>不會改變總位元數</strong>。</li>
 <li>題目有給規則就照規則（102 Q4）；沒給就寫出自己的規則，例如「頻率小的放左邊，相同時字母小的放左邊」。</li>
@@ -3042,7 +3160,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </div>
 <div class="viz" data-viz="huffman" data-freq="A 8, B 15, C 1, D 6, E 15, F 3, G 7" data-left="lex" data-title="102 Q4：照題目的規則合併"></div>
 
-<h4 id="_19">觀念小考</h4>
+<h4 id="_20">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 下面哪一組<strong>不是</strong>前綴碼？</p>
 <ol>
@@ -3100,6 +3218,112 @@ swap(A[i + 1], A[r]);</code></pre>
 <summary>看參考答案</summary>
 <p>每合併一次，新根底下的所有符號都往下多一層，也就是編碼都多一位。多出來的位元數 ＝ 這些符號的頻率加起來 ＝ 新根的頻率。從全部是單點開始，一路合併到一棵樹，每個符號的編碼長度就是它被「往下壓」的次數，所以全部合併的新頻率加起來，就是 Σ 頻率 × 編碼長度。</p>
 </details>
+<h3 id="u3-concept">3.7 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 只知道一棵二元樹的 preorder 是 AB、postorder 是 BA，這棵樹是？</p>
+<ol>
+<li>A 的左子節點是 B</li>
+<li>沒辦法確定：B 可能是 A 的左子節點，也可能是右子節點</li>
+<li>A 的右子節點是 B</li>
+<li>B 是根</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。兩種樹的 preorder 都是 AB、postorder 都是 BA。只有 preorder ＋ postorder 時，「只有一個子節點」分不出左右；有 inorder（BA 或 AB）就能確定。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-2.</strong> 一棵二元樹有 10 個葉節點、5 個「只有一個子節點」的節點，總共有幾個節點？</p>
+<ol>
+<li>19</li>
+<li>25</li>
+<li>24</li>
+<li>20</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C. 24</strong>。<span class="arithmatex">\(n_2=n_0-1=9\)</span>，總數 <span class="arithmatex">\(n_0+n_1+n_2=10+5+9=24\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> BST 刪除一個有兩個子節點的節點，用 inorder successor 取代。inorder successor 是？</p>
+<ol>
+<li>左子樹最大的</li>
+<li>父節點</li>
+<li>右子節點本身</li>
+<li>右子樹最小的：從右子節點一直往左走到底</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。它是比被刪的節點大的數裡最小的，放上來之後左小右大還是成立。它一定沒有左子節點，所以從原本的位置拿走很簡單（最多接上它的右子節點）。A 是 predecessor。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-4.</strong> 依序插入 10、20、30、25、28 到空的 AVL tree，插入 28 時要做哪一種旋轉？</p>
+<ol>
+<li>LR：先對 25 左旋，再對 30 右旋</li>
+<li>LL：對 30 右旋</li>
+<li>RR：對 20 左旋</li>
+<li>RL：先對 25 右旋，再對 30 左旋</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。插入 30 時已經對 10 左旋（RR），樹變成 20（左 10、右 30）。25 放在 30 的左邊，28 放在 25 的右邊。往上找第一個不平衡的是 30（左高 2、右高 0），新節點在它<strong>左</strong>子樹的<strong>右</strong>邊 → LR。轉完 28 當這棵子樹的根，左 25、右 30。我用程式跑過，結果一樣。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> 高度 4 的 AVL tree（只有根時高度 1）最少有幾個節點？</p>
+<ol>
+<li>4</li>
+<li>7</li>
+<li>8</li>
+<li>15</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. 7</strong>。<span class="arithmatex">\(N(h)=N(h-1)+N(h-2)+1\)</span>：<span class="arithmatex">\(N(1)=1\)</span>、<span class="arithmatex">\(N(2)=2\)</span>、<span class="arithmatex">\(N(3)=4\)</span>、<span class="arithmatex">\(N(4)=7\)</span>。D 是高度 4 最多的節點數 <span class="arithmatex">\(2^4-1\)</span>。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> inorder 是 D B G E A C F、postorder 是 D G E B F C A，畫出這棵樹，寫出 preorder。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ol>
+<li>postorder 最後的 <strong>A</strong> 是根。inorder <code>D B G E | A | C F</code>：左子樹 4 個、右子樹 2 個。</li>
+<li>postorder 照個數切：左子樹 D G E B、右子樹 F C。</li>
+<li>左子樹：postorder 最後的 <strong>B</strong> 是根；inorder <code>D | B | G E</code> → 左 D、右邊是 G E。G E 的 postorder 是 G E，根 <strong>E</strong>，inorder <code>G E</code> → G 是 E 的左子節點。</li>
+<li>右子樹：postorder F C，根 <strong>C</strong>；inorder <code>C F</code> → F 是 C 的右子節點。</li>
+</ol>
+<pre class="highlight"><code class="language-text">      A
+    /   \
+   B     C
+  / \     \
+ D   E     F
+    /
+   G</code></pre>
+<p>preorder（根左右）：<strong>A B D E G C F</strong>。</p>
+</details>
+<p><strong>W-2.</strong> 依序插入 50、30、70、20、40、60、80、35、45 到空的 BST，再刪除 30（用 inorder successor），畫出刪除前後的樹。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>刪除前</strong>：</p>
+<pre class="highlight"><code class="language-text">        50
+      /    \
+    30      70
+   /  \    /  \
+  20  40  60  80
+     /  \
+    35  45</code></pre>
+<p><strong>刪除 30</strong>：有兩個子節點，inorder successor 是右子樹（40 那棵）最小的 <strong>35</strong>。35 搬到 30 的位置；35 原本是葉節點，直接拿掉。</p>
+<pre class="highlight"><code class="language-text">        50
+      /    \
+    35      70
+   /  \    /  \
+  20  40  60  80
+        \
+        45</code></pre>
+<p>檢查：inorder 是 20 35 40 45 50 60 70 80，由小到大 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
+</details>
 <h3 id="u3-quiz">單元 3 小考</h3>
 <p><strong>3-1.</strong> preorder ABDECF、inorder DBEAFC，postorder 是什麼？</p>
 <details class="quiz">
@@ -3130,7 +3354,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <section class="unit" data-unit="u4">
 <h2 id="u4">單元 4：雜湊</h2>
 <h3 id="u4-0">4.0 觀念課：依學號尾數分配置物櫃</h3>
-<h4 id="_20">雜湊的想法</h4>
+<h4 id="_21">雜湊的想法</h4>
 <p>有 5 個置物櫃（編號 0–4），每個學號放到「學號 mod 5」那一格。要找人時直接算出櫃子號碼，不用一個個翻，平均 <span class="arithmatex">\(O(1)\)</span>。</p>
 <p><strong>碰撞（collision）</strong>：兩個學號算出同一格，例如 7 和 12 都是 mod 5 ＝ 2。</p>
 <h4 id="linear-probing">linear probing：被佔了就往下一格</h4>
@@ -3178,7 +3402,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/en/hashtable">VisuAlgo Hash Table</a>：linear probing、quadratic probing、double hashing 都能自己輸入 key 看探測路線，可以直接拿 115 Q7 的數字試。</li>
 </ul>
 </div>
-<h4 id="_21">換你試試</h4>
+<h4 id="_22">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7，各放在哪裡？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3319,7 +3543,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>第二層：第 j 格有 <span class="arithmatex">\(n_j\)</span> 個 key，就給它一個大小 <span class="arithmatex">\(n_j^2\)</span> 的小表，再挑一個雜湊函數讓這 <span class="arithmatex">\(n_j\)</span> 個 key <strong>完全不碰撞</strong>（下面 105 Q5 證明隨機挑成功的機率至少一半，試幾次就成功）。</li>
 </ol>
 <p>總空間期望值仍然是 <span class="arithmatex">\(O(n)\)</span>，每次搜尋只算兩次雜湊。</p>
-<h4 id="_22">用在認證的雜湊函數</h4>
+<h4 id="_23">用在認證的雜湊函數</h4>
 <p>密碼學用的雜湊函數（例如 SHA-256）把任意長的訊息壓成固定長度的摘要，還要滿足：</p>
 <ul>
 <li><strong>單向（one-way）</strong>：知道 <span class="arithmatex">\(h(m)\)</span>，很難找出 m。</li>
@@ -3346,7 +3570,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>perfect hashing</strong>：key 集合固定時，兩層雜湊，第二層用大小 <span class="arithmatex">\(n_j^2\)</span> 的表讓每一格裡完全沒有碰撞，最壞情況 <span class="arithmatex">\(O(1)\)</span> 搜尋、空間 <span class="arithmatex">\(O(n)\)</span>。</li>
 </ol>
 </div>
-<h4 id="_23">觀念小考</h4>
+<h4 id="_24">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 用 chaining，m ＝ 100 格放 n ＝ 300 個 key，在 simple uniform hashing 下，失敗的搜尋平均要走多長的串列？</p>
 <ol>
@@ -3492,7 +3716,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：圖</h2>
 <h3 id="u5-0">5.0 觀念課：用最少的電線連起所有城市</h3>
-<h4 id="_24">圖怎麼存</h4>
+<h4 id="_25">圖怎麼存</h4>
 <p>三個點 A、B、C，邊 A–B（權重 1）、B–C（權重 2）、A–C（權重 3）：</p>
 <p><strong>鄰接矩陣</strong>（<span class="arithmatex">\(V\times V\)</span> 的表，適合邊很多的圖）：</p>
 <table>
@@ -3546,7 +3770,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/zh/mst">VisuAlgo 最小生成樹（中文）</a>：Kruskal 和 Prim 一步一步加邊，還有 Kruskal 為什麼正確的說明；<a href="https://visualgo.net/en/sssp">VisuAlgo 最短路徑</a>：Dijkstra 的過程。</li>
 </ul>
 </div>
-<h4 id="_25">換你試試</h4>
+<h4 id="_26">換你試試</h4>
 <p>圖：A–B 4、A–C 1、B–C 2、B–D 5、C–D 8。</p>
 <p><strong>T-1.</strong> 從 A 開始用 Prim，依序加入哪些邊？總權重？</p>
 <details class="quiz">
@@ -3723,7 +3947,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>DFS（depth-first search，深度優先）</strong>：一直往下走，走到沒有路才退回上一個岔路換別條，像走迷宮。用 <strong>stack</strong>（或遞迴）。</li>
 </ul>
 <p>BFS 一層一層往外，所以第幾層就是「離起點幾條邊」，<strong>無權重的圖可以用 BFS 找最短路徑</strong>。DFS 走的路不一定是最短的。</p>
-<h4 id="_26">手算規則（照字母順序）</h4>
+<h4 id="_27">手算規則（照字母順序）</h4>
 <p><strong>BFS</strong>：</p>
 <ol>
 <li>起點標成「發現了」，放進 queue。</li>
@@ -3995,7 +4219,7 @@ swap(A[i + 1], A[r]);</code></pre>
    b   g      n      a</code></pre>
 <p>驗算：一層一層讀是 i｜c e o｜d l m f h j｜b g n a <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>；preorder 是 i c d b g l e m n o f h a j <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。用程式試過所有可能的樹，只有這一棵兩個序列都對得上。</p>
 </div>
-<h4 id="_27">觀念小考</h4>
+<h4 id="_28">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> BFS 用哪一種資料結構，記住接下來要拜訪的點？</p>
 <ol>
@@ -4129,7 +4353,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>先看直接遞迴的呼叫樹（橘色是「之前算過、又重算一次」的），再把寫法切換成「算過就記在表裡」比較：</p>
 <div class="viz" data-viz="calltree" data-n="5"></div>
 
-<h4 id="_28">寫遞迴式的四步</h4>
+<h4 id="_29">寫遞迴式的四步</h4>
 <ol>
 <li><strong>定義狀態</strong>：用一句話說清楚 <span class="arithmatex">\(g(i,j)\)</span> 是什麼，例如「只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊出 <span class="arithmatex">\(j\)</span> 元的方法數」。</li>
 <li><strong>看最後一步（或第一步）分類</strong>：「有沒有用到第 <span class="arithmatex">\(i\)</span> 種硬幣」。</li>
@@ -4181,7 +4405,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10221988">談硬幣問題的文章</a>（面額 1、2、5 湊 11 元）。注意它算的是「最少幾枚硬幣」，這節和 112 Q4 算的是「有幾種組合」，遞迴式不一樣，可以兩個對照著看。</li>
 </ul>
 </div>
-<h4 id="_29">換你試試</h4>
+<h4 id="_30">換你試試</h4>
 <p><strong>T-1.</strong> 用 1、2、3 元湊 4 元（不計順序），有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -4499,7 +4723,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>節點裡的 key 由小到大排好，孩子夾在 key 之間（左邊的都比較小、右邊的都比較大）。</li>
 <li><strong>所有葉子在同一層</strong>。</li>
 </ul>
-<h4 id="_30">插入：滿了就從中間切開</h4>
+<h4 id="_31">插入：滿了就從中間切開</h4>
 <p>CLRS 的做法是<strong>往下走的時候，遇到滿的節點（<span class="arithmatex">\(2t-1\)</span> 個 key）就先切開</strong>：中間那個 key 往上搬到父親，左右各剩 <span class="arithmatex">\(t-1\)</span> 個。這樣插到葉子時一定有空位，也不用再往回調整。根滿了切開時，樹就長高一層。</p>
 <div class="admonition example">
 <p class="admonition-title">101 Q9（10%）：minimum degree t ＝ 3 的 B-tree，依序插入 B、Q、L、F</p>
@@ -4543,7 +4767,7 @@ swap(A[i + 1], A[r]);</code></pre>
     `-- [Y Z]</code></pre>
 <p>用程式照 CLRS 的插入演算法跑過一遍，四步的結果都一樣。</p>
 </div>
-<h4 id="_31">高度上界</h4>
+<h4 id="_32">高度上界</h4>
 <div class="admonition example">
 <p class="admonition-title">107 Q6(1)（8%）：n 個 key、minimum degree t 的 B-tree，高度最多多少？證明</p>
 <p><strong>答案</strong>：<span class="arithmatex">\(h\le\log_t\frac{n+1}2\)</span>。</p>
@@ -4555,7 +4779,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p class="admonition-title">104 Q4(3)（5%）：B-tree 為什麼能減少讀磁碟的成本？</p>
 <p>讀磁碟的時間主要花在 seek 和 rotational latency（<a href="os.html#u5-0">OS 5.0</a>），一次讀一整個區塊（page），讀幾個 byte 和讀一整頁差不多慢。B-tree 的一個節點就是一頁，放很多 key，所以<strong>分支數很大、樹很矮</strong>（<span class="arithmatex">\(\log_tn\)</span>），找一個 key 只要讀很少頁。讀進記憶體之後，在節點裡找 key 很快。</p>
 </div>
-<h4 id="_32">三種變形</h4>
+<h4 id="_33">三種變形</h4>
 <div class="admonition example">
 <p class="admonition-title">105 Q7(3)（3%）、107 Q6(2)（2%）：B⁺-tree、B*-tree、2-3-4 tree</p>
 <ul>
@@ -4801,7 +5025,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>一直轉到父親的 priority 比它小，或它變成根。</li>
 </ol>
 <p><strong>旋轉不會破壞 BST 的順序</strong>：右旋時，x 是 y 的左孩子，x 轉上去、y 變成 x 的右孩子，原本 x 的右子樹（比 x 大、比 y 小）改掛到 y 的左邊。中序走訪的順序完全不變。</p>
-<h4 id="_33">刪除：把它轉到下面再拿掉</h4>
+<h4 id="_34">刪除：把它轉到下面再拿掉</h4>
 <p>要刪的節點有兩個孩子時，跟 <strong>priority 比較小的那個孩子</strong>旋轉（讓那個孩子上來當父親，heap 規則才會對），一直轉到它只剩一個孩子或沒有孩子，再直接拿掉。</p>
 <div class="admonition example">
 <p class="admonition-title">103 Q8（10%）：(1) 在下面的 treap 插入 (D:9) (2) 接著插入 (F:2)</p>
@@ -4888,7 +5112,7 @@ swap(A[i + 1], A[r]);</code></pre>
             `-- L I:73</code></pre>
 <p><strong>檢查</strong>：中序走訪 A、B、C、D、E、F、G、H、I、K 是照字母順序（BST）；每個節點的 priority 都比孩子小（heap）。我用程式照同樣的步驟插入，也用很多種不同的插入順序建同一組節點，得到的都是這棵樹（形狀唯一）。</p>
 </div>
-<h4 id="_34">觀念小考</h4>
+<h4 id="_35">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 用 min-heap 規則的 treap，根是哪一個節點？</p>
 <ol>
