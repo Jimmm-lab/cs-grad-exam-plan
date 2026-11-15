@@ -2358,6 +2358,34 @@ $\gcd(48,18)$：
 | $18=1\times12+6$ | $=\gcd(12,6)$ |
 | $12=2\times6+0$ | $=6$ |
 
+**用圖看**：$48\times18$ 的長方形一直切掉最大的正方形，就是在做「大的除以小的」。切掉幾個正方形就是商，剩下的那條就是餘數：
+
+<figure class="fig">
+<svg viewBox="0 0 360 150" role="img" aria-label="48 × 18 的長方形先切掉兩個 18 × 18 的正方形，剩下 12 × 18；再切掉一個 12 × 12，剩下 12 × 6；最後兩個 6 × 6 剛好鋪滿。最後的正方形邊長 6 就是 gcd(48, 18)。">
+<rect class="fb" x="36" y="30" width="108" height="108"/>
+<text x="90" y="84" text-anchor="middle" dominant-baseline="central" class="tb">18 × 18</text>
+<rect class="fb" x="144" y="30" width="108" height="108"/>
+<text x="198" y="84" text-anchor="middle" dominant-baseline="central" class="tb">18 × 18</text>
+<rect class="fc" x="252" y="30" width="72" height="72"/>
+<text x="288" y="66" text-anchor="middle" dominant-baseline="central" class="tc">12 × 12</text>
+<rect class="fa" x="252" y="102" width="36" height="36"/>
+<text x="270" y="120" text-anchor="middle" dominant-baseline="central" class="ta">6</text>
+<rect class="fa" x="288" y="102" width="36" height="36"/>
+<text x="306" y="120" text-anchor="middle" dominant-baseline="central" class="ta">6</text>
+<line class="arw" x1="36" y1="14" x2="324" y2="14"/>
+<line class="arw" x1="36" y1="9" x2="36" y2="19"/>
+<line class="arw" x1="324" y1="9" x2="324" y2="19"/>
+<rect x="165" y="5" width="30" height="18" style="fill:var(--card)"/>
+<text x="180" y="14" text-anchor="middle" dominant-baseline="central" class="sm mono">48</text>
+<line class="arw" x1="20" y1="30" x2="20" y2="138"/>
+<line class="arw" x1="15" y1="30" x2="25" y2="30"/>
+<line class="arw" x1="15" y1="138" x2="25" y2="138"/>
+<rect x="10" y="75" width="20" height="18" style="fill:var(--card)"/>
+<text x="20" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono">18</text>
+</svg>
+<figcaption>切掉 2 個 18 × 18（48 ＝ 2 × 18 ＋ 12）、1 個 12 × 12（18 ＝ 1 × 12 ＋ 6），最後 2 個 6 × 6 剛好鋪滿：gcd ＝ 6</figcaption>
+</figure>
+
 #### 往回代：求模反元素
 
 求 $7^{-1}\bmod10$，也就是找 $x$ 使 $7x\equiv1\pmod{10}$。
@@ -2377,7 +2405,57 @@ $a\equiv b\pmod n$ 就是「$a$ 和 $b$ 除以 $n$ 餘數一樣」，像時鐘�
 
 **次方會循環**：3 的次方 mod 7 依序是 3、2、6、4、5、1，然後重複。週期 6 剛好是 $7-1$，這就是 Fermat 小定理：$p$ 是質數、$p\nmid a$ 時，$a^{p-1}\equiv1\pmod p$。
 
+<figure class="fig">
+<svg viewBox="0 0 360 236" role="img" aria-label="1 到 6 排成一圈，每乘一次 3 再 mod 7 就走到下一格：1、3、2、6、4、5，第 6 步回到 1。所以 3 的次方 mod 7 每 6 個循環一次，3 的 6 次方 ≡ 1。">
+<path class="arw" d="M198.187,44.5 Q223.373,42.8756 230.3,57.8"/>
+<polygon class="ah" points="233.7,65.0 226.2,59.7 234.4,55.8"/>
+<path class="arw" d="M252.746,97 Q266.746,118 257.3,131.4"/>
+<polygon class="ah" points="252.7,138.0 253.6,128.9 261.0,134.0"/>
+<path class="arw" d="M234.56,170.5 Q223.373,193.124 207.0,191.7"/>
+<polygon class="ah" points="199.1,191.0 207.4,187.2 206.6,196.2"/>
+<path class="arw" d="M161.813,191.5 Q136.627,193.124 129.7,178.2"/>
+<polygon class="ah" points="126.3,171.0 133.8,176.3 125.6,180.2"/>
+<path class="arw" d="M107.254,139 Q93.2539,118 102.7,104.6"/>
+<polygon class="ah" points="107.3,98.0 106.4,107.1 99.0,102.0"/>
+<path class="arw-a" d="M125.44,65.5 Q136.627,42.8756 153.0,44.3"/>
+<polygon class="ah-a" points="160.9,45.0 152.6,48.8 153.4,39.8"/>
+<circle class="fc" cx="180" cy="34" r="19"/>
+<text x="180" y="34" text-anchor="middle" dominant-baseline="central" class="mono">1</text>
+<text x="180" y="2" text-anchor="middle" dominant-baseline="central" class="sm">3<tspan font-size="10" dy="-6">0</tspan><tspan dy="6">、3</tspan><tspan font-size="10" dy="-6">6</tspan></text>
+<circle class="box" cx="252.746" cy="76" r="19"/>
+<text x="252.746" y="76" text-anchor="middle" dominant-baseline="central" class="mono">3</text>
+<text x="285.655" y="60" text-anchor="middle" dominant-baseline="central" class="sm">3<tspan font-size="10" dy="-6">1</tspan></text>
+<circle class="box" cx="252.746" cy="160" r="19"/>
+<text x="252.746" y="160" text-anchor="middle" dominant-baseline="central" class="mono">2</text>
+<text x="285.655" y="176" text-anchor="middle" dominant-baseline="central" class="sm">3<tspan font-size="10" dy="-6">2</tspan></text>
+<circle class="box" cx="180" cy="202" r="19"/>
+<text x="180" y="202" text-anchor="middle" dominant-baseline="central" class="mono">6</text>
+<text x="180" y="234" text-anchor="middle" dominant-baseline="central" class="sm">3<tspan font-size="10" dy="-6">3</tspan></text>
+<circle class="box" cx="107.254" cy="160" r="19"/>
+<text x="107.254" y="160" text-anchor="middle" dominant-baseline="central" class="mono">4</text>
+<text x="74.3449" y="176" text-anchor="middle" dominant-baseline="central" class="sm">3<tspan font-size="10" dy="-6">4</tspan></text>
+<circle class="box" cx="107.254" cy="76" r="19"/>
+<text x="107.254" y="76" text-anchor="middle" dominant-baseline="central" class="mono">5</text>
+<text x="74.3449" y="60" text-anchor="middle" dominant-baseline="central" class="sm">3<tspan font-size="10" dy="-6">5</tspan></text>
+<text x="180" y="110" text-anchor="middle" dominant-baseline="central" class="ta">× 3</text>
+<text x="180" y="130" text-anchor="middle" dominant-baseline="central" class="sm mono">mod 7</text>
+</svg>
+<figcaption>每乘一次 3（再 mod 7）就往下走一格，走 6 步回到 1</figcaption>
+</figure>
+
 所以 $3^{100}\bmod7$：$100=6\times16+4$，$3^{100}\equiv3^4\equiv4$。
+
+!!! key "數論題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | 證明兩個式子互質 | 交叉乘係數消掉 $n$，湊出線性組合 ＝ 1 |
+    | gcd | 歐幾里得：大的 mod 小的，一直做到餘數 0 |
+    | 模反元素 $a^{-1}\bmod n$ | 擴展歐幾里得：往回代或往下填表；$\gcd(a,n)=1$ 才有 |
+    | 大次方 mod $p$ | 找循環（或用 Fermat：$a^{p-1}\equiv1$），指數 mod 週期 |
+    | 最小的 $x$ 使 $a^x\equiv1$ | 答案一定整除 $p-1$，只要試它的因數 |
+    | 解 $ax\equiv b\pmod n$ | $d=\gcd(a,n)$；$d\nmid b$ 無解，否則除以 $d$ 再乘反元素（[5.3](#u5-3)） |
+
+    名詞對照：gcd（最大公因數）、linear combination（線性組合）、modular inverse（模反元素）、congruence（同餘）、order（階：最小的 $x$ 使 $a^x\equiv1$）。
 
 !!! read "還不懂？看別人怎麼講"
     - **中文簡報**：成大 ACM [第 14 週數論簡報](https://hackmd.io/@nckuacm/rJhRPee2U)（同餘、gcd、擴展歐幾里得）。它用**往前填表**的方式求 $ax+by=\gcd$（以 786 和 186 為例），跟這節「往回代」是同一件事的另一種寫法，兩種挑一種順手的練熟。
@@ -2441,6 +2519,20 @@ $\gcd(a,b)=\gcd(b,a\bmod b)$，一直做到餘數為 0。
     往回代：$1=9-8=9-(17-9)=2\cdot9-17=2(43-2\cdot17)-17=2\cdot43-5\cdot17$。
     所以 $17^{-1}\equiv-5\equiv38\pmod{43}$。驗算 $17\times38=646=15\times43+1$ ✓。
 
+#### 不想往回代：往下填表
+
+每一列都寫成 $r=43x+17y$。前兩列是 43（$x=1$、$y=0$）和 17（$x=0$、$y=1$）；之後每一列 ＝ **上上列 − 商 × 上一列**，商 $q$ 是上上列的 $r$ 除以上一列的 $r$：
+
+| $r$ | 商 $q$ | $x$ | $y$ |
+|---|---|---|---|
+| 43 | | 1 | 0 |
+| 17 | | 0 | 1 |
+| 9 | 2 | 1 | −2 |
+| 8 | 1 | −1 | 3 |
+| 1 | 1 | 2 | −5 |
+
+$r=1$ 那一列：$1=43\times2+17\times(-5)$，所以 $17^{-1}\equiv-5\equiv38$，跟往回代一樣。每一列都能驗算，例如 $43\times(-1)+17\times3=8$ ✓，算錯馬上看得出來。
+
 ### 5.3 質數與同餘 {#u5-3}
 
 !!! example "113 Q3（10%）：證明質數有無限多個"
@@ -2454,6 +2546,136 @@ $\gcd(a,b)=\gcd(b,a\bmod b)$，一直做到餘數為 0。
     **為什麼一定整除 12**：設最小的是 $x$，把 12 寫成 $12=qx+r$（$0\le r<x$）。$2^{12}=(2^x)^q\cdot2^r\equiv2^r$，又 $2^{12}\equiv1$，所以 $2^r\equiv1$。$r$ 比 $x$ 小，又不能違反「$x$ 最小」，只能 $r=0$。
 
     $2^1=2$、$2^2=4$、$2^3=8$、$2^4=16\equiv3$、$2^6=64\equiv12$，都不是 1。**答案 12。**
+
+#### 解一次同餘 $ax\equiv b\pmod n$
+
+1. 算 $d=\gcd(a,n)$。
+2. $d\nmid b$：**無解**。
+3. $d=1$：$x\equiv a^{-1}b\pmod n$，只有一個解。例：$7x\equiv4\pmod{10}$，$7^{-1}\equiv3$，$x\equiv3\times4=12\equiv2$。驗算 $7\times2=14\equiv4$ ✓。
+4. $d>1$ 且 $d\mid b$：全部除以 $d$ 再解，mod $n$ 會有 $d$ 個解。例：$6x\equiv4\pmod{10}$，$d=2$；除以 2 得 $3x\equiv2\pmod5$，$3^{-1}\equiv2$，$x\equiv4\pmod5$；回到 mod 10 是 **4 和 9** 兩個解（$6\times4=24$、$6\times9=54$，都 $\equiv4$）。
+
+**為什麼 $d\nmid b$ 就無解**：$ax\equiv b$ 表示 $ax-b=kn$，也就是 $b=ax-kn$ 是 $a,n$ 的線性組合，一定是 $d$ 的倍數（[5.0](#u5-0) 的關鍵事實）。
+
+#### 中國剩餘定理（延伸）
+
+《孫子算經》：「今有物不知其數，三三數之剩二，五五數之剩三，七七數之剩二，問物幾何？」也就是
+
+$$x\equiv2\pmod3,\quad x\equiv3\pmod5,\quad x\equiv2\pmod7$$
+
+模數兩兩互質時，mod $M=3\times5\times7=105$ 剛好一個解。**做法**：每個條件做一項，讓它只在自己的模數下有作用，在其他模數下都是 0：
+
+| 條件 | $M_i=M/m_i$ | $M_i$ 在 mod $m_i$ 的反元素 | 這一項 |
+|---|---|---|---|
+| mod 3 餘 2 | 35 | $35\equiv2$，$2^{-1}\equiv2$ | $2\times35\times2=140$ |
+| mod 5 餘 3 | 21 | $21\equiv1$，反元素 1 | $3\times21\times1=63$ |
+| mod 7 餘 2 | 15 | $15\equiv1$，反元素 1 | $2\times15\times1=30$ |
+
+加起來 $233\equiv233-210=$ **23**（mod 105）。驗算：23 除以 3 餘 2、除以 5 餘 3、除以 7 餘 2 ✓。
+
+**為什麼這樣湊**：35 是 5 和 7 的倍數，所以 140 在 mod 5、mod 7 下都是 0，不會干擾另外兩個條件；乘上 35 的反元素讓它在 mod 3 下變成 1，再乘 2 就是餘 2。
+
+### 5.4 觀念小考 {#u5-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** 要證明 $4n+3$ 和 $3n+2$ 互質，應該湊出哪一個式子？
+
+1. $(4n+3)+(3n+2)=7n+5$
+2. $(4n+3)(3n+2)$
+3. $3(4n+3)-4(3n+2)=1$
+4. $(4n+3)-(3n+2)=n+1$
+
+??? quiz "看解析"
+    **C**。交叉乘 $n$ 的係數，把 $n$ 消掉：$12n+9-12n-8=1$。兩個數的任何公因數都整除這個線性組合，也就是整除 1，所以 gcd 是 1。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-2.** $7^{-1}\bmod26$ 是多少？
+
+1. 4
+2. 15
+3. 19
+4. 不存在
+
+??? quiz "看解析"
+    **B. 15**。$26=3\cdot7+5$、$7=1\cdot5+2$、$5=2\cdot2+1$；往回代：$1=5-2\cdot2=3\cdot5-2\cdot7=3\cdot26-11\cdot7$，所以 $7^{-1}\equiv-11\equiv15$。驗算 $7\times15=105=4\times26+1$ ✓。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** 下面哪一個數在 mod 12 下**沒有**反元素？
+
+1. 5
+2. 7
+3. 11
+4. 9
+
+??? quiz "看解析"
+    **D**。$\gcd(9,12)=3\ne1$，$9x$ 一定是 3 的倍數，不可能 $\equiv1$。其他三個都跟 12 互質，而且剛好都是自己的反元素：$25$、$49$、$121$ 除以 12 都餘 1。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-4.** $5^{2027}\bmod7$ 是多少？
+
+1. 3
+2. 5
+3. 6
+4. 1
+
+??? quiz "看解析"
+    **A. 3**。5 的次方 mod 7：5、4、6、2、3、1，週期 6（Fermat：$5^6\equiv1$）。$2027=6\times337+5$，所以 $5^{2027}\equiv5^5\equiv3$。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** $6x\equiv4\pmod{10}$ 在 mod 10 下有幾個解？
+
+1. 0
+2. 2
+3. 1
+4. 10
+
+??? quiz "看解析"
+    **B**。$d=\gcd(6,10)=2$，而且 $2\mid4$，所以有 2 個解：4 和 9。如果右邊是 5（$2\nmid5$），就是 A，無解。
+
+</div>
+
+**W-1.** 用擴展歐幾里得求 $11^{-1}\bmod30$，並驗算。
+
+??? quiz "看參考答案"
+    **往下填表**（每一列 $r=30x+11y$，新的一列 ＝ 上上列 − 商 × 上一列）：
+
+    | $r$ | 商 $q$ | $x$ | $y$ |
+    |---|---|---|---|
+    | 30 | | 1 | 0 |
+    | 11 | | 0 | 1 |
+    | 8 | 2 | 1 | −2 |
+    | 3 | 1 | −1 | 3 |
+    | 2 | 2 | 3 | −8 |
+    | 1 | 1 | −4 | 11 |
+
+    $1=30\times(-4)+11\times11$，所以 $11^{-1}\equiv$ **11**（mod 30）。驗算：$11\times11=121=4\times30+1$ ✓。
+
+**W-2.** 一盒蛋，4 個 4 個數剩 1 個、3 個 3 個數剩 2 個、5 個 5 個數剩 3 個。最少有幾個蛋？
+
+??? quiz "看參考答案"
+    $x\equiv1\pmod4$、$x\equiv2\pmod3$、$x\equiv3\pmod5$，$M=60$：
+
+    | 條件 | $M_i$ | $M_i$ 的反元素 | 這一項 |
+    |---|---|---|---|
+    | mod 4 餘 1 | 15 | $15\equiv3$，$3^{-1}\equiv3$ | $1\times15\times3=45$ |
+    | mod 3 餘 2 | 20 | $20\equiv2$，$2^{-1}\equiv2$ | $2\times20\times2=80$ |
+    | mod 5 餘 3 | 12 | $12\equiv2$，$2^{-1}\equiv3$ | $3\times12\times3=108$ |
+
+    加起來 $233\equiv233-180=$ **53**（mod 60），最少 53 個。驗算：$53=13\times4+1=17\times3+2=10\times5+3$ ✓。
 
 ### 單元 5 小考 {#u5-quiz}
 
