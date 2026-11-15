@@ -2563,12 +2563,66 @@ signal(empty);</code></pre>
 <p>把程式的位址空間切成一樣大的 <strong>page</strong>，實體記憶體切成一樣大的 <strong>frame</strong>。任何 page 可以放進任何 frame，用 page table 記錄對應。好處是不會有「中間有空隙但塞不下」的外部碎片。</p>
 <h4 id="page-fault">page fault 時發生什麼事</h4>
 <ol>
-<li>程式存取一個 page，page table 標示它不在記憶體（valid ＝ 0）。</li>
+<li>程式存取一個 page，查 page table，發現它不在記憶體（valid ＝ 0）。</li>
 <li>硬體產生 trap，交給作業系統。</li>
-<li>作業系統找一個空的 frame；<strong>沒有空的就挑一個 page 踢出去</strong>（如果它被改過，dirty bit ＝ 1，要先寫回磁碟）。</li>
-<li>從磁碟把需要的 page 讀進來，更新 page table。</li>
+<li>作業系統找到這個 page 在磁碟上的位置，再找一個空的 frame；<strong>沒有空的就挑一個 page 踢出去</strong>（如果它被改過，dirty bit ＝ 1，要先寫回磁碟）。</li>
+<li>從磁碟把 page 讀進那個 frame。</li>
+<li>更新 page table：填上 frame 號碼，valid 設成 1。</li>
 <li>重新執行剛剛那條指令。</li>
 </ol>
+<p><figure class="fig">
+<svg viewBox="0 0 360 248" role="img" aria-label="page fault 的六個步驟：1 程式執行 load M，查 page table；2 valid 是 0，產生 trap 給作業系統；3 作業系統找到這個 page 在磁碟上的位置；4 把它讀進一個空的 frame；5 更新 page table，填上 frame 號碼、valid 設成 1；6 重新執行 load M。">
+<text x="56" y="28" text-anchor="middle" dominant-baseline="central" class="sm">程式</text>
+<rect class="box" x="8" y="40" width="96" height="44" rx="6"/>
+<text x="56" y="62" text-anchor="middle" dominant-baseline="central" class="mono">load M</text>
+<text x="180" y="28" text-anchor="middle" dominant-baseline="central" class="sm mono">page table</text>
+<rect class="box" x="132" y="40" width="64" height="44"/>
+<rect class="fa" x="196" y="40" width="32" height="44"/>
+<text x="164" y="62" text-anchor="middle" dominant-baseline="central" class="sm mono">frame ?</text>
+<text x="212" y="62" text-anchor="middle" dominant-baseline="central" class="mono ta">0</text>
+<text x="304" y="28" text-anchor="middle" dominant-baseline="central" class="sm">作業系統</text>
+<rect class="fb" x="256" y="40" width="96" height="44" rx="6"/>
+<text x="304" y="62" text-anchor="middle" dominant-baseline="central" class="mono tb">trap</text>
+<rect class="box" x="256" y="176" width="96" height="48" rx="6"/>
+<text x="304" y="192" text-anchor="middle" dominant-baseline="central" class="sm">磁碟</text>
+<rect class="fc" x="282" y="202" width="44" height="16" rx="3"/>
+<text x="304" y="210" text-anchor="middle" dominant-baseline="central" class="sm mono tc">M</text>
+<rect class="box" x="132" y="128" width="96" height="24"/>
+<text x="180" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono ">…</text>
+<rect class="box" x="132" y="152" width="96" height="24"/>
+<text x="180" y="164" text-anchor="middle" dominant-baseline="central" class="sm mono ">…</text>
+<rect class="fc" x="132" y="176" width="96" height="24"/>
+<text x="180" y="188" text-anchor="middle" dominant-baseline="central" class="sm mono tc">M</text>
+<rect class="box" x="132" y="200" width="96" height="24"/>
+<text x="180" y="212" text-anchor="middle" dominant-baseline="central" class="sm mono ">…</text>
+<text x="124" y="176" text-anchor="end" dominant-baseline="central" class="sm">實體記憶體</text>
+<line class="arw" x1="104" y1="62" x2="122.0" y2="62.0"/>
+<polygon class="ah" points="131.0,62.0 122.0,67.0 122.0,57.0"/>
+<circle class="fa" cx="118" cy="46" r="9"/>
+<text x="118" y="46" text-anchor="middle" dominant-baseline="central" class="sm mono ta">1</text>
+<line class="arw" x1="228" y1="62" x2="246.0" y2="62.0"/>
+<polygon class="ah" points="255.0,62.0 246.0,67.0 246.0,57.0"/>
+<circle class="fa" cx="242" cy="46" r="9"/>
+<text x="242" y="46" text-anchor="middle" dominant-baseline="central" class="sm mono ta">2</text>
+<line class="arw" x1="304" y1="84" x2="304.0" y2="166.0"/>
+<polygon class="ah" points="304.0,175.0 299.0,166.0 309.0,166.0"/>
+<circle class="fa" cx="318" cy="128" r="9"/>
+<text x="318" y="128" text-anchor="middle" dominant-baseline="central" class="sm mono ta">3</text>
+<line class="arw-a" x1="256" y1="200" x2="237.2" y2="191.7"/>
+<polygon class="ah-a" points="229.0,188.0 239.3,187.1 235.2,196.2"/>
+<circle class="fa" cx="242" cy="178" r="9"/>
+<text x="242" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono ta">4</text>
+<line class="arw" x1="180" y1="128" x2="180.0" y2="94.0"/>
+<polygon class="ah" points="180.0,85.0 185.0,94.0 175.0,94.0"/>
+<circle class="fa" cx="194" cy="106" r="9"/>
+<text x="194" y="106" text-anchor="middle" dominant-baseline="central" class="sm mono ta">5</text>
+<path class="arw" d="M150,85 Q100,128 64.3,91.4"/>
+<polygon class="ah" points="58.0,85.0 67.9,87.9 60.7,94.9"/>
+<circle class="fa" cx="100" cy="120" r="9"/>
+<text x="100" y="120" text-anchor="middle" dominant-baseline="central" class="sm mono ta">6</text>
+</svg></p>
+<figcaption>圖上的編號就是上面的六個步驟；③ 到 ④ 要讀磁碟，是最花時間的部分</figcaption>
+</figure>
 <p>只在用到時才載入 page，叫 <strong>demand paging</strong>。</p>
 <h4 id="_20">踢誰出去：三種策略</h4>
 <p>3 個 frame，存取順序 7, 0, 1, 2, 0, 3, 0, 4：</p>
@@ -2692,7 +2746,8 @@ signal(empty);</code></pre>
 </table>
 <p>OPT 的過程（看<strong>未來</strong>誰最晚才用到）：存取 2 時，未來是 0, 3, 0, 4，7 再也不會用到 → 踢 7；存取 3 時，1 和 2 之後都不會用到 → 踢其中一個（例如 1）；存取 4 時隨便踢一個不再用的。一樣是 6 次。這個短字串剛好打平，長一點的字串（下面延伸練習）OPT 會明顯最少。</p>
 <p>動畫可以換策略、改 frame 數，也可以把延伸練習的長字串貼進去對答案：</p>
-<p><div class="viz" data-viz="paging" data-refs="7,0,1,2,0,3,0,4" data-frames="3" data-algo="lru"></div></p>
+<div class="viz" data-viz="paging" data-refs="7,0,1,2,0,3,0,4" data-frames="3" data-algo="lru"></div>
+
 <h4 id="eat-page-fault">EAT：為什麼 page fault 要極少</h4>
 <div class="arithmatex">\[\text{EAT}=(1-p)\times\text{記憶體存取時間}+p\times\text{page fault 處理時間}\]</div>
 <p>記憶體 100 ns、page fault 10 ms（<span class="arithmatex">\(10^7\)</span> ns），<span class="arithmatex">\(p=0.001\)</span>：</p>
@@ -2701,6 +2756,63 @@ signal(empty);</code></pre>
 <p><strong>公式就是加權平均</strong>：<span class="arithmatex">\(p\)</span> 是 page fault 的機率。沒 fault（機率 <span class="arithmatex">\(1-p\)</span>）時只花一次記憶體存取的時間；fault（機率 <span class="arithmatex">\(p\)</span>）時要花處理 page fault 的時間（讀磁碟為主）。兩種情況的時間乘上各自的機率再相加。</p>
 <h4 id="thrashing">thrashing</h4>
 <p>行程太多、每個人分到的 frame 太少，每個行程都在不斷 page fault、等磁碟，CPU 使用率反而掉下來。作業系統看到 CPU 閒著，又加更多行程進來，情況更糟。解法是用 working set 估計每個行程需要多少 frame，不夠時<strong>減少</strong>同時執行的行程數。</p>
+<figure class="fig">
+<svg viewBox="0 0 360 196" role="img" aria-label="CPU 使用率隨著同時執行的 process 數增加而上升，到某個點之後急速下降，那一段就是 thrashing。">
+<line class="ln" x1="40" y1="168" x2="344" y2="168"/>
+<line class="ln" x1="40" y1="168" x2="40" y2="18"/>
+<polygon class="ah" points="350,168 341,163 341,173"/>
+<polygon class="ah" points="40,12 35,21 45,21"/>
+<path class="arw-a" d="M42,162 C110,48 190,30 232,40 C262,48 270,120 300,160"/>
+<text x="48" y="12" text-anchor="start" dominant-baseline="central" class="sm">CPU 使用率</text>
+<text x="344" y="186" text-anchor="end" dominant-baseline="central" class="sm">同時執行的 process 數</text>
+<text x="300" y="74" text-anchor="middle" dominant-baseline="central" class="sm mono ta">thrashing</text>
+<line class="arw-a" x1="296" y1="84" x2="279.2" y2="103.9"/>
+<polygon class="ah-a" points="274.0,110.0 275.7,101.0 282.6,106.8"/>
+<line class="dash" x1="232" y1="40" x2="232" y2="168"/>
+<text x="132" y="122" text-anchor="middle" dominant-baseline="central" class="sm">還在上升：多一個 process</text>
+<text x="132" y="140" text-anchor="middle" dominant-baseline="central" class="sm">就多利用一點 CPU</text>
+</svg>
+<figcaption>過了虛線那一點，再加 process 只會讓大家搶 frame、一直等磁碟，CPU 使用率急速往下掉</figcaption>
+</figure>
+
+<div class="admonition key">
+<p class="admonition-title">記憶體題要做什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>邏輯位址轉實體位址</td>
+<td>page ＝ 位址 ÷ page 大小、offset ＝ 餘數；查表得 frame；實體 ＝ frame × page 大小 ＋ offset（<a href="#u4-1">4.1</a>）</td>
+</tr>
+<tr>
+<td>page table 幾個 entry、多大</td>
+<td><span class="arithmatex">\(2^{\text{虛擬位址位元}-\text{offset 位元}}\)</span> 個，再乘每個 entry 的大小（<a href="#u4-2">4.2</a>）</td>
+</tr>
+<tr>
+<td>FIFO／LRU／OPT／clock 幾次 fault</td>
+<td>畫表一格一格走，寫出每次踢掉誰（<a href="#u4-3">4.3</a>）</td>
+</tr>
+<tr>
+<td>EAT（TLB、page fault）</td>
+<td>加權平均：機率 × 那種情況的時間</td>
+</tr>
+<tr>
+<td>page fault rate 上限</td>
+<td>把 EAT 的不等式解出 <span class="arithmatex">\(p\)</span></td>
+</tr>
+<tr>
+<td>thrashing 怎麼處理</td>
+<td>working set 總和 ＞ frame 數，就暫停一些 process</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：demand paging（用到才載入）、page fault（缺頁）、valid bit（有效位元）、dirty bit（修改位元）、reference bit（存取位元）、working set（工作集）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -2788,6 +2900,24 @@ signal(empty);</code></pre>
 <li><strong>full virtual memory</strong>：完整的 page table 與 TLB，彈性最大，但轉換時間不確定，對即時系統不利。</li>
 </ol>
 </div>
+<h4 id="_22">一個邏輯位址怎麼轉：數字例子</h4>
+<p>page 大小 1 KB（1024 bytes），page table：page 0 → frame 5、page 1 → frame 2、page 2 → frame 7、page 3 → frame 1，其他 page 不在記憶體。</p>
+<p><strong>邏輯位址 3085</strong>：</p>
+<ul>
+<li><strong>page 號碼（3）</strong>：<span class="arithmatex">\(3085\div1024=3\)</span> 餘 13。</li>
+<li><strong>offset（13）</strong>：餘數，是 page 裡的第幾個 byte，轉換時不變。</li>
+<li><strong>查表（frame 1）</strong>：page 3 → frame 1。</li>
+<li><strong>實體位址（1037）</strong>：<span class="arithmatex">\(1\times1024+13=1037\)</span>。</li>
+</ul>
+<p><strong>邏輯位址 5000</strong>：<span class="arithmatex">\(5000\div1024=4\)</span> 餘 904，page 4 不在記憶體（valid ＝ 0）→ <strong>page fault</strong>。</p>
+<p>page 大小是 2 的次方時，除法就是切位元：1 KB ＝ <span class="arithmatex">\(2^{10}\)</span>，邏輯位址的<strong>低 10 位元</strong>是 offset，上面的位元是 page 號碼。3085 的二進位是 <code>11 0000001101</code>：上面的 <code>11</code> 是 3，下面 10 位元是 13。</p>
+<h4 id="page-table">page table 太大怎麼辦</h4>
+<p>111 Q9 的 48-bit 位址、4 KB page，一張表有 <span class="arithmatex">\(2^{36}\)</span> 個 entry，每個 4 bytes 就要 256 GB，根本放不下。三種解法：</p>
+<ul>
+<li><strong>多層 page table</strong>：把 page 號碼再切成幾段，外層表指向內層表，沒用到的區域不用建內層表（<a href="arch.html#u3-0">計結 3.0</a> 有兩層的算例）。代價是 TLB miss 時要多查幾次記憶體。</li>
+<li><strong>hashed page table</strong>：用 page 號碼做雜湊，同一格掛一串，適合 64-bit 的位址空間。</li>
+<li><strong>inverted page table</strong>：整個系統只有一張表，<strong>每個 frame 一個 entry</strong>，記錄「這個 frame 放的是哪個 process 的哪一頁」，所以要存 ASID。省記憶體，但查表要搜尋，通常搭配雜湊。</li>
+</ul>
 <h3 id="u4-2">4.2 計算模板</h3>
 <table>
 <thead>
@@ -2852,9 +2982,77 @@ signal(empty);</code></pre>
 <p>定義 working-set window <span class="arithmatex">\(\Delta\)</span>（最近 <span class="arithmatex">\(\Delta\)</span> 次存取），process <span class="arithmatex">\(i\)</span> 在這段時間用到的 page 集合大小是 <span class="arithmatex">\(WSS_i\)</span>。</p>
 <p>總需求 <span class="arithmatex">\(D=\sum WSS_i\)</span>。如果 <span class="arithmatex">\(D\)</span> 大於可用的 frame 數 <span class="arithmatex">\(m\)</span>，就會 thrashing，OS <strong>暫停（swap out）某個 process</strong>，把它的 frame 分給其他人；<span class="arithmatex">\(D\)</span> 夠小時再載入新的 process。這樣既能避免 thrashing，又能維持最高的 multiprogramming 程度。</p>
 </div>
+<h4 id="lru-reference-bit-second-chanceclock">LRU 太貴：用 reference bit 近似（second-chance／clock）</h4>
+<p>真正的 LRU 每次存取都要更新順序，硬體負擔太大。常見的近似做法：每個 frame 一個 <strong>reference bit</strong>，被存取就設成 1。frame 排成一圈，指標像時鐘的指針：</p>
+<ul>
+<li>指到的 page bit ＝ 1：給它<strong>第二次機會</strong>，bit 清成 0，指標往下走。</li>
+<li>指到的 page bit ＝ 0：踢掉它，新的 page 放進來（bit 設 1），指標往下走一格。</li>
+</ul>
+<p>3 個 frame，存取 1, 2, 3, 4, 2, 5, 2（括號裡是 reference bit）：</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>frame 0</th>
+<th>frame 1</th>
+<th>frame 2</th>
+<th>結果</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1, 2, 3</td>
+<td>1 (1)</td>
+<td>2 (1)</td>
+<td>3 (1)</td>
+<td>F F F</td>
+<td>依序放進空的 frame，指標回到 frame 0</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4 (1)</td>
+<td>2 (0)</td>
+<td>3 (0)</td>
+<td>F</td>
+<td>三個 bit 都是 1，繞一圈全清成 0，回到 frame 0 踢掉 1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>4 (1)</td>
+<td>2 (1)</td>
+<td>3 (0)</td>
+<td>hit</td>
+<td>2 的 bit 設回 1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>4 (1)</td>
+<td>2 (0)</td>
+<td>5 (1)</td>
+<td>F</td>
+<td>指標在 frame 1：2 的 bit 是 1，清掉、放過它；frame 2 的 3 是 0，踢掉</td>
+</tr>
+<tr>
+<td>2</td>
+<td>4 (1)</td>
+<td>2 (1)</td>
+<td>5 (1)</td>
+<td>hit</td>
+<td>2 剛剛被放過，所以 hit</td>
+</tr>
+</tbody>
+</table>
+<p>共 <strong>5 次</strong> fault。FIFO 在存取 5 時會踢掉最早進來的 2，最後的 2 就 fault，共 6 次；這裡 clock 跟 LRU 一樣是 5 次。<strong>所有 bit 都是 1 時，clock 就退化成 FIFO</strong>。</p>
+<h4 id="process-frame">每個 process 分幾個 frame</h4>
+<ul>
+<li><strong>平均分配</strong>：<span class="arithmatex">\(m\)</span> 個 frame、<span class="arithmatex">\(n\)</span> 個 process，每個分 <span class="arithmatex">\(m/n\)</span>。</li>
+<li><strong>按大小比例分配（proportional）</strong>：process <span class="arithmatex">\(i\)</span> 大小 <span class="arithmatex">\(s_i\)</span>、總和 <span class="arithmatex">\(S\)</span>，分到 <span class="arithmatex">\(\frac{s_i}{S}\times m\)</span>。例：64 個 frame，兩個 process 大小 20 和 140 page：<span class="arithmatex">\(\frac{20}{160}\times64=8\)</span>、<span class="arithmatex">\(\frac{140}{160}\times64=56\)</span>。</li>
+<li><strong>global replacement</strong>：要踢 page 時，可以從<strong>所有</strong> process 的 frame 挑（整體效率較好，但一個 process 的 fault 次數會受別人影響）。<strong>local replacement</strong>：只能從<strong>自己的</strong> frame 挑。</li>
+</ul>
 <h3 id="u4-pf">4.4 程式寫法與 page fault：二維陣列、次數的上下界</h3>
 <p>103、110 年各考一題「初始化二維陣列會發生幾次 page fault」（10%），兩題幾乎一樣，只換了數字和存放方式。103、106 年也各考一題 page fault 次數的上下界（10%）。</p>
-<h4 id="_22">陣列在記憶體裡是一長條</h4>
+<h4 id="_23">陣列在記憶體裡是一長條</h4>
 <p>記憶體是一維的，二維陣列要排成一長條，有兩種排法：</p>
 <table>
 <thead>
@@ -2878,13 +3076,13 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p><span class="arithmatex">\(n\times n\)</span> 的陣列裡，A[i][j] 是第幾個元素（從 0 數）：row-major 是 <span class="arithmatex">\(i\times n+j\)</span>，column-major 是 <span class="arithmatex">\(j\times n+i\)</span>。</p>
-<h4 id="_23">迴圈順序要跟著排法走</h4>
+<h4 id="_24">迴圈順序要跟著排法走</h4>
 <p>像書架上的書一排一排放好：照順序一本一本拿，一排拿完才走到下一排；如果每次都換一排只拿一本，每拿一本都要走一趟。</p>
 <ul>
 <li><strong>順序一致</strong>（row-major 用「i 在外、j 在內」；column-major 用「j 在外、i 在內」）：連續存取，一頁的元素全部用完才換下一頁 → <strong>page fault 次數 ＝ 陣列佔幾頁</strong>。</li>
 <li><strong>順序相反</strong>：每次存取都跳到另一頁。內層迴圈一圈會碰到很多頁，frame 卻只有幾個，回到同一頁時它早就被換掉 → <strong>每一次存取都 page fault</strong>。</li>
 </ul>
-<h4 id="_24">解題步驟</h4>
+<h4 id="_25">解題步驟</h4>
 <ol>
 <li><strong>一頁放幾個元素</strong> ＝ page 大小 ÷ 元素大小；<strong>陣列佔幾頁</strong> ＝ 元素總數 ÷ 一頁放幾個。</li>
 <li><strong>程式在 page 0，不會被換掉</strong>：每個指令都要從 page 0 讀，用 LRU 時它永遠是最近用過的。所以三個 frame 裡，陣列只能用 <strong>2 個</strong>。</li>
@@ -2921,7 +3119,7 @@ signal(empty);</code></pre>
 </ul>
 <p><strong>補充</strong>：如果 <span class="arithmatex">\(p\le m\)</span>，所有 page 都裝得下，不會有任何 page 被換掉，剛好 p 次。上界 n 要在 <span class="arithmatex">\(p&gt;m\)</span> 時才可能發生，例如只有 1 個 frame、reference string 每次都換一個 page。</p>
 </div>
-<h4 id="_25">觀念小考</h4>
+<h4 id="_26">觀念小考</h4>
 <div class="mcq" data-ans="1">
 <p><strong>C-1.</strong> C 語言的 <code>int a[100][100]</code>（row-major），要把整個陣列設成 0，哪一種迴圈順序 page fault 最少？</p>
 <ol>
@@ -2989,7 +3187,7 @@ signal(empty);</code></pre>
 <li><strong>limit register</strong>：這段有多長，邏輯位址超過就 trap（存取違規）。</li>
 </ul>
 <p>102 Q5(3) 的是非題「relocation register 是 1877、邏輯位址 123，實體位址是 2000」是<strong>對</strong>的。</p>
-<h4 id="_26">有一堆空洞時，要放哪一個</h4>
+<h4 id="_27">有一堆空洞時，要放哪一個</h4>
 <p>process 來來去去，記憶體裡會有很多大小不一的空洞（hole）。新的 process 要放進去：</p>
 <table>
 <thead>
@@ -3055,7 +3253,7 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p>這一組 best fit 最好，四個都放得下。用程式模擬過。</p>
-<h4 id="_27">兩種碎片</h4>
+<h4 id="_28">兩種碎片</h4>
 <table>
 <thead>
 <tr>
@@ -3186,7 +3384,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q7(2)（4%）：外部碎片和內部碎片的差別</p>
 <p>外部碎片：空的記憶體總量夠，但被切成很多不連續的小洞，放不下新的要求。內部碎片：分配出去的區塊比實際需要的大，多出來的部分在區塊裡面沒用到、別人也不能用。</p>
 </div>
-<h4 id="_28">觀念小考</h4>
+<h4 id="_29">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 空洞依序是 50K、300K、120K，要放 100K。best fit 會放在哪裡？</p>
 <ol>
@@ -3239,6 +3437,162 @@ signal(empty);</code></pre>
 <p><strong>C. trap</strong>。合法的位移是 0～299，300 已經超出這一段，MMU 會產生 trap。</p>
 </details>
 </div>
+<h3 id="u4-concept">4.6 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> page 大小 1 KB，邏輯位址 2500 的 page 號碼和 offset 是？</p>
+<ol>
+<li>page 2、offset 500</li>
+<li>page 2、offset 452</li>
+<li>page 3、offset 452</li>
+<li>page 25、offset 0</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(2500=2\times1024+452\)</span>。page 大小是 1024 不是 1000，A 是用 1000 去切的錯誤。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-2.</strong> clock（second-chance）演算法中，指標指到的 page reference bit 是 1，會怎樣？</p>
+<ol>
+<li>直接踢掉它</li>
+<li>先寫回磁碟再踢掉</li>
+<li>停止搜尋，這次不踢</li>
+<li>把 bit 清成 0、放過它，指標往下一個</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。bit ＝ 1 表示最近被用過，給它第二次機會；繞回來時如果還是 0（這段時間都沒被用），才踢掉。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> 哪一種置換策略會出現 Belady's anomaly（frame 變多，fault 反而變多）？</p>
+<ol>
+<li>FIFO</li>
+<li>LRU</li>
+<li>OPT</li>
+<li>三種都不會</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。LRU 和 OPT 是 stack algorithm：<span class="arithmatex">\(n\)</span> 個 frame 裡的 page，一定也在 <span class="arithmatex">\(n+1\)</span> 個 frame 裡，所以 frame 變多不會更差。FIFO 沒有這個性質，1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5 就是例子（<a href="#u4-0">4.0</a> 的延伸練習）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-4.</strong> CPU 使用率很低、磁碟一直忙著 paging，作業系統應該？</p>
+<ol>
+<li>再加入更多 process，讓 CPU 有事做</li>
+<li>把 page 變小</li>
+<li>減少同時執行的 process（暫停一些）</li>
+<li>關掉 TLB</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。這是 thrashing：每個 process 分到的 frame 太少。A 正是讓情況更糟的做法（早期的排程器看到 CPU 閒就加 process）。暫停一些 process，把 frame 讓給其他人，fault 才會降下來。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> 64 個 frame，兩個 process 大小是 20 和 140 page，用按比例分配，第一個 process 分到幾個 frame？</p>
+<ol>
+<li>32</li>
+<li>8</li>
+<li>20</li>
+<li>56</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(\frac{20}{20+140}\times64=8\)</span>，另一個分到 56（D）。A 是平均分配。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> page 大小 2 KB，page table：page 0 → frame 3、page 1 → frame 7、page 2 不在記憶體、page 3 → frame 2。邏輯位址 1000、4500、7000 各轉成什麼？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<table>
+<thead>
+<tr>
+<th>邏輯位址</th>
+<th>page、offset</th>
+<th>frame</th>
+<th>實體位址</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1000</td>
+<td>0、1000</td>
+<td>3</td>
+<td><span class="arithmatex">\(3\times2048+1000=7144\)</span></td>
+</tr>
+<tr>
+<td>4500</td>
+<td>2、404</td>
+<td>不在記憶體</td>
+<td><strong>page fault</strong></td>
+</tr>
+<tr>
+<td>7000</td>
+<td>3、856</td>
+<td>2</td>
+<td><span class="arithmatex">\(2\times2048+856=4952\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>page 號碼 ＝ 位址 ÷ 2048 的商，offset ＝ 餘數；例如 <span class="arithmatex">\(7000=3\times2048+856\)</span>。</p>
+</details>
+<p><strong>W-2.</strong> 3 個 frame，存取 3, 1, 4, 1, 5, 3, 1。clock 演算法（新放進來的 page bit 設 1）有幾次 fault？跟 FIFO、LRU 比較，為什麼 clock 沒有跟 LRU 一樣好？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>frame 0</th>
+<th>frame 1</th>
+<th>frame 2</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3, 1, 4</td>
+<td>3 (1)</td>
+<td>1 (1)</td>
+<td>4 (1)</td>
+<td>F F F</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3 (1)</td>
+<td>1 (1)</td>
+<td>4 (1)</td>
+<td>hit（bit 本來就是 1）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>5 (1)</td>
+<td>1 (0)</td>
+<td>4 (0)</td>
+<td>F：全部是 1，繞一圈清掉，踢 frame 0 的 3</td>
+</tr>
+<tr>
+<td>3</td>
+<td>5 (1)</td>
+<td>3 (1)</td>
+<td>4 (0)</td>
+<td>F：指標在 frame 1，1 的 bit 是 0，踢掉 1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>5 (1)</td>
+<td>3 (1)</td>
+<td>1 (1)</td>
+<td>F：指標在 frame 2，4 的 bit 是 0，踢掉 4</td>
+</tr>
+</tbody>
+</table>
+<p>clock <strong>6 次</strong>，FIFO 也是 6 次；LRU 在存取 3 時會踢 4（1 比 4 晚用過），最後的 1 就 hit，只有 5 次。</p>
+<p>原因：1 在 4 之後被用過，但在存取 5 時兩個的 bit 都被清成 0 了。只有 1 個 bit，clock 分不出誰比較晚用，只能照指標的順序踢。我用程式跑過三種策略，次數都對。</p>
+</details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？</p>
 <details class="quiz">
@@ -3268,7 +3622,7 @@ signal(empty);</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：儲存、檔案與 I/O</h2>
 <h3 id="u5-0">5.0 觀念課：硬碟像一台唱片機</h3>
-<h4 id="_29">讀一個區塊要花三段時間</h4>
+<h4 id="_30">讀一個區塊要花三段時間</h4>
 <p>硬碟是好幾片疊在一起旋轉的碟片，讀寫頭裝在一支可以前後移動的手臂上，像唱片機。</p>
 <table>
 <thead>
@@ -3343,7 +3697,7 @@ signal(empty);</code></pre>
 <li><strong>練習（英文）</strong>：恐龍書官網的 <a href="https://www.os-book.com/OS10/regular-exercises/PDF-regular-exer-dir/11.pdf">Mass-Storage 習題</a>。</li>
 </ul>
 </div>
-<h4 id="_30">換你試試</h4>
+<h4 id="_31">換你試試</h4>
 <p><strong>T-1.</strong> 10000 RPM 的硬碟，平均 rotational latency？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3421,7 +3775,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u5-sched">5.4 磁碟排程：讀寫頭怎麼移動</h3>
 <p>101、102、104、107、110 年都考過（每次 6–10%）：給一串要求的磁柱（cylinder）編號，照某種演算法排出服務順序、算讀寫頭總共移動多遠。規則固定、只要加減法，是最容易拿的分數。</p>
-<h4 id="_31">觀念：讀寫頭像電梯</h4>
+<h4 id="_32">觀念：讀寫頭像電梯</h4>
 <p>很多要求在等，讀寫頭一次只能停在一個位置。移動越遠，seek time 越長（見 <a href="#u5-0">5.0</a>），所以目標是<strong>總移動距離越短越好</strong>，又不能讓某些要求等太久。</p>
 <table>
 <thead>
@@ -3472,13 +3826,13 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p><strong>為什麼 C-SCAN 比較公平</strong>：SCAN 回頭時，剛掃過的一端要等來回一趟；中間的位置來回各被掃一次。C-SCAN 永遠同一個方向掃，每個位置等的時間差不多。</p>
-<h4 id="_32">題目沒講清楚的，要自己寫假設</h4>
+<h4 id="_33">題目沒講清楚的，要自己寫假設</h4>
 <ol>
 <li><strong>方向</strong>：「前一個要求在 125、現在在 175」代表正往<strong>編號大的</strong>方向走。只給現在位置時，寫「假設往編號大的方向移動」。</li>
 <li><strong>盡頭在哪</strong>：SCAN、C-SCAN 走到磁柱編號的最大值（0–999 就是 999）或 0。</li>
 <li><strong>C-SCAN、C-LOOK 跳回去那一段算不算距離</strong>：回程不服務要求，但手臂確實有移動，各本書算法不同。<strong>兩個都寫最保險</strong>，例如「含跳回 1925，不含 925」。</li>
 </ol>
-<h4 id="_33">算距離的捷徑</h4>
+<h4 id="_34">算距離的捷徑</h4>
 <p>電梯類（SCAN、LOOK）只要算<strong>轉折點</strong>：例如 LOOK 往上走到最大的要求再回頭到最小的要求，距離 ＝（最大 − 起點）＋（最大 − 最小），不用一段一段加。</p>
 <div class="viz" data-viz="disk" data-reqs="98,183,37,122,14,124,65,67" data-head="53" data-dir="down" data-max="199" data-algo="sstf" data-title="102 Q7 的資料：切換演算法和方向，比較總距離"></div>
 
@@ -3638,7 +3992,7 @@ signal(empty);</code></pre>
 <p><strong>服務順序：F, D, A, H, G, E, B, J, I, C</strong>。</p>
 <p>如果不分批，截止時間又都不一樣，SCAN-EDF 就等於單純的 EDF：F, D, H, A, G, B, J, E, I, C。考試寫出你用的分批方法。</p>
 </div>
-<h4 id="_34">觀念小考</h4>
+<h4 id="_35">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 哪一種演算法可能讓某些要求等非常久（starvation）？</p>
 <ol>
@@ -3716,7 +4070,7 @@ signal(empty);</code></pre>
 </details>
 <h3 id="u5-more">5.5 檔案系統與 I/O 的考古題補充：目錄、mount、開檔表、I/O 方式</h3>
 <p>104、105、107 年的「File System and I/O」小題，每題 2–4%，加起來將近 25%：目錄有哪幾種結構、mount point 是什麼、開檔時 UNIX 記住哪些資訊、CPU 怎麼知道 I/O 做完了、memory-mapped I/O。都是恐龍書的名詞，<strong>會講「為什麼要這樣做」</strong>就能拿分。</p>
-<h4 id="_35">目錄結構：檔案越來越多，怎麼放？</h4>
+<h4 id="_36">目錄結構：檔案越來越多，怎麼放？</h4>
 <table>
 <thead>
 <tr>
@@ -3854,7 +4208,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q7(4)（3%）：什麼是 memory-mapped I/O？為什麼需要它？</p>
 <p>把裝置的控制暫存器（和緩衝區）對應到記憶體位址空間，CPU 用一般的 load／store 指令讀寫裝置。<strong>需要的原因</strong>：不用額外的 I/O 指令，程式和硬體都比較簡單；大量資料（例如畫面）可以直接寫到對應的記憶體，速度快。</p>
 </div>
-<h4 id="_36">觀念小考</h4>
+<h4 id="_37">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> acyclic-graph 目錄讓同一個檔案出現在好幾個目錄。刪除檔案時最需要處理的問題是？</p>
 <ol>
@@ -3949,9 +4303,9 @@ signal(empty);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_37">最小權限</h4>
+<h4 id="_38">最小權限</h4>
 <p><strong>principle of least privilege</strong>（最小權限）和 <strong>need-to-know</strong> 是同一類想法：每個行程、每個使用者只拿到<strong>完成目前工作需要</strong>的權限和資源。出事時，損害才會被限制在小範圍。兩者在恐龍書裡的說法有一點差別，是非題考過，見 <a href="#u6-more">6.2</a>。</p>
-<h4 id="_38">存取矩陣：誰能對什麼做什麼</h4>
+<h4 id="_39">存取矩陣：誰能對什麼做什麼</h4>
 <p>把權限畫成一張表：列是使用者（domain），欄是檔案（object），格子裡是權限。</p>
 <table>
 <thead>
@@ -3981,7 +4335,7 @@ signal(empty);</code></pre>
 <li>照<strong>欄</strong>存（每個檔案記錄誰能用它）→ <strong>access control list（ACL）</strong></li>
 <li>照<strong>列</strong>存（每個使用者帶著自己能用什麼）→ <strong>capability list</strong></li>
 </ul>
-<h4 id="_39">惡意程式的名詞</h4>
+<h4 id="_40">惡意程式的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -4019,7 +4373,7 @@ signal(empty);</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/izkd4JwXRwub_ZmhSMTlNw">OS 筆記 Chapter 14: Protection</a>〉：保護的原則、存取矩陣、ACL 與 capability 的實作、權限撤銷，就是這節表格的完整版。</li>
 </ul>
 </div>
-<h4 id="_40">換你試試</h4>
+<h4 id="_41">換你試試</h4>
 <p><strong>T-1.</strong> 有人偷改了資料庫裡的成績，破壞的是 CIA 的哪一項？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -4146,7 +4500,7 @@ signal(empty);</code></pre>
 </table>
 <p><span class="arithmatex">\(H(m)\)</span> 是 <a href="ds.html#u4-theory">資結 4.2</a> 的密碼學雜湊函數，先把訊息壓短再簽。</p>
 <p><strong>公鑰怎麼發</strong>（105 Q4(4)）：公鑰可以公開，問題是怎麼確定這把公鑰真的是對方的（不然中間人可以換成自己的）。做法是<strong>數位憑證</strong>（digital certificate）：可信任的憑證機構（CA）用它的私鑰簽署「這把公鑰屬於某某人」，CA 的公鑰事先內建在瀏覽器或作業系統裡。</p>
-<h4 id="_41">攻擊手法的名詞</h4>
+<h4 id="_42">攻擊手法的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -4227,7 +4581,7 @@ signal(empty);</code></pre>
 <li>「location transparency 能在不同時間把同一個檔名對應到不同位置，所以比 location independence 強」：<strong>錯</strong>，說反了。能動態改變對應位置的是 <strong>location independence</strong>，它比 location transparency 強。</li>
 </ol>
 </div>
-<h4 id="_42">觀念小考</h4>
+<h4 id="_43">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 哪一種方法能提供 nonrepudiation（送的人事後不能否認）？</p>
 <ol>
@@ -4269,7 +4623,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u6-dist">6.3 分散式系統與網路：CSMA/CD、token passing、事件的先後</h3>
 <p>101 年（區域網路怎麼避免碰撞，10%）、102 年（分散式系統的事件順序，10%）、104 年（分散式檔案系統的名詞，1%）考過。另外 102 年的分散式檔案系統命名在 <a href="#u6-more">6.2</a>，atomic transaction、two-phase locking 在 <a href="#u2-more">2.2</a>，分散式檔案系統的 cache 在 <a href="#u6-1">6.1</a>。</p>
-<h4 id="_43">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
+<h4 id="_44">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
 <p>同一條線上的電腦同時送資料，訊號會疊在一起變成雜訊，叫<strong>碰撞</strong>（collision）。兩種做法：</p>
 <p><strong>CSMA/CD</strong>（carrier sense multiple access with collision detection，乙太網路用的）：</p>
 <ol>
@@ -4314,7 +4668,7 @@ signal(empty);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_44">分散式系統裡，為什麼很難知道誰先發生？</h4>
+<h4 id="_45">分散式系統裡，為什麼很難知道誰先發生？</h4>
 <p>分散式系統的電腦<strong>沒有共用的時鐘、也沒有共用的記憶體</strong>，只能傳訊息。每台電腦的時鐘快慢不一樣（會漂移），訊息在網路上要花多久也不固定。所以 A 機器記錄 10:00:01、B 機器記錄 10:00:02，<strong>不能保證 A 的事件真的比較早</strong>。</p>
 <h4 id="happened-before">happened-before（→）：只用能確定的事排順序</h4>
 <p>Lamport 定義的 happened-before 關係，A → B 讀作「A 在 B 之前發生」：</p>
@@ -4408,7 +4762,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q6(3)（1%）：分散式檔案系統的 component unit 是什麼？</p>
 <p><strong>可以放在同一台機器上、跟其他 unit 互不相關的最小一組檔案</strong>。同一個 component unit 裡的檔案一定放在同一個地方，命名和搬移都以它為單位。</p>
 </div>
-<h4 id="_45">觀念小考</h4>
+<h4 id="_46">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> CSMA/CD 偵測到碰撞之後，為什麼要等一段<strong>隨機</strong>的時間再重傳？</p>
 <ol>

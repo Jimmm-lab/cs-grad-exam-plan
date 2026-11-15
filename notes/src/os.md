@@ -1519,11 +1519,66 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
 #### page fault 時發生什麼事
 
-1. 程式存取一個 page，page table 標示它不在記憶體（valid ＝ 0）。
+1. 程式存取一個 page，查 page table，發現它不在記憶體（valid ＝ 0）。
 2. 硬體產生 trap，交給作業系統。
-3. 作業系統找一個空的 frame；**沒有空的就挑一個 page 踢出去**（如果它被改過，dirty bit ＝ 1，要先寫回磁碟）。
-4. 從磁碟把需要的 page 讀進來，更新 page table。
-5. 重新執行剛剛那條指令。
+3. 作業系統找到這個 page 在磁碟上的位置，再找一個空的 frame；**沒有空的就挑一個 page 踢出去**（如果它被改過，dirty bit ＝ 1，要先寫回磁碟）。
+4. 從磁碟把 page 讀進那個 frame。
+5. 更新 page table：填上 frame 號碼，valid 設成 1。
+6. 重新執行剛剛那條指令。
+
+<figure class="fig">
+<svg viewBox="0 0 360 248" role="img" aria-label="page fault 的六個步驟：1 程式執行 load M，查 page table；2 valid 是 0，產生 trap 給作業系統；3 作業系統找到這個 page 在磁碟上的位置；4 把它讀進一個空的 frame；5 更新 page table，填上 frame 號碼、valid 設成 1；6 重新執行 load M。">
+<text x="56" y="28" text-anchor="middle" dominant-baseline="central" class="sm">程式</text>
+<rect class="box" x="8" y="40" width="96" height="44" rx="6"/>
+<text x="56" y="62" text-anchor="middle" dominant-baseline="central" class="mono">load M</text>
+<text x="180" y="28" text-anchor="middle" dominant-baseline="central" class="sm mono">page table</text>
+<rect class="box" x="132" y="40" width="64" height="44"/>
+<rect class="fa" x="196" y="40" width="32" height="44"/>
+<text x="164" y="62" text-anchor="middle" dominant-baseline="central" class="sm mono">frame ?</text>
+<text x="212" y="62" text-anchor="middle" dominant-baseline="central" class="mono ta">0</text>
+<text x="304" y="28" text-anchor="middle" dominant-baseline="central" class="sm">作業系統</text>
+<rect class="fb" x="256" y="40" width="96" height="44" rx="6"/>
+<text x="304" y="62" text-anchor="middle" dominant-baseline="central" class="mono tb">trap</text>
+<rect class="box" x="256" y="176" width="96" height="48" rx="6"/>
+<text x="304" y="192" text-anchor="middle" dominant-baseline="central" class="sm">磁碟</text>
+<rect class="fc" x="282" y="202" width="44" height="16" rx="3"/>
+<text x="304" y="210" text-anchor="middle" dominant-baseline="central" class="sm mono tc">M</text>
+<rect class="box" x="132" y="128" width="96" height="24"/>
+<text x="180" y="140" text-anchor="middle" dominant-baseline="central" class="sm mono ">…</text>
+<rect class="box" x="132" y="152" width="96" height="24"/>
+<text x="180" y="164" text-anchor="middle" dominant-baseline="central" class="sm mono ">…</text>
+<rect class="fc" x="132" y="176" width="96" height="24"/>
+<text x="180" y="188" text-anchor="middle" dominant-baseline="central" class="sm mono tc">M</text>
+<rect class="box" x="132" y="200" width="96" height="24"/>
+<text x="180" y="212" text-anchor="middle" dominant-baseline="central" class="sm mono ">…</text>
+<text x="124" y="176" text-anchor="end" dominant-baseline="central" class="sm">實體記憶體</text>
+<line class="arw" x1="104" y1="62" x2="122.0" y2="62.0"/>
+<polygon class="ah" points="131.0,62.0 122.0,67.0 122.0,57.0"/>
+<circle class="fa" cx="118" cy="46" r="9"/>
+<text x="118" y="46" text-anchor="middle" dominant-baseline="central" class="sm mono ta">1</text>
+<line class="arw" x1="228" y1="62" x2="246.0" y2="62.0"/>
+<polygon class="ah" points="255.0,62.0 246.0,67.0 246.0,57.0"/>
+<circle class="fa" cx="242" cy="46" r="9"/>
+<text x="242" y="46" text-anchor="middle" dominant-baseline="central" class="sm mono ta">2</text>
+<line class="arw" x1="304" y1="84" x2="304.0" y2="166.0"/>
+<polygon class="ah" points="304.0,175.0 299.0,166.0 309.0,166.0"/>
+<circle class="fa" cx="318" cy="128" r="9"/>
+<text x="318" y="128" text-anchor="middle" dominant-baseline="central" class="sm mono ta">3</text>
+<line class="arw-a" x1="256" y1="200" x2="237.2" y2="191.7"/>
+<polygon class="ah-a" points="229.0,188.0 239.3,187.1 235.2,196.2"/>
+<circle class="fa" cx="242" cy="178" r="9"/>
+<text x="242" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono ta">4</text>
+<line class="arw" x1="180" y1="128" x2="180.0" y2="94.0"/>
+<polygon class="ah" points="180.0,85.0 185.0,94.0 175.0,94.0"/>
+<circle class="fa" cx="194" cy="106" r="9"/>
+<text x="194" y="106" text-anchor="middle" dominant-baseline="central" class="sm mono ta">5</text>
+<path class="arw" d="M150,85 Q100,128 64.3,91.4"/>
+<polygon class="ah" points="58.0,85.0 67.9,87.9 60.7,94.9"/>
+<circle class="fa" cx="100" cy="120" r="9"/>
+<text x="100" y="120" text-anchor="middle" dominant-baseline="central" class="sm mono ta">6</text>
+</svg>
+<figcaption>圖上的編號就是上面的六個步驟；③ 到 ④ 要讀磁碟，是最花時間的部分</figcaption>
+</figure>
 
 只在用到時才載入 page，叫 **demand paging**。
 
@@ -1575,6 +1630,37 @@ $$0.999\times100+0.001\times10^7\approx10100\text{ ns}$$
 
 行程太多、每個人分到的 frame 太少，每個行程都在不斷 page fault、等磁碟，CPU 使用率反而掉下來。作業系統看到 CPU 閒著，又加更多行程進來，情況更糟。解法是用 working set 估計每個行程需要多少 frame，不夠時**減少**同時執行的行程數。
 
+<figure class="fig">
+<svg viewBox="0 0 360 196" role="img" aria-label="CPU 使用率隨著同時執行的 process 數增加而上升，到某個點之後急速下降，那一段就是 thrashing。">
+<line class="ln" x1="40" y1="168" x2="344" y2="168"/>
+<line class="ln" x1="40" y1="168" x2="40" y2="18"/>
+<polygon class="ah" points="350,168 341,163 341,173"/>
+<polygon class="ah" points="40,12 35,21 45,21"/>
+<path class="arw-a" d="M42,162 C110,48 190,30 232,40 C262,48 270,120 300,160"/>
+<text x="48" y="12" text-anchor="start" dominant-baseline="central" class="sm">CPU 使用率</text>
+<text x="344" y="186" text-anchor="end" dominant-baseline="central" class="sm">同時執行的 process 數</text>
+<text x="300" y="74" text-anchor="middle" dominant-baseline="central" class="sm mono ta">thrashing</text>
+<line class="arw-a" x1="296" y1="84" x2="279.2" y2="103.9"/>
+<polygon class="ah-a" points="274.0,110.0 275.7,101.0 282.6,106.8"/>
+<line class="dash" x1="232" y1="40" x2="232" y2="168"/>
+<text x="132" y="122" text-anchor="middle" dominant-baseline="central" class="sm">還在上升：多一個 process</text>
+<text x="132" y="140" text-anchor="middle" dominant-baseline="central" class="sm">就多利用一點 CPU</text>
+</svg>
+<figcaption>過了虛線那一點，再加 process 只會讓大家搶 frame、一直等磁碟，CPU 使用率急速往下掉</figcaption>
+</figure>
+
+!!! key "記憶體題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | 邏輯位址轉實體位址 | page ＝ 位址 ÷ page 大小、offset ＝ 餘數；查表得 frame；實體 ＝ frame × page 大小 ＋ offset（[4.1](#u4-1)） |
+    | page table 幾個 entry、多大 | $2^{\text{虛擬位址位元}-\text{offset 位元}}$ 個，再乘每個 entry 的大小（[4.2](#u4-2)） |
+    | FIFO／LRU／OPT／clock 幾次 fault | 畫表一格一格走，寫出每次踢掉誰（[4.3](#u4-3)） |
+    | EAT（TLB、page fault） | 加權平均：機率 × 那種情況的時間 |
+    | page fault rate 上限 | 把 EAT 的不等式解出 $p$ |
+    | thrashing 怎麼處理 | working set 總和 ＞ frame 數，就暫停一些 process |
+
+    名詞對照：demand paging（用到才載入）、page fault（缺頁）、valid bit（有效位元）、dirty bit（修改位元）、reference bit（存取位元）、working set（工作集）。
+
 !!! read "還不懂？看別人怎麼講"
     - **講義**：[周志遠講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999)的 Ch8 Memory Management、Ch9 Virtual Memory。
     - **延伸練習**：恐龍書的經典參考字串 7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1（3 個 frame），自己算完對答案：FIFO 15 次、LRU 12 次、OPT 9 次。再試 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5 用 FIFO：3 個 frame 是 9 次、4 個 frame 反而 10 次，這就是 **Belady's anomaly**。
@@ -1625,6 +1711,29 @@ $$0.999\times100+0.001\times10^7\approx10100\text{ ns}$$
     2. **relocation register mode**：用一個 relocation register，實體位址 ＝ 暫存器值 ＋ 邏輯位址。
     3. **full virtual memory**：完整的 page table 與 TLB，彈性最大，但轉換時間不確定，對即時系統不利。
 
+#### 一個邏輯位址怎麼轉：數字例子
+
+page 大小 1 KB（1024 bytes），page table：page 0 → frame 5、page 1 → frame 2、page 2 → frame 7、page 3 → frame 1，其他 page 不在記憶體。
+
+**邏輯位址 3085**：
+
+- **page 號碼（3）**：$3085\div1024=3$ 餘 13。
+- **offset（13）**：餘數，是 page 裡的第幾個 byte，轉換時不變。
+- **查表（frame 1）**：page 3 → frame 1。
+- **實體位址（1037）**：$1\times1024+13=1037$。
+
+**邏輯位址 5000**：$5000\div1024=4$ 餘 904，page 4 不在記憶體（valid ＝ 0）→ **page fault**。
+
+page 大小是 2 的次方時，除法就是切位元：1 KB ＝ $2^{10}$，邏輯位址的**低 10 位元**是 offset，上面的位元是 page 號碼。3085 的二進位是 `11 0000001101`：上面的 `11` 是 3，下面 10 位元是 13。
+
+#### page table 太大怎麼辦
+
+111 Q9 的 48-bit 位址、4 KB page，一張表有 $2^{36}$ 個 entry，每個 4 bytes 就要 256 GB，根本放不下。三種解法：
+
+- **多層 page table**：把 page 號碼再切成幾段，外層表指向內層表，沒用到的區域不用建內層表（[計結 3.0](arch.html#u3-0) 有兩層的算例）。代價是 TLB miss 時要多查幾次記憶體。
+- **hashed page table**：用 page 號碼做雜湊，同一格掛一串，適合 64-bit 的位址空間。
+- **inverted page table**：整個系統只有一張表，**每個 frame 一個 entry**，記錄「這個 frame 放的是哪個 process 的哪一頁」，所以要存 ASID。省記憶體，但查表要搜尋，通常搭配雜湊。
+
 ### 4.2 計算模板 {#u4-2}
 
 | 題目 | 公式 |
@@ -1671,6 +1780,31 @@ $$0.999\times100+0.001\times10^7\approx10100\text{ ns}$$
     定義 working-set window $\Delta$（最近 $\Delta$ 次存取），process $i$ 在這段時間用到的 page 集合大小是 $WSS_i$。
 
     總需求 $D=\sum WSS_i$。如果 $D$ 大於可用的 frame 數 $m$，就會 thrashing，OS **暫停（swap out）某個 process**，把它的 frame 分給其他人；$D$ 夠小時再載入新的 process。這樣既能避免 thrashing，又能維持最高的 multiprogramming 程度。
+
+#### LRU 太貴：用 reference bit 近似（second-chance／clock）
+
+真正的 LRU 每次存取都要更新順序，硬體負擔太大。常見的近似做法：每個 frame 一個 **reference bit**，被存取就設成 1。frame 排成一圈，指標像時鐘的指針：
+
+- 指到的 page bit ＝ 1：給它**第二次機會**，bit 清成 0，指標往下走。
+- 指到的 page bit ＝ 0：踢掉它，新的 page 放進來（bit 設 1），指標往下走一格。
+
+3 個 frame，存取 1, 2, 3, 4, 2, 5, 2（括號裡是 reference bit）：
+
+| 存取 | frame 0 | frame 1 | frame 2 | 結果 | 說明 |
+|---|---|---|---|---|---|
+| 1, 2, 3 | 1 (1) | 2 (1) | 3 (1) | F F F | 依序放進空的 frame，指標回到 frame 0 |
+| 4 | 4 (1) | 2 (0) | 3 (0) | F | 三個 bit 都是 1，繞一圈全清成 0，回到 frame 0 踢掉 1 |
+| 2 | 4 (1) | 2 (1) | 3 (0) | hit | 2 的 bit 設回 1 |
+| 5 | 4 (1) | 2 (0) | 5 (1) | F | 指標在 frame 1：2 的 bit 是 1，清掉、放過它；frame 2 的 3 是 0，踢掉 |
+| 2 | 4 (1) | 2 (1) | 5 (1) | hit | 2 剛剛被放過，所以 hit |
+
+共 **5 次** fault。FIFO 在存取 5 時會踢掉最早進來的 2，最後的 2 就 fault，共 6 次；這裡 clock 跟 LRU 一樣是 5 次。**所有 bit 都是 1 時，clock 就退化成 FIFO**。
+
+#### 每個 process 分幾個 frame
+
+- **平均分配**：$m$ 個 frame、$n$ 個 process，每個分 $m/n$。
+- **按大小比例分配（proportional）**：process $i$ 大小 $s_i$、總和 $S$，分到 $\frac{s_i}{S}\times m$。例：64 個 frame，兩個 process 大小 20 和 140 page：$\frac{20}{160}\times64=8$、$\frac{140}{160}\times64=56$。
+- **global replacement**：要踢 page 時，可以從**所有** process 的 frame 挑（整體效率較好，但一個 process 的 fault 次數會受別人影響）。**local replacement**：只能從**自己的** frame 挑。
 
 ### 4.4 程式寫法與 page fault：二維陣列、次數的上下界 {#u4-pf}
 
@@ -1944,6 +2078,106 @@ kernel 自己要記憶體時常用 buddy system：
     **C. trap**。合法的位移是 0～299，300 已經超出這一段，MMU 會產生 trap。
 
 </div>
+
+### 4.6 觀念小考 {#u4-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** page 大小 1 KB，邏輯位址 2500 的 page 號碼和 offset 是？
+
+1. page 2、offset 500
+2. page 2、offset 452
+3. page 3、offset 452
+4. page 25、offset 0
+
+??? quiz "看解析"
+    **B**。$2500=2\times1024+452$。page 大小是 1024 不是 1000，A 是用 1000 去切的錯誤。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-2.** clock（second-chance）演算法中，指標指到的 page reference bit 是 1，會怎樣？
+
+1. 直接踢掉它
+2. 先寫回磁碟再踢掉
+3. 停止搜尋，這次不踢
+4. 把 bit 清成 0、放過它，指標往下一個
+
+??? quiz "看解析"
+    **D**。bit ＝ 1 表示最近被用過，給它第二次機會；繞回來時如果還是 0（這段時間都沒被用），才踢掉。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** 哪一種置換策略會出現 Belady's anomaly（frame 變多，fault 反而變多）？
+
+1. FIFO
+2. LRU
+3. OPT
+4. 三種都不會
+
+??? quiz "看解析"
+    **A**。LRU 和 OPT 是 stack algorithm：$n$ 個 frame 裡的 page，一定也在 $n+1$ 個 frame 裡，所以 frame 變多不會更差。FIFO 沒有這個性質，1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5 就是例子（[4.0](#u4-0) 的延伸練習）。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-4.** CPU 使用率很低、磁碟一直忙著 paging，作業系統應該？
+
+1. 再加入更多 process，讓 CPU 有事做
+2. 把 page 變小
+3. 減少同時執行的 process（暫停一些）
+4. 關掉 TLB
+
+??? quiz "看解析"
+    **C**。這是 thrashing：每個 process 分到的 frame 太少。A 正是讓情況更糟的做法（早期的排程器看到 CPU 閒就加 process）。暫停一些 process，把 frame 讓給其他人，fault 才會降下來。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 64 個 frame，兩個 process 大小是 20 和 140 page，用按比例分配，第一個 process 分到幾個 frame？
+
+1. 32
+2. 8
+3. 20
+4. 56
+
+??? quiz "看解析"
+    **B**。$\frac{20}{20+140}\times64=8$，另一個分到 56（D）。A 是平均分配。
+
+</div>
+
+**W-1.** page 大小 2 KB，page table：page 0 → frame 3、page 1 → frame 7、page 2 不在記憶體、page 3 → frame 2。邏輯位址 1000、4500、7000 各轉成什麼？
+
+??? quiz "看參考答案"
+    | 邏輯位址 | page、offset | frame | 實體位址 |
+    |---|---|---|---|
+    | 1000 | 0、1000 | 3 | $3\times2048+1000=7144$ |
+    | 4500 | 2、404 | 不在記憶體 | **page fault** |
+    | 7000 | 3、856 | 2 | $2\times2048+856=4952$ |
+
+    page 號碼 ＝ 位址 ÷ 2048 的商，offset ＝ 餘數；例如 $7000=3\times2048+856$。
+
+**W-2.** 3 個 frame，存取 3, 1, 4, 1, 5, 3, 1。clock 演算法（新放進來的 page bit 設 1）有幾次 fault？跟 FIFO、LRU 比較，為什麼 clock 沒有跟 LRU 一樣好？
+
+??? quiz "看參考答案"
+    | 存取 | frame 0 | frame 1 | frame 2 | 結果 |
+    |---|---|---|---|---|
+    | 3, 1, 4 | 3 (1) | 1 (1) | 4 (1) | F F F |
+    | 1 | 3 (1) | 1 (1) | 4 (1) | hit（bit 本來就是 1） |
+    | 5 | 5 (1) | 1 (0) | 4 (0) | F：全部是 1，繞一圈清掉，踢 frame 0 的 3 |
+    | 3 | 5 (1) | 3 (1) | 4 (0) | F：指標在 frame 1，1 的 bit 是 0，踢掉 1 |
+    | 1 | 5 (1) | 3 (1) | 1 (1) | F：指標在 frame 2，4 的 bit 是 0，踢掉 4 |
+
+    clock **6 次**，FIFO 也是 6 次；LRU 在存取 3 時會踢 4（1 比 4 晚用過），最後的 1 就 hit，只有 5 次。
+
+    原因：1 在 4 之後被用過，但在存取 5 時兩個的 bit 都被清成 0 了。只有 1 個 bit，clock 分不出誰比較晚用，只能照指標的順序踢。我用程式跑過三種策略，次數都對。
 
 ### 單元 4 小考 {#u4-quiz}
 
