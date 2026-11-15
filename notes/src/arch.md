@@ -1730,6 +1730,97 @@ add 在第 3 個 cycle 結束時其實已經算出 x1 了，只是還沒寫回�
 
 **load 不一樣**：load 的資料要到 MEM（第 4 個 cycle）結束才從記憶體拿到。下一條指令在第 4 個 cycle 就要用，資料還沒出來，forwarding 也來不及，**一定要停 1 個 cycle**（插入一個 bubble）。這就是 load-use hazard。
 
+<figure class="fig">
+<svg viewBox="0 0 356 274" role="img" aria-label="兩張 pipeline 時序圖。上：add 在第 3 個 cycle 的 EX 算出結果，箭頭直接送到 sub 在第 4 個 cycle 的 EX，不用停。下：lw 的資料在第 4 個 cycle 的 MEM 結束才拿到，add 第 4 個 cycle 停一拍，EX 延到第 5 個 cycle。">
+<text x="4" y="12" class="sm">forwarding：EX 算完直接送給下一條的 EX，不用停</text>
+<text x="73.5" y="32" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="116.5" y="32" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="159.5" y="32" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="202.5" y="32" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<text x="245.5" y="32" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<text x="288.5" y="32" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<text x="331.5" y="32" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<text x="46" y="56.0" text-anchor="end" dominant-baseline="central" class="mono">add</text>
+<rect class="box" x="53" y="42" width="41" height="28" rx="3"/>
+<text x="73.5" y="56.0" text-anchor="middle" dominant-baseline="central" class="sm">IF</text>
+<rect class="box" x="96" y="42" width="41" height="28" rx="3"/>
+<text x="116.5" y="56.0" text-anchor="middle" dominant-baseline="central" class="sm">ID</text>
+<rect class="fb" x="139" y="42" width="41" height="28" rx="3"/>
+<text x="159.5" y="56.0" text-anchor="middle" dominant-baseline="central" class="sm">EX</text>
+<rect class="fc" x="182" y="42" width="41" height="28" rx="3"/>
+<text x="202.5" y="56.0" text-anchor="middle" dominant-baseline="central" class="sm">MEM</text>
+<rect class="box" x="225" y="42" width="41" height="28" rx="3"/>
+<text x="245.5" y="56.0" text-anchor="middle" dominant-baseline="central" class="sm">WB</text>
+<text x="46" y="108.0" text-anchor="end" dominant-baseline="central" class="mono">sub</text>
+<rect class="box" x="96" y="94" width="41" height="28" rx="3"/>
+<text x="116.5" y="108.0" text-anchor="middle" dominant-baseline="central" class="sm">IF</text>
+<rect class="box" x="139" y="94" width="41" height="28" rx="3"/>
+<text x="159.5" y="108.0" text-anchor="middle" dominant-baseline="central" class="sm">ID</text>
+<rect class="fb" x="182" y="94" width="41" height="28" rx="3"/>
+<text x="202.5" y="108.0" text-anchor="middle" dominant-baseline="central" class="sm">EX</text>
+<rect class="fc" x="225" y="94" width="41" height="28" rx="3"/>
+<text x="245.5" y="108.0" text-anchor="middle" dominant-baseline="central" class="sm">MEM</text>
+<rect class="box" x="268" y="94" width="41" height="28" rx="3"/>
+<text x="288.5" y="108.0" text-anchor="middle" dominant-baseline="central" class="sm">WB</text>
+<line class="arw-a" x1="165.5" y1="71.0" x2="189.2" y2="87.8"/>
+<polygon class="ah-a" points="196.5,93.0 186.3,91.9 192.1,83.7"/>
+<text x="4" y="156" class="sm">load-use：資料 MEM 結束才有，下一條要停一拍</text>
+<text x="73.5" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="116.5" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="159.5" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="202.5" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<text x="245.5" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<text x="288.5" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<text x="331.5" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<text x="46" y="200.0" text-anchor="end" dominant-baseline="central" class="mono">lw</text>
+<rect class="box" x="53" y="186" width="41" height="28" rx="3"/>
+<text x="73.5" y="200.0" text-anchor="middle" dominant-baseline="central" class="sm">IF</text>
+<rect class="box" x="96" y="186" width="41" height="28" rx="3"/>
+<text x="116.5" y="200.0" text-anchor="middle" dominant-baseline="central" class="sm">ID</text>
+<rect class="fb" x="139" y="186" width="41" height="28" rx="3"/>
+<text x="159.5" y="200.0" text-anchor="middle" dominant-baseline="central" class="sm">EX</text>
+<rect class="fc" x="182" y="186" width="41" height="28" rx="3"/>
+<text x="202.5" y="200.0" text-anchor="middle" dominant-baseline="central" class="sm">MEM</text>
+<rect class="box" x="225" y="186" width="41" height="28" rx="3"/>
+<text x="245.5" y="200.0" text-anchor="middle" dominant-baseline="central" class="sm">WB</text>
+<text x="46" y="252.0" text-anchor="end" dominant-baseline="central" class="mono">add</text>
+<rect class="box" x="96" y="238" width="41" height="28" rx="3"/>
+<text x="116.5" y="252.0" text-anchor="middle" dominant-baseline="central" class="sm">IF</text>
+<rect class="box" x="139" y="238" width="41" height="28" rx="3"/>
+<text x="159.5" y="252.0" text-anchor="middle" dominant-baseline="central" class="sm">ID</text>
+<rect class="ft" x="182" y="238" width="41" height="28" rx="3"/>
+<text x="202.5" y="252.0" text-anchor="middle" dominant-baseline="central" class="sm">停</text>
+<rect class="fb" x="225" y="238" width="41" height="28" rx="3"/>
+<text x="245.5" y="252.0" text-anchor="middle" dominant-baseline="central" class="sm">EX</text>
+<rect class="fc" x="268" y="238" width="41" height="28" rx="3"/>
+<text x="288.5" y="252.0" text-anchor="middle" dominant-baseline="central" class="sm">MEM</text>
+<rect class="box" x="311" y="238" width="41" height="28" rx="3"/>
+<text x="331.5" y="252.0" text-anchor="middle" dominant-baseline="central" class="sm">WB</text>
+<line class="arw-a" x1="208.5" y1="215.0" x2="232.2" y2="231.8"/>
+<polygon class="ah-a" points="239.5,237.0 229.3,235.9 235.1,227.7"/>
+</svg>
+<figcaption>forwarding 只能把資料往「之後的時間」送：EX→下一個 cycle 的 EX 可以；MEM 結束才有的資料，就得等一拍</figcaption>
+</figure>
+
+#### 為什麼 5 級 pipeline 快不到 5 倍？
+
+理想上切成 $k$ 級、每級一樣長，就快 $k$ 倍。實際上有三個原因到不了：
+
+1. **各級不一樣長**：週期要配合最慢的那一級，其他級做完了也只能等。
+2. **pipeline 暫存器有延遲**：每一級後面都要存結果，每個 cycle 多一點固定的時間。
+3. **hazard 造成 stall**：load-use、branch 預測錯誤都會插 bubble，CPI 不再是 1。
+
+**有 stall 時的 CPI**：$\text{CPI}=1+\text{平均每條指令停幾個 cycle}$。例：30% 是 load，其中 40% 下一條就要用 → $1+0.3\times0.4\times1=1.12$。
+
+!!! key "pipeline 題要算什麼"
+    | 題目問 | 怎麼算 |
+    |---|---|
+    | 週期時間 | 非 pipeline：各級加總；pipeline：最慢一級（＋ pipeline 暫存器延遲） |
+    | 一條指令的延遲 | pipeline：級數 × 週期（會**變長**） |
+    | $n$ 條指令的總時間 | $(k+n-1)\times$ 週期，再加 stall |
+    | speedup | 非 pipeline 總時間 ÷ pipeline 總時間；指令很多時 ≈ 非 pipeline 週期 ÷ pipeline 週期 |
+    | 相依、要不要停 | 畫時序圖：有 forwarding 看 EX 時間，沒有 forwarding 看 WB 和 ID |
+
 !!! read "還不懂？看別人怎麼講"
     - **中文筆記**：〈[pipeline data hazard](https://hackmd.io/@fu_myN6KTla21R5GiHie3w/SJd7n-Rkc)〉：forwarding unit 的判斷條件（EX/MEM、MEM/WB 的 Rd 等於下一條的 Rs／Rt 時就 forward），配 COD 的 datapath 圖。
     - **中文筆記（資工所考生整理）**：[處理器：資料路徑與控制單元](https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter04.html)：先看懂單週期 datapath 的元件，pipeline 圖會好讀很多。
@@ -1772,6 +1863,12 @@ add 在第 3 個 cycle 結束時其實已經算出 x1 了，只是還沒寫回�
 
 ### 4.2 三種 hazard {#u4-2}
 
+**找相依的方法**：每條指令看它**讀**哪些暫存器，往上找最近一條**寫**那個暫存器的指令，就是一個 RAW（read after write）相依。再畫時序圖判斷：
+
+- **有 forwarding**：前一條是 ALU 指令 → 不用停；前一條是 load、而且緊接著用 → 停 1 個 cycle。
+- **沒有 forwarding**：讀的那條 ID 要等寫的那條 WB（register file 前半週期寫、後半週期讀的話可以同一個 cycle），差幾格就停幾格。
+- **WAR、WAW**（寫在讀之後、寫在寫之後）在 5 級依序執行的 pipeline 不會出問題，只有亂序執行（[8.5](#u8-ooo)）才要處理。
+
 | 種類 | 原因 | 解法 |
 |---|---|---|
 | structural | 兩條指令同時要用同一個硬體 | 複製硬體（例如分開的 I-cache、D-cache） |
@@ -1800,6 +1897,55 @@ add 在第 3 個 cycle 結束時其實已經算出 x1 了，只是還沒寫回�
     4.3：設沒 forwarding 時的 NOP 比例為 $x$，要 $(1+x)\times250>300$（forwarding 最好情況 0 個 NOP），得 $x>0.2$，**至少 20%**。
 
     這題是 COD 第 4 章的習題原題。
+
+!!! example "106 Q4（15%）：5 級 MIPS pipeline 執行下面 4 行。找出所有資料相依；哪些靠 forwarding 解決？哪些一定要 stall？"
+    ```text
+    1  add $3, $4, $2
+    2  sub $5, $3, $1
+    3  lw  $6, 200($3)
+    4  add $7, $3, $6
+    ```
+
+    **1. 找相依（4 個 RAW）**：
+
+    | 相依 | 暫存器 | 說明 |
+    |---|---|---|
+    | 1 → 2 | \$3 | 2 讀 \$3，最近寫它的是 1 |
+    | 1 → 3 | \$3 | 3 用 \$3 當位址的基底 |
+    | 1 → 4 | \$3 | 4 也讀 \$3 |
+    | 3 → 4 | \$6 | 4 讀 lw 載入的 \$6 |
+
+    **2. 哪些是 hazard、怎麼解決**：
+
+    | 相依 | 結果 | 理由 |
+    |---|---|---|
+    | 1 → 2 | forwarding（EX/MEM → EX） | 緊接著用，ALU 的結果在 EX 結束就有 |
+    | 1 → 3 | forwarding（MEM/WB → EX） | 隔一條，從下一級的暫存器送過去 |
+    | 1 → 4 | 不是 hazard | 4 在第 5 個 cycle 的 ID 讀 \$3，1 剛好在第 5 個 cycle 的 WB 寫入（前半寫、後半讀） |
+    | 3 → 4 | **stall 1 個 cycle**，再 forwarding | load-use：\$6 要到 lw 的 MEM 結束才有 |
+
+    **3. 總共**：4 條指令 ＋ 填滿 pipeline 的 4 個 cycle ＋ 1 個 stall ＝ **9 個 cycle**。我用一個小模擬器跑過，結果一樣。
+
+!!! example "103 Q7（8%）：5 級 pipeline 執行 `lw $1,40($6)`、`add $6,$2,$2`、`sw $6,50($1)`。(a) 指出相依和種類 (b) 沒有 forwarding 時，插入 NOP 消除 hazard"
+    **(a) 三個相依**：
+
+    | 相依 | 種類 | 說明 |
+    |---|---|---|
+    | lw → sw | RAW（\$1） | sw 用 \$1 當位址基底 |
+    | add → sw | RAW（\$6） | sw 要存的資料是 \$6 |
+    | lw → add | WAR（\$6） | lw 先讀 \$6、add 後寫 \$6；依序執行的 pipeline 不會出錯 |
+
+    **(b) 插 2 個 NOP**（假設 register file 前半週期寫、後半週期讀）：
+
+    | 指令 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+    |---|---|---|---|---|---|---|---|---|---|
+    | lw | IF | ID | EX | MEM | WB | | | | |
+    | add | | IF | ID | EX | MEM | **WB** | | | |
+    | nop | | | IF | ID | EX | MEM | WB | | |
+    | nop | | | | IF | ID | EX | MEM | WB | |
+    | sw | | | | | IF | **ID** | EX | MEM | WB |
+
+    sw 要在 ID 讀到 add 寫回的 \$6：add 在第 6 個 cycle WB，所以 sw 的 ID 最早在第 6 個 cycle，要往後推 2 格。lw 的 \$1 在第 5 個 cycle 就寫回了，同時也滿足。若 register file 不能同一個 cycle 先寫後讀，就要 **3 個 NOP**。答案寫清楚你的假設。
 
 ### 4.3 單週期與多週期 datapath {#u4-dp}
 
@@ -2031,6 +2177,108 @@ lw 用到最多元件，所以最慢。算 PC＋4 和 branch 目標的 adder 跟
     多週期的每個 cycle 長度是最慢的一步（記憶體 200 ps），但讀、寫暫存器只要 50 ps，也得佔一整個 200 ps 的 cycle，浪費很多時間。加上大部分指令要 4 個 cycle（800 ps），平均起來比單週期還久。
 
     多週期要划算，各步驟的時間要**差不多長**，而且各指令需要的步驟數要**差很多**（例如有很慢的乘除法指令，單週期得把週期拉到乘除法那麼長，多週期只讓乘除法多跑幾個 cycle）。
+
+### 4.4 觀念小考 {#u4-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** 把處理器改成 5 級 pipeline 之後，下面哪一句對？
+
+1. 每一條指令從開始到結束的時間變短了
+2. 時脈不變，只是一次做 5 條
+3. 每個 cycle 可以完成一條指令，吞吐量變高；單一指令的延遲沒有變短
+4. 一定快 5 倍
+
+??? quiz "看解析"
+    **C**。pipeline 讓好幾條指令重疊執行，每個 cycle 都有一條完成；但一條指令還是要走完 5 級，延遲甚至因為 pipeline 暫存器和最慢那級而變長一點。D 錯，各級不平均和 hazard 都會讓它不到 5 倍。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-2.** 各級延遲 200、150、300、250、100 ps，pipeline 的週期最少是多少？
+
+1. 200 ps
+2. 300 ps
+3. 1000 ps
+4. 250 ps
+
+??? quiz "看解析"
+    **B. 300 ps**。每一級都要在同一個節拍內做完，只能配合最慢的那一級。C 是不切 pipeline（single-cycle）的週期。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** 有 forwarding 的 5 級 pipeline，下面哪一組**一定**要 stall？
+
+1. `add x1,x2,x3` 接 `sub x4,x1,x5`
+2. `add x1,x2,x3` 接 `sw x1,0(x6)`
+3. `sub x1,x2,x3` 接一條無關指令，再接 `add x4,x1,x1`
+4. `lw x1,0(x2)` 接 `add x3,x1,x4`
+
+??? quiz "看解析"
+    **D**。load-use：lw 的資料要到 MEM 結束才有，下一條的 EX 已經開始了，只能停一拍。A、B、C 前一條都是 ALU 指令，EX 結束就有結果，forward 過去就好。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-4.** 30% 的指令是 load，其中 40% 下一條指令就要用載入的值（有 forwarding，其他都不用停）。CPI 是多少？
+
+1. 1.12
+2. 1.3
+3. 1.4
+4. 1.7
+
+??? quiz "看解析"
+    **A. 1.12**。每條 load-use 停 1 個 cycle：$1+0.3\times0.4\times1=1.12$。B 是把所有 load 都算成要停。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** IF 要讀指令、MEM 要讀資料，如果只有一個記憶體，同一個 cycle 兩個都要用，會造成哪一種 hazard？怎麼解決？
+
+1. data hazard；用 forwarding
+2. structural hazard；把指令和資料的記憶體（cache）分開
+3. control hazard；用分支預測
+4. 不會有 hazard
+
+??? quiz "看解析"
+    **B**。兩條指令同時要用同一個硬體是 structural hazard。分成 I-cache 和 D-cache，兩邊就可以同時存取。
+
+</div>
+
+**W-1.** 有 forwarding 的 5 級 pipeline 執行下面 4 行，找出所有 RAW 相依，哪裡要 stall？總共幾個 cycle？
+
+```text
+lw  $2, 0($1)
+add $4, $2, $3
+sub $5, $4, $2
+sw  $5, 4($1)
+```
+
+??? quiz "看參考答案"
+    | 相依 | 暫存器 | 處理 |
+    |---|---|---|
+    | lw → add | \$2 | **load-use，stall 1 個 cycle**，再從 MEM/WB forward |
+    | lw → sub | \$2 | 停過一拍之後，從 register file 或 forwarding 拿到，不用再停 |
+    | add → sub | \$4 | forwarding（EX/MEM → EX） |
+    | sub → sw | \$5 | forwarding |
+
+    總共 $5+3+1=$ **9 個 cycle**（4 條指令、填滿 4 個 cycle、1 個 stall）。
+
+**W-2.** 5 級延遲 300、200、250、200、250 ps，每級後面的 pipeline 暫存器多 20 ps。非 pipeline 和 pipeline 的週期各是多少？指令很多時，speedup 大約多少？為什麼不是 5？
+
+??? quiz "看參考答案"
+    - **非 pipeline 週期（1200 ps）**：$300+200+250+200+250$。
+    - **pipeline 週期（320 ps）**：最慢一級 300 ＋ 暫存器 20。
+    - **speedup（約 3.75）**：$1200\div320=3.75$。
+
+    不是 5 倍：各級不平均（被 300 ps 那級拖住），加上每級多了 20 ps 的暫存器延遲。
 
 ### 單元 4 小考 {#u4-quiz}
 
