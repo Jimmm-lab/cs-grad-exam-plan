@@ -32,9 +32,14 @@ Settings → Pages → Source 選 `Deploy from a branch`，Branch 選 `main`、�
 教材的原始檔是 `notes/src/*.md`（Markdown），用下面的指令轉成 `notes/*.html`：
 
 ```bash
-pip install markdown pymdown-extensions
+pip install markdown pymdown-extensions beautifulsoup4
+```
+
+```bash
 python3 tools/build_notes.py
 ```
+
+建完會自動跑 `tools/check_quiz_ids.py`：手寫筆跡和作答紀錄是用題目 id 存的，舊題目的 id 如果被挪動（例如在舊題目前面插了新題目，卻沒有用 `data-qid` 包起來），會列出受影響的題目並回傳錯誤；新增的題目會記進 `tools/quiz_ids.json`。沒裝 beautifulsoup4 就跳過這個檢查。
 
 Markdown 寫法：
 

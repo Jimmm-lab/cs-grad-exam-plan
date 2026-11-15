@@ -124,3 +124,7 @@ if __name__ == "__main__":
             build(slug, label)
         else:
             print("skip", slug, file=sys.stderr)
+    # 手寫筆跡和作答紀錄是用題目 id 存的：建完檢查舊題目的 id 有沒有被挪動（tools/check_quiz_ids.py）
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    import check_quiz_ids
+    sys.exit(check_quiz_ids.main())

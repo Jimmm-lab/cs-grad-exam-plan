@@ -5588,6 +5588,15 @@ sw  $t0,48($s3)</code></pre>
   function load() { try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) { return {}; } }
   function save(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} if (window.CGEP_STATE) window.CGEP_STATE.touch(KEY); }
   var rec = load();
+  // 一次性修正：計結 2.0 的 T-0 曾經有一天沒有固定 id，那時候 T-0～T-3 的紀錄存在往後挪一格的 id 上
+  // （q-u2-0-4 只在那段時間存在，有它就表示是那時候作答的）。搬回正確的題目，頁面載入完再標記成要同步
+  if (KEY === "cgep:quiz:arch" && rec["q-u2-0-4"] !== undefined && rec["q-u2-0-t0"] === undefined) {
+    var mv = [["q-u2-0-1", "q-u2-0-t0"], ["q-u2-0-2", "q-u2-0-1"], ["q-u2-0-3", "q-u2-0-2"], ["q-u2-0-4", "q-u2-0-3"]], old = {};
+    mv.forEach(function (m) { old[m[0]] = rec[m[0]]; delete rec[m[0]]; });
+    mv.forEach(function (m) { if (old[m[0]] !== undefined) rec[m[1]] = old[m[0]]; });
+    save(rec);
+    document.addEventListener("DOMContentLoaded", function () { if (window.CGEP_STATE) window.CGEP_STATE.touch(KEY); });
+  }
   var quizzes = Array.prototype.slice.call(document.querySelectorAll("details.quiz"));
   var seen = {};
   quizzes.forEach(function (d, i) {

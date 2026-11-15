@@ -948,16 +948,63 @@
       else if (open) pad.layout();
     });
   });
-  store.keys().then(function (keys) {
-    (keys || []).forEach(function (k) { if (toggles[k]) markToggle(toggles[k], true); });
-  }).catch(function () {});
+  /* ---------- 一次性修正：題號曾經錯開的那段時間寫的筆跡，搬回正確的題目 ---------- */
+  // 計結 2.0「換你試試」新加的 T-0 在 2026-11-10 18:20 到 11-11 16:35（UTC，加上快取多抓 11 分鐘）之間沒有固定 id，
+  // T-0～T-3 用了往後挪一格的 id（T-0 是 q-u2-0-1……T-3 是 q-u2-0-4）。只搬那段時間存的筆跡；
+  // 搬過去的那題如果已經有後來寫的筆跡，舊的接在下面，不會蓋掉。搬完時間會更新，所以只搬一次，也會同步到雲端。
+  var REMAP = {
+    arch: { from: Date.UTC(2026, 10, 10, 18, 20), to: Date.UTC(2026, 10, 11, 16, 46),
+      moves: [["q-u2-0-1", "q-u2-0-t0"], ["q-u2-0-2", "q-u2-0-1"], ["q-u2-0-3", "q-u2-0-2"], ["q-u2-0-4", "q-u2-0-3"]] }
+  };
+  var remapKeys = {};
+  if (REMAP[SLUG]) REMAP[SLUG].moves.forEach(function (m) { remapKeys[SLUG + ":" + m[0]] = remapKeys[SLUG + ":" + m[1]] = 1; });
+  function inked(v) { return !!(v && v.s && v.s.length); }
+  // 兩塊筆跡疊成一塊：top 原本的在上面，add 接在它下面
+  function stackPads(top, add) {
+    var dy = top.H || DEFAULT_H;
+    var moved = add.s.map(function (s) {
+      var o = {}, k;
+      for (k in s) o[k] = s[k];
+      o.p = s.p.slice();
+      for (var i = 1; i < o.p.length; i += 3) o.p[i] += dy;
+      return o;
+    });
+    return { v: 1, H: dy + (add.H || DEFAULT_H), s: top.s.concat(moved) };
+  }
+  // 回傳有改到的 key
+  function remap() {
+    var R = REMAP[SLUG];
+    if (!R) return Promise.resolve([]);
+    var ids = Object.keys(remapKeys).map(function (k) { return k.slice(SLUG.length + 1); });
+    return Promise.all(ids.map(function (id) { return store.get(SLUG + ":" + id).catch(function () { return null; }); })).then(function (vals) {
+      var cur = {}, leaving = {}, filled = {}, jobs = [], changed = [], now = Date.now();
+      ids.forEach(function (id, i) { cur[id] = vals[i]; });
+      var src = R.moves.filter(function (m) { var v = cur[m[0]]; return inked(v) && v.t >= R.from && v.t <= R.to; });
+      if (!src.length) return [];
+      src.forEach(function (m) { leaving[m[0]] = 1; });
+      src.forEach(function (m) {
+        var a = cur[m[0]], b = leaving[m[1]] ? null : cur[m[1]];
+        var v = inked(b) ? stackPads(b, a) : { v: 1, H: a.H || DEFAULT_H, s: a.s };
+        v.t = now;
+        filled[m[1]] = 1;
+        jobs.push(store.put(SLUG + ":" + m[1], v));
+        changed.push(SLUG + ":" + m[1]);
+      });
+      Object.keys(leaving).forEach(function (id) {
+        if (filled[id]) return;
+        jobs.push(DB.remove(SLUG + ":" + id, now));
+        changed.push(SLUG + ":" + id);
+      });
+      return Promise.all(jobs).then(function () { return changed; });
+    }).catch(function () { return []; });
+  }
 
-  // 雲端同步拉下比較新的筆跡：更新按鈕上的「有筆跡」，已經打開的手寫板重新載入
-  document.addEventListener("cgep:ink-remote", function (e) {
-    (e.detail.keys || []).forEach(function (k) {
+  // 重新讀這幾題：更新按鈕上的「有筆跡」，已經打開的手寫板重新載入
+  function refresh(keys, note) {
+    keys.forEach(function (k) {
       if (!toggles[k]) return;
       store.get(k).then(function (v) {
-        var has = !!(v && v.s && v.s.length);
+        var has = inked(v);
         markToggle(toggles[k], has);
         var pad = padsByKey[k];
         if (!pad || pad.busy) return;
@@ -966,9 +1013,22 @@
         pad.H = (v && v.H) || DEFAULT_H;
         pad.hist = []; pad.fut = [];
         pad.layout(); pad.syncTools();
-        pad.status("已載入雲端上比較新的筆跡");
+        pad.status(note);
       });
     });
+  }
+
+  remap().then(function () { return store.keys(); }).then(function (keys) {
+    (keys || []).forEach(function (k) { if (toggles[k]) markToggle(toggles[k], true); });
+  }).catch(function () {});
+
+  // 雲端同步拉下比較新的筆跡（別台裝置還沒搬過的舊筆跡，拉下來之後也在這裡搬）
+  document.addEventListener("cgep:ink-remote", function (e) {
+    var keys = e.detail.keys || [];
+    refresh(keys, "已載入雲端上比較新的筆跡");
+    if (keys.some(function (k) { return remapKeys[k]; })) {
+      remap().then(function (moved) { if (moved.length) refresh(moved, "筆跡已搬回正確的題目"); });
+    }
   });
   document.addEventListener("cgep:synced", function (e) {
     (e.detail.pushed || []).forEach(function (k) { if (padsByKey[k]) padsByKey[k].status("已同步到雲端"); });
