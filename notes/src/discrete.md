@@ -2745,6 +2745,14 @@ $$x\equiv2\pmod3,\quad x\equiv3\pmod5,\quad x\equiv2\pmod7$$
 
 如果兩種長度都不超過 2，標籤只有 $2\times2=4$ 種（籠子），所以第 5 個數一定會讓某個長度變成 3。一般化：$n^2+1$ 個數一定有長度 $n+1$ 的單調子序列。
 
+!!! key "鴿籠題怎麼寫"
+    1. **改寫結論**：把要證明的東西寫成「有兩個（或 $k$ 個）東西，某個性質相同」。
+    2. **籠子 ＝ 那個性質的所有可能值**，數出有幾種；**鴿子 ＝ 那些東西**，數出有幾個。
+    3. **鴿子比籠子多**（或多於 $kn$），所以有兩個（或 $k+1$ 個）同籠；再說明同籠為什麼推得到結論（例如同餘的兩個數相減）。
+    4. **問「至少要幾個」**：答案是 籠子數 ×（每籠最多幾個）＋ 1，**再舉一個少一個就不成立的例子**，答案才完整。
+
+    名詞對照：pigeonhole principle（鴿籠原理）、generalized pigeonhole principle（推廣的鴿籠原理）、monotone subsequence（單調子序列）、Ramsey number（Ramsey 數）。
+
 !!! read "還不懂？看別人怎麼講"
     - **中文筆記（資工所考生整理）**：[鴿籠原理](https://saberliou.github.io/PrepareCSEMaster/DiscreteMathematics/Chapter02/06.html)。
     - **中文文章**：台大數學系〈[鴿籠原理](https://episte.math.ntu.edu.tw/articles/mm/mm_02_4_07/index.html)〉，很多「籠子要自己設計」的例子。
@@ -2803,6 +2811,90 @@ $n+1$ 隻鴿子放進 $n$ 個籠子，至少一個籠子有 2 隻。推廣：$kn
 
     - 如果 B、C、D 中有任兩人認識，這兩人加上 A 就是互相認識的三人組。
     - 如果 B、C、D 兩兩都不認識，他們就是互不認識的三人組。∎
+
+用圖看這個證明（實線是認識、虛線是不認識）：
+
+<figure class="fig">
+<svg viewBox="0 0 360 214" role="img" aria-label="從 A 看其他 5 個人：A 跟 B、C、D 認識（實線），跟 E、F 不認識（虛線），至少 3 條是同一種。右上：如果 B、C 認識，A、B、C 三人互相認識。右下：如果 B、C、D 兩兩都不認識，他們就是互不認識的三人。">
+<line class="arw-a" x1="55.8099" y1="97.4697" x2="128.19" y2="34.5303"/>
+<line class="arw-a" x1="58.2668" y1="101.696" x2="147.733" y2="70.3041"/>
+<line class="arw-a" x1="59" y1="106" x2="155" y2="106"/>
+<line class="dash" x1="58.2668" y1="110.304" x2="147.733" y2="141.696"/>
+<line class="dash" x1="55.8099" y1="114.53" x2="128.19" y2="177.47"/>
+<circle class="fa" cx="46" cy="106" r="13"/>
+<text x="46" y="106" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<circle class="fa" cx="138" cy="26" r="13"/>
+<text x="138" y="26" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<circle class="fa" cx="160" cy="66" r="13"/>
+<text x="160" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">C</text>
+<circle class="fa" cx="168" cy="106" r="13"/>
+<text x="168" y="106" text-anchor="middle" dominant-baseline="central" class="sm mono">D</text>
+<circle class="box" cx="160" cy="146" r="13"/>
+<text x="160" y="146" text-anchor="middle" dominant-baseline="central" class="sm mono">E</text>
+<circle class="box" cx="138" cy="186" r="13"/>
+<text x="138" y="186" text-anchor="middle" dominant-baseline="central" class="sm mono">F</text>
+<line class="dash" x1="204" y1="14" x2="204" y2="200"/>
+<line class="arw-a" x1="261" y1="30" x2="305" y2="30"/>
+<line class="arw-a" x1="255.872" y1="40.3458" x2="275.128" y2="65.6542"/>
+<line class="arw-a" x1="310.128" y1="40.3458" x2="290.872" y2="65.6542"/>
+<circle class="fa" cx="248" cy="30" r="13"/>
+<text x="248" y="30" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<circle class="fa" cx="318" cy="30" r="13"/>
+<text x="318" y="30" text-anchor="middle" dominant-baseline="central" class="sm mono">C</text>
+<circle class="fa" cx="283" cy="76" r="13"/>
+<text x="283" y="76" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="283" y="100" text-anchor="middle" dominant-baseline="central" class="sm">B、C 認識</text>
+<line class="dash" x1="261" y1="132" x2="305" y2="132"/>
+<line class="dash" x1="255.872" y1="142.346" x2="275.128" y2="167.654"/>
+<line class="dash" x1="310.128" y1="142.346" x2="290.872" y2="167.654"/>
+<circle class="fb" cx="248" cy="132" r="13"/>
+<text x="248" y="132" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<circle class="fb" cx="318" cy="132" r="13"/>
+<text x="318" y="132" text-anchor="middle" dominant-baseline="central" class="sm mono">C</text>
+<circle class="fb" cx="283" cy="178" r="13"/>
+<text x="283" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">D</text>
+<text x="283" y="204" text-anchor="middle" dominant-baseline="central" class="sm">都不認識</text>
+</svg>
+<figcaption>A 的 5 條線裡至少 3 條同一種；那 3 個人之間不管怎麼連，都會出現同一種的三角形</figcaption>
+</figure>
+
+#### 5 個人為什麼不夠
+
+5 個人可以完全躲掉：排成一圈，相鄰的互相認識、不相鄰的互不認識。
+
+<figure class="fig">
+<svg viewBox="0 0 360 176" role="img" aria-label="5 個人排成一圈：相鄰的互相認識（實線，五邊形），不相鄰的互不認識（虛線，星形）。任挑 3 個人，一定同時有實線和虛線，所以沒有 3 人互相認識，也沒有 3 人互不認識。">
+<line class="arw-a" x1="219.483" y1="31.6412" x2="177.747" y2="61.9637"/>
+<line class="dash" x1="225.983" y1="36.3637" x2="195.223" y2="131.031"/>
+<line class="arw-a" x1="171.247" y1="81.9686" x2="187.189" y2="131.031"/>
+<line class="dash" x1="177.747" y1="77.2461" x2="258.277" y2="135.754"/>
+<line class="arw-a" x1="204.206" y1="143.395" x2="255.794" y2="143.395"/>
+<line class="dash" x1="201.723" y1="135.754" x2="282.253" y2="77.2461"/>
+<line class="arw-a" x1="272.811" y1="131.031" x2="288.753" y2="81.9686"/>
+<line class="dash" x1="264.777" y1="131.031" x2="234.017" y2="36.3637"/>
+<line class="arw-a" x1="282.253" y1="61.9637" x2="240.517" y2="31.6412"/>
+<line class="dash" x1="279.77" y1="69.6049" x2="180.23" y2="69.6049"/>
+<circle class="fa" cx="230" cy="24" r="13"/>
+<text x="230" y="24" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<circle class="fa" cx="167.23" cy="69.6049" r="13"/>
+<text x="167.23" y="69.6049" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<circle class="fa" cx="191.206" cy="143.395" r="13"/>
+<text x="191.206" y="143.395" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<circle class="fa" cx="268.794" cy="143.395" r="13"/>
+<text x="268.794" y="143.395" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<circle class="fa" cx="292.77" cy="69.6049" r="13"/>
+<text x="292.77" y="69.6049" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<line class="arw-a" x1="14" y1="60" x2="54" y2="60"/>
+<text x="62" y="60" text-anchor="start" dominant-baseline="central" class="sm">認識</text>
+<line class="dash" x1="14" y1="92" x2="54" y2="92"/>
+<text x="62" y="92" text-anchor="start" dominant-baseline="central" class="sm">不認識</text>
+</svg>
+<figcaption>外圈的五邊形是認識、裡面的星形是不認識：沒有三條同一種的線圍成三角形</figcaption>
+</figure>
+
+任挑 3 個人，裡面一定有相鄰的（實線）也有不相鄰的（虛線），所以 6 是**最少**的人數，記作 $R(3,3)=6$。我用程式把 6 個人的 $2^{15}$ 種情況全部檢查過，每一種都有同一種的三角形。
+
+**一般的 Ramsey 數** $R(m,n)$：保證「有 $m$ 人互相認識，或有 $n$ 人互不認識」的最少人數。已知 $R(3,4)=9$、$R(4,4)=18$，再大一點的，大多連確切的值都還不知道。
 
 ### 6.4 鴿籠的經典構造 {#u6-4}
 
@@ -2913,6 +3005,100 @@ $n+1$ 隻鴿子放進 $n$ 個籠子，至少一個籠子有 2 隻。推廣：$kn
 
     - **三種餘數都出現**：各挑一個，$0+1+2=3$，和是 3 的倍數。
     - **最多只出現兩種**：5 個數放進 2 種餘數，由鴿籠，有一種至少 3 個，挑那 3 個，和是 3 × 那個餘數，也是 3 的倍數。∎
+
+### 6.5 觀念小考 {#u6-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 一個班 40 人，保證至少有幾個人是同一個星座（12 個星座）？
+
+1. 3
+2. 4
+3. 5
+4. 12
+
+??? quiz "看解析"
+    **B**。$\lceil40/12\rceil=4$：如果每個星座最多 3 人，最多只有 36 人，不夠 40。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-2.** 至少要幾個人，才保證有 5 個人同一個月出生？
+
+1. 48
+2. 60
+3. 49
+4. 61
+
+??? quiz "看解析"
+    **C**。$12\times4+1=49$。48 人不夠：每個月剛好 4 人，就沒有 5 人同月。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** 26 個相異實數，保證有多長的遞增或遞減子序列？
+
+1. 6
+2. 5
+3. 13
+4. 26
+
+??? quiz "看解析"
+    **A**。$26=5^2+1$，由 Erdős–Szekeres，保證長度 $5+1=6$。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** 5 個人裡，一定有 3 人互相認識或 3 人互不認識嗎？
+
+1. 一定
+2. 只有人數是質數時才一定
+3. 一定有 3 人互相認識
+4. 不一定：5 人排成一圈、只有相鄰的認識，就是反例
+
+??? quiz "看解析"
+    **D**。這就是上面的五邊形。要 6 個人才保證，$R(3,3)=6$。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 證明了「從 $\{1,\dots,2n\}$ 選 $n+1$ 個數，一定有一個整除另一個」之後，要說明選 $n$ 個不夠，可以舉哪一組？
+
+1. $1,2,\dots,n$
+2. $n+1,n+2,\dots,2n$
+3. $2,4,\dots,2n$
+4. $1,3,\dots,2n-1$
+
+??? quiz "看解析"
+    **B**。最小的 $n+1$ 乘 2 就超過 $2n$，誰都不整除誰。A 和 D 有 1，1 整除每個數；C 裡 2 整除 4。
+
+</div>
+
+**W-1.** 任選 10 個 1～100 之間的相異整數，證明一定能找到兩個**不相交**的非空子集合，元素和相同。
+
+??? quiz "看參考答案"
+    - **鴿子**：10 個數的非空子集合，共 $2^{10}-1=1023$ 個。
+    - **籠子**：子集合的和，最小 1，最大不超過 $91+92+\cdots+100=955$，只有 955 種。
+    - **鴿籠**：1023 ＞ 955，有兩個不同的子集合 $X\ne Y$，和相同。
+    - **讓它們不相交**：把共同的元素從兩邊拿掉，兩邊減掉一樣的數，和還是相等。兩邊都不會變成空的：如果 $X\subsetneq Y$，$Y$ 多出來的都是正數，和會比較大，矛盾；反過來也一樣。∎
+
+**W-2.** 一個棋手 30 天內一共下了 45 盤棋，每天至少下 1 盤。證明有連續幾天，剛好一共下了 14 盤。
+
+??? quiz "看參考答案"
+    令 $a_i$ ＝ 前 $i$ 天一共下了幾盤。每天至少 1 盤，所以 $1\le a_1<a_2<\cdots<a_{30}=45$。再看 $a_1+14<a_2+14<\cdots<a_{30}+14$，都在 15 到 59 之間。
+
+    - **鴿子**：這 60 個數。
+    - **籠子**：1 到 59，共 59 種值。
+
+    60 ＞ 59，有兩個相等。同一組裡的數兩兩不同（嚴格遞增），所以一定是 $a_j=a_i+14$（$i<j$）：第 $i+1$ 天到第 $j$ 天，剛好下了 14 盤。∎
+
+    我用程式隨機產生了兩萬種下法，每一種都找得到這樣的連續幾天。
 
 ### 單元 6 小考 {#u6-quiz}
 
