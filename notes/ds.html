@@ -1372,7 +1372,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <h4 id="quick-sort-merge-sort">quick sort 和 merge sort</h4>
 <ul>
 <li><strong>quick sort</strong>：選一個 pivot，比它小的放左邊、大的放右邊，再各自遞迴。pivot 剛好在中間時每次切一半，<span class="arithmatex">\(O(n\log n)\)</span>；資料已經排好又每次選第一個當 pivot，每次只切掉一個，變成 <span class="arithmatex">\(O(n^2)\)</span>。</li>
-<li><strong>merge sort</strong>：切成兩半各自排好，再<strong>合併</strong>兩個排好的序列。合併 [1, 4, 7] 和 [2, 3, 9]：每次比較兩邊最前面的，小的拿出來 → 1, 2, 3, 4, 7, 9。</li>
+<li><strong>merge sort</strong>：切成兩半各自排好，再<strong>合併</strong>兩個排好的序列。合併 [1, 4, 7] 和 [2, 3, 9]：每次比較兩邊最前面的，小的拿出來 → 1, 2, 3, 4, 7, 9。這裡比較了 5 次：每比一次就輸出一個數，左邊用完之後，剩下的 9 直接接上去。長度 <span class="arithmatex">\(m\)</span>、<span class="arithmatex">\(n\)</span> 的兩個序列最多比較 <span class="arithmatex">\(m+n-1\)</span> 次。</li>
 </ul>
 <p><strong>為什麼 merge sort 是 <span class="arithmatex">\(O(n\log n)\)</span></strong>：把 8 個數一直對半切：</p>
 <pre class="highlight"><code class="language-text">第 0 層：[5 2 4 7 1 3 2 6]
@@ -1381,7 +1381,238 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 第 3 層：[5][2][4][7][1][3][2][6]</code></pre>
 <p>每一層分別是 1、2、4、8 段，每段 8、4、2、1 個數。</p>
 <p><span class="arithmatex">\(n\)</span> 個數每次減半，切 <span class="arithmatex">\(\log_2 n\)</span> 次才剩 1 個（<span class="arithmatex">\(8\to4\to2\to1\)</span> 是 3 次）。合併回去時，<strong>每一層</strong>的所有段加起來剛好是 <span class="arithmatex">\(n\)</span> 個數，每個數搬一次，所以一層 <span class="arithmatex">\(O(n)\)</span>、共 <span class="arithmatex">\(\log_2n\)</span> 層 → <span class="arithmatex">\(O(n\log n)\)</span>。不管資料長什麼樣都要切這麼多層，所以最差也一樣。</p>
+<figure class="fig">
+<svg viewBox="0 0 360 246" role="img" aria-label="merge sort 合併的過程：5 2 4 7 1 3 2 6 先是 8 段各 1 個數，兩兩合併成 4 段（2 5、4 7、1 3、2 6），再合併成 2 段（2 4 5 7、1 2 3 6），最後合併成 1 段 1 2 2 3 4 5 6 7。每一層都是 8 個數，共合併 3 層。">
+<rect class="box" x="52" y="10" width="30" height="30"/>
+<text x="67" y="25" text-anchor="middle" dominant-baseline="central">5</text>
+<rect class="box" x="90.5714" y="10" width="30" height="30"/>
+<text x="105.571" y="25" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="box" x="129.143" y="10" width="30" height="30"/>
+<text x="144.143" y="25" text-anchor="middle" dominant-baseline="central">4</text>
+<rect class="box" x="167.714" y="10" width="30" height="30"/>
+<text x="182.714" y="25" text-anchor="middle" dominant-baseline="central">7</text>
+<rect class="box" x="206.286" y="10" width="30" height="30"/>
+<text x="221.286" y="25" text-anchor="middle" dominant-baseline="central">1</text>
+<rect class="box" x="244.857" y="10" width="30" height="30"/>
+<text x="259.857" y="25" text-anchor="middle" dominant-baseline="central">3</text>
+<rect class="box" x="283.429" y="10" width="30" height="30"/>
+<text x="298.429" y="25" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="box" x="322" y="10" width="30" height="30"/>
+<text x="337" y="25" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="42" y="25" text-anchor="end" dominant-baseline="central" class="sm">8 段</text>
+<rect class="fa" x="52" y="76" width="30" height="30"/>
+<text x="67" y="91" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fa" x="82" y="76" width="30" height="30"/>
+<text x="97" y="91" text-anchor="middle" dominant-baseline="central">5</text>
+<rect class="fa" x="132" y="76" width="30" height="30"/>
+<text x="147" y="91" text-anchor="middle" dominant-baseline="central">4</text>
+<rect class="fa" x="162" y="76" width="30" height="30"/>
+<text x="177" y="91" text-anchor="middle" dominant-baseline="central">7</text>
+<rect class="fa" x="212" y="76" width="30" height="30"/>
+<text x="227" y="91" text-anchor="middle" dominant-baseline="central">1</text>
+<rect class="fa" x="242" y="76" width="30" height="30"/>
+<text x="257" y="91" text-anchor="middle" dominant-baseline="central">3</text>
+<rect class="fa" x="292" y="76" width="30" height="30"/>
+<text x="307" y="91" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fa" x="322" y="76" width="30" height="30"/>
+<text x="337" y="91" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="42" y="91" text-anchor="end" dominant-baseline="central" class="sm">4 段</text>
+<rect class="fa" x="52" y="142" width="30" height="30"/>
+<text x="67" y="157" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fa" x="82" y="142" width="30" height="30"/>
+<text x="97" y="157" text-anchor="middle" dominant-baseline="central">4</text>
+<rect class="fa" x="112" y="142" width="30" height="30"/>
+<text x="127" y="157" text-anchor="middle" dominant-baseline="central">5</text>
+<rect class="fa" x="142" y="142" width="30" height="30"/>
+<text x="157" y="157" text-anchor="middle" dominant-baseline="central">7</text>
+<rect class="fa" x="232" y="142" width="30" height="30"/>
+<text x="247" y="157" text-anchor="middle" dominant-baseline="central">1</text>
+<rect class="fa" x="262" y="142" width="30" height="30"/>
+<text x="277" y="157" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fa" x="292" y="142" width="30" height="30"/>
+<text x="307" y="157" text-anchor="middle" dominant-baseline="central">3</text>
+<rect class="fa" x="322" y="142" width="30" height="30"/>
+<text x="337" y="157" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="42" y="157" text-anchor="end" dominant-baseline="central" class="sm">2 段</text>
+<rect class="fc" x="82" y="208" width="30" height="30"/>
+<text x="97" y="223" text-anchor="middle" dominant-baseline="central">1</text>
+<rect class="fc" x="112" y="208" width="30" height="30"/>
+<text x="127" y="223" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fc" x="142" y="208" width="30" height="30"/>
+<text x="157" y="223" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fc" x="172" y="208" width="30" height="30"/>
+<text x="187" y="223" text-anchor="middle" dominant-baseline="central">3</text>
+<rect class="fc" x="202" y="208" width="30" height="30"/>
+<text x="217" y="223" text-anchor="middle" dominant-baseline="central">4</text>
+<rect class="fc" x="232" y="208" width="30" height="30"/>
+<text x="247" y="223" text-anchor="middle" dominant-baseline="central">5</text>
+<rect class="fc" x="262" y="208" width="30" height="30"/>
+<text x="277" y="223" text-anchor="middle" dominant-baseline="central">6</text>
+<rect class="fc" x="292" y="208" width="30" height="30"/>
+<text x="307" y="223" text-anchor="middle" dominant-baseline="central">7</text>
+<text x="42" y="223" text-anchor="end" dominant-baseline="central" class="sm">1 段</text>
+<line class="arw" x1="67" y1="43" x2="75.1" y2="64.6"/>
+<polygon class="ah" points="78.2,73.0 70.4,66.3 79.8,62.8"/>
+<line class="arw" x1="105.571" y1="43" x2="92.5" y2="65.2"/>
+<polygon class="ah" points="87.9,73.0 88.2,62.7 96.8,67.8"/>
+<line class="arw" x1="144.143" y1="43" x2="153.9" y2="64.8"/>
+<polygon class="ah" points="157.5,73.0 149.3,66.8 158.4,62.7"/>
+<line class="arw" x1="182.714" y1="43" x2="171.3" y2="65.0"/>
+<polygon class="ah" points="167.2,73.0 166.9,62.7 175.8,67.3"/>
+<line class="arw" x1="221.286" y1="43" x2="232.7" y2="65.0"/>
+<polygon class="ah" points="236.8,73.0 228.2,67.3 237.1,62.7"/>
+<line class="arw" x1="259.857" y1="43" x2="250.1" y2="64.8"/>
+<polygon class="ah" points="246.5,73.0 245.6,62.7 254.7,66.8"/>
+<line class="arw" x1="298.429" y1="43" x2="311.5" y2="65.2"/>
+<polygon class="ah" points="316.1,73.0 307.2,67.8 315.8,62.7"/>
+<line class="arw" x1="337" y1="43" x2="328.9" y2="64.6"/>
+<polygon class="ah" points="325.8,73.0 324.2,62.8 333.6,66.3"/>
+<line class="arw" x1="82" y1="109" x2="99.1" y2="131.8"/>
+<polygon class="ah" points="104.5,139.0 95.1,134.8 103.1,128.8"/>
+<line class="arw" x1="162" y1="109" x2="131.5" y2="133.4"/>
+<polygon class="ah" points="124.5,139.0 128.4,129.5 134.7,137.3"/>
+<line class="arw" x1="242" y1="109" x2="272.5" y2="133.4"/>
+<polygon class="ah" points="279.5,139.0 269.3,137.3 275.6,129.5"/>
+<line class="arw" x1="322" y1="109" x2="304.9" y2="131.8"/>
+<polygon class="ah" points="299.5,139.0 300.9,128.8 308.9,134.8"/>
+<line class="arw" x1="112" y1="175" x2="171.3" y2="201.3"/>
+<polygon class="ah" points="179.5,205.0 169.2,205.9 173.3,196.8"/>
+<line class="arw" x1="292" y1="175" x2="232.7" y2="201.3"/>
+<polygon class="ah" points="224.5,205.0 230.7,196.8 234.8,205.9"/>
+</svg>
+<figcaption>合併回去：每一層都把 8 個數各搬一次；8 段 → 4 段 → 2 段 → 1 段，共合併 3 層</figcaption>
+</figure>
+
 <p>quick sort 平均也是這個道理：pivot 大概在中間時，每層把資料切成兩半、每層 partition 總共掃 <span class="arithmatex">\(n\)</span> 個。</p>
+<h4 id="partition">partition：怎麼把資料分成兩邊？</h4>
+<p>quick sort 的核心是 <strong>partition</strong>：選一個 pivot，把比它小的換到左邊、比它大的換到右邊，pivot 放在兩邊中間。做完之後 <strong>pivot 就在它排好之後的位置</strong>，左右兩邊再各自遞迴。</p>
+<p><strong>CLRS 的寫法（pivot 取最後一個）</strong>：</p>
+<pre class="highlight"><code class="language-c">x = A[r];          /* pivot */
+i = p - 1;
+for (j = p; j &lt; r; j++)
+    if (A[j] &lt;= x) {
+        i++;
+        swap(A[i], A[j]);
+    }
+swap(A[i + 1], A[r]);</code></pre>
+<p><strong>白話</strong>：i 指著「≤ pivot 區」的最後一格。j 從左掃到右，看到 ≤ pivot 的數，就把它換到這一區的下一格（i 先加 1 再交換）。掃完之後，pivot 和 i＋1 那格交換。</p>
+<p>排 5, 8, 1, 7, 3, 6, 2, 4（pivot 4）：</p>
+<table>
+<thead>
+<tr>
+<th>j</th>
+<th>A[j]</th>
+<th>≤ 4？</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>5</td>
+<td>否</td>
+<td>不動</td>
+<td>5, 8, 1, 7, 3, 6, 2, 4</td>
+</tr>
+<tr>
+<td>1</td>
+<td>8</td>
+<td>否</td>
+<td>不動</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>是</td>
+<td>i＝0，交換 A[0]、A[2]</td>
+<td><strong>1</strong>, 8, <strong>5</strong>, 7, 3, 6, 2, 4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>7</td>
+<td>否</td>
+<td>不動</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>4</td>
+<td>3</td>
+<td>是</td>
+<td>i＝1，交換 A[1]、A[4]</td>
+<td>1, <strong>3</strong>, 5, 7, <strong>8</strong>, 6, 2, 4</td>
+</tr>
+<tr>
+<td>5</td>
+<td>6</td>
+<td>否</td>
+<td>不動</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+<td>是</td>
+<td>i＝2，交換 A[2]、A[6]</td>
+<td>1, 3, <strong>2</strong>, 7, 8, 6, <strong>5</strong>, 4</td>
+</tr>
+<tr>
+<td>結束</td>
+<td></td>
+<td></td>
+<td>pivot 和 A[3] 交換</td>
+<td>1, 3, 2, <strong>4</strong>, 8, 6, 5, 7</td>
+</tr>
+</tbody>
+</table>
+<p>pivot 4 停在 index 3：左邊 1, 3, 2 都 ≤ 4，右邊 8, 6, 5, 7 都 ＞ 4。<strong>兩邊都還沒排好</strong>，接著各自遞迴。</p>
+<p><strong>另一種寫法（pivot 取第一個，左右夾擊）</strong>：很多資料結構課本用這種。i 從左往右找 <strong>≥ pivot</strong> 的數，j 從右往左找 <strong>≤ pivot</strong> 的數；兩個都停下、而且 i ＜ j 就交換，再繼續找；i、j 交錯（i ＞ j）就停，最後 pivot 和 A[j] 交換。同一組資料（pivot 5）：</p>
+<table>
+<thead>
+<tr>
+<th>回合</th>
+<th>i 停在</th>
+<th>j 停在</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>8（index 1）</td>
+<td>4（index 7）</td>
+<td>交換</td>
+<td>5, <strong>4</strong>, 1, 7, 3, 6, 2, <strong>8</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>7（index 3）</td>
+<td>2（index 6）</td>
+<td>交換</td>
+<td>5, 4, 1, <strong>2</strong>, 3, 6, <strong>7</strong>, 8</td>
+</tr>
+<tr>
+<td>3</td>
+<td>6（index 5）</td>
+<td>3（index 4）</td>
+<td>i ＞ j，停</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>結束</td>
+<td></td>
+<td></td>
+<td>pivot 和 A[4] 交換</td>
+<td><strong>3</strong>, 4, 1, 2, <strong>5</strong>, 6, 7, 8</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition trap">
+<p class="admonition-title">兩種寫法的中間過程不一樣</p>
+<p>pivot 選誰、怎麼掃，partition 之後的陣列都不同（上面兩個表的結果就不一樣）。題目有指定就照題目；沒指定的話，<strong>先寫出你用哪一種</strong>（pivot 是誰、怎麼交換），再一步一步寫陣列。</p>
+</div>
 <h4 id="heap">heap：用陣列存的完全二元樹</h4>
 <p>完全二元樹可以一層一層放進陣列，不需要指標。0-based 時：</p>
 <ul>
@@ -1389,6 +1620,68 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <li>父節點 <span class="arithmatex">\(\lfloor(i-1)/2\rfloor\)</span></li>
 </ul>
 <p><strong>為什麼是 <span class="arithmatex">\(2i+1\)</span>、<span class="arithmatex">\(2i+2\)</span></strong>：一層一層、由左到右編號，每個節點在下一層佔兩個位置。根 0 的子節點是 1、2；1 的是 3、4；2 的是 5、6……節點 <span class="arithmatex">\(i\)</span> 前面有 <span class="arithmatex">\(i\)</span> 個節點（0 到 <span class="arithmatex">\(i-1\)</span>），它們的子節點已經用掉 index 1 到 <span class="arithmatex">\(2i\)</span>，所以 <span class="arithmatex">\(i\)</span> 的子節點從 <span class="arithmatex">\(2i+1\)</span> 開始。父節點的公式就是把這個反過來解。</p>
+<figure class="fig">
+<svg viewBox="0 0 360 306" role="img" aria-label="一個 max heap 畫成樹，也存成陣列 9 7 8 3 5 6 4。index 1 的值 7，子節點在 index 2×1+1 = 3（值 3）和 2×1+2 = 4（值 5），樹上和陣列裡是同一組格子。">
+<line class="ln" x1="166.237" y1="33.9784" x2="113.763" y2="72.0216"/>
+<line class="ln" x1="193.763" y1="33.9784" x2="246.237" y2="72.0216"/>
+<line class="ln" x1="89.579" y1="95.4314" x2="65.421" y2="126.569"/>
+<line class="ln" x1="110.421" y1="95.4314" x2="134.579" y2="126.569"/>
+<line class="ln" x1="249.579" y1="95.4314" x2="225.421" y2="126.569"/>
+<line class="ln" x1="270.421" y1="95.4314" x2="294.579" y2="126.569"/>
+<circle class="box" cx="180" cy="24" r="17"/>
+<text x="180" y="24" text-anchor="middle" dominant-baseline="central">9</text>
+<text x="206" y="9" text-anchor="middle" dominant-baseline="central" class="sm mono ">0</text>
+<circle class="fa" cx="100" cy="82" r="17"/>
+<text x="100" y="82" text-anchor="middle" dominant-baseline="central">7</text>
+<text x="126" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ta">1</text>
+<circle class="box" cx="260" cy="82" r="17"/>
+<text x="260" y="82" text-anchor="middle" dominant-baseline="central">8</text>
+<text x="286" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ">2</text>
+<circle class="fb" cx="55" cy="140" r="17"/>
+<text x="55" y="140" text-anchor="middle" dominant-baseline="central">3</text>
+<text x="81" y="125" text-anchor="middle" dominant-baseline="central" class="sm mono tb">3</text>
+<circle class="fb" cx="145" cy="140" r="17"/>
+<text x="145" y="140" text-anchor="middle" dominant-baseline="central">5</text>
+<text x="171" y="125" text-anchor="middle" dominant-baseline="central" class="sm mono tb">4</text>
+<circle class="box" cx="215" cy="140" r="17"/>
+<text x="215" y="140" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="241" y="125" text-anchor="middle" dominant-baseline="central" class="sm mono ">5</text>
+<circle class="box" cx="305" cy="140" r="17"/>
+<text x="305" y="140" text-anchor="middle" dominant-baseline="central">4</text>
+<text x="331" y="125" text-anchor="middle" dominant-baseline="central" class="sm mono ">6</text>
+<rect class="box" x="40" y="206" width="40" height="32"/>
+<text x="60" y="222" text-anchor="middle" dominant-baseline="central">9</text>
+<text x="60" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<rect class="fa" x="80" y="206" width="40" height="32"/>
+<text x="100" y="222" text-anchor="middle" dominant-baseline="central">7</text>
+<text x="100" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<rect class="box" x="120" y="206" width="40" height="32"/>
+<text x="140" y="222" text-anchor="middle" dominant-baseline="central">8</text>
+<text x="140" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<rect class="fb" x="160" y="206" width="40" height="32"/>
+<text x="180" y="222" text-anchor="middle" dominant-baseline="central">3</text>
+<text x="180" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<rect class="fb" x="200" y="206" width="40" height="32"/>
+<text x="220" y="222" text-anchor="middle" dominant-baseline="central">5</text>
+<text x="220" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<rect class="box" x="240" y="206" width="40" height="32"/>
+<text x="260" y="222" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="260" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<rect class="box" x="280" y="206" width="40" height="32"/>
+<text x="300" y="222" text-anchor="middle" dominant-baseline="central">4</text>
+<text x="300" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<path class="arw-a" d="M100,204 Q140,176 168.9,198.5"/>
+<polygon class="ah-a" points="176.0,204.0 165.8,202.4 172.0,194.5"/>
+<text x="142" y="180" text-anchor="middle" dominant-baseline="central" class="sm mono ta">2i+1</text>
+<path class="arw-a" d="M100,263 Q160,299 212.3,267.6"/>
+<polygon class="ah-a" points="220.0,263.0 214.9,271.9 209.7,263.3"/>
+<text x="160" y="291" text-anchor="middle" dominant-baseline="central" class="sm mono ta">2i+2</text>
+<text x="32" y="222" text-anchor="end" dominant-baseline="central" class="sm">陣列</text>
+<text x="32" y="251" text-anchor="end" dominant-baseline="central" class="sm mono">i</text>
+</svg>
+<figcaption>樹上的第 i 個節點就是陣列的第 i 格：子節點在 2i+1、2i+2，不用存指標</figcaption>
+</figure>
+
 <p>（有些課本用 1-based：子節點 <span class="arithmatex">\(2i\)</span>、<span class="arithmatex">\(2i+1\)</span>，父節點 <span class="arithmatex">\(\lfloor i/2\rfloor\)</span>。考試要看題目用哪一種。）</p>
 <p>max heap 的規則：<strong>每個節點都比它的子節點大</strong>，所以最大的一定在根（陣列第 0 格）。heap sort 就是一直把根拿出來。</p>
 <p>動畫上面是樹、下面是同一個陣列，交換時兩邊會一起動。「做到哪裡」改成「繼續做 heap sort」可以看完整排序：</p>
@@ -1397,13 +1690,94 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <h4 id="_7">穩定性為什麼重要</h4>
 <p><strong>穩定（stable）</strong>：值相同的元素，排序後保持原本的先後順序。</p>
 <p>例如先依姓名排好，再依成績排序。如果用穩定的排序，同分的人還會維持姓名順序；不穩定的排序可能把同分的人打亂。radix sort 從個位數排到最高位，每一輪都<strong>必須穩定</strong>，前一輪排好的順序才不會被破壞。</p>
+<h4 id="_8">哪些排序不穩定？用同一組資料試試</h4>
+<p>把兩個 2 標成 <span class="arithmatex">\(2_a\)</span>、<span class="arithmatex">\(2_b\)</span>（<span class="arithmatex">\(2_a\)</span> 在前面），排 <span class="arithmatex">\(2_a, 2_b, 1\)</span>：</p>
+<table>
+<thead>
+<tr>
+<th>排序</th>
+<th>過程</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>insertion</td>
+<td><span class="arithmatex">\(2_b\)</span> 不比 <span class="arithmatex">\(2_a\)</span> 小，不動；1 一路往前插</td>
+<td><span class="arithmatex">\(1, 2_a, 2_b\)</span>，穩定</td>
+</tr>
+<tr>
+<td>merge</td>
+<td>右半先排成 <span class="arithmatex">\(1, 2_b\)</span>；合併時 <span class="arithmatex">\(2_a\)</span>、<span class="arithmatex">\(2_b\)</span> 一樣大，先拿左邊的 <span class="arithmatex">\(2_a\)</span></td>
+<td><span class="arithmatex">\(1, 2_a, 2_b\)</span>，穩定</td>
+</tr>
+<tr>
+<td>selection</td>
+<td>最小的 1 和第一格的 <span class="arithmatex">\(2_a\)</span> 交換，<span class="arithmatex">\(2_a\)</span> 被丟到最後</td>
+<td><span class="arithmatex">\(1, 2_b, 2_a\)</span>，<strong>不穩定</strong></td>
+</tr>
+<tr>
+<td>quick（CLRS）</td>
+<td>pivot 是 1，沒有數比它小，最後 1 和第一格的 <span class="arithmatex">\(2_a\)</span> 交換</td>
+<td><span class="arithmatex">\(1, 2_b, 2_a\)</span>，<strong>不穩定</strong></td>
+</tr>
+<tr>
+<td>heap</td>
+<td>根 <span class="arithmatex">\(2_a\)</span> 和最後一格的 1 交換，<span class="arithmatex">\(2_a\)</span> 直接跑到最後</td>
+<td><span class="arithmatex">\(1, 2_b, 2_a\)</span>，<strong>不穩定</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>規律</strong>：不穩定的排序都有<strong>跳過中間元素的遠距離交換</strong>，可能把一個值丟到另一個相同值的後面。insertion、bubble 只交換相鄰的兩個，而且只在前面「比較大」時才換；merge 遇到一樣大時先拿左邊的，所以都穩定。</p>
+<div class="admonition key">
+<p class="admonition-title">排序題要做什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>insertion sort 的 swap 次數</td>
+<td>數逆序對（<a href="#u2-2">2.2</a>）</td>
+</tr>
+<tr>
+<td>heap sort 建 heap</td>
+<td>bottom-up：從 index <span class="arithmatex">\(\lfloor n/2\rfloor-1\)</span> 往前，每個做 sift-down（<a href="#u2-3">2.3</a>）</td>
+</tr>
+<tr>
+<td>heap sort 輸出一個之後</td>
+<td>根和最後一格交換，heap 少一格，新的根往下 sift-down</td>
+</tr>
+<tr>
+<td>radix sort 第 k 輪</td>
+<td>照第 k 位放進桶子，桶內保持上一輪的順序（<a href="#u2-4">2.4</a>）</td>
+</tr>
+<tr>
+<td>quick sort 做一次 partition</td>
+<td>先寫用哪一種 partition、pivot 是誰，再一步一步寫陣列</td>
+</tr>
+<tr>
+<td>誰穩定</td>
+<td>穩定：bubble、insertion、merge、radix；不穩定：selection、quick、heap</td>
+</tr>
+<tr>
+<td>最差複雜度</td>
+<td>quick 最差 <span class="arithmatex">\(O(n^2)\)</span>；merge、heap 都是 <span class="arithmatex">\(O(n\log n)\)</span>（<a href="#u2-1">2.1</a>）</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：pivot（基準）、partition（分割）、inversion（逆序對）、stable（穩定）、in-place（原地：不另開陣列，只用少量額外空間）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/zh/sorting">VisuAlgo 排序（中文）</a>：選一種排序、輸入考古題的數字，一步一步看每次比較和交換。insertion、quick、merge、radix 都有。</li>
 </ul>
 </div>
-<h4 id="_8">換你試試</h4>
+<h4 id="_9">換你試試</h4>
 <p><strong>T-1.</strong> 2, 4, 1, 3 用 insertion sort 要 swap 幾次？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1669,7 +2043,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <p>把 U 代進 L：<span class="arithmatex">\(L(n)=2\big[L(n/2-1)+\Theta(n/2)\big]+\Theta(n)=2L(n/2-1)+\Theta(n)\)</span>，跟最好情況的遞迴式差不多，<strong>結果還是 <span class="arithmatex">\(\Theta(n\lg n)\)</span></strong>。</p>
 <p><strong>直覺</strong>：切得差的那一層只多花 <span class="arithmatex">\(\Theta(n)\)</span>，下一層切得好時就把它吸收掉了，只是常數變大（大約多一倍的層數），不會變成 <span class="arithmatex">\(n^2\)</span>。</p>
 </div>
-<h4 id="_9">觀念小考</h4>
+<h4 id="_10">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> 用比較排序排 4 個數，最壞情況至少要幾次比較？</p>
 <ol>
@@ -1713,6 +2087,221 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <details class="quiz">
 <summary>看參考答案</summary>
 <p>每次比較只有兩種結果，k 次比較最多分出 <span class="arithmatex">\(2^k\)</span> 種情況。n 個數有 <span class="arithmatex">\(n!\)</span> 種排列，每種排列需要不同的處理方式（不然一定有一種會排錯），所以 <span class="arithmatex">\(2^k\ge n!\)</span>，<span class="arithmatex">\(k\ge\lg(n!)\)</span>。<span class="arithmatex">\(\lg(n!)\)</span> 約等於 <span class="arithmatex">\(n\lg n\)</span>，所以至少 <span class="arithmatex">\(\Omega(n\log n)\)</span>。</p>
+</details>
+<h3 id="u2-concept">2.6 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="1">
+<p><strong>C-1.</strong> 用 CLRS 的 partition（pivot 取最後一個）處理 3, 8, 2, 5, 1, 4，結果是？</p>
+<ol>
+<li>3, 2, 1, 4, 8, 5</li>
+<li>1, 2, 3, 4, 5, 8</li>
+<li>3, 2, 1, 4, 5, 8</li>
+<li>2, 3, 1, 4, 8, 5</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。pivot 4；j 依序看到 3（≤ 4，換到 index 0，原地不動）、2（換到 index 1）、1（換到 index 2），8 和 5 不動；最後 pivot 和 index 3 的 5 交換。B 是全部排好，但 partition 只保證「左邊 ≤ pivot ＜ 右邊」，兩邊都還沒排。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-2.</strong> 合併兩個已經排好的序列，長度分別是 m 和 n，最多要比較幾次？</p>
+<ol>
+<li>m × n</li>
+<li>m ＋ n</li>
+<li>m ＋ n − 1</li>
+<li>min(m, n)</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。每比較一次就輸出一個數；其中一邊用完時，另一邊剩下的直接接上去，不用再比。最後至少剩一個數不用比，所以最多 m＋n−1 次。D 是最少的情況：短的那一邊全部比較小，比完它就用完了。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> 下面哪一種排序，不管輸入長什麼樣，比較次數都一樣？</p>
+<ol>
+<li>insertion sort</li>
+<li>bubble sort（一輪沒交換就提早停）</li>
+<li>quick sort</li>
+<li>selection sort</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。selection sort 每一輪都要掃完剩下的全部才知道誰最小，比較次數固定是 <span class="arithmatex">\(\frac{n(n-1)}{2}\)</span>。A、B 遇到已經排好的資料只要 <span class="arithmatex">\(n-1\)</span> 次；C 要看 pivot 切得好不好。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-4.</strong> 下面哪一種動作，最可能讓排序變得<strong>不穩定</strong>？</p>
+<ol>
+<li>只交換相鄰、而且前面比較大的兩個數</li>
+<li>跳過中間元素的遠距離交換</li>
+<li>合併時兩邊一樣大，先拿左邊的</li>
+<li>照順序把數放進桶子，再照順序收回</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。遠距離交換可能把一個值丟到另一個相同值的後面（selection、quick、heap 都是）。A 是 insertion、bubble 的做法；C 是 merge；D 是 radix 的每一輪，這三種都會保持相同值的先後順序。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-5.</strong> 0-based 的 max heap 陣列 9, 7, 8, 3, 5, 6, 4，插入 10 之後變成？</p>
+<ol>
+<li>10, 9, 8, 3, 5, 6, 4, 7</li>
+<li>10, 7, 8, 9, 5, 6, 4, 3</li>
+<li>10, 9, 8, 7, 5, 6, 4, 3</li>
+<li>9, 7, 8, 3, 5, 6, 4, 10</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。10 先放在最後（index 7），再一路和父節點比：index 7 的父節點是 index 3（值 3）→ 換；index 3 的父節點是 index 1（值 7）→ 換；index 1 的父節點是 index 0（值 9）→ 換。路徑上的 3、7、9 各往下一層。D 是放進去之後忘了往上換。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用 CLRS 的 partition（pivot 取最後一個）處理 6, 3, 9, 1, 7, 2, 5，寫出每一步的 i 和陣列。pivot 最後在哪個 index？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<table>
+<thead>
+<tr>
+<th>j</th>
+<th>A[j]</th>
+<th>≤ 5？</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>6</td>
+<td>否</td>
+<td>不動</td>
+<td>6, 3, 9, 1, 7, 2, 5</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3</td>
+<td>是</td>
+<td>i＝0，交換 A[0]、A[1]</td>
+<td><strong>3</strong>, <strong>6</strong>, 9, 1, 7, 2, 5</td>
+</tr>
+<tr>
+<td>2</td>
+<td>9</td>
+<td>否</td>
+<td>不動</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>是</td>
+<td>i＝1，交換 A[1]、A[3]</td>
+<td>3, <strong>1</strong>, 9, <strong>6</strong>, 7, 2, 5</td>
+</tr>
+<tr>
+<td>4</td>
+<td>7</td>
+<td>否</td>
+<td>不動</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>5</td>
+<td>2</td>
+<td>是</td>
+<td>i＝2，交換 A[2]、A[5]</td>
+<td>3, 1, <strong>2</strong>, 6, 7, <strong>9</strong>, 5</td>
+</tr>
+<tr>
+<td>結束</td>
+<td></td>
+<td></td>
+<td>pivot 和 A[3] 交換</td>
+<td>3, 1, 2, <strong>5</strong>, 7, 9, 6</td>
+</tr>
+</tbody>
+</table>
+<p>pivot 5 在 <strong>index 3</strong>：左邊 3, 1, 2 都 ≤ 5，右邊 7, 9, 6 都 ＞ 5。我用程式跑過，結果一樣。</p>
+</details>
+<p><strong>W-2.</strong> 用 1, 2, 3, 4, 5, 6, 7 建 max heap：(a) 一個一個插入（每次放在最後再往上換）(b) bottom-up（從 index 2 往前做 sift-down）。兩種結果一樣嗎？各交換幾次？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>(a) 一個一個插入</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>插入</th>
+<th>往上換幾次</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>2, 1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>3, 1, 2</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2</td>
+<td>4, 3, 2, 1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>2</td>
+<td>5, 4, 2, 1, 3</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+<td>6, 4, 5, 1, 3, 2</td>
+</tr>
+<tr>
+<td>7</td>
+<td>2</td>
+<td>7, 4, 6, 1, 3, 2, 5</td>
+</tr>
+</tbody>
+</table>
+<p>共 <strong>10 次</strong>，結果 <code>7, 4, 6, 1, 3, 2, 5</code>。</p>
+<p><strong>(b) bottom-up</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>處理</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index 2（3）</td>
+<td>子節點 6、7，和 7 交換</td>
+<td>1, 2, 7, 4, 5, 6, 3</td>
+</tr>
+<tr>
+<td>index 1（2）</td>
+<td>子節點 4、5，和 5 交換</td>
+<td>1, 5, 7, 4, 2, 6, 3</td>
+</tr>
+<tr>
+<td>index 0（1）</td>
+<td>和 7 交換；1 到 index 2，子節點 6、3，再和 6 交換</td>
+<td>7, 5, 6, 4, 2, 1, 3</td>
+</tr>
+</tbody>
+</table>
+<p>共 <strong>4 次</strong>，結果 <code>7, 5, 6, 4, 2, 1, 3</code>。</p>
+<p><strong>結果不一樣</strong>，但兩個都是合法的 max heap。遞增的輸入對「一個一個插入」最不利：每個新的數都是目前最大的，要一路換到根，總共 <span class="arithmatex">\(O(n\log n)\)</span>；bottom-up 一定是 <span class="arithmatex">\(O(n)\)</span>（<a href="#u2-3">2.3</a>）。題目說「heap sort 的建 heap」就用 bottom-up。</p>
 </details>
 <h3 id="u2-quiz">單元 2 小考</h3>
 <p><strong>2-1.</strong> 5, 1, 4, 2, 3 用 insertion sort 要 swap 幾次？</p>
@@ -1795,7 +2384,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <section class="unit" data-unit="u3">
 <h2 id="u3">單元 3：樹</h2>
 <h3 id="u3-0">3.0 觀念課：三種走訪只差「根」放在哪裡</h3>
-<h4 id="_10">三種走訪</h4>
+<h4 id="_11">三種走訪</h4>
 <p>最小的樹：根 A，左子 B，右子 C。</p>
 <table>
 <thead>
@@ -1827,7 +2416,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <p>動畫裡藍色是「現在在哪個節點」，虛線圈是「還沒走完、等著回來的祖先」，綠色是已經輸出的。換一種走訪比較看看，樹也可以自己改（一層一層從左到右寫，<code>#</code> 表示那個位置是空的）：</p>
 <div class="viz" data-viz="traverse" data-tree="A,B,C,D,E,#,F"></div>
 
-<h4 id="_11">為什麼可以由走訪結果重建樹</h4>
+<h4 id="_12">為什麼可以由走訪結果重建樹</h4>
 <ul>
 <li>preorder 的<strong>第一個</strong>、postorder 的<strong>最後一個</strong>一定是根。</li>
 <li>在 inorder 中找到根，<strong>左邊全是左子樹、右邊全是右子樹</strong>。</li>
@@ -1858,7 +2447,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/@erictsai1224tw/AVL_tree">AVL Tree library</a>〉分別寫出 LL、RR、LR、RL 四種情況的旋轉程式碼。</li>
 </ul>
 </div>
-<h4 id="_12">換你試試</h4>
+<h4 id="_13">換你試試</h4>
 <p><strong>T-1.</strong> 樹：A 的左子 B、右子 C；B 的左子 D、右子 E。寫出 preorder、inorder、postorder。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2063,7 +2652,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 </div>
 <h3 id="u3-expr">3.5 運算式樹：前序、中序、後序式</h3>
 <p>100、102、103、104、106、107 年都考過（六年），題型只有三種：由運算式樹寫出三種式子、中序式轉前序／後序、用 stack 算出後序式（或前序式）的值。</p>
-<h4 id="_13">運算式就是一棵樹</h4>
+<h4 id="_14">運算式就是一棵樹</h4>
 <p>運算子（＋ − × ÷）是內部節點，運算元（數字、變數）是葉子。<span class="arithmatex">\((A+B)\times C\)</span> 的樹：根是 ×，左子樹是 A＋B，右子樹是 C。</p>
 <p>對這棵樹做 <a href="#u3-0">3.0</a> 的三種走訪，就得到三種寫法：</p>
 <table>
@@ -2098,7 +2687,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <p>小例子 <code>2 3 4 × +</code>：push 2、3、4；讀到 ×，pop 出 4、3，算 3 × 4 ＝ 12，push；讀到 ＋，pop 出 12、2，算 2 ＋ 12 ＝ 14。</p>
 <p><strong>前序式反過來</strong>：由<strong>右往左</strong>讀，規則一樣，但<strong>先 pop 出來的是左邊的運算元</strong>。</p>
 <p>減法和除法要特別注意左右：後序式 <code>8 5 −</code> 是 8 − 5 ＝ 3，不是 5 − 8。</p>
-<h4 id="_14">中序式轉前序、後序：加括號法最快</h4>
+<h4 id="_15">中序式轉前序、後序：加括號法最快</h4>
 <ol>
 <li>照優先順序（先乘除、後加減；<strong>同優先順序由左往右</strong>）把每一個運算都加上括號。</li>
 <li>後序式：把每個運算子搬到<strong>它那組括號的右括號位置</strong>；前序式：搬到<strong>左括號位置</strong>。</li>
@@ -2233,7 +2822,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 </ul>
 <p>答案 <strong>A、B、D</strong>。</p>
 </div>
-<h4 id="_15">觀念小考</h4>
+<h4 id="_16">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> 後序式 <code>5 1 2 + 4 × + 3 −</code> 的值是多少？</p>
 <ol>
@@ -2307,7 +2896,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 </details>
 <h3 id="u3-huff">3.6 Huffman 編碼</h3>
 <p>101、102 年各考一題 10%：給每個符號出現的次數，畫出 Huffman 樹、寫出編碼。</p>
-<h4 id="_16">觀念：常用的字給短的編碼</h4>
+<h4 id="_17">觀念：常用的字給短的編碼</h4>
 <ul>
 <li><strong>固定長度</strong>：6 個符號要 3 位元（<span class="arithmatex">\(2^2=4&lt;6\le8=2^3\)</span>），每個字都用 3 位元。</li>
 <li><strong>變動長度</strong>：常出現的字用短編碼、少見的用長編碼，總長度就變短。摩斯電碼就是這樣：最常用的 E 只有一點。</li>
@@ -2323,7 +2912,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <p>用 min-heap（priority queue）挑最小的兩個，n 個符號要 <span class="arithmatex">\(O(n\log n)\)</span>。</p>
 <p><strong>為什麼先合併最小的</strong>：合併一次，等於這兩棵樹底下所有符號的編碼都<strong>多一位</strong>，多出來的總位元數就是新根的頻率。先合併最小的兩個，每次多付的代價最小。</p>
 <p><strong>驗算捷徑</strong>：總位元數 ＝ Σ（頻率 × 編碼長度）＝ <strong>每次合併產生的新頻率全部加起來</strong>。</p>
-<h4 id="_17">考試要注意的規則</h4>
+<h4 id="_18">考試要注意的規則</h4>
 <ul>
 <li>頻率相同時挑哪一個、誰放左邊，會改變<strong>樹的樣子和個別編碼</strong>，但<strong>不會改變總位元數</strong>。</li>
 <li>題目有給規則就照規則（102 Q4）；沒給就寫出自己的規則，例如「頻率小的放左邊，相同時字母小的放左邊」。</li>
@@ -2453,7 +3042,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 </div>
 <div class="viz" data-viz="huffman" data-freq="A 8, B 15, C 1, D 6, E 15, F 3, G 7" data-left="lex" data-title="102 Q4：照題目的規則合併"></div>
 
-<h4 id="_18">觀念小考</h4>
+<h4 id="_19">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 下面哪一組<strong>不是</strong>前綴碼？</p>
 <ol>
@@ -2541,7 +3130,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <section class="unit" data-unit="u4">
 <h2 id="u4">單元 4：雜湊</h2>
 <h3 id="u4-0">4.0 觀念課：依學號尾數分配置物櫃</h3>
-<h4 id="_19">雜湊的想法</h4>
+<h4 id="_20">雜湊的想法</h4>
 <p>有 5 個置物櫃（編號 0–4），每個學號放到「學號 mod 5」那一格。要找人時直接算出櫃子號碼，不用一個個翻，平均 <span class="arithmatex">\(O(1)\)</span>。</p>
 <p><strong>碰撞（collision）</strong>：兩個學號算出同一格，例如 7 和 12 都是 mod 5 ＝ 2。</p>
 <h4 id="linear-probing">linear probing：被佔了就往下一格</h4>
@@ -2589,7 +3178,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/en/hashtable">VisuAlgo Hash Table</a>：linear probing、quadratic probing、double hashing 都能自己輸入 key 看探測路線，可以直接拿 115 Q7 的數字試。</li>
 </ul>
 </div>
-<h4 id="_20">換你試試</h4>
+<h4 id="_21">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7，各放在哪裡？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2730,7 +3319,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <li>第二層：第 j 格有 <span class="arithmatex">\(n_j\)</span> 個 key，就給它一個大小 <span class="arithmatex">\(n_j^2\)</span> 的小表，再挑一個雜湊函數讓這 <span class="arithmatex">\(n_j\)</span> 個 key <strong>完全不碰撞</strong>（下面 105 Q5 證明隨機挑成功的機率至少一半，試幾次就成功）。</li>
 </ol>
 <p>總空間期望值仍然是 <span class="arithmatex">\(O(n)\)</span>，每次搜尋只算兩次雜湊。</p>
-<h4 id="_21">用在認證的雜湊函數</h4>
+<h4 id="_22">用在認證的雜湊函數</h4>
 <p>密碼學用的雜湊函數（例如 SHA-256）把任意長的訊息壓成固定長度的摘要，還要滿足：</p>
 <ul>
 <li><strong>單向（one-way）</strong>：知道 <span class="arithmatex">\(h(m)\)</span>，很難找出 m。</li>
@@ -2757,7 +3346,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <li><strong>perfect hashing</strong>：key 集合固定時，兩層雜湊，第二層用大小 <span class="arithmatex">\(n_j^2\)</span> 的表讓每一格裡完全沒有碰撞，最壞情況 <span class="arithmatex">\(O(1)\)</span> 搜尋、空間 <span class="arithmatex">\(O(n)\)</span>。</li>
 </ol>
 </div>
-<h4 id="_22">觀念小考</h4>
+<h4 id="_23">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 用 chaining，m ＝ 100 格放 n ＝ 300 個 key，在 simple uniform hashing 下，失敗的搜尋平均要走多長的串列？</p>
 <ol>
@@ -2903,7 +3492,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：圖</h2>
 <h3 id="u5-0">5.0 觀念課：用最少的電線連起所有城市</h3>
-<h4 id="_23">圖怎麼存</h4>
+<h4 id="_24">圖怎麼存</h4>
 <p>三個點 A、B、C，邊 A–B（權重 1）、B–C（權重 2）、A–C（權重 3）：</p>
 <p><strong>鄰接矩陣</strong>（<span class="arithmatex">\(V\times V\)</span> 的表，適合邊很多的圖）：</p>
 <table>
@@ -2957,7 +3546,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/zh/mst">VisuAlgo 最小生成樹（中文）</a>：Kruskal 和 Prim 一步一步加邊，還有 Kruskal 為什麼正確的說明；<a href="https://visualgo.net/en/sssp">VisuAlgo 最短路徑</a>：Dijkstra 的過程。</li>
 </ul>
 </div>
-<h4 id="_24">換你試試</h4>
+<h4 id="_25">換你試試</h4>
 <p>圖：A–B 4、A–C 1、B–C 2、B–D 5、C–D 8。</p>
 <p><strong>T-1.</strong> 從 A 開始用 Prim，依序加入哪些邊？總權重？</p>
 <details class="quiz">
@@ -3134,7 +3723,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <li><strong>DFS（depth-first search，深度優先）</strong>：一直往下走，走到沒有路才退回上一個岔路換別條，像走迷宮。用 <strong>stack</strong>（或遞迴）。</li>
 </ul>
 <p>BFS 一層一層往外，所以第幾層就是「離起點幾條邊」，<strong>無權重的圖可以用 BFS 找最短路徑</strong>。DFS 走的路不一定是最短的。</p>
-<h4 id="_25">手算規則（照字母順序）</h4>
+<h4 id="_26">手算規則（照字母順序）</h4>
 <p><strong>BFS</strong>：</p>
 <ol>
 <li>起點標成「發現了」，放進 queue。</li>
@@ -3406,7 +3995,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
    b   g      n      a</code></pre>
 <p>驗算：一層一層讀是 i｜c e o｜d l m f h j｜b g n a <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>；preorder 是 i c d b g l e m n o f h a j <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。用程式試過所有可能的樹，只有這一棵兩個序列都對得上。</p>
 </div>
-<h4 id="_26">觀念小考</h4>
+<h4 id="_27">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> BFS 用哪一種資料結構，記住接下來要拜訪的點？</p>
 <ol>
@@ -3540,7 +4129,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <p>先看直接遞迴的呼叫樹（橘色是「之前算過、又重算一次」的），再把寫法切換成「算過就記在表裡」比較：</p>
 <div class="viz" data-viz="calltree" data-n="5"></div>
 
-<h4 id="_27">寫遞迴式的四步</h4>
+<h4 id="_28">寫遞迴式的四步</h4>
 <ol>
 <li><strong>定義狀態</strong>：用一句話說清楚 <span class="arithmatex">\(g(i,j)\)</span> 是什麼，例如「只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊出 <span class="arithmatex">\(j\)</span> 元的方法數」。</li>
 <li><strong>看最後一步（或第一步）分類</strong>：「有沒有用到第 <span class="arithmatex">\(i\)</span> 種硬幣」。</li>
@@ -3592,7 +4181,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10221988">談硬幣問題的文章</a>（面額 1、2、5 湊 11 元）。注意它算的是「最少幾枚硬幣」，這節和 112 Q4 算的是「有幾種組合」，遞迴式不一樣，可以兩個對照著看。</li>
 </ul>
 </div>
-<h4 id="_28">換你試試</h4>
+<h4 id="_29">換你試試</h4>
 <p><strong>T-1.</strong> 用 1、2、3 元湊 4 元（不計順序），有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3910,7 +4499,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <li>節點裡的 key 由小到大排好，孩子夾在 key 之間（左邊的都比較小、右邊的都比較大）。</li>
 <li><strong>所有葉子在同一層</strong>。</li>
 </ul>
-<h4 id="_29">插入：滿了就從中間切開</h4>
+<h4 id="_30">插入：滿了就從中間切開</h4>
 <p>CLRS 的做法是<strong>往下走的時候，遇到滿的節點（<span class="arithmatex">\(2t-1\)</span> 個 key）就先切開</strong>：中間那個 key 往上搬到父親，左右各剩 <span class="arithmatex">\(t-1\)</span> 個。這樣插到葉子時一定有空位，也不用再往回調整。根滿了切開時，樹就長高一層。</p>
 <div class="admonition example">
 <p class="admonition-title">101 Q9（10%）：minimum degree t ＝ 3 的 B-tree，依序插入 B、Q、L、F</p>
@@ -3954,7 +4543,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
     `-- [Y Z]</code></pre>
 <p>用程式照 CLRS 的插入演算法跑過一遍，四步的結果都一樣。</p>
 </div>
-<h4 id="_30">高度上界</h4>
+<h4 id="_31">高度上界</h4>
 <div class="admonition example">
 <p class="admonition-title">107 Q6(1)（8%）：n 個 key、minimum degree t 的 B-tree，高度最多多少？證明</p>
 <p><strong>答案</strong>：<span class="arithmatex">\(h\le\log_t\frac{n+1}2\)</span>。</p>
@@ -3966,7 +4555,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <p class="admonition-title">104 Q4(3)（5%）：B-tree 為什麼能減少讀磁碟的成本？</p>
 <p>讀磁碟的時間主要花在 seek 和 rotational latency（<a href="os.html#u5-0">OS 5.0</a>），一次讀一整個區塊（page），讀幾個 byte 和讀一整頁差不多慢。B-tree 的一個節點就是一頁，放很多 key，所以<strong>分支數很大、樹很矮</strong>（<span class="arithmatex">\(\log_tn\)</span>），找一個 key 只要讀很少頁。讀進記憶體之後，在節點裡找 key 很快。</p>
 </div>
-<h4 id="_31">三種變形</h4>
+<h4 id="_32">三種變形</h4>
 <div class="admonition example">
 <p class="admonition-title">105 Q7(3)（3%）、107 Q6(2)（2%）：B⁺-tree、B*-tree、2-3-4 tree</p>
 <ul>
@@ -4212,7 +4801,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 <li>一直轉到父親的 priority 比它小，或它變成根。</li>
 </ol>
 <p><strong>旋轉不會破壞 BST 的順序</strong>：右旋時，x 是 y 的左孩子，x 轉上去、y 變成 x 的右孩子，原本 x 的右子樹（比 x 大、比 y 小）改掛到 y 的左邊。中序走訪的順序完全不變。</p>
-<h4 id="_32">刪除：把它轉到下面再拿掉</h4>
+<h4 id="_33">刪除：把它轉到下面再拿掉</h4>
 <p>要刪的節點有兩個孩子時，跟 <strong>priority 比較小的那個孩子</strong>旋轉（讓那個孩子上來當父親，heap 規則才會對），一直轉到它只剩一個孩子或沒有孩子，再直接拿掉。</p>
 <div class="admonition example">
 <p class="admonition-title">103 Q8（10%）：(1) 在下面的 treap 插入 (D:9) (2) 接著插入 (F:2)</p>
@@ -4299,7 +4888,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
             `-- L I:73</code></pre>
 <p><strong>檢查</strong>：中序走訪 A、B、C、D、E、F、G、H、I、K 是照字母順序（BST）；每個節點的 priority 都比孩子小（heap）。我用程式照同樣的步驟插入，也用很多種不同的插入順序建同一組節點，得到的都是這棵樹（形狀唯一）。</p>
 </div>
-<h4 id="_33">觀念小考</h4>
+<h4 id="_34">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 用 min-heap 規則的 treap，根是哪一個節點？</p>
 <ol>

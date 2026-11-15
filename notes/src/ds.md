@@ -537,7 +537,7 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }
 #### quick sort 和 merge sort
 
 - **quick sort**：選一個 pivot，比它小的放左邊、大的放右邊，再各自遞迴。pivot 剛好在中間時每次切一半，$O(n\log n)$；資料已經排好又每次選第一個當 pivot，每次只切掉一個，變成 $O(n^2)$。
-- **merge sort**：切成兩半各自排好，再**合併**兩個排好的序列。合併 [1, 4, 7] 和 [2, 3, 9]：每次比較兩邊最前面的，小的拿出來 → 1, 2, 3, 4, 7, 9。
+- **merge sort**：切成兩半各自排好，再**合併**兩個排好的序列。合併 [1, 4, 7] 和 [2, 3, 9]：每次比較兩邊最前面的，小的拿出來 → 1, 2, 3, 4, 7, 9。這裡比較了 5 次：每比一次就輸出一個數，左邊用完之後，剩下的 9 直接接上去。長度 $m$、$n$ 的兩個序列最多比較 $m+n-1$ 次。
 
 **為什麼 merge sort 是 $O(n\log n)$**：把 8 個數一直對半切：
 
@@ -552,7 +552,155 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }
 
 $n$ 個數每次減半，切 $\log_2 n$ 次才剩 1 個（$8\to4\to2\to1$ 是 3 次）。合併回去時，**每一層**的所有段加起來剛好是 $n$ 個數，每個數搬一次，所以一層 $O(n)$、共 $\log_2n$ 層 → $O(n\log n)$。不管資料長什麼樣都要切這麼多層，所以最差也一樣。
 
+<figure class="fig">
+<svg viewBox="0 0 360 246" role="img" aria-label="merge sort 合併的過程：5 2 4 7 1 3 2 6 先是 8 段各 1 個數，兩兩合併成 4 段（2 5、4 7、1 3、2 6），再合併成 2 段（2 4 5 7、1 2 3 6），最後合併成 1 段 1 2 2 3 4 5 6 7。每一層都是 8 個數，共合併 3 層。">
+<rect class="box" x="52" y="10" width="30" height="30"/>
+<text x="67" y="25" text-anchor="middle" dominant-baseline="central">5</text>
+<rect class="box" x="90.5714" y="10" width="30" height="30"/>
+<text x="105.571" y="25" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="box" x="129.143" y="10" width="30" height="30"/>
+<text x="144.143" y="25" text-anchor="middle" dominant-baseline="central">4</text>
+<rect class="box" x="167.714" y="10" width="30" height="30"/>
+<text x="182.714" y="25" text-anchor="middle" dominant-baseline="central">7</text>
+<rect class="box" x="206.286" y="10" width="30" height="30"/>
+<text x="221.286" y="25" text-anchor="middle" dominant-baseline="central">1</text>
+<rect class="box" x="244.857" y="10" width="30" height="30"/>
+<text x="259.857" y="25" text-anchor="middle" dominant-baseline="central">3</text>
+<rect class="box" x="283.429" y="10" width="30" height="30"/>
+<text x="298.429" y="25" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="box" x="322" y="10" width="30" height="30"/>
+<text x="337" y="25" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="42" y="25" text-anchor="end" dominant-baseline="central" class="sm">8 段</text>
+<rect class="fa" x="52" y="76" width="30" height="30"/>
+<text x="67" y="91" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fa" x="82" y="76" width="30" height="30"/>
+<text x="97" y="91" text-anchor="middle" dominant-baseline="central">5</text>
+<rect class="fa" x="132" y="76" width="30" height="30"/>
+<text x="147" y="91" text-anchor="middle" dominant-baseline="central">4</text>
+<rect class="fa" x="162" y="76" width="30" height="30"/>
+<text x="177" y="91" text-anchor="middle" dominant-baseline="central">7</text>
+<rect class="fa" x="212" y="76" width="30" height="30"/>
+<text x="227" y="91" text-anchor="middle" dominant-baseline="central">1</text>
+<rect class="fa" x="242" y="76" width="30" height="30"/>
+<text x="257" y="91" text-anchor="middle" dominant-baseline="central">3</text>
+<rect class="fa" x="292" y="76" width="30" height="30"/>
+<text x="307" y="91" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fa" x="322" y="76" width="30" height="30"/>
+<text x="337" y="91" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="42" y="91" text-anchor="end" dominant-baseline="central" class="sm">4 段</text>
+<rect class="fa" x="52" y="142" width="30" height="30"/>
+<text x="67" y="157" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fa" x="82" y="142" width="30" height="30"/>
+<text x="97" y="157" text-anchor="middle" dominant-baseline="central">4</text>
+<rect class="fa" x="112" y="142" width="30" height="30"/>
+<text x="127" y="157" text-anchor="middle" dominant-baseline="central">5</text>
+<rect class="fa" x="142" y="142" width="30" height="30"/>
+<text x="157" y="157" text-anchor="middle" dominant-baseline="central">7</text>
+<rect class="fa" x="232" y="142" width="30" height="30"/>
+<text x="247" y="157" text-anchor="middle" dominant-baseline="central">1</text>
+<rect class="fa" x="262" y="142" width="30" height="30"/>
+<text x="277" y="157" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fa" x="292" y="142" width="30" height="30"/>
+<text x="307" y="157" text-anchor="middle" dominant-baseline="central">3</text>
+<rect class="fa" x="322" y="142" width="30" height="30"/>
+<text x="337" y="157" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="42" y="157" text-anchor="end" dominant-baseline="central" class="sm">2 段</text>
+<rect class="fc" x="82" y="208" width="30" height="30"/>
+<text x="97" y="223" text-anchor="middle" dominant-baseline="central">1</text>
+<rect class="fc" x="112" y="208" width="30" height="30"/>
+<text x="127" y="223" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fc" x="142" y="208" width="30" height="30"/>
+<text x="157" y="223" text-anchor="middle" dominant-baseline="central">2</text>
+<rect class="fc" x="172" y="208" width="30" height="30"/>
+<text x="187" y="223" text-anchor="middle" dominant-baseline="central">3</text>
+<rect class="fc" x="202" y="208" width="30" height="30"/>
+<text x="217" y="223" text-anchor="middle" dominant-baseline="central">4</text>
+<rect class="fc" x="232" y="208" width="30" height="30"/>
+<text x="247" y="223" text-anchor="middle" dominant-baseline="central">5</text>
+<rect class="fc" x="262" y="208" width="30" height="30"/>
+<text x="277" y="223" text-anchor="middle" dominant-baseline="central">6</text>
+<rect class="fc" x="292" y="208" width="30" height="30"/>
+<text x="307" y="223" text-anchor="middle" dominant-baseline="central">7</text>
+<text x="42" y="223" text-anchor="end" dominant-baseline="central" class="sm">1 段</text>
+<line class="arw" x1="67" y1="43" x2="75.1" y2="64.6"/>
+<polygon class="ah" points="78.2,73.0 70.4,66.3 79.8,62.8"/>
+<line class="arw" x1="105.571" y1="43" x2="92.5" y2="65.2"/>
+<polygon class="ah" points="87.9,73.0 88.2,62.7 96.8,67.8"/>
+<line class="arw" x1="144.143" y1="43" x2="153.9" y2="64.8"/>
+<polygon class="ah" points="157.5,73.0 149.3,66.8 158.4,62.7"/>
+<line class="arw" x1="182.714" y1="43" x2="171.3" y2="65.0"/>
+<polygon class="ah" points="167.2,73.0 166.9,62.7 175.8,67.3"/>
+<line class="arw" x1="221.286" y1="43" x2="232.7" y2="65.0"/>
+<polygon class="ah" points="236.8,73.0 228.2,67.3 237.1,62.7"/>
+<line class="arw" x1="259.857" y1="43" x2="250.1" y2="64.8"/>
+<polygon class="ah" points="246.5,73.0 245.6,62.7 254.7,66.8"/>
+<line class="arw" x1="298.429" y1="43" x2="311.5" y2="65.2"/>
+<polygon class="ah" points="316.1,73.0 307.2,67.8 315.8,62.7"/>
+<line class="arw" x1="337" y1="43" x2="328.9" y2="64.6"/>
+<polygon class="ah" points="325.8,73.0 324.2,62.8 333.6,66.3"/>
+<line class="arw" x1="82" y1="109" x2="99.1" y2="131.8"/>
+<polygon class="ah" points="104.5,139.0 95.1,134.8 103.1,128.8"/>
+<line class="arw" x1="162" y1="109" x2="131.5" y2="133.4"/>
+<polygon class="ah" points="124.5,139.0 128.4,129.5 134.7,137.3"/>
+<line class="arw" x1="242" y1="109" x2="272.5" y2="133.4"/>
+<polygon class="ah" points="279.5,139.0 269.3,137.3 275.6,129.5"/>
+<line class="arw" x1="322" y1="109" x2="304.9" y2="131.8"/>
+<polygon class="ah" points="299.5,139.0 300.9,128.8 308.9,134.8"/>
+<line class="arw" x1="112" y1="175" x2="171.3" y2="201.3"/>
+<polygon class="ah" points="179.5,205.0 169.2,205.9 173.3,196.8"/>
+<line class="arw" x1="292" y1="175" x2="232.7" y2="201.3"/>
+<polygon class="ah" points="224.5,205.0 230.7,196.8 234.8,205.9"/>
+</svg>
+<figcaption>合併回去：每一層都把 8 個數各搬一次；8 段 → 4 段 → 2 段 → 1 段，共合併 3 層</figcaption>
+</figure>
+
 quick sort 平均也是這個道理：pivot 大概在中間時，每層把資料切成兩半、每層 partition 總共掃 $n$ 個。
+
+#### partition：怎麼把資料分成兩邊？
+
+quick sort 的核心是 **partition**：選一個 pivot，把比它小的換到左邊、比它大的換到右邊，pivot 放在兩邊中間。做完之後 **pivot 就在它排好之後的位置**，左右兩邊再各自遞迴。
+
+**CLRS 的寫法（pivot 取最後一個）**：
+
+```c
+x = A[r];          /* pivot */
+i = p - 1;
+for (j = p; j < r; j++)
+    if (A[j] <= x) {
+        i++;
+        swap(A[i], A[j]);
+    }
+swap(A[i + 1], A[r]);
+```
+
+**白話**：i 指著「≤ pivot 區」的最後一格。j 從左掃到右，看到 ≤ pivot 的數，就把它換到這一區的下一格（i 先加 1 再交換）。掃完之後，pivot 和 i＋1 那格交換。
+
+排 5, 8, 1, 7, 3, 6, 2, 4（pivot 4）：
+
+| j | A[j] | ≤ 4？ | 動作 | 陣列 |
+|---|---|---|---|---|
+| 0 | 5 | 否 | 不動 | 5, 8, 1, 7, 3, 6, 2, 4 |
+| 1 | 8 | 否 | 不動 | 同上 |
+| 2 | 1 | 是 | i＝0，交換 A[0]、A[2] | **1**, 8, **5**, 7, 3, 6, 2, 4 |
+| 3 | 7 | 否 | 不動 | 同上 |
+| 4 | 3 | 是 | i＝1，交換 A[1]、A[4] | 1, **3**, 5, 7, **8**, 6, 2, 4 |
+| 5 | 6 | 否 | 不動 | 同上 |
+| 6 | 2 | 是 | i＝2，交換 A[2]、A[6] | 1, 3, **2**, 7, 8, 6, **5**, 4 |
+| 結束 | | | pivot 和 A[3] 交換 | 1, 3, 2, **4**, 8, 6, 5, 7 |
+
+pivot 4 停在 index 3：左邊 1, 3, 2 都 ≤ 4，右邊 8, 6, 5, 7 都 ＞ 4。**兩邊都還沒排好**，接著各自遞迴。
+
+**另一種寫法（pivot 取第一個，左右夾擊）**：很多資料結構課本用這種。i 從左往右找 **≥ pivot** 的數，j 從右往左找 **≤ pivot** 的數；兩個都停下、而且 i ＜ j 就交換，再繼續找；i、j 交錯（i ＞ j）就停，最後 pivot 和 A[j] 交換。同一組資料（pivot 5）：
+
+| 回合 | i 停在 | j 停在 | 動作 | 陣列 |
+|---|---|---|---|---|
+| 1 | 8（index 1） | 4（index 7） | 交換 | 5, **4**, 1, 7, 3, 6, 2, **8** |
+| 2 | 7（index 3） | 2（index 6） | 交換 | 5, 4, 1, **2**, 3, 6, **7**, 8 |
+| 3 | 6（index 5） | 3（index 4） | i ＞ j，停 | 同上 |
+| 結束 | | | pivot 和 A[4] 交換 | **3**, 4, 1, 2, **5**, 6, 7, 8 |
+
+!!! trap "兩種寫法的中間過程不一樣"
+    pivot 選誰、怎麼掃，partition 之後的陣列都不同（上面兩個表的結果就不一樣）。題目有指定就照題目；沒指定的話，**先寫出你用哪一種**（pivot 是誰、怎麼交換），再一步一步寫陣列。
 
 #### heap：用陣列存的完全二元樹
 
@@ -562,6 +710,68 @@ quick sort 平均也是這個道理：pivot 大概在中間時，每層把資料
 - 父節點 $\lfloor(i-1)/2\rfloor$
 
 **為什麼是 $2i+1$、$2i+2$**：一層一層、由左到右編號，每個節點在下一層佔兩個位置。根 0 的子節點是 1、2；1 的是 3、4；2 的是 5、6……節點 $i$ 前面有 $i$ 個節點（0 到 $i-1$），它們的子節點已經用掉 index 1 到 $2i$，所以 $i$ 的子節點從 $2i+1$ 開始。父節點的公式就是把這個反過來解。
+
+<figure class="fig">
+<svg viewBox="0 0 360 306" role="img" aria-label="一個 max heap 畫成樹，也存成陣列 9 7 8 3 5 6 4。index 1 的值 7，子節點在 index 2×1+1 = 3（值 3）和 2×1+2 = 4（值 5），樹上和陣列裡是同一組格子。">
+<line class="ln" x1="166.237" y1="33.9784" x2="113.763" y2="72.0216"/>
+<line class="ln" x1="193.763" y1="33.9784" x2="246.237" y2="72.0216"/>
+<line class="ln" x1="89.579" y1="95.4314" x2="65.421" y2="126.569"/>
+<line class="ln" x1="110.421" y1="95.4314" x2="134.579" y2="126.569"/>
+<line class="ln" x1="249.579" y1="95.4314" x2="225.421" y2="126.569"/>
+<line class="ln" x1="270.421" y1="95.4314" x2="294.579" y2="126.569"/>
+<circle class="box" cx="180" cy="24" r="17"/>
+<text x="180" y="24" text-anchor="middle" dominant-baseline="central">9</text>
+<text x="206" y="9" text-anchor="middle" dominant-baseline="central" class="sm mono ">0</text>
+<circle class="fa" cx="100" cy="82" r="17"/>
+<text x="100" y="82" text-anchor="middle" dominant-baseline="central">7</text>
+<text x="126" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ta">1</text>
+<circle class="box" cx="260" cy="82" r="17"/>
+<text x="260" y="82" text-anchor="middle" dominant-baseline="central">8</text>
+<text x="286" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ">2</text>
+<circle class="fb" cx="55" cy="140" r="17"/>
+<text x="55" y="140" text-anchor="middle" dominant-baseline="central">3</text>
+<text x="81" y="125" text-anchor="middle" dominant-baseline="central" class="sm mono tb">3</text>
+<circle class="fb" cx="145" cy="140" r="17"/>
+<text x="145" y="140" text-anchor="middle" dominant-baseline="central">5</text>
+<text x="171" y="125" text-anchor="middle" dominant-baseline="central" class="sm mono tb">4</text>
+<circle class="box" cx="215" cy="140" r="17"/>
+<text x="215" y="140" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="241" y="125" text-anchor="middle" dominant-baseline="central" class="sm mono ">5</text>
+<circle class="box" cx="305" cy="140" r="17"/>
+<text x="305" y="140" text-anchor="middle" dominant-baseline="central">4</text>
+<text x="331" y="125" text-anchor="middle" dominant-baseline="central" class="sm mono ">6</text>
+<rect class="box" x="40" y="206" width="40" height="32"/>
+<text x="60" y="222" text-anchor="middle" dominant-baseline="central">9</text>
+<text x="60" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<rect class="fa" x="80" y="206" width="40" height="32"/>
+<text x="100" y="222" text-anchor="middle" dominant-baseline="central">7</text>
+<text x="100" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<rect class="box" x="120" y="206" width="40" height="32"/>
+<text x="140" y="222" text-anchor="middle" dominant-baseline="central">8</text>
+<text x="140" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<rect class="fb" x="160" y="206" width="40" height="32"/>
+<text x="180" y="222" text-anchor="middle" dominant-baseline="central">3</text>
+<text x="180" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<rect class="fb" x="200" y="206" width="40" height="32"/>
+<text x="220" y="222" text-anchor="middle" dominant-baseline="central">5</text>
+<text x="220" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<rect class="box" x="240" y="206" width="40" height="32"/>
+<text x="260" y="222" text-anchor="middle" dominant-baseline="central">6</text>
+<text x="260" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<rect class="box" x="280" y="206" width="40" height="32"/>
+<text x="300" y="222" text-anchor="middle" dominant-baseline="central">4</text>
+<text x="300" y="251" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<path class="arw-a" d="M100,204 Q140,176 168.9,198.5"/>
+<polygon class="ah-a" points="176.0,204.0 165.8,202.4 172.0,194.5"/>
+<text x="142" y="180" text-anchor="middle" dominant-baseline="central" class="sm mono ta">2i+1</text>
+<path class="arw-a" d="M100,263 Q160,299 212.3,267.6"/>
+<polygon class="ah-a" points="220.0,263.0 214.9,271.9 209.7,263.3"/>
+<text x="160" y="291" text-anchor="middle" dominant-baseline="central" class="sm mono ta">2i+2</text>
+<text x="32" y="222" text-anchor="end" dominant-baseline="central" class="sm">陣列</text>
+<text x="32" y="251" text-anchor="end" dominant-baseline="central" class="sm mono">i</text>
+</svg>
+<figcaption>樹上的第 i 個節點就是陣列的第 i 格：子節點在 2i+1、2i+2，不用存指標</figcaption>
+</figure>
 
 （有些課本用 1-based：子節點 $2i$、$2i+1$，父節點 $\lfloor i/2\rfloor$。考試要看題目用哪一種。）
 
@@ -576,6 +786,33 @@ max heap 的規則：**每個節點都比它的子節點大**，所以最大的�
 **穩定（stable）**：值相同的元素，排序後保持原本的先後順序。
 
 例如先依姓名排好，再依成績排序。如果用穩定的排序，同分的人還會維持姓名順序；不穩定的排序可能把同分的人打亂。radix sort 從個位數排到最高位，每一輪都**必須穩定**，前一輪排好的順序才不會被破壞。
+
+#### 哪些排序不穩定？用同一組資料試試
+
+把兩個 2 標成 $2_a$、$2_b$（$2_a$ 在前面），排 $2_a, 2_b, 1$：
+
+| 排序 | 過程 | 結果 |
+|---|---|---|
+| insertion | $2_b$ 不比 $2_a$ 小，不動；1 一路往前插 | $1, 2_a, 2_b$，穩定 |
+| merge | 右半先排成 $1, 2_b$；合併時 $2_a$、$2_b$ 一樣大，先拿左邊的 $2_a$ | $1, 2_a, 2_b$，穩定 |
+| selection | 最小的 1 和第一格的 $2_a$ 交換，$2_a$ 被丟到最後 | $1, 2_b, 2_a$，**不穩定** |
+| quick（CLRS） | pivot 是 1，沒有數比它小，最後 1 和第一格的 $2_a$ 交換 | $1, 2_b, 2_a$，**不穩定** |
+| heap | 根 $2_a$ 和最後一格的 1 交換，$2_a$ 直接跑到最後 | $1, 2_b, 2_a$，**不穩定** |
+
+**規律**：不穩定的排序都有**跳過中間元素的遠距離交換**，可能把一個值丟到另一個相同值的後面。insertion、bubble 只交換相鄰的兩個，而且只在前面「比較大」時才換；merge 遇到一樣大時先拿左邊的，所以都穩定。
+
+!!! key "排序題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | insertion sort 的 swap 次數 | 數逆序對（[2.2](#u2-2)） |
+    | heap sort 建 heap | bottom-up：從 index $\lfloor n/2\rfloor-1$ 往前，每個做 sift-down（[2.3](#u2-3)） |
+    | heap sort 輸出一個之後 | 根和最後一格交換，heap 少一格，新的根往下 sift-down |
+    | radix sort 第 k 輪 | 照第 k 位放進桶子，桶內保持上一輪的順序（[2.4](#u2-4)） |
+    | quick sort 做一次 partition | 先寫用哪一種 partition、pivot 是誰，再一步一步寫陣列 |
+    | 誰穩定 | 穩定：bubble、insertion、merge、radix；不穩定：selection、quick、heap |
+    | 最差複雜度 | quick 最差 $O(n^2)$；merge、heap 都是 $O(n\log n)$（[2.1](#u2-1)） |
+
+    名詞對照：pivot（基準）、partition（分割）、inversion（逆序對）、stable（穩定）、in-place（原地：不另開陣列，只用少量額外空間）。
 
 !!! read "還不懂？看別人怎麼講"
     - **動畫**：[VisuAlgo 排序（中文）](https://visualgo.net/zh/sorting)：選一種排序、輸入考古題的數字，一步一步看每次比較和交換。insertion、quick、merge、radix 都有。
@@ -804,6 +1041,124 @@ $$h\ge\lg(n!)\ge\frac n2\lg\frac n2=\Omega(n\log n)$$
 
 ??? quiz "看參考答案"
     每次比較只有兩種結果，k 次比較最多分出 $2^k$ 種情況。n 個數有 $n!$ 種排列，每種排列需要不同的處理方式（不然一定有一種會排錯），所以 $2^k\ge n!$，$k\ge\lg(n!)$。$\lg(n!)$ 約等於 $n\lg n$，所以至少 $\Omega(n\log n)$。
+
+### 2.6 觀念小考 {#u2-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-1.** 用 CLRS 的 partition（pivot 取最後一個）處理 3, 8, 2, 5, 1, 4，結果是？
+
+1. 3, 2, 1, 4, 8, 5
+2. 1, 2, 3, 4, 5, 8
+3. 3, 2, 1, 4, 5, 8
+4. 2, 3, 1, 4, 8, 5
+
+??? quiz "看解析"
+    **A**。pivot 4；j 依序看到 3（≤ 4，換到 index 0，原地不動）、2（換到 index 1）、1（換到 index 2），8 和 5 不動；最後 pivot 和 index 3 的 5 交換。B 是全部排好，但 partition 只保證「左邊 ≤ pivot ＜ 右邊」，兩邊都還沒排。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-2.** 合併兩個已經排好的序列，長度分別是 m 和 n，最多要比較幾次？
+
+1. m × n
+2. m ＋ n
+3. m ＋ n − 1
+4. min(m, n)
+
+??? quiz "看解析"
+    **C**。每比較一次就輸出一個數；其中一邊用完時，另一邊剩下的直接接上去，不用再比。最後至少剩一個數不用比，所以最多 m＋n−1 次。D 是最少的情況：短的那一邊全部比較小，比完它就用完了。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** 下面哪一種排序，不管輸入長什麼樣，比較次數都一樣？
+
+1. insertion sort
+2. bubble sort（一輪沒交換就提早停）
+3. quick sort
+4. selection sort
+
+??? quiz "看解析"
+    **D**。selection sort 每一輪都要掃完剩下的全部才知道誰最小，比較次數固定是 $\frac{n(n-1)}{2}$。A、B 遇到已經排好的資料只要 $n-1$ 次；C 要看 pivot 切得好不好。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-4.** 下面哪一種動作，最可能讓排序變得**不穩定**？
+
+1. 只交換相鄰、而且前面比較大的兩個數
+2. 跳過中間元素的遠距離交換
+3. 合併時兩邊一樣大，先拿左邊的
+4. 照順序把數放進桶子，再照順序收回
+
+??? quiz "看解析"
+    **B**。遠距離交換可能把一個值丟到另一個相同值的後面（selection、quick、heap 都是）。A 是 insertion、bubble 的做法；C 是 merge；D 是 radix 的每一輪，這三種都會保持相同值的先後順序。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-5.** 0-based 的 max heap 陣列 9, 7, 8, 3, 5, 6, 4，插入 10 之後變成？
+
+1. 10, 9, 8, 3, 5, 6, 4, 7
+2. 10, 7, 8, 9, 5, 6, 4, 3
+3. 10, 9, 8, 7, 5, 6, 4, 3
+4. 9, 7, 8, 3, 5, 6, 4, 10
+
+??? quiz "看解析"
+    **C**。10 先放在最後（index 7），再一路和父節點比：index 7 的父節點是 index 3（值 3）→ 換；index 3 的父節點是 index 1（值 7）→ 換；index 1 的父節點是 index 0（值 9）→ 換。路徑上的 3、7、9 各往下一層。D 是放進去之後忘了往上換。
+
+</div>
+
+**W-1.** 用 CLRS 的 partition（pivot 取最後一個）處理 6, 3, 9, 1, 7, 2, 5，寫出每一步的 i 和陣列。pivot 最後在哪個 index？
+
+??? quiz "看參考答案"
+    | j | A[j] | ≤ 5？ | 動作 | 陣列 |
+    |---|---|---|---|---|
+    | 0 | 6 | 否 | 不動 | 6, 3, 9, 1, 7, 2, 5 |
+    | 1 | 3 | 是 | i＝0，交換 A[0]、A[1] | **3**, **6**, 9, 1, 7, 2, 5 |
+    | 2 | 9 | 否 | 不動 | 同上 |
+    | 3 | 1 | 是 | i＝1，交換 A[1]、A[3] | 3, **1**, 9, **6**, 7, 2, 5 |
+    | 4 | 7 | 否 | 不動 | 同上 |
+    | 5 | 2 | 是 | i＝2，交換 A[2]、A[5] | 3, 1, **2**, 6, 7, **9**, 5 |
+    | 結束 | | | pivot 和 A[3] 交換 | 3, 1, 2, **5**, 7, 9, 6 |
+
+    pivot 5 在 **index 3**：左邊 3, 1, 2 都 ≤ 5，右邊 7, 9, 6 都 ＞ 5。我用程式跑過，結果一樣。
+
+**W-2.** 用 1, 2, 3, 4, 5, 6, 7 建 max heap：(a) 一個一個插入（每次放在最後再往上換）(b) bottom-up（從 index 2 往前做 sift-down）。兩種結果一樣嗎？各交換幾次？
+
+??? quiz "看參考答案"
+    **(a) 一個一個插入**：
+
+    | 插入 | 往上換幾次 | 陣列 |
+    |---|---|---|
+    | 1 | 0 | 1 |
+    | 2 | 1 | 2, 1 |
+    | 3 | 1 | 3, 1, 2 |
+    | 4 | 2 | 4, 3, 2, 1 |
+    | 5 | 2 | 5, 4, 2, 1, 3 |
+    | 6 | 2 | 6, 4, 5, 1, 3, 2 |
+    | 7 | 2 | 7, 4, 6, 1, 3, 2, 5 |
+
+    共 **10 次**，結果 `7, 4, 6, 1, 3, 2, 5`。
+
+    **(b) bottom-up**：
+
+    | 處理 | 動作 | 陣列 |
+    |---|---|---|
+    | index 2（3） | 子節點 6、7，和 7 交換 | 1, 2, 7, 4, 5, 6, 3 |
+    | index 1（2） | 子節點 4、5，和 5 交換 | 1, 5, 7, 4, 2, 6, 3 |
+    | index 0（1） | 和 7 交換；1 到 index 2，子節點 6、3，再和 6 交換 | 7, 5, 6, 4, 2, 1, 3 |
+
+    共 **4 次**，結果 `7, 5, 6, 4, 2, 1, 3`。
+
+    **結果不一樣**，但兩個都是合法的 max heap。遞增的輸入對「一個一個插入」最不利：每個新的數都是目前最大的，要一路換到根，總共 $O(n\log n)$；bottom-up 一定是 $O(n)$（[2.3](#u2-3)）。題目說「heap sort 的建 heap」就用 bottom-up。
 
 ### 單元 2 小考 {#u2-quiz}
 
