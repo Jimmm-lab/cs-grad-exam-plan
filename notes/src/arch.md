@@ -1334,15 +1334,15 @@ for (j = 0; j < 100; j++)
 ## 單元 3：虛擬記憶體與 TLB {#u3}
 
 !!! key "一句話重點"
-    虛擬位址 ＝ **VPN | page offset**。page offset 由 page 大小決定，直接搬到實體位址；VPN 查 TLB 或 page table 換成 PPN。
+    虛擬位址 ＝ **VPN | page offset**。page offset 由 page 大小決定，直接照抄到實體位址；VPN 先查 TLB，沒有再查 page table，換成 PPN。page table 也沒有，就是 page fault。
 
 ### 3.0 觀念課：每個程式都以為自己擁有整棟大樓 {#u3-0}
 
 #### 比喻：門牌對照表
 
-每個程式都以為自己住在一整棟大樓裡，房號從 0 開始（**虛擬位址**）。實際上作業系統只分給它幾個真實的房間（**實體記憶體的 frame**），不常用的東西放在倉庫（**磁碟**）。
+每個程式都以為自己住在一整棟大樓裡，房號從 0 開始（**虛擬位址**，virtual address）。實際上作業系統只分給它幾個真實的房間（**實體記憶體的 frame**），不常用的東西放在倉庫（**磁碟**）。
 
-要找東西時，查一張「虛擬房號 → 實體房號」的對照表，這張表就是 **page table**。
+要找東西時，查一張「虛擬房號 → 實體房號」的對照表，這張表就是 **page table**（分頁表）。
 
 **為什麼要這樣做**：
 
@@ -1355,7 +1355,7 @@ for (j = 0; j < 100; j++)
 虛擬位址 8 位元、page 大小 16 bytes。
 
 - page 內有 16 個 byte → **offset 4 位元**（右邊 4 位），這部分**直接照抄**到實體位址
-- 剩下左邊 4 位是 **VPN**（虛擬頁號），共 16 頁
+- 剩下左邊 4 位是 **VPN**（virtual page number，虛擬頁號），共 16 頁
 
 page table 的一部分：
 
@@ -1365,17 +1365,91 @@ page table 的一部分：
 | 1 | 0 | 在磁碟 |
 | 5 | 1 | 0 |
 
-**轉換虛擬位址 0x53 ＝ `0101 0011`**：VPN `0101`＝5、offset `0011`＝3。查表 VPN 5 → PPN 0。實體位址 ＝ PPN 接上 offset ＝ `00 0011` ＝ 3。
+**轉換虛擬位址 0x53 ＝ `0101 0011`**：
+
+1. **切開（VPN 5、offset 3）**：左 4 位 `0101` ＝ 5，右 4 位 `0011` ＝ 3。
+2. **查表（PPN 0）**：VPN 5 的 valid 是 1，PPN 是 0。
+3. **接起來（實體位址 3）**：PPN 接上 offset ＝ `00 0011` ＝ 3。用十進位算：$\text{PPN}\times16+\text{offset}=0+3=3$。
 
 **轉換 0x1A ＝ `0001 1010`**：VPN 1，valid 是 0，資料在磁碟上 → **page fault**。作業系統把那一頁從磁碟載入、填好 page table，再重新執行這條指令。
 
-#### 為什麼 page table 這麼大
+#### 為什麼 offset 可以直接照抄？
 
-page table 要替**每一個虛擬頁**留一格。32 位元位址、4 KB page：offset 12 位元、VPN 20 位元 → $2^{20}$ 格，每格 4 bytes 就是 4 MB，而且**每個程式都要一張**。這就是考題愛問「page table 多大」的原因，也是為什麼有多層 page table。
+page 和 frame 一樣大。一個 byte 在它那一頁裡的「第幾個」，搬到哪個 frame 都一樣，**只有「第幾頁」需要對照**。這跟 cache 的 offset 是同一個道理（[2.0](#u2-0)）。
 
 #### TLB：對照表的 cache
 
-page table 放在記憶體裡，所以每次存取資料都要**先讀一次記憶體查表**，等於慢一倍。解法是把最近用過的幾筆對照放進 CPU 裡一個很小、很快的表，叫 **TLB**。它就是 page table 的 cache，所以 cache 學到的 hit、miss、associativity 全部適用。
+page table 放在記憶體裡，所以每次存取資料都要**先讀一次記憶體查表**，等於慢一倍。解法是把最近用過的幾筆對照放進 CPU 裡一個很小、很快的表，叫 **TLB**（translation lookaside buffer）。它就是 page table 的 cache，所以 cache 學到的 hit、miss、associativity、LRU 全部適用。
+
+一次存取的完整流程：
+
+<figure class="fig">
+<svg viewBox="0 0 360 400" role="img" aria-label="位址轉換流程：虛擬位址切成 VPN 和 offset；VPN 先查 TLB，hit 就得到 PPN；miss 就查 page table，valid 就得到 PPN；invalid 就是 page fault，由作業系統從磁碟載入。offset 直接照抄，跟 PPN 接成實體位址。">
+<text x="20" y="20" class="sm">虛擬位址</text>
+<rect class="fb" x="20" y="28" width="230" height="36" rx="4"/>
+<text x="135" y="46" text-anchor="middle" dominant-baseline="central">VPN</text>
+<rect class="fc" x="250" y="28" width="90" height="36" rx="4"/>
+<text x="295" y="46" text-anchor="middle" dominant-baseline="central">offset</text>
+<line class="arw" x1="90" y1="64" x2="90" y2="94"/>
+<polygon class="ah" points="85,92 95,92 90,100"/>
+<rect class="box" x="20" y="100" width="140" height="40" rx="6"/>
+<text x="90" y="120" text-anchor="middle" dominant-baseline="central">查 TLB</text>
+<line class="arw" x1="90" y1="140" x2="90" y2="178"/>
+<polygon class="ah" points="85,176 95,176 90,184"/>
+<text x="98" y="164" class="sm">miss</text>
+<rect class="box" x="20" y="184" width="140" height="40" rx="6"/>
+<text x="90" y="204" text-anchor="middle" dominant-baseline="central">查 page table</text>
+<line class="arw" x1="90" y1="224" x2="90" y2="262"/>
+<polygon class="ah" points="85,260 95,260 90,268"/>
+<text x="98" y="248" class="sm">invalid</text>
+<rect class="ft" x="20" y="268" width="140" height="52" rx="6"/>
+<text x="90" y="288" text-anchor="middle" dominant-baseline="central">page fault</text>
+<text x="90" y="308" text-anchor="middle" dominant-baseline="central" class="sm">從磁碟載入、重做</text>
+<polyline class="arw" points="160,120 205,120 205,350"/>
+<line class="arw" x1="160" y1="204" x2="205" y2="204"/>
+<polygon class="ah" points="200,348 210,348 205,356"/>
+<text x="166" y="112" class="sm">hit</text>
+<text x="164" y="196" class="sm">valid</text>
+<line class="dash" x1="295" y1="64" x2="295" y2="350"/>
+<polygon class="ah" points="290,348 300,348 295,356"/>
+<text x="303" y="210" class="sm">照抄</text>
+<text x="20" y="380" class="sm">實體位址</text>
+<rect class="fa" x="160" y="356" width="90" height="36" rx="4"/>
+<text x="205" y="374" text-anchor="middle" dominant-baseline="central">PPN</text>
+<rect class="fc" x="250" y="356" width="90" height="36" rx="4"/>
+<text x="295" y="374" text-anchor="middle" dominant-baseline="central">offset</text>
+</svg>
+<figcaption>VPN 換成 PPN，offset 照抄；page table 查到的 PPN 也會放進 TLB</figcaption>
+</figure>
+
+#### 為什麼 TLB 這麼小，命中率還這麼高？
+
+因為**區域性**：連續讀一個 int 陣列，4 KB 的 page 裡有 $4096\div4=1024$ 個 int。第一個 int 讓 TLB miss 一次，接下來 1023 個都在同一頁、都 hit。命中率 $\frac{1023}{1024}\approx99.9\%$。TLB 只要記住「最近在用的那幾頁」就夠了。
+
+#### 有 TLB 時，一次存取平均要多久？
+
+- **TLB hit**：TLB 時間 ＋ 1 次記憶體（拿資料）。
+- **TLB miss**（page 在記憶體）：TLB 時間 ＋ 1 次記憶體（查 page table）＋ 1 次記憶體（拿資料）。
+
+$$\text{EAT}=h\,(t_{\text{TLB}}+t_{\text{mem}})+(1-h)\,(t_{\text{TLB}}+2t_{\text{mem}})$$
+
+例：記憶體 100 ns、TLB 20 ns、命中率 90%：$0.9\times120+0.1\times220=108+22=130$ ns。沒有 TLB 的話每次都是 200 ns。OS 的考題常考反過來求命中率，模板在 [OS 4.2](os.html#u4-2)。
+
+#### page table 為什麼這麼大？多層 page table 怎麼省？
+
+page table 要替**每一個虛擬頁**留一格。32 位元位址、4 KB page：offset 12 位元、VPN 20 位元 → $2^{20}$ 格，每格 4 bytes 就是 **4 MB**，而且**每個程式都要一張**。
+
+但大部分程式只用到位址空間的一小部分（下面放程式和資料、最上面放 stack，中間全空）。**兩層 page table** 把 VPN 再切兩段：
+
+| 外層 index | 內層 index | offset |
+|---|---|---|
+| 10 位元 | 10 位元 | 12 位元 |
+
+- 外層表有 $2^{10}$ 格（4 KB），每一格指到一張內層表。
+- 每張內層表也是 $2^{10}$ 格（4 KB），管 $2^{10}$ 頁 ＝ 4 MB 的位址空間。
+- **沒用到的 4 MB 區段，就不用建那張內層表**，外層那格標 invalid。
+
+例：程式用最下面 8 MB、最上面 1 MB（stack）。要外層 1 張 ＋ 內層 2 張（8 MB）＋ 內層 1 張（stack）＝ 4 張 × 4 KB ＝ **16 KB**，單層要 4 MB。代價是 TLB miss 時要多讀一次記憶體（兩層就查兩次）。
 
 !!! read "還不懂？看別人怎麼講"
     - **中文筆記**：中大計組 [Ch5 筆記的 Virtual Memory 部分](https://hackmd.io/@jcxyisncu1092/co5c)：page table、page fault、TLB hit／miss 的處理和 TLB 與 cache 的互動。
@@ -1406,53 +1480,180 @@ page table 放在記憶體裡，所以每次存取資料都要**先讀一次記�
 
 ### 3.1 位元切割與 page table 大小 {#u3-1}
 
-- page offset $=\log_2(\text{page 大小})$
-- VPN $=$ 虛擬位址位元 $-$ offset，**page table entry 數 $=2^{\text{VPN}}$**
-- PPN $=$ 實體位址位元 $-$ offset
-- page table 大小 $=2^{\text{VPN}}\times$ PTE 大小
-- TLB 若是 set-associative：TLB index $=\log_2(\text{TLB set 數})$，TLB tag $=$ VPN $-$ TLB index
+| 要算什麼 | 公式 | 為什麼 |
+|---|---|---|
+| page offset | $\log_2(\text{page 大小})$ | page 裡有幾個 byte，就要幾位元來分辨 |
+| VPN | 虛擬位址位元 − offset | 剩下的位元就是「第幾頁」 |
+| page table entry 數 | $2^{\text{VPN}}$ | **每個虛擬頁**都要一格，跟實體記憶體多大無關 |
+| PPN | 實體位址位元 − offset | 實體記憶體有幾個 frame |
+| page table 大小 | entry 數 × PTE 大小 | PTE 至少要放 PPN ＋ valid（＋ dirty 等） |
+| TLB index（set-associative） | $\log_2(\text{TLB 的 set 數})$ | 跟 cache 一樣，set 數 ＝ entry 數 ÷ way 數 |
+| TLB tag | VPN − TLB index | TLB 沒有 offset：一格存一整頁的對照 |
 
-!!! example "114 Q2（14%）：256 MiB 實體、4 GiB 虛擬、1 KiB page、TLB 4 sets × 8-way"
-    | 項目 | 計算 | 位元數 |
-    |---|---|---|
-    | page offset | $\log_2 1024$ | 10 |
-    | VPN | $32-10$ | 22 |
-    | PPN | $28-10$ | 18 |
-    | TLB index | $\log_2 4$ | 2 |
-    | TLB tag | $22-2$ | 20 |
+!!! trap "最常錯的"
+    page table 有幾格看**虛擬**位址，不是實體位址。實體位址只決定每一格裡的 PPN 有幾位元。
 
-    page table 有 $2^{22}$ 個 entry。
+!!! example "114 Q2（14%）：實體記憶體 256 MiB、虛擬位址空間 4 GiB、page 1 KiB；TLB 4 個 set、每個 set 8-way。求各欄位的位元數"
+    **題目條件**：虛擬 4 GiB ＝ $2^{32}$ → 32 位元；實體 256 MiB ＝ $2^{28}$ → 28 位元。
 
-!!! example "113 Q7.1（8%）：42-bit 虛擬位址、16 GiB DRAM、4 KiB page、PTE 4 B"
-    VPN $=42-12=30$ → $2^{30}$ 個 PTE，page table $=2^{30}\times4\text{ B}=4\text{ GiB}$。
+    - **page offset（10）**：$\log_21024=10$。
+    - **VPN（22）**：$32-10=22$，page table 有 $2^{22}$ 個 entry。
+    - **PPN（18）**：$28-10=18$。
+    - **TLB index（2）**：4 個 set，$\log_24=2$。
+    - **TLB tag（20）**：$22-2=20$。
 
-    （這比實體記憶體 16 GiB 的四分之一還大，這就是為什麼需要多層 page table。）
+!!! example "113 Q7.1（8%）：42 位元虛擬位址、16 GiB DRAM、4 KiB page、PTE 4 bytes。單層 page table 要幾個 PTE？占多少記憶體？"
+    - **offset（12）**：$\log_24096=12$。
+    - **PTE 個數（$2^{30}$）**：VPN $=42-12=30$ 位元，每個虛擬頁一格。
+    - **page table 大小（4 GiB）**：$2^{30}\times4\text{ B}=2^{32}\text{ B}=4$ GiB。
+
+    16 GiB 的 DRAM 只為了放一個程式的 page table 就用掉四分之一，這就是為什麼要多層 page table。
 
 !!! example "111 P2（30%）：程式需要 4 GB、只分到 2 GB DRAM、page 4 KB、write-back、LRU"
-    (1) page table 至少：$4\text{ GB}/4\text{ KB}=2^{20}$ 個 entry。每個 entry 至少要 PPN（2 GB／4 KB ＝ $2^{19}$ 個 frame → 19 位元）＋ valid ＋ dirty（write-back 需要）＝ 21 位元，約 $2^{20}\times21$ 位元 ≈ 2.6 MB；以 4 B 對齊則是 4 MB。
+    **題目條件**：虛擬 4 GB ＝ $2^{32}$、實體 2 GB ＝ $2^{31}$、page $2^{12}$。
 
-    (2) 隨機存取、沒有區域性：任一時刻只有一半的 page 在記憶體裡，**page fault rate ≈ 50%**。
+    **(1) page table 至少多大（約 2.6 MB）**：
 
-    (3) TLB miss rate 75% → hit rate 25%。隨機存取下 hit rate ≈ TLB entry 數 / 總 page 數，所以 TLB 至少 $0.25\times2^{20}=2^{18}$ 個 entry。
+    - **entry 數（$2^{20}$）**：$4\text{ GB}/4\text{ KB}=2^{20}$。
+    - **每格至少幾位元（21）**：PPN 要分辨 $2\text{ GB}/4\text{ KB}=2^{19}$ 個 frame → 19 位元；再加 valid 和 dirty（write-back 要知道換出去時要不要寫回）＝ 21 位元。
+    - **總共**：$2^{20}\times21$ 位元 ≈ 2.6 MB；如果每格對齊成 4 bytes 就是 4 MB。
+
+    **(2) 完全隨機存取時的 page fault rate（約 50%）**：任何時候只有一半的 page 在記憶體裡，隨機挑一頁，有一半的機率不在。
+
+    **(3) TLB 要多大，miss rate 才會是 75%（$2^{18}$ 個 entry）**：hit rate 25%。隨機存取時，hit rate ≈ TLB 能記住的頁數 ÷ 總頁數，所以 TLB 至少要 $0.25\times2^{20}=2^{18}$ 個 entry。
 
 ### 3.2 TLB 與 page table 模擬 {#u3-2}
 
-每個位址的處理順序：
+每個位址照這個順序做（就是上面的流程圖）：
 
-1. 切出 VPN 和 offset。
-2. 查 TLB：hit → 直接得 PPN（更新 LRU）。
-3. TLB miss → 查 page table：valid → 得 PPN，放進 TLB。
-4. page table 也 invalid → **page fault**，從磁碟載入，分配新的 PPN，更新 page table 和 TLB。
+1. **切開**：VPN ＝ ⌊位址 ÷ page 大小⌋，offset ＝ 位址 mod page 大小。
+2. **查 TLB**：hit → 直接得到 PPN，更新 LRU。
+3. **TLB miss → 查 page table**：valid → 得到 PPN，放進 TLB（TLB 滿了用 LRU 換掉一格）。
+4. **page table 也 invalid → page fault**：從磁碟載入，分配一個新的 PPN，更新 page table 和 TLB。
 
-!!! example "113 Q7.2（12%）：4 KiB page、4-entry fully associative TLB、LRU，位址 4669、13916"
-    | 位址 | VPN（$\lfloor a/4096\rfloor$） | 結果 |
+!!! example "113 Q7.2（12%）：4 KiB page、4 格 fully associative TLB、true LRU。需要從磁碟載入時，新的 PPN 用「目前最大的 PPN ＋ 1」。位址依序是 4669、13916"
+    **題目給的初始狀態**：
+
+    | TLB valid | tag（VPN） | PPN |
     |---|---|---|
-    | 4669 | 1 | TLB miss；page table 第 1 列是 Disk → **page fault**。新 PPN ＝ 目前最大的 12 加 1 ＝ 13。更新 page table[1] ＝ (1, 13)；TLB 用掉 invalid 的那格 → (1, tag 1, PPN 13) |
-    | 13916 | 3 | **TLB hit**（tag 3 → PPN 6），更新 LRU |
+    | 1 | 11 | 12 |
+    | 1 | 7 | 4 |
+    | 1 | 3 | 6 |
+    | 0 | 4 | 9 |
 
-    最後 TLB：(1,11,12)、(1,7,4)、(1,3,6)、(1,1,13)。
+    | VPN | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 |
+    |---|---|---|---|---|---|---|---|---|---|---|---|---|
+    | valid | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 1 | 1 |
+    | PPN | 5 | 磁碟 | 磁碟 | 6 | 9 | 11 | 磁碟 | 4 | 磁碟 | 磁碟 | 3 | 12 |
+
+    **追蹤**：
+
+    | 位址 | VPN（offset） | 結果 | 說明 |
+    |---|---|---|---|
+    | 4669 | 1（573） | TLB miss → **page fault** | TLB 裡沒有 tag 1；page table 的 VPN 1 是 valid 0（在磁碟）。目前最大的 PPN 是 12，新的給 **13**；page table[1] 改成 (1, 13)；TLB 第 4 格本來就是 invalid，直接用它放 (1, tag 1, PPN 13) |
+    | 13916 | 3（1628） | **TLB hit** | TLB 第 3 格 tag 3 → PPN 6，更新它為最近使用 |
+
+    **最後的 TLB**：(1, 11, 12)、(1, 7, 4)、(1, 3, 6)、(1, 1, 13)；page table 只有 VPN 1 改成 (1, 13)。
+
+    換成實體位址（題目沒問，順便練）：4669 → $13\times4096+573=53821$；13916 → $6\times4096+1628=26204$。
 
     這題是 COD 第 5 章 TLB 習題的改編，原題的位址串更長，練習時可以找原題做完整版本。
+
+### 3.3 觀念小考 {#u3-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** page table 要有幾個 entry，是由什麼決定的？
+
+1. 實體記憶體有幾個 frame
+2. TLB 有幾格
+3. 虛擬位址的位元數和 page 大小
+4. 程式實際用了多少記憶體
+
+??? quiz "看解析"
+    **C**。每個**虛擬頁**都要一格：$2^{\text{虛擬位址位元}-\text{offset}}$。A 決定的是每一格裡 PPN 的位元數；D 是多層 page table 才會省下來的部分，單層表不管用多少都是全部的格數。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-2.** 發生 TLB miss，但那一頁其實在記憶體裡。接下來會發生什麼？
+
+1. 發生 page fault，從磁碟載入
+2. 去記憶體查 page table，得到 PPN 並放進 TLB，不用讀磁碟
+3. 直接用 VPN 當成 PPN
+4. 程式被終止
+
+??? quiz "看解析"
+    **B**。TLB miss 只代表對照沒有快取在 TLB 裡，多查一次記憶體裡的 page table 就好。page table 也查不到（valid 0）才是 page fault，才要讀磁碟。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-3.** 記憶體存取 100 ns、TLB 查詢 20 ns、TLB 命中率 90%（單層 page table），平均一次存取要多久？
+
+1. 120 ns
+2. 130 ns
+3. 140 ns
+4. 220 ns
+
+??? quiz "看解析"
+    **B. 130 ns**。hit：$20+100=120$；miss：$20+100+100=220$（多查一次 page table）。$0.9\times120+0.1\times220=108+22=130$。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** 多層 page table 比單層好的地方是？
+
+1. TLB miss 時查得比較快
+2. 不需要 TLB
+3. 每個 PTE 比較小
+4. 沒用到的位址區段，不用建那一段的內層表，省記憶體
+
+??? quiz "看解析"
+    **D**。代價剛好是 A 的相反：TLB miss 時要一層一層查，多讀幾次記憶體。所以多層 page table 更需要 TLB。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-5.** 32 位元虛擬位址、30 位元實體位址、page 8 KB。每個 PTE 裡的 PPN 要幾位元？
+
+1. 17
+2. 19
+3. 13
+4. 30
+
+??? quiz "看解析"
+    **A. 17**。offset $=\log_28192=13$；PPN ＝ 實體位址位元 − offset ＝ $30-13=17$。B 的 19 是 VPN（$32-13$），那是決定 page table 有幾格的。
+
+</div>
+
+**W-1.** page 256 bytes。TLB 裡有 (VPN 1 → PPN 4)、(VPN 3 → PPN 5)；page table 裡 VPN 2 → PPN 7（valid）、VPN 6 是 invalid。依序轉換虛擬位址 0x3A7、0x2B0、0x610，各是 TLB hit、page table hit，還是 page fault？實體位址是多少？
+
+??? quiz "看參考答案"
+    page 256 bytes → offset 是最右邊 8 位元（兩個十六進位數字），VPN 是前面的部分。
+
+    | 位址 | VPN | offset | 結果 | 實體位址 |
+    |---|---|---|---|---|
+    | 0x3A7 | 3 | 0xA7 | **TLB hit**（PPN 5） | 0x5A7（1447） |
+    | 0x2B0 | 2 | 0xB0 | TLB miss，**page table hit**（PPN 7），放進 TLB | 0x7B0（1968） |
+    | 0x610 | 6 | 0x10 | TLB miss，page table invalid → **page fault** | 載入後才知道 |
+
+    page 大小是 $16^2$ 時，十六進位的最後兩位就是 offset，前面直接換成 PPN 就好，不用換成二進位。
+
+**W-2.** 32 位元虛擬位址、4 KB page、PTE 4 bytes，用兩層 page table（外層 10 位元、內層 10 位元）。一個程式只用到最下面 8 MB 和最上面 1 MB，page table 一共占多少記憶體？單層的話呢？
+
+??? quiz "看參考答案"
+    - **每張表多大（4 KB）**：$2^{10}$ 格 × 4 bytes。
+    - **一張內層表管多少（4 MB）**：$2^{10}$ 頁 × 4 KB。
+    - **要幾張內層表（3 張）**：最下面 8 MB 要 2 張，最上面 1 MB 要 1 張。
+    - **總共（16 KB）**：外層 1 張 ＋ 內層 3 張 ＝ 4 張 × 4 KB。
+    - **單層（4 MB）**：$2^{20}$ 格 × 4 bytes，不管用多少都要整張。
 
 ### 單元 3 小考 {#u3-quiz}
 
