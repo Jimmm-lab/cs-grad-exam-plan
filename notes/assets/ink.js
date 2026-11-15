@@ -948,12 +948,13 @@
       else if (open) pad.layout();
     });
   });
-  /* ---------- 一次性修正：題號曾經錯開的那段時間寫的筆跡，搬回正確的題目 ---------- */
-  // 計結 2.0「換你試試」新加的 T-0 在 2026-11-10 18:20 到 11-11 16:35（UTC，加上快取多抓 11 分鐘）之間沒有固定 id，
-  // T-0～T-3 用了往後挪一格的 id（T-0 是 q-u2-0-1……T-3 是 q-u2-0-4）。只搬那段時間存的筆跡；
-  // 搬過去的那題如果已經有後來寫的筆跡，舊的接在下面，不會蓋掉。搬完時間會更新，所以只搬一次，也會同步到雲端。
+  /* ---------- 一次性修正：題號曾經錯開時寫的筆跡，搬回正確的題目 ---------- */
+  // 計結 2.0「換你試試」新加的 T-0 曾經沒有固定 id（2026-11-10 那一版），T-0～T-3 用了往後挪一格的 id
+  // （T-0 是 q-u2-0-1……T-3 是 q-u2-0-4）。那一版的分頁沒有重新整理的話，之後幾天寫的也一樣。
+  // q-u2-0-4 只有那一版用過，所以它有筆跡，就表示 q-u2-0-1～4 是那一版寫的：整組往前搬一格。
+  // 搬完 q-u2-0-4 會清掉，所以只搬一次，也會同步到雲端；搬過去的那題如果已經有筆跡，原本的在上面、搬來的接在下面。
   var REMAP = {
-    arch: { from: Date.UTC(2026, 10, 10, 18, 20), to: Date.UTC(2026, 10, 11, 16, 46),
+    arch: { mark: "q-u2-0-4",
       moves: [["q-u2-0-1", "q-u2-0-t0"], ["q-u2-0-2", "q-u2-0-1"], ["q-u2-0-3", "q-u2-0-2"], ["q-u2-0-4", "q-u2-0-3"]] }
   };
   var remapKeys = {};
@@ -979,8 +980,8 @@
     return Promise.all(ids.map(function (id) { return store.get(SLUG + ":" + id).catch(function () { return null; }); })).then(function (vals) {
       var cur = {}, leaving = {}, filled = {}, jobs = [], changed = [], now = Date.now();
       ids.forEach(function (id, i) { cur[id] = vals[i]; });
-      var src = R.moves.filter(function (m) { var v = cur[m[0]]; return inked(v) && v.t >= R.from && v.t <= R.to; });
-      if (!src.length) return [];
+      if (!inked(cur[R.mark])) return [];
+      var src = R.moves.filter(function (m) { return inked(cur[m[0]]); });
       src.forEach(function (m) { leaving[m[0]] = 1; });
       src.forEach(function (m) {
         var a = cur[m[0]], b = leaving[m[1]] ? null : cur[m[1]];

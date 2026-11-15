@@ -39,7 +39,7 @@ pip install markdown pymdown-extensions beautifulsoup4
 python3 tools/build_notes.py
 ```
 
-建完會自動跑 `tools/check_quiz_ids.py`：手寫筆跡和作答紀錄是用題目 id 存的，舊題目的 id 如果被挪動（例如在舊題目前面插了新題目，卻沒有用 `data-qid` 包起來），會列出受影響的題目並回傳錯誤；新增的題目會記進 `tools/quiz_ids.json`。沒裝 beautifulsoup4 就跳過這個檢查。
+建完會自動跑 `tools/check_quiz_ids.py`：手寫筆跡和作答紀錄是用題目 id 存的，舊題目的 id 如果被挪動（例如在舊題目前面插了新題目，卻沒有用 `data-qid` 包起來），會列出受影響的題目並回傳錯誤；新增的題目會記進 `tools/quiz_ids.json`。沒裝 beautifulsoup4 就跳過這個檢查。建置也會在網頁載入程式檔的網址後面加上 `?v=` 版本號（檔案內容的雜湊），網站更新後瀏覽器一定會載入新版；改了 `notes/assets` 的程式或重新產生 `data/` 的行程資料之後，也要跑一次。
 
 Markdown 寫法：
 

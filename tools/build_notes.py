@@ -1,7 +1,8 @@
 """把 notes/src/*.md 轉成 notes/*.html。
 
 用法：python3 tools/build_notes.py
-需要：pip install markdown pymdown-extensions
+需要：pip install markdown pymdown-extensions beautifulsoup4（最後一個是檢查題目 id 用的，沒裝就跳過檢查）
+每次改了 notes/assets 的程式或重新產生 data/ 的行程資料，也要跑一次，網頁上的 ?v= 版本號才會更新。
 Markdown 語法：
   - 數學：$...$、$$...$$
   - 例題框：!!! example "標題"（內容縮排 4 格）
@@ -9,7 +10,7 @@ Markdown 語法：
   - 小考答案（可折疊、可記錄對錯）：??? quiz "看答案"（內容縮排 4 格）
   - 標題錨點：## 單元 1：計數 {#u1}
 """
-import pathlib, re, sys, html
+import hashlib, pathlib, re, sys, html
 import markdown
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -25,6 +26,19 @@ PAGES = [
 ]
 
 TEMPLATE = (ROOT / "tools" / "notes_template.html").read_text(encoding="utf-8")
+
+# 每次更新後，瀏覽器一定載入新版的程式和樣式：網址加上 ?v=檔案內容的雜湊（內容沒變，網址就不變，照樣用快取）
+_ASSET = re.compile(r'((?:src|href)=")((?:notes/)?(?:assets|data)/[^"?#]+?)(?:\?v=[0-9a-f]+)?(")')
+
+
+def bust(text, base):
+    def rep(m):
+        f = base / m.group(2)
+        if not f.is_file():
+            return m.group(0)
+        return f"{m.group(1)}{m.group(2)}?v={hashlib.sha1(f.read_bytes()).hexdigest()[:8]}{m.group(3)}"
+    return _ASSET.sub(rep, text)
+
 
 # 一次只顯示一個單元的頁面（學習方法頁不用切）
 SPLIT = {"discrete", "arch", "os", "ds"}
@@ -115,7 +129,7 @@ def build(slug, label):
                     .replace("{{NAV}}", nav)
                     .replace("{{TOC}}", md.toc)
                     .replace("{{BODY}}", body))
-    (OUT / f"{slug}.html").write_text(page, encoding="utf-8")
+    (OUT / f"{slug}.html").write_text(bust(page, OUT), encoding="utf-8")
     print("built", slug, len(page))
 
 if __name__ == "__main__":
@@ -124,6 +138,12 @@ if __name__ == "__main__":
             build(slug, label)
         else:
             print("skip", slug, file=sys.stderr)
+    # 行程表首頁也一樣（它載入 notes/assets 的程式和 data/ 的行程資料）
+    idx = ROOT / "index.html"
+    t = idx.read_text(encoding="utf-8")
+    if bust(t, ROOT) != t:
+        idx.write_text(bust(t, ROOT), encoding="utf-8")
+        print("updated asset versions in index.html")
     # 手寫筆跡和作答紀錄是用題目 id 存的：建完檢查舊題目的 id 有沒有被挪動（tools/check_quiz_ids.py）
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
     import check_quiz_ids
