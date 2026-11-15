@@ -120,6 +120,24 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .mcq-res.ok { color: var(--ok); }
 .mcq-res.no { color: var(--accent); }
 .mcq .judge { display: none; }
+/* 靜態示意圖：<figure class="fig"><svg viewBox="..."> … </svg><figcaption>…</figcaption></figure>，顏色跟著深淺色模式 */
+.fig { margin: 18px 0; padding: 12px 10px 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.fig svg { display: block; width: 100%; height: auto; max-width: 560px; margin: 0 auto; overflow: visible; }
+.fig figcaption { margin-top: 6px; font-size: 14px; line-height: 1.6; color: var(--muted); text-align: center; }
+.fig text { font: 600 15px var(--font-body); fill: var(--ink); }
+.fig .sm { font: 500 13px var(--font-body); fill: var(--muted); }
+.fig .mono { font-family: var(--font-mono); }
+.fig .ln { fill: none; stroke: var(--ink); stroke-width: 1.8; }
+.fig .dash { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.fig .box { fill: var(--paper); stroke: var(--line); stroke-width: 1.5; }
+.fig .fa { fill: var(--accent); fill-opacity: .14; stroke: var(--accent); stroke-width: 2; }
+.fig .fb { fill: var(--ex); fill-opacity: .14; stroke: var(--ex); stroke-width: 2; }
+.fig .fc { fill: var(--ok); fill-opacity: .14; stroke: var(--ok); stroke-width: 2; }
+.fig .fk { fill: var(--key); fill-opacity: .16; stroke: var(--key); stroke-width: 2; }
+.fig .ft { fill: var(--trap); fill-opacity: .18; stroke: var(--trap); stroke-width: 2; }
+.fig .ta { fill: var(--accent); } .fig .tb { fill: var(--ex); } .fig .tc { fill: var(--ok); } .fig .tk { fill: var(--key); } .fig .tt { fill: var(--trap); }
+.fig .arw { fill: none; stroke: var(--muted); stroke-width: 1.8; }
+.fig .ah { fill: var(--muted); }
 .ink { margin: 12px 0 0; }
 .ink + details.quiz { margin-top: 8px; }
 .ink-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ex); font: 500 14px/1 var(--font-body); cursor: pointer; }
