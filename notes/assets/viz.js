@@ -90,8 +90,6 @@
         `<form class="vz-form">${fields}<div class="vz-formbtn"><button type="submit">用這些數字重播</button><button type="button" data-a="reset">還原</button></div></form>` +
         `<div class="vz-stage"><svg class="vz-svg" xmlns="${NS}" role="img" aria-label="${esc(def.title)}"><g class="vz-back"></g><g class="vz-front"></g></svg></div>` +
         `<div class="vz-legend" hidden></div>` +
-        `<div class="vz-cap" aria-live="polite"></div>` +
-        `<div class="vz-info"></div>` +
         `<div class="vz-ctrl">` +
           `<button type="button" data-a="first" aria-label="回到第一步" title="回到第一步">${I("first")}</button>` +
           `<button type="button" data-a="prev">${I("prev")}<span>上一步</span></button>` +
@@ -99,13 +97,23 @@
           `<button type="button" data-a="next" class="vz-next"><span>下一步</span>${I("next")}</button>` +
           `<span class="vz-count"></span>` +
           `<input type="range" class="vz-range" min="0" max="0" value="0" aria-label="跳到第幾步">` +
-        `</div>`;
+        `</div>` +
+        `<div class="vz-cap" aria-live="polite"></div>` +
+        `<details class="vz-code" hidden><summary>虛擬碼（正在做的那一行會標亮）</summary><ol class="vz-lines"></ol></details>` +
+        `<div class="vz-info"></div>`;
       this.form = host.querySelector("form");
       this.svg = host.querySelector("svg");
       this.back = host.querySelector(".vz-back");
       this.front = host.querySelector(".vz-front");
       this.cap = host.querySelector(".vz-cap");
       this.legend = host.querySelector(".vz-legend");
+      this.code = host.querySelector(".vz-code");
+      this.lines = host.querySelector(".vz-lines");
+      // 收合狀態大家共用：收起一個，之後打開的頁面也是收起來的
+      let open = true;
+      try { open = localStorage.getItem("cgep:vzcode") !== "0"; } catch (e) { /* 沒有 localStorage 也照常顯示 */ }
+      this.code.open = open;
+      this.code.addEventListener("toggle", () => { try { localStorage.setItem("cgep:vzcode", this.code.open ? "1" : "0"); } catch (e) { /* ignore */ } });
       this.info = host.querySelector(".vz-info");
       this.count = host.querySelector(".vz-count");
       this.range = host.querySelector(".vz-range");
@@ -157,6 +165,13 @@
         ? `<span class="vz-key t-${c}"><b>7</b>${esc(t)}</span>`
         : `<span class="vz-key ${kind}-${c}"><i></i>${esc(t)}</span>`).join("");
       this.legend.hidden = !(lg && lg.length) || this.host.classList.contains("vz-static");
+      // 虛擬碼：// 後面是註解
+      const code = typeof this.def.code === "function" ? this.def.code(this.values()) : this.def.code;
+      this.lines.innerHTML = (code || []).map(l => {
+        const k = l.indexOf("//");
+        return `<li><span>${k < 0 ? esc(l) : esc(l.slice(0, k)) + `<span class="c">${esc(l.slice(k))}</span>`}</span></li>`;
+      }).join("");
+      this.code.hidden = !(code && code.length) || this.host.classList.contains("vz-static");
       this.host.classList.remove("vz-error");
       this.go(0);
     }
@@ -176,6 +191,11 @@
       const fr = this.frames[i];
       this.apply(fr.items);
       this.cap.innerHTML = fr.cap || "";
+      const on = new Set([].concat(fr.line == null ? [] : fr.line));
+      this.lines.querySelectorAll("li").forEach((li, k) => {
+        li.classList.toggle("on", on.has(k));
+        if (on.has(k)) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current");
+      });
       this.info.innerHTML = fr.info || "";
       this.info.hidden = !fr.info;
       this.count.textContent = `第 ${i + 1} / ${this.frames.length} 步`;
@@ -279,47 +299,91 @@
   /* ---------- insertion sort ---------- */
   defs.insertion = {
     title: "insertion sort：一張一張插進已排好的部分",
+    code: [
+      "for i = 1 to n-1",
+      "  key = a[i]  // 拿起來",
+      "  j = i",
+      "  while j > 0 and a[j-1] > key",
+      "    swap a[j-1], a[j]",
+      "    j = j - 1"
+    ],
     fields: [{ name: "nums", label: "數列", def: "3,9,6,5,8,2" }],
     gen(v) {
       const a = nums(v.nums, "數列", { max: 12 }).map((x, id) => ({ id, x }));
       let inv = 0;
       for (let i = 0; i < a.length; i++) for (let j = i + 1; j < a.length; j++) if (a[i].x > a[j].x) inv++;
       const F = [], done = new Set([a[0].id]);
-      let swaps = 0;
+      let swaps = 0, ln = null;
       const snap = (marks, cap) => {
         const items = [];
         a.forEach((o, i) => {
           items.push(box("b" + o.id, i * STEP, 0, o.x, marks[o.id] || (done.has(o.id) ? "done" : "")));
           items.push(text("i" + i, i * STEP + BW / 2, BH + 16, `[${i}]`, "vz-sub"));
         });
-        F.push({ items, cap, info: `swap 次數：<b>${swaps}</b>　（原數列的逆序對共 ${inv} 個）` });
+        F.push({ items, cap, info: `swap 次數：<b>${swaps}</b>　（原數列的逆序對共 ${inv} 個）`, line: ln });
       };
       snap({}, `一開始只有 a[0]＝${a[0].x} 算「已排好」（綠色）。接下來從 a[1] 開始，一個一個拿起來插進綠色那段。`);
       for (let i = 1; i < a.length; i++) {
         const key = a[i];
+        ln = [0, 1];
         snap({ [key.id]: "cur" }, `拿起 a[${i}]＝<b>${key.x}</b>（藍色），往左和已排好的數比。`);
         let j = i;
         while (j > 0) {
           const L = a[j - 1];
           if (L.x > key.x) {
             a[j - 1] = key; a[j] = L; swaps++; j--;
+            ln = [4, 5];
             snap({ [key.id]: "cur", [L.id]: "cmp" }, `${L.x} &gt; ${key.x} → 交換，${key.x} 往前一格（這是第 ${swaps} 次 swap）。`);
           } else {
             done.add(key.id);
+            ln = 3;
             snap({ [key.id]: "cur", [L.id]: "cmp" }, `${L.x} ≤ ${key.x} → 停，${key.x} 插好了。`);
             break;
           }
         }
-        if (j === 0) { done.add(key.id); snap({ [key.id]: "cur" }, `${key.x} 已經換到最前面，插好了。`); }
+        if (j === 0) { done.add(key.id); ln = 3; snap({ [key.id]: "cur" }, `${key.x} 已經換到最前面，插好了。`); }
       }
+      ln = null;
       snap({}, `排好了。swap 一共 <b>${swaps}</b> 次，剛好等於原數列的逆序對數 ${inv}：每次相鄰交換剛好消掉一個逆序對。`);
       return F;
     }
   };
 
   /* ---------- heap ---------- */
+  // 虛擬碼依「建 heap 的方法」和「要不要做 heap sort」組合；at 記下每一行的位置給動畫標亮
+  function heapCode(v) {
+    const L = [], at = {};
+    const put = (name, s) => { if (name) at[name] = L.length; L.push(s); };
+    if (v.build === "insert") {
+      put("insFor", "for k = 0 to n-1  // 逐一插入");
+      put("insPut", "  i = k  // 先放在最後面");
+      put("insWhile", "  while i > 0 and a[i] > a[parent]");
+      put("insSwap", "    swap a[i], a[parent]");
+      put("insUp", "    i = parent  // 往上一層");
+    } else {
+      put(null, "// 從最後一個非葉節點往前");
+      put("buFor", "for i = n/2-1 downto 0");
+      put("buCall", "  siftDown(i, n)");
+    }
+    if (v.sort === "sort") {
+      put(null, "// heap sort");
+      put("sortFor", "for end = n-1 downto 1");
+      put("sortSwap", "  swap a[0], a[end]  // 最大的到最後");
+      put("sortCall", "  siftDown(0, end)");
+    }
+    if (v.build !== "insert" || v.sort === "sort") {
+      put("sdHead", "siftDown(i, n):");
+      put("sdWhile", "  while i has a child (2i+1 < n)");
+      put("sdLarger", "    c = the larger child of i");
+      put("sdStop", "    if a[c] <= a[i]: return");
+      put("sdSwap", "    swap a[i], a[c]");
+      put("sdMove", "    i = c");
+    }
+    return { lines: L, at };
+  }
   defs.heap = {
     title: "max heap：建 heap 與 heap sort",
+    code: v => heapCode(v).lines,
     fields: [
       { name: "nums", label: "數列（陣列 index 0 開始）", def: "3,1,6,5,2,4" },
       { name: "build", label: "建 heap 的方法", def: "bottom", type: "select", options: [["bottom", "bottom-up：從最後一個非葉節點往前 sift-down"], ["insert", "一個一個插入：放最後再 sift-up"]] },
@@ -335,8 +399,8 @@
       const X = i => tx + ((i + 1 - 2 ** lvl(i) + 0.5) / 2 ** lvl(i)) * TW;
       const Y = i => lvl(i) * 64 + 20;
       const arrY = levels * 64 + 26;
-      const F = [];
-      let size = n, built = n;
+      const F = [], C = heapCode(v).at;
+      let size = n, built = n, ln = null;
       const snap = (marks, cap) => {
         const items = [];
         for (let i = 1; i < Math.min(size, built); i++) {
@@ -350,23 +414,26 @@
           items.push(text("i" + i, ax + i * AS + AW / 2, arrY + BH + 16, `[${i}]`, "vz-sub"));
         });
         items.push(text("lt", ax, arrY - 13, "陣列（index 0 開始）", "vz-sub", "start"));
-        F.push({ items, cap, info: `陣列：${a.map((o, i) => (i < size ? o.x : `<span class="vz-ok">${o.x}</span>`)).join(", ")}` });
+        F.push({ items, cap, info: `陣列：${a.map((o, i) => (i < size ? o.x : `<span class="vz-ok">${o.x}</span>`)).join(", ")}`, line: ln });
       };
       const sw = (i, j) => { const t = a[i]; a[i] = a[j]; a[j] = t; };
       const siftDown = (i, lim) => {
         for (;;) {
           const l = 2 * i + 1, r = l + 1;
-          if (l >= lim) { snap({ [a[i].id]: "cur" }, `${a[i].x}（index ${i}）沒有子節點了 → 停。`); return; }
+          if (l >= lim) { ln = C.sdWhile; snap({ [a[i].id]: "cur" }, `${a[i].x}（index ${i}）沒有子節點了 → 停。`); return; }
           const big = r < lim && a[r].x > a[l].x ? r : l;
           const kids = r < lim ? `${a[l].x}、${a[r].x}` : `${a[l].x}`;
           const m = { [a[i].id]: "cur", [a[l].id]: "cmp" };
           if (r < lim) m[a[r].id] = "cmp";
           if (a[big].x > a[i].x) {
+            ln = [C.sdLarger, C.sdSwap];
             snap(m, `${a[i].x}（index ${i}）的子節點是 ${kids}，比較大的是 <b>${a[big].x}</b>，比 ${a[i].x} 大 → 交換。`);
             sw(i, big);
+            ln = C.sdMove;
             snap({ [a[big].id]: "cur", [a[i].id]: "cmp" }, `交換完，${a[big].x} 到了 index ${big}，繼續往下檢查。`);
             i = big;
           } else {
+            ln = [C.sdLarger, C.sdStop];
             snap(m, `${a[i].x}（index ${i}）的子節點是 ${kids}，比較大的 ${a[big].x} 沒有比 ${a[i].x} 大 → 停。`);
             return;
           }
@@ -377,15 +444,19 @@
         snap({}, `一個一個插入：每個數先放在 heap 的最後面，再往上和父節點比（sift-up），比父節點大就交換。`);
         for (let k = 0; k < n; k++) {
           built = k + 1;
+          ln = [C.insFor, C.insPut];
           snap({ [a[k].id]: "cur" }, `插入 <b>${a[k].x}</b>：先放在最後面（index ${k}）。`);
           let i = k;
           while (i > 0) {
             const p = (i - 1) >> 1;
             if (a[i].x > a[p].x) {
+              ln = [C.insWhile, C.insSwap];
               snap({ [a[i].id]: "cur", [a[p].id]: "cmp" }, `${a[i].x} 比父節點 ${a[p].x} 大 → 交換。`);
               sw(i, p); i = p;
+              ln = C.insUp;
               snap({ [a[i].id]: "cur" }, `${a[i].x} 往上到 index ${i}。`);
             } else {
+              ln = C.insWhile;
               snap({ [a[i].id]: "cur", [a[p].id]: "cmp" }, `${a[i].x} ≤ 父節點 ${a[p].x} → 停。`);
               break;
             }
@@ -395,19 +466,24 @@
         const last = (n >> 1) - 1;
         snap({}, `先把數列照順序放進完全二元樹（index 0 是根，i 的子節點是 2i+1、2i+2）。這時還不是 heap。最後一個非葉節點是 index ⌊n/2⌋−1 ＝ ${last}，從它開始往前，每個做 sift-down。`);
         for (let i = last; i >= 0; i--) {
+          ln = [C.buFor, C.buCall];
           snap({ [a[i].id]: "cur" }, `處理 index ${i}（${a[i].x}）：往下和比較大的子節點比。`);
           siftDown(i, n);
         }
       }
+      ln = null;
       snap({}, `max heap 建好了：${a.map(o => o.x).join(", ")}。每個節點都比它的子節點大，最大的 ${a[0].x} 在根。`);
       if (v.sort === "sort") {
         for (let end = n - 1; end >= 1; end--) {
+          ln = [C.sortFor, C.sortSwap];
           snap({ [a[0].id]: "cur", [a[end].id]: "cmp" }, `把根（目前最大的 ${a[0].x}）和 heap 的最後一個 ${a[end].x} 交換。`);
           sw(0, end); size = end;
+          ln = C.sortCall;
           snap({ [a[0].id]: "cur" }, `${a[end].x} 放到陣列尾端，之後不再動（綠色）。heap 剩 ${end} 個，對新的根 ${a[0].x} 做 sift-down。`);
           siftDown(0, end);
         }
         size = 0;
+        ln = null;
         snap({}, `heap sort 完成：${a.map(o => o.x).join(", ")}。`);
       }
       return F;
@@ -417,6 +493,14 @@
   /* ---------- LSD radix sort ---------- */
   defs.radix = {
     title: "LSD radix sort：從個位數開始分桶",
+    code: [
+      "for d = 0 to D-1  // 個位、十位…",
+      "  bucket[0..9] = empty",
+      "  for each x in a (left to right)",
+      "    b = digit d of x",
+      "    append x to bucket[b]",
+      "  a = bucket[0] + ... + bucket[9]"
+    ],
     fields: [{ name: "nums", label: "數列（非負整數）", def: "642,374,73,29,284,252" }],
     gen(v) {
       let a = nums(v.nums, "數列", { int: true, max: 12 }).map((x, id) => ({ id, x }));
@@ -438,6 +522,7 @@
         maxStack = Math.max(maxStack, ...c);
       }
       const F = [];
+      let ln = null;
       const bt = Math.ceil(a.length / NPR) * RH + 34, BH2 = maxStack * RH + 6 + 34;
       const bx = b => (b % BPR) * CW, by = b => bt + Math.floor(b / BPR) * BH2;
       const snap = (where, d, cap) => {
@@ -447,24 +532,28 @@
           const w = where.get(o.id);
           items.push(box("v" + o.id, w[0], w[1], o.x, w[2] || "", { w: W, html: d >= 0 ? html(o.x, d) : esc(o.x) }));
         });
-        F.push({ items, cap });
+        F.push({ items, cap, line: ln });
       };
       const rowPos = list => new Map(list.map((o, i) => [o.id, [(i % NPR) * CW, Math.floor(i / NPR) * RH]]));
       snap(rowPos(a), -1, `最大的數有 ${D} 位，所以要做 ${D} 輪。每一輪只看一個位數（橘色），從個位數開始。`);
       for (let d = 0; d < D; d++) {
         const where = rowPos(a);
+        ln = [0, 1];
         snap(where, d, `第 ${d + 1} 輪：看<b>${name[d]}</b>。從左到右，一個一個依這一位放進 0–9 號桶。` + (String(Math.max(...a.map(o => o.x))).length > 1 && d > 0 ? "位數不夠的前面補 0（灰色）。" : ""));
         const bk = Array.from({ length: 10 }, () => []);
         for (const o of a) {
           const b = digit(o.x, d);
           bk[b].push(o);
           where.set(o.id, [bx(b), by(b) + 4 + (bk[b].length - 1) * RH, "cur"]);
+          ln = [2, 3, 4];
           snap(where, d, `${o.x} 的${name[d]}是 <b>${b}</b> → 放進 ${b} 號桶${bk[b].length > 1 ? `（排在桶裡第 ${bk[b].length} 個，前面的不動）` : ""}。`);
           where.get(o.id)[2] = "";
         }
         a = bk.flat();
+        ln = 5;
         snap(rowPos(a), d, `依 0 號桶 → 9 號桶的順序收回，同一個桶子裡照放進去的順序（這就是「穩定」）：<b>${a.map(o => o.x).join(", ")}</b>`);
       }
+      ln = null;
       snap(rowPos(a), -1, `${D} 輪做完就排好了：${a.map(o => o.x).join(", ")}。`);
       return F;
     }

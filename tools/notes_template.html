@@ -268,6 +268,17 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-static .vz-form, .vz-static .vz-ctrl, .vz-static .vz-cap:empty, .vz-static .vz-legend { display: none; }
 .vz-box.tight text { font-size: 11px; }
 .vz-node.wide circle + text { font-size: 11px; }
+.vz details.vz-code { margin: 0; padding: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; background: none; }
+.vz-code[hidden] { display: none; }
+.vz details.vz-code > summary { margin: 0; padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.vz-lines { margin: 0 0 8px; padding: 0; list-style: none; counter-reset: ln; font: 500 12.5px/1.65 var(--font-mono); overflow-x: auto; }
+.vz-lines li { counter-increment: ln; display: flex; padding-right: 10px; }
+.vz-lines li::before { content: counter(ln); flex: none; width: 2.6em; padding-right: .8em; text-align: right; color: var(--muted); opacity: .55; }
+.vz-lines li > span { white-space: pre; }
+.vz-lines li.on { background: var(--ex-soft); box-shadow: inset 3px 0 var(--ex); color: var(--ink); font-weight: 700; }
+.vz-lines li.on::before { opacity: 1; color: var(--ex); }
+.vz-lines .c { color: var(--muted); font-weight: 500; }
+.vz-static .vz-code { display: none; }
 .vz-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 6px 14px 8px; border-top: 1px dashed var(--line); font-size: 12.5px; line-height: 1.5; color: var(--muted); }
 .vz-legend[hidden] { display: none; }
 .vz-key { display: inline-flex; align-items: center; gap: 6px; }
