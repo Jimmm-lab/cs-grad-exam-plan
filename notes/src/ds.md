@@ -3347,6 +3347,18 @@ $$K[i][w]=\max\big(K[i-1][w],\ K[i-1][w-w_i]+v_i\big)$$
 
 **樹的兩個基本性質**（105 Q7(1)）：(1) 有一個特別的節點叫根；(2) 其他節點分成 $n\ge0$ 個互不相交的集合，每一個也是一棵樹（子樹）。用圖論的說法就是**連通、沒有環**（[離散 10.0](discrete.html#u10-0)）。
 
+!!! key "進階結構題要做什麼"
+    | 題目問 | 怎麼答 |
+    |---|---|
+    | 紅黑樹的性質、高度 | 性質 2～5；$h\le2\lg(n+1)$，證明先證子樹至少有 $2^{bh}-1$ 個內部節點 |
+    | B-tree 插入 | 往下走遇到滿的（$2t-1$ 個 key）就先切：中間的 key 上去，左右各剩 $t-1$ 個 |
+    | B-tree 高度 | $h\le\log_t\frac{n+1}2$ |
+    | binomial heap 有哪些樹 | 看 $n$ 的二進位；合併就像二進位加法的進位 |
+    | Fibonacci heap 的操作 | 插入、合併只串 root list；decrease-key 剪下來，再看 mark 做 cascading cut |
+    | treap | BST 照 key、heap 照 priority，插入後往上轉（[7.5](#u7-treap)） |
+
+    名詞對照：red-black tree（紅黑樹）、black-height（黑高）、minimum degree（最小分支度）、binomial heap（二項堆積）、amortized（均攤）。
+
 ### 7.1 紅黑樹 {#u7-1}
 
 #### 五個性質（CLRS 的定義）
@@ -3360,6 +3372,34 @@ $$K[i][w]=\max\big(K[i-1][w],\ K[i-1][w-w_i]+v_i\big)$$
 題目說「除了每個點是紅或黑之外，還有哪四個性質」（103 Q6(1)、107 Q5(4)），就是 2～5。
 
 **為什麼這樣就平衡**：性質 5 讓每條路徑的黑色一樣多；性質 4 讓紅色最多跟黑色一樣多（紅黑交錯）。所以**最長的路徑最多是最短的兩倍**，樹不會長歪。
+
+<figure class="fig">
+<svg viewBox="0 0 360 226" role="img" aria-label="紅黑樹：根 20 黑色，左孩子 10 黑色（10 的左孩子 5 紅色），右孩子 30 紅色；30 的孩子 25、40 都是黑色，40 的左孩子 35 紅色。從根走到任何一個空指標，都經過 2 個黑色節點（不算空指標）。">
+<line class="ln" x1="166.237" y1="39.9784" x2="113.763" y2="78.0216"/>
+<line class="ln" x1="193.763" y1="39.9784" x2="246.237" y2="78.0216"/>
+<line class="ln" x1="89.7254" y1="101.544" x2="66.2746" y2="132.456"/>
+<line class="ln" x1="250.349" y1="101.995" x2="229.651" y2="132.005"/>
+<line class="ln" x1="269.651" y1="101.995" x2="290.349" y2="132.005"/>
+<line class="ln" x1="291.972" y1="160.985" x2="278.028" y2="187.015"/>
+<circle cx="180" cy="30" r="17" style="fill:#2b2d31;stroke:var(--ink);stroke-width:2"/>
+<text x="180" y="30" text-anchor="middle" dominant-baseline="central" style="fill:#fff" class="mono">20</text>
+<circle cx="100" cy="88" r="17" style="fill:#2b2d31;stroke:var(--ink);stroke-width:2"/>
+<text x="100" y="88" text-anchor="middle" dominant-baseline="central" style="fill:#fff" class="mono">10</text>
+<circle cx="260" cy="88" r="17" style="fill:#d64545;stroke:#d64545;stroke-width:2"/>
+<text x="260" y="88" text-anchor="middle" dominant-baseline="central" style="fill:#fff" class="mono">30</text>
+<circle cx="56" cy="146" r="17" style="fill:#d64545;stroke:#d64545;stroke-width:2"/>
+<text x="56" y="146" text-anchor="middle" dominant-baseline="central" style="fill:#fff" class="mono">5</text>
+<circle cx="220" cy="146" r="17" style="fill:#2b2d31;stroke:var(--ink);stroke-width:2"/>
+<text x="220" y="146" text-anchor="middle" dominant-baseline="central" style="fill:#fff" class="mono">25</text>
+<circle cx="300" cy="146" r="17" style="fill:#2b2d31;stroke:var(--ink);stroke-width:2"/>
+<text x="300" y="146" text-anchor="middle" dominant-baseline="central" style="fill:#fff" class="mono">40</text>
+<circle cx="270" cy="202" r="17" style="fill:#d64545;stroke:#d64545;stroke-width:2"/>
+<text x="270" y="202" text-anchor="middle" dominant-baseline="central" style="fill:#fff" class="mono">35</text>
+<text x="330" y="40" text-anchor="end" dominant-baseline="central" class="sm">黑色：2 個</text>
+<text x="330" y="58" text-anchor="end" dominant-baseline="central" class="sm">（每條路徑）</text>
+</svg>
+<figcaption>103 Q6 的例子：每條往下的路徑都經過 2 個黑色節點；最長的 20 → 30 → 40 → 35 剛好是最短的 20 → 10 的兩倍</figcaption>
+</figure>
 
 #### 高度最多 $2\lg(n+1)$
 
@@ -3410,6 +3450,54 @@ $$K[i][w]=\max\big(K[i-1][w],\ K[i-1][w-w_i]+v_i\big)$$
 #### 插入：滿了就從中間切開
 
 CLRS 的做法是**往下走的時候，遇到滿的節點（$2t-1$ 個 key）就先切開**：中間那個 key 往上搬到父親，左右各剩 $t-1$ 個。這樣插到葉子時一定有空位，也不用再往回調整。根滿了切開時，樹就長高一層。
+
+<figure class="fig">
+<svg viewBox="0 0 360 236" role="img" aria-label="t＝3 的 B-tree，往下走時遇到滿的節點 R S T U V 先切開：中間的 T 搬到父親，父親從 G M P X 變成 G M P T X，原本的節點切成 R S 和 U V 兩個，各剩 2 個 key。">
+<text x="8" y="14" text-anchor="start" dominant-baseline="central" class="sm">切之前</text>
+<rect class="box" x="132" y="22" width="24" height="26"/>
+<text x="144" y="35" text-anchor="middle" dominant-baseline="central" class="sm mono">G</text>
+<rect class="box" x="156" y="22" width="24" height="26"/>
+<text x="168" y="35" text-anchor="middle" dominant-baseline="central" class="sm mono">M</text>
+<rect class="box" x="180" y="22" width="24" height="26"/>
+<text x="192" y="35" text-anchor="middle" dominant-baseline="central" class="sm mono">P</text>
+<rect class="box" x="204" y="22" width="24" height="26"/>
+<text x="216" y="35" text-anchor="middle" dominant-baseline="central" class="sm mono">X</text>
+<rect class="box" x="186" y="82" width="24" height="26"/>
+<text x="198" y="95" text-anchor="middle" dominant-baseline="central" class="sm mono">R</text>
+<rect class="box" x="210" y="82" width="24" height="26"/>
+<text x="222" y="95" text-anchor="middle" dominant-baseline="central" class="sm mono">S</text>
+<rect class="fa" x="234" y="82" width="24" height="26"/>
+<text x="246" y="95" text-anchor="middle" dominant-baseline="central" class="sm mono">T</text>
+<rect class="box" x="258" y="82" width="24" height="26"/>
+<text x="270" y="95" text-anchor="middle" dominant-baseline="central" class="sm mono">U</text>
+<rect class="box" x="282" y="82" width="24" height="26"/>
+<text x="294" y="95" text-anchor="middle" dominant-baseline="central" class="sm mono">V</text>
+<line class="ln" x1="204" y1="48" x2="246" y2="82"/>
+<text x="170" y="136" text-anchor="middle" dominant-baseline="central" class="sm ta">滿了（2t−1 ＝ 5 個）：中間的 T 往上</text>
+<text x="8" y="160" text-anchor="start" dominant-baseline="central" class="sm">切之後</text>
+<rect class="box" x="120" y="166" width="24" height="26"/>
+<text x="132" y="179" text-anchor="middle" dominant-baseline="central" class="sm mono">G</text>
+<rect class="box" x="144" y="166" width="24" height="26"/>
+<text x="156" y="179" text-anchor="middle" dominant-baseline="central" class="sm mono">M</text>
+<rect class="box" x="168" y="166" width="24" height="26"/>
+<text x="180" y="179" text-anchor="middle" dominant-baseline="central" class="sm mono">P</text>
+<rect class="fa" x="192" y="166" width="24" height="26"/>
+<text x="204" y="179" text-anchor="middle" dominant-baseline="central" class="sm mono">T</text>
+<rect class="box" x="216" y="166" width="24" height="26"/>
+<text x="228" y="179" text-anchor="middle" dominant-baseline="central" class="sm mono">X</text>
+<rect class="box" x="130" y="214" width="24" height="26"/>
+<text x="142" y="227" text-anchor="middle" dominant-baseline="central" class="sm mono">R</text>
+<rect class="box" x="154" y="214" width="24" height="26"/>
+<text x="166" y="227" text-anchor="middle" dominant-baseline="central" class="sm mono">S</text>
+<rect class="box" x="214" y="214" width="24" height="26"/>
+<text x="226" y="227" text-anchor="middle" dominant-baseline="central" class="sm mono">U</text>
+<rect class="box" x="238" y="214" width="24" height="26"/>
+<text x="250" y="227" text-anchor="middle" dominant-baseline="central" class="sm mono">V</text>
+<line class="ln" x1="192" y1="192" x2="154" y2="214"/>
+<line class="ln" x1="216" y1="192" x2="238" y2="214"/>
+</svg>
+<figcaption>101 Q9(c) 插入 Q 時的那一次切開：父親一定還有空位，因為走下來的路上，滿的節點都已經先切過了</figcaption>
+</figure>
 
 !!! example "101 Q9（10%）：minimum degree t ＝ 3 的 B-tree，依序插入 B、Q、L、F"
     原本的樹（這就是 CLRS 課本 B-tree 那一章的範例）：
@@ -3496,6 +3584,46 @@ CLRS 的做法是**往下走的時候，遇到滿的節點（$2t-1$ 個 key）�
 #### binomial tree $B_k$
 
 $B_0$ 是一個點；$B_k$ 是兩棵 $B_{k-1}$ 連起來：其中一棵的根變成另一棵的根的**最左邊的孩子**。
+
+<figure class="fig">
+<svg viewBox="0 0 360 196" role="img" aria-label="binomial tree B0 到 B3。B0 是一個點；B1 是兩個點；B2 的根有兩個孩子，分別是 B1 和 B0 的根；B3 的根有三個孩子，分別是 B2、B1、B0 的根。B3 各深度的節點數是 1、3、3、1。">
+<circle class="box" cx="26" cy="28" r="9"/>
+<line class="ln" x1="70" y1="37" x2="70" y2="59"/>
+<circle class="box" cx="70" cy="28" r="9"/>
+<circle class="box" cx="70" cy="68" r="9"/>
+<line class="ln" x1="125.975" y1="36.0498" x2="114.025" y2="59.9502"/>
+<line class="ln" x1="134.025" y1="36.0498" x2="145.975" y2="59.9502"/>
+<line class="ln" x1="110" y1="77" x2="110" y2="99"/>
+<circle class="box" cx="130" cy="28" r="9"/>
+<circle class="box" cx="110" cy="68" r="9"/>
+<circle class="box" cx="150" cy="68" r="9"/>
+<circle class="box" cx="110" cy="108" r="9"/>
+<line class="ln" x1="237.341" y1="34.0541" x2="206.659" y2="61.9459"/>
+<line class="ln" x1="247.343" y1="36.3563" x2="256.657" y2="59.6437"/>
+<line class="ln" x1="251.324" y1="33.2311" x2="292.676" y2="62.7689"/>
+<line class="ln" x1="195.975" y1="76.0498" x2="184.025" y2="99.9502"/>
+<line class="ln" x1="204.025" y1="76.0498" x2="215.975" y2="99.9502"/>
+<line class="ln" x1="260" y1="77" x2="260" y2="99"/>
+<line class="ln" x1="180" y1="117" x2="180" y2="139"/>
+<circle class="fb" cx="244" cy="28" r="9"/>
+<circle class="fb" cx="200" cy="68" r="9"/>
+<circle class="fb" cx="260" cy="68" r="9"/>
+<circle class="fb" cx="300" cy="68" r="9"/>
+<circle class="fb" cx="180" cy="108" r="9"/>
+<circle class="fb" cx="220" cy="108" r="9"/>
+<circle class="fb" cx="260" cy="108" r="9"/>
+<circle class="fb" cx="180" cy="148" r="9"/>
+<text x="26" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">B₀</text>
+<text x="70" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">B₁</text>
+<text x="130" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">B₂</text>
+<text x="244" y="176" text-anchor="middle" dominant-baseline="central" class="sm mono">B₃</text>
+<text x="350" y="28" text-anchor="end" dominant-baseline="central" class="sm tb">1 個</text>
+<text x="350" y="68" text-anchor="end" dominant-baseline="central" class="sm tb">3 個</text>
+<text x="350" y="108" text-anchor="end" dominant-baseline="central" class="sm tb">3 個</text>
+<text x="350" y="148" text-anchor="end" dominant-baseline="central" class="sm tb">1 個</text>
+</svg>
+<figcaption>B₃ 有 8 ＝ 2³ 個點、高度 3；各深度的點數 1、3、3、1 就是 C(3, i)</figcaption>
+</figure>
 
 !!! example "104 Q4(1)（5%）：binomial tree $B_k$ 的五個性質"
     1. 有 $2^k$ 個節點。
@@ -3824,6 +3952,108 @@ Dijkstra、Prim 要做很多次 decrease-key，用 Fibonacci heap 可以做到 $
     ```
 
     **發現**：跟插入 F 之前（(1) 的答案）一模一樣。因為同一組 key 和 priority 的 treap 只有一種形狀，刪掉 F 之後，剩下的節點就只能排成那個樣子。
+
+### 7.6 觀念小考 {#u7-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 下面哪一種情況違反紅黑樹的規則？
+
+1. 黑色節點的孩子是黑色
+2. 紅色節點的孩子是紅色
+3. 根是黑色
+4. 紅色節點有兩個黑色的孩子
+
+??? quiz "看解析"
+    **B**。性質 4：紅色節點的孩子都要是黑色，不能有兩個紅色連在一起。黑色連黑色是可以的。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-2.** 有 15 個內部節點的紅黑樹，高度最多是多少（照定理的上界）？
+
+1. 4
+2. 15
+3. 6
+4. 8
+
+??? quiz "看解析"
+    **D**。$h\le2\lg(15+1)=2\times4=8$。A 是完全平衡時的高度，紅黑樹沒有那麼嚴格。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** minimum degree $t=4$ 的 B-tree，根以外的節點最少、最多各放幾個 key？
+
+1. 3 到 7
+2. 4 到 8
+3. 2 到 7
+4. 3 到 8
+
+??? quiz "看解析"
+    **A**。最少 $t-1=3$、最多 $2t-1=7$。孩子數是 key 數加 1：4 到 8 個孩子（B 是孩子數）。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-4.** 22 個節點的 binomial heap，由哪幾棵 binomial tree 組成？
+
+1. $B_4$、$B_3$
+2. $B_3$、$B_2$、$B_1$
+3. $B_4$、$B_2$、$B_1$
+4. $B_4$、$B_1$、$B_0$
+
+??? quiz "看解析"
+    **C**。$22=10110_2=16+4+2$，每個 1 對應一棵 $B_k$（$2^k$ 個點）：$B_4$、$B_2$、$B_1$。每種度數最多一棵，所以樹的組合是唯一的。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** Fibonacci heap 的 decrease-key 為什麼均攤只要 $O(1)$？
+
+1. 它不用維持 heap 的順序
+2. 只把節點剪到 root list，整理留到 extract-min 再做；cascading cut 的總次數被 mark 限制住
+3. 它用陣列存，可以直接改
+4. 它只允許每次減 1
+
+??? quiz "看解析"
+    **B**。一般情況只剪一刀；連鎖剪下去的節點都是之前被 mark 過的，每次 mark 只付一次錢，所以平均下來每次 decrease-key 是常數。heap 順序（A）還是要維持，剪到 root list 就是為了不違反它。
+
+</div>
+
+**W-1.** $t=2$（2-3-4 tree），依序插入 10、20、30、40、50、60 到空的 B-tree（CLRS 的做法：往下走遇到滿的就先切），畫出最後的樹。
+
+??? quiz "看參考答案"
+    - **10、20、30**：都放在根，[10 20 30]，滿了（$2t-1=3$）。
+    - **插入 40**：根滿了先切，20 上去變成新根，左 [10]、右 [30]；40 放進 [30] → [30 40]。
+    - **插入 50**：[30 40] 沒滿，放進去 → [30 40 50]。
+    - **插入 60**：往右走，[30 40 50] 滿了先切，40 上去 → 根 [20 40]，孩子 [10]、[30]、[50]；60 放進 [50]。
+
+    ```text
+    [20 40]
+    +-- [10]
+    +-- [30]
+    `-- [50 60]
+    ```
+
+    我用程式照 CLRS 的插入演算法跑過，結果一樣。
+
+**W-2.** 一個 binomial heap 有 3 個節點、另一個有 5 個，合併之後是哪幾棵樹？用二進位加法說明。
+
+??? quiz "看參考答案"
+    $3=011_2$（$B_1$、$B_0$）、$5=101_2$（$B_2$、$B_0$）。照度數由小到大合併：
+
+    - **$B_0$**：兩邊各一棵，連成一棵 $B_1$（進位）。
+    - **$B_1$**：原本的 $B_1$ ＋ 進位的 $B_1$，連成 $B_2$（進位）。
+    - **$B_2$**：原本的 $B_2$ ＋ 進位的 $B_2$，連成 $B_3$。
+
+    結果只有一棵 **$B_3$**，跟 $011+101=1000_2$（8）一樣。
 
 ### 單元 7 小考 {#u7-quiz}
 
