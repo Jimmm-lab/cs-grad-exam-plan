@@ -254,18 +254,41 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .vz-box.dup rect { fill: var(--trap-soft); stroke: var(--trap); }
 .vz-box.memo rect { fill: var(--ok-soft); stroke: var(--ok); stroke-dasharray: 5 3; }
 .vz-node.bad .vz-note { fill: var(--accent); }
-.vz-edge.on path { stroke: var(--accent); stroke-width: 5; }
+.vz-edge.on path { stroke: var(--ex); stroke-width: 5; }
 .vz-edge.cand path { stroke: var(--trap); stroke-width: 3; stroke-dasharray: 7 5; }
 .vz-edge.bad path { stroke: var(--accent); stroke-width: 3; stroke-dasharray: 3 4; }
 .vz-edge.skip path { opacity: .25; stroke-dasharray: 2 5; }
 .vz-svg .vz-w text { font: 700 13px var(--font-mono); fill: var(--muted); paint-order: stroke; stroke: var(--card); stroke-width: 4px; }
-.vz-svg .vz-w.on text { fill: var(--accent); }
+.vz-svg .vz-w.on text { fill: var(--ex); }
 .vz-svg .vz-w.skip text { opacity: .4; }
 .vz-svg .vz-hl { fill: var(--trap); font-weight: 800; }
 .vz-svg .vz-dimtxt { fill: var(--muted); opacity: .6; }
 .vz-node.dim { opacity: .45; }
 .vz-node.side2 circle { fill: var(--key-soft); stroke: var(--key); stroke-width: 2.5; }
-.vz-static .vz-form, .vz-static .vz-ctrl, .vz-static .vz-cap:empty { display: none; }
+.vz-static .vz-form, .vz-static .vz-ctrl, .vz-static .vz-cap:empty, .vz-static .vz-legend { display: none; }
+.vz-box.tight text { font-size: 11px; }
+.vz-node.wide circle + text { font-size: 11px; }
+.vz-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 6px 14px 8px; border-top: 1px dashed var(--line); font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.vz-legend[hidden] { display: none; }
+.vz-key { display: inline-flex; align-items: center; gap: 6px; }
+.vz-key i { flex: none; width: 15px; height: 12px; border-radius: 3px; border: 1.5px solid var(--muted); background: var(--card); }
+.vz-key.n-cur i { background: var(--ex-soft); border: 2.5px solid var(--ex); }
+.vz-key.n-cmp i, .vz-key.n-rpart i, .vz-key.n-dup i { background: var(--trap-soft); border: 2.5px solid var(--trap); }
+.vz-key.n-done i { background: var(--ok-soft); border-color: var(--ok); }
+.vz-key.n-memo i { background: var(--ok-soft); border: 1.5px dashed var(--ok); }
+.vz-key.n-bad i { background: var(--accent-soft); border: 2.5px solid var(--accent); }
+.vz-key.n-dim i { opacity: .4; }
+.vz-key.n-slot i { background: var(--paper); border-color: var(--line); }
+.vz-key.n-path i { border: 2.5px dashed var(--ex); }
+.vz-key.n-lpart i, .vz-key.n-side2 i { background: var(--key-soft); border: 2.5px solid var(--key); }
+.vz-key[class*=" e-"] i { width: 22px; height: 0; border: 0; border-radius: 0; background: none; }
+.vz-key.e-on i { border-top: 4px solid var(--ex); }
+.vz-key.e-cand i { border-top: 3px dashed var(--trap); }
+.vz-key.e-bad i { border-top: 3px dotted var(--accent); }
+.vz-key.e-skip i { border-top: 2px dotted var(--muted); opacity: .5; }
+.vz-key[class*=" t-"] b { font: 800 14px var(--font-mono); }
+.vz-key.t-hl b { color: var(--trap); }
+.vz-key.t-dimtxt b { color: var(--muted); opacity: .6; }
 .vz-static .vz-tag { background: var(--muted); }
 @media (prefers-reduced-motion: reduce) {
   .vz-svg g, .vz-edge path { transition: none; }
@@ -3421,7 +3444,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </div>
 <div class="viz" data-viz="rebuild" data-inorder="ABCDEFGHIJ" data-other="ABDCGIHJFE" data-kind="post" data-title="115 Q6：一步一步切開 inorder"></div>
 
-<p>動畫裡綠色是左子樹、橘色是右子樹。節點畫在它的 inorder 字母正下方，所以樹的左右位置一定跟 inorder 一致。</p>
+<p>動畫裡青綠色是左子樹、橘色是右子樹（下面的圖例也有標）。節點畫在它的 inorder 字母正下方，所以樹的左右位置一定跟 inorder 一致。</p>
 <h3 id="u3-2">3.2 BST</h3>
 <p>刪除節點的三種情況：葉節點直接刪；只有一個子節點就讓子節點接上；有兩個子節點就用 <strong>inorder successor</strong>（右子樹最小）或 predecessor 取代。</p>
 <div class="admonition example">
@@ -9986,7 +10009,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <script src="assets/icons.js?v=1a5c59ea"></script>
 <script src="assets/inkdb.js?v=b9600460"></script>
 <script src="assets/ink.js?v=4d874f64"></script>
-<script src="assets/viz.js?v=6ddcc884"></script>
+<script src="assets/viz.js?v=6428a6b5"></script>
 <script src="assets/glide.js?v=93f8e086"></script>
 <script src="assets/nav.js?v=abbabef4"></script>
 <script src="assets/avatars.js?v=9ec06a79"></script>

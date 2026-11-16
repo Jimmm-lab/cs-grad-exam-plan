@@ -1980,7 +1980,7 @@ $$h\ge\lg(n!)\ge\frac n2\lg\frac n2=\Omega(n\log n)$$
 
 <div class="viz" data-viz="rebuild" data-inorder="ABCDEFGHIJ" data-other="ABDCGIHJFE" data-kind="post" data-title="115 Q6：一步一步切開 inorder"></div>
 
-動畫裡綠色是左子樹、橘色是右子樹。節點畫在它的 inorder 字母正下方，所以樹的左右位置一定跟 inorder 一致。
+動畫裡青綠色是左子樹、橘色是右子樹（下面的圖例也有標）。節點畫在它的 inorder 字母正下方，所以樹的左右位置一定跟 inorder 一致。
 
 ### 3.2 BST {#u3-2}
 
