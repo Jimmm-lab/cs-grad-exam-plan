@@ -3141,11 +3141,122 @@ $A=\{1,2\}$。所有有序對是 (1,1)、(1,2)、(2,1)、(2,2)，排成 $2\times
 - **對稱**：(1,2) 勾了，(2,1) 也一定要勾，兩格綁在一起變成一個選擇 → 自由的是 (1,1)、(2,2)、{(1,2),(2,1)} → $2^3=8$ 種。
 - **反對稱**：(1,2) 和 (2,1) 不能同時勾 → 這一對只有 3 種選法（都不勾、只勾一個、只勾另一個）。
 
+<figure class="fig">
+<svg viewBox="0 0 360 196" role="img" aria-label="|A| = 3 的關係是一張 3 × 3 的表。反身：對角線 3 格一定要勾，其他 6 格自由，共 2 的 6 次方種。對稱：(1,2) 和 (2,1) 綁在一起，(1,3) 和 (3,1)、(2,3) 和 (3,2) 也是，加上對角線 3 格，共 6 個自由單位，2 的 6 次方種。反對稱：對角線 3 格自由，每一對有 3 種選法，共 2 的 3 次方乘 3 的 3 次方種。">
+<text x="73" y="20" text-anchor="middle" dominant-baseline="central" class="sm">反身</text>
+<text x="47" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="26" y="63" text-anchor="end" dominant-baseline="central" class="sm mono">1</text>
+<text x="73" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="26" y="89" text-anchor="end" dominant-baseline="central" class="sm mono">2</text>
+<text x="99" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="26" y="115" text-anchor="end" dominant-baseline="central" class="sm mono">3</text>
+<rect class="fa" x="34" y="50" width="26" height="26"/>
+<text x="47" y="63" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<rect class="box" x="60" y="50" width="26" height="26"/>
+<text x="73" y="63" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<rect class="box" x="86" y="50" width="26" height="26"/>
+<text x="99" y="63" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<rect class="box" x="34" y="76" width="26" height="26"/>
+<text x="47" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<rect class="fa" x="60" y="76" width="26" height="26"/>
+<text x="73" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<rect class="box" x="86" y="76" width="26" height="26"/>
+<text x="99" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<rect class="box" x="34" y="102" width="26" height="26"/>
+<text x="47" y="115" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<rect class="box" x="60" y="102" width="26" height="26"/>
+<text x="73" y="115" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<rect class="fa" x="86" y="102" width="26" height="26"/>
+<text x="99" y="115" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="73" y="148" text-anchor="middle" dominant-baseline="central" class="sm">2<tspan font-size="10" dy="-6">6</tspan></text>
+<text x="192" y="20" text-anchor="middle" dominant-baseline="central" class="sm">對稱</text>
+<text x="166" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="145" y="63" text-anchor="end" dominant-baseline="central" class="sm mono">1</text>
+<text x="192" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="145" y="89" text-anchor="end" dominant-baseline="central" class="sm mono">2</text>
+<text x="218" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="145" y="115" text-anchor="end" dominant-baseline="central" class="sm mono">3</text>
+<rect class="box" x="153" y="50" width="26" height="26"/>
+<text x="166" y="63" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<rect class="fb" x="179" y="50" width="26" height="26"/>
+<text x="192" y="63" text-anchor="middle" dominant-baseline="central" class="sm mono">=</text>
+<rect class="fc" x="205" y="50" width="26" height="26"/>
+<text x="218" y="63" text-anchor="middle" dominant-baseline="central" class="sm mono">=</text>
+<rect class="fb" x="153" y="76" width="26" height="26"/>
+<text x="166" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono">=</text>
+<rect class="box" x="179" y="76" width="26" height="26"/>
+<text x="192" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<rect class="fk" x="205" y="76" width="26" height="26"/>
+<text x="218" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono">=</text>
+<rect class="fc" x="153" y="102" width="26" height="26"/>
+<text x="166" y="115" text-anchor="middle" dominant-baseline="central" class="sm mono">=</text>
+<rect class="fk" x="179" y="102" width="26" height="26"/>
+<text x="192" y="115" text-anchor="middle" dominant-baseline="central" class="sm mono">=</text>
+<rect class="box" x="205" y="102" width="26" height="26"/>
+<text x="218" y="115" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<text x="192" y="148" text-anchor="middle" dominant-baseline="central" class="sm">2<tspan font-size="10" dy="-6">3</tspan><tspan dy="6">·2</tspan><tspan font-size="10" dy="-6">3</tspan></text>
+<text x="311" y="20" text-anchor="middle" dominant-baseline="central" class="sm">反對稱</text>
+<text x="285" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="264" y="63" text-anchor="end" dominant-baseline="central" class="sm mono">1</text>
+<text x="311" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="264" y="89" text-anchor="end" dominant-baseline="central" class="sm mono">2</text>
+<text x="337" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="264" y="115" text-anchor="end" dominant-baseline="central" class="sm mono">3</text>
+<rect class="box" x="272" y="50" width="26" height="26"/>
+<text x="285" y="63" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<rect class="fb" x="298" y="50" width="26" height="26"/>
+<text x="311" y="63" text-anchor="middle" dominant-baseline="central" class="sm mono">≤1</text>
+<rect class="fc" x="324" y="50" width="26" height="26"/>
+<text x="337" y="63" text-anchor="middle" dominant-baseline="central" class="sm mono">≤1</text>
+<rect class="fb" x="272" y="76" width="26" height="26"/>
+<text x="285" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono"></text>
+<rect class="box" x="298" y="76" width="26" height="26"/>
+<text x="311" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<rect class="fk" x="324" y="76" width="26" height="26"/>
+<text x="337" y="89" text-anchor="middle" dominant-baseline="central" class="sm mono">≤1</text>
+<rect class="fc" x="272" y="102" width="26" height="26"/>
+<text x="285" y="115" text-anchor="middle" dominant-baseline="central" class="sm mono"></text>
+<rect class="fk" x="298" y="102" width="26" height="26"/>
+<text x="311" y="115" text-anchor="middle" dominant-baseline="central" class="sm mono"></text>
+<rect class="box" x="324" y="102" width="26" height="26"/>
+<text x="337" y="115" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
+<text x="311" y="148" text-anchor="middle" dominant-baseline="central" class="sm">2<tspan font-size="10" dy="-6">3</tspan><tspan dy="6">·3</tspan><tspan font-size="10" dy="-6">3</tspan></text>
+<text x="180" y="184" text-anchor="middle" dominant-baseline="central" class="sm">同顏色的兩格綁在一起：對稱要一起勾；反對稱最多勾一格</text>
+</svg>
+<figcaption>|A|＝3：對角線的每一格、每一對（同顏色的兩格）各是一個獨立的選擇單位</figcaption>
+</figure>
+
 所以所有關係計數題的做法都一樣：**數「可以自由決定的單位」有幾個、每個單位有幾種選法**，再相乘。
 
 #### 函數與逆像
 
 $f^{-1}(S)$ 讀作「**哪些元素被送進 $S$**」，不是反函數。題目說 $f^{-1}(\{4,6\})=\{1,3,7\}$，意思是：1、3、7 被送到 4 或 6，而且**其他元素都不能**送到 4 或 6。
+
+#### 函數的三種性質：一對一、映成、一一對應
+
+$f:A\to B$，$|A|=m$、$|B|=n$：
+
+| 性質 | 意思 | 個數 | 什麼時候可能有 |
+|---|---|---|---|
+| 任意函數 | $A$ 的每個元素都送到 $B$ 的某個元素 | $n^m$ | 都可以 |
+| 一對一（injective） | 不同的元素送到不同的地方 | $n(n-1)\cdots(n-m+1)$ | $m\le n$ |
+| 映成（onto） | $B$ 的每個元素都有人送到 | 排容（[1.2](#u1-2)） | $m\ge n$ |
+| 一一對應（bijective） | 一對一而且映成 | $n!$ | $m=n$ |
+
+**數一對一的方法**：$A$ 的第一個元素有 $n$ 個地方可以去，第二個不能跟第一個一樣，剩 $n-1$ 個……就是從 $n$ 個裡排 $m$ 個。
+
+#### 邏輯：→ 只有「前真後假」才是假
+
+$p\to q$（若 $p$ 則 $q$）只有在 $p$ 真、$q$ 假時是假的；$p$ 是假的時候，整句一律算真（前提不成立，就沒有違反承諾）。
+
+| 名稱 | 寫法 | 跟 $p\to q$ 等價嗎 |
+|---|---|---|
+| 原命題 | $p\to q$ | |
+| 對偶（contrapositive） | $\neg q\to\neg p$ | **等價**，證明時常改證這個 |
+| 逆命題（converse） | $q\to p$ | 不一定 |
+| 否命題（inverse） | $\neg p\to\neg q$ | 不一定（它是逆命題的對偶） |
+
+另外三個常用的等價：$p\to q\equiv\neg p\vee q$；De Morgan：$\neg(p\wedge q)\equiv\neg p\vee\neg q$；量詞的否定：$\neg\forall x\,P(x)\equiv\exists x\,\neg P(x)$（「不是每個都」等於「有一個不」）。
 
 #### 二元運算：交換律、結合律
 
@@ -3159,6 +3270,17 @@ $f^{-1}(S)$ 讀作「**哪些元素被送進 $S$**」，不是反函數。題目
 #### 良序原理和「最小反例」
 
 良序原理：任何非空的正整數集合都有最小元素。證明題常用：假設有反例，取**最小的反例** $m$，再證明比 $m$ 小的某個數也是反例，矛盾。
+
+!!! key "關係、函數、邏輯題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | 某種關係有幾個 | 數獨立的選擇單位：對角線每格、每一對 $(i,j),(j,i)$；每個單位幾種選法，相乘（[7.1](#u7-1)） |
+    | 恰好含 $k$ 個有序對 | 對角線的一格算 1 個、一對算 2 個，把 $k$ 拆開再組合（113 Q7） |
+    | 逆像 $f^{-1}(S)$ | 「誰被送進 $S$」，其他元素都不能送進 $S$ |
+    | 運算有沒有交換、結合律 | 不成立：舉一個反例；成立：展開證明 |
+    | 真值表、等價 | 先算中間欄；$p\to q$ 只有前真後假是假；對偶等價、逆命題不等價 |
+
+    名詞對照：reflexive（反身）、symmetric（對稱）、antisymmetric（反對稱）、transitive（遞移）、injective／surjective／bijective（一對一／映成／一一對應）、contrapositive（對偶）。
 
 !!! read "還不懂？看別人怎麼講"
     - **影片**：[清大趙啟超・離散數學](https://www.junyiacademy.org/topics/c-nthu-ocw-cid-288) 第 6R–8R 講 Relations。
@@ -3776,6 +3898,101 @@ $(\mathcal P(\{a,b,c\}),\subseteq)$：8 個子集合，A 被 B 蓋住 ⇔ B 比 
 
     - **一對一**：偶數 n 對到正數，奇數 n 對到 0 和負數，兩邊不會撞。同一邊裡，$\frac n2$ 和 $-\frac{n-1}2$ 都是 n 的一次函數，不同的 n 得到不同的值。
     - **映成**：正整數 k 由 $n=2k$ 對到；0 和負整數 $-k$（$k\ge0$）由 $n=2k+1$ 對到。∎
+
+### 7.8 觀念小考 {#u7-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** $|A|=4$ 上的反對稱關係有幾個？
+
+1. $2^{16}$
+2. $2^{10}$
+3. $2^4\times3^6$
+4. $3^{16}$
+
+??? quiz "看解析"
+    **C**（11664）。對角線 4 格各自可勾可不勾：$2^4$；非對角的 $\binom42=6$ 對，每對 3 種（都不勾、只勾一格、只勾另一格）：$3^6$。B 是對稱關係的個數 $2^{4+6}$。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** $|A|=4$ 上「反身而且對稱」的關係有幾個？
+
+1. 64
+2. 1024
+3. 4096
+4. 16
+
+??? quiz "看解析"
+    **A**。對角線全部固定要勾，只剩 $\binom42=6$ 對可以選勾或不勾：$2^6=64$。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** $p\to q$ 什麼時候是假的？
+
+1. $p$ 假、$q$ 真
+2. $p$、$q$ 都假
+3. $p$、$q$ 都真
+4. $p$ 真、$q$ 假
+
+??? quiz "看解析"
+    **D**。只有「前提成立、結論不成立」才違反了「若 $p$ 則 $q$」。$p$ 是假的時候，不管 $q$ 怎樣都算真。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-4.** 「若 $n^2$ 是偶數，則 $n$ 是偶數」的對偶（contrapositive）是？
+
+1. 若 $n$ 是偶數，則 $n^2$ 是偶數
+2. 若 $n$ 是奇數，則 $n^2$ 是奇數
+3. 若 $n^2$ 是奇數，則 $n$ 是奇數
+4. $n^2$ 是偶數而且 $n$ 是奇數
+
+??? quiz "看解析"
+    **B**。對偶是「結論的否定 → 前提的否定」，跟原命題等價，所以證明原題時常改證「奇數的平方是奇數」。A 是逆命題、C 是否命題，D 是原命題的否定。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-5.** $f:\{1,2,3\}\to\{a,b,c,d\}$，一對一的函數有幾個？
+
+1. 64
+2. 81
+3. 24
+4. 36
+
+??? quiz "看解析"
+    **C**。$4\times3\times2=24$：1 有 4 個地方去，2 剩 3 個，3 剩 2 個。A 是全部的函數 $4^3$。這裡不可能映成：3 個元素蓋不滿 4 個。
+
+</div>
+
+**W-1.** $|A|=3$ 上，同時是「反身」和「反對稱」的關係有幾個？寫出怎麼數。
+
+??? quiz "看參考答案"
+    - **對角線（1 種）**：反身規定 (1,1)、(2,2)、(3,3) 都要勾，沒有選擇。
+    - **每一對（3 種）**：$\{(1,2),(2,1)\}$、$\{(1,3),(3,1)\}$、$\{(2,3),(3,2)\}$ 三對，反對稱規定每對最多勾一格：都不勾、只勾前面、只勾後面。
+
+    共 $1\times3^3=$ **27** 個。我用程式把 $2^9=512$ 個關係全部檢查過，剛好 27 個。
+
+**W-2.** 整數上的運算 $f(x,y)=x+y-xy$ 有沒有交換律、結合律？成立的要證明。
+
+??? quiz "看參考答案"
+    **交換律成立**：$f(y,x)=y+x-yx=f(x,y)$。
+
+    **結合律成立**：
+
+    $$f(f(x,y),z)=(x+y-xy)+z-(x+y-xy)z=x+y+z-xy-xz-yz+xyz$$
+
+    這個式子對 $x,y,z$ 完全對稱，所以 $f(x,f(y,z))$ 展開也一樣。
+
+    **更快的看法**：$1-f(x,y)=1-x-y+xy=(1-x)(1-y)$，$f$ 其實是把 $1-x$ 和 $1-y$ 相乘，乘法有交換律、結合律，$f$ 也就有。
 
 ### 單元 7 小考 {#u7-quiz}
 
