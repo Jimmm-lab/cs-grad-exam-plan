@@ -562,6 +562,24 @@
   /* ---------- BST ---------- */
   defs.bst = {
     title: "BST：插入與刪除",
+    code: v => [
+      "insert(k):",
+      "  p = NIL; x = root",
+      "  while x != NIL",
+      "    p = x",
+      "    if k < x.key: x = x.left",
+      "    else: x = x.right",
+      "  put k under p (root if p = NIL)",
+      "delete(k):",
+      "  z = search(k)",
+      "  if z has no child: remove z",
+      "  else if z has one child c:",
+      "    c takes z's place",
+      "  else:",
+      v.rep === "pred" ? "    s = max(z.left)  // predecessor" : "    s = min(z.right)  // successor",
+      v.rep === "pred" ? "    s.left takes s's place" : "    s.right takes s's place",
+      "    s takes z's place"
+    ],
     fields: [
       { name: "keys", label: "依序插入", def: "3,6,4,5,2,7,1" },
       { name: "del", label: "再依序刪除（可空白）", def: "3" },
@@ -571,20 +589,23 @@
       const keys = nums(v.keys, "插入的數", { max: 15, unique: true });
       const dels = v.del ? nums(v.del, "刪除的數") : [];
       const T = { root: null }, F = [];
-      const snap = (marks, cap) => F.push({ items: treeItems(T.root, marks), cap, info: T.root ? `inorder：${inorder(T.root).join(" ")}` : "" });
+      let ln = null;
+      const snap = (marks, cap) => F.push({ items: treeItems(T.root, marks), cap, info: T.root ? `inorder：${inorder(T.root).join(" ")}` : "", line: ln });
       snap({}, `從空的樹開始。規則：比節點小往左、比節點大往右。`);
       for (const k of keys) {
-        if (!T.root) { T.root = { k }; snap({ [k]: "cur" }, `插入 ${k}：樹是空的，${k} 當根。`); continue; }
+        if (!T.root) { T.root = { k }; ln = 6; snap({ [k]: "cur" }, `插入 ${k}：樹是空的，${k} 當根。`); continue; }
         let c = T.root;
-        const steps = [], m = {};
+        const steps = [], m = {}, turns = new Set();
         for (;;) {
           const left = k < c.k;
+          turns.add(left ? 4 : 5);
           steps.push(`${k} ${left ? "&lt;" : "&gt;"} ${c.k} 往${left ? "左" : "右"}`);
           m[c.k] = "cmp";
           const nx = left ? c.l : c.r;
           if (!nx) {
             if (left) c.l = { k }; else c.r = { k };
             m[k] = "cur";
+            ln = [2, ...[...turns].sort(), 6];
             snap(m, `插入 <b>${k}</b>：${steps.join("，")} → 放在 ${c.k} 的${left ? "左" : "右"}邊。`);
             break;
           }
@@ -595,17 +616,21 @@
         let c = T.root, p = null;
         const m = {}, path = [];
         while (c && c.k !== d) { m[c.k] = "cmp"; path.push(c.k); p = c; c = d < c.k ? c.l : c.r; }
+        ln = 8;
         if (!c) { snap(m, `要刪除 ${d}：樹裡沒有 ${d}。`); continue; }
         m[d] = "bad";
         snap(m, `刪除 <b>${d}</b>：${path.length ? `從根往下 ${path.join("→")}，` : ""}找到 ${d}（紅色）。`);
         if (!c.l && !c.r) {
+          ln = 9;
           snap({ [d]: "bad" }, `${d} 沒有子節點（葉節點）→ 直接刪掉。`);
           replace(T, p, c, null);
           snap({}, `刪掉 ${d} 了。`);
         } else if (!c.l || !c.r) {
           const ch = c.l || c.r;
+          ln = [10, 11];
           snap({ [d]: "bad", [ch.k]: "cur" }, `${d} 只有一個子節點 ${ch.k} → 讓 ${ch.k}（連同它的子樹）接到 ${d} 原本的位置。`);
           replace(T, p, c, ch);
+          ln = 11;
           snap({ [ch.k]: "cur" }, `完成。`);
         } else {
           const succ = v.rep !== "pred";
@@ -613,16 +638,20 @@
           const mm = { [d]: "bad", [s.k]: "cmp" }, walk = [s.k];
           while (succ ? s.l : s.r) { sp = s; s = succ ? s.l : s.r; mm[s.k] = "cmp"; walk.push(s.k); }
           mm[s.k] = "cur";
+          ln = [12, 13];
           snap(mm, `${d} 有兩個子節點 → 找${succ ? " inorder successor：先往右一步，再一直往左" : " inorder predecessor：先往左一步，再一直往右"}（${walk.join("→")}），得到 <b>${s.k}</b>（${succ ? "右子樹最小" : "左子樹最大"}）。`);
           const rest = succ ? s.r : s.l;
+          ln = [14, 15];
           snap({ [d]: "bad", [s.k]: "cur" }, `用 ${s.k} 取代 ${d}。${s.k} 原本${rest ? `的${succ ? "右" : "左"}子節點 ${rest.k} 接到 ${s.k} 原本的位置` : "沒有子節點，直接搬走"}。`);
           if (sp === c) { if (succ) c.r = rest; else c.l = rest; }
           else if (succ) sp.l = rest; else sp.r = rest;
           s.l = c.l; s.r = c.r;
           replace(T, p, c, s);
+          ln = 15;
           snap({ [s.k]: "cur" }, `刪除完成，${s.k} 在 ${d} 原本的位置。`);
         }
       }
+      ln = null;
       if (T.root) snap({}, `最後的樹。inorder 走訪 ${inorder(T.root).join(" ")} 一定由小到大，可以用來檢查自己畫的對不對。`);
       return F;
     }
@@ -631,6 +660,19 @@
   /* ---------- AVL ---------- */
   defs.avl = {
     title: "AVL tree：插入、找不平衡的點、旋轉",
+    code: [
+      "insert(k):",
+      "  BST-insert k as a leaf",
+      "  for z = parent(k) up to root",
+      "    if |bf(z)| >= 2:  // 不平衡",
+      "      LL: rotateRight(z)",
+      "      RR: rotateLeft(z)",
+      "      LR: rotateLeft(z.left)",
+      "          rotateRight(z)",
+      "      RL: rotateRight(z.right)",
+      "          rotateLeft(z)",
+      "      return  // 轉一次就平衡了"
+    ],
     fields: [
       { name: "base", label: "先建好的樹（依序插入，不播放過程，可空白）", def: "" },
       { name: "keys", label: "要一步一步插入的數", def: "3,2,1" }
@@ -646,7 +688,8 @@
         (function w(n) { if (!n) return; o[n.k] = (bf(n) > 0 ? "+" : "") + bf(n); w(n.l); w(n.r); })(T.root);
         return o;
       };
-      const snap = (marks, cap) => F.push({ items: treeItems(T.root, marks, notes()), cap, info: "節點右上的小數字是平衡因子 bf ＝ 左子樹高 − 右子樹高，|bf| ≥ 2 就不平衡。" });
+      let ln = null;
+      const snap = (marks, cap) => F.push({ items: treeItems(T.root, marks, notes()), cap, info: "節點右上的小數字是平衡因子 bf ＝ 左子樹高 − 右子樹高，|bf| ≥ 2 就不平衡。", line: ln });
       const rotR = z => { const y = z.l; replace(T, parentOf(T.root, z), z, y); z.l = y.r; y.r = z; return y; };
       const rotL = z => { const y = z.r; replace(T, parentOf(T.root, z), z, y); z.r = y.l; y.l = z; return y; };
       const plain = k => {
@@ -667,25 +710,32 @@
           const y = path[i + 1], x = path[i + 2];
           const cs = (y === z.l ? "L" : "R") + (x === y.l ? "L" : "R");
           if (show) {
+            ln = [2, 3];
             snap({ [z.k]: "bad", [y.k]: "cmp", [x.k]: "cmp" },
               `從新節點往上找，第一個不平衡的是 <b>${z.k}</b>：左子樹高 ${height(z.l)}、右子樹高 ${height(z.r)}，差 ${Math.abs(b)}。` +
               `新節點在 ${z.k} 的${cs[0] === "L" ? "左" : "右"}子樹（${y.k}）的${cs[1] === "L" ? "左" : "右"}邊 → <b>${cs}</b> 情況。`);
           }
           if (cs === "LL") {
             rotR(z);
+            ln = 4;
             if (show) snap({ [y.k]: "cur" }, `LL：對 ${z.k} <b>右旋</b>。${y.k} 升上來當這棵子樹的根，${z.k} 變成 ${y.k} 的右子節點` + (z.l ? `，${y.k} 原本的右子樹（${z.l.k}）改接到 ${z.k} 的左邊。` : "。"));
           } else if (cs === "RR") {
             rotL(z);
+            ln = 5;
             if (show) snap({ [y.k]: "cur" }, `RR：對 ${z.k} <b>左旋</b>。${y.k} 升上來當這棵子樹的根，${z.k} 變成 ${y.k} 的左子節點` + (z.r ? `，${y.k} 原本的左子樹（${z.r.k}）改接到 ${z.k} 的右邊。` : "。"));
           } else if (cs === "LR") {
             rotL(y);
+            ln = 6;
             if (show) snap({ [x.k]: "cur", [z.k]: "bad" }, `LR 第一步：先對 ${y.k} <b>左旋</b>，${x.k} 升上來，變成 LL 的形狀。`);
             rotR(z);
+            ln = 7;
             if (show) snap({ [x.k]: "cur" }, `LR 第二步：再對 ${z.k} <b>右旋</b>，${x.k} 變成這棵子樹的根。`);
           } else {
             rotR(y);
+            ln = 8;
             if (show) snap({ [x.k]: "cur", [z.k]: "bad" }, `RL 第一步：先對 ${y.k} <b>右旋</b>，${x.k} 升上來，變成 RR 的形狀。`);
             rotL(z);
+            ln = 9;
             if (show) snap({ [x.k]: "cur" }, `RL 第二步：再對 ${z.k} <b>左旋</b>，${x.k} 變成這棵子樹的根。`);
           }
           return true;
@@ -699,9 +749,10 @@
         const m = {};
         path.forEach(n => { m[n.k] = "cmp"; });
         m[k] = "cur";
+        ln = 1;
         snap(m, path.length > 1 ? `插入 <b>${k}</b>：照 BST 的規則走 ${path.map(n => n.k).join("→")}，接在 ${path[path.length - 2].k} 的${path[path.length - 2].l && path[path.length - 2].l.k === k ? "左" : "右"}邊。` : `插入 ${k}：當根。`);
-        if (fix(path, true)) snap({}, `轉完了，每個節點的 |bf| 都 ≤ 1。inorder 還是 ${inorder(T.root).join(" ")}：旋轉不會破壞左小右大。`);
-        else snap({ [k]: "cur" }, `檢查路徑上每個節點，|bf| 都 ≤ 1，平衡，不用轉。`);
+        if (fix(path, true)) { ln = 10; snap({}, `轉完了，每個節點的 |bf| 都 ≤ 1。inorder 還是 ${inorder(T.root).join(" ")}：旋轉不會破壞左小右大。`); }
+        else { ln = 2; snap({ [k]: "cur" }, `檢查路徑上每個節點，|bf| 都 ≤ 1，平衡，不用轉。`); }
       }
       return F;
     }
@@ -725,6 +776,12 @@
   }
   defs.traverse = {
     title: "二元樹走訪：根放在哪裡",
+    code: v => ({
+      pre: ["preorder(x):", "  if x == NIL: return", "  visit(x)  // 輸出", "  preorder(x.left)", "  preorder(x.right)"],
+      in: ["inorder(x):", "  if x == NIL: return", "  inorder(x.left)", "  visit(x)  // 輸出", "  inorder(x.right)"],
+      post: ["postorder(x):", "  if x == NIL: return", "  postorder(x.left)", "  postorder(x.right)", "  visit(x)  // 輸出"],
+      level: ["Q = [root]", "while Q is not empty", "  x = dequeue(Q)", "  visit(x)  // 輸出", "  enqueue x.left, x.right"]
+    }[v.order]),
     fields: [
       { name: "tree", label: "樹（一層一層從左到右寫，# 表示空的位置）", def: "A,B,C,D,E" },
       { name: "order", label: "走訪", def: "pre", type: "select", options: [["pre", "preorder：根、左、右"], ["in", "inorder：左、根、右"], ["post", "postorder：左、右、根"], ["level", "level order：一層一層"]] }
@@ -745,8 +802,9 @@
         const items = treeItems(root, m);
         out.forEach((k, i) => items.push(box("o" + k, (i % 8) * STEP, oy + Math.floor(i / 8) * 46, by.get(k).label, "done")));
         items.push(text("ol", 0, oy - 13, "輸出", "vz-sub", "start"));
-        F.push({ items: items.concat(extra), cap, info: `輸出：${out.map(k => by.get(k).label).join(" ") || "（還沒有）"}` });
+        F.push({ items: items.concat(extra), cap, info: `輸出：${out.map(k => by.get(k).label).join(" ") || "（還沒有）"}`, line: ln });
       };
+      let ln = null;
       const L = n => by.get(n.k).label;
       const visit = n => { out.push(n.k); done.add(n.k); };
       const kids = n => [n.l && `左子樹（${L(n.l)}）`, n.r && `右子樹（${L(n.r)}）`].filter(Boolean).join("、") || "沒有子樹";
@@ -757,27 +815,31 @@
         const q = [root];
         const qy = oy + 34 + Math.ceil(by.size / 8) * 46;
         const qItems = () => q.map((n, i) => box("o" + n.k, (i % 8) * STEP, qy + Math.floor(i / 8) * 46, L(n), "cmp"));
+        ln = 0;
         snap({ [root.k]: "cmp" }, `把根 ${L(root)} 放進 queue。`, qItems().concat([text("ql", 0, qy - 13, "queue（左邊是前面）", "vz-sub", "start")]));
         while (q.length) {
           const n = q.shift();
           visit(n);
           const added = [n.l, n.r].filter(Boolean);
           q.push(...added);
+          ln = [2, 3, 4];
           snap({ [n.k]: "cur" }, `從 queue 前面拿出 ${L(n)} 輸出${added.length ? `，把它的子節點 ${added.map(L).join("、")} 放到 queue 後面` : "，它沒有子節點"}。`, qItems().concat([text("ql", 0, qy - 13, "queue（左邊是前面）", "vz-sub", "start")]));
         }
       } else {
         (function rec(n) {
           if (!n) return;
-          if (v.order === "pre") { visit(n); snap(pm(n), `到 ${L(n)}：<b>先輸出 ${L(n)}</b>，再走${kids(n)}。`); }
-          else snap(pm(n), `到 ${L(n)}：${v.order === "in" ? (n.l ? `先走左子樹（${L(n.l)}），${L(n)} 等一下才輸出。` : `沒有左子樹。`) : `先走${kids(n)}，${L(n)} 最後才輸出。`}`);
+          const none = !n.l && !n.r;
+          if (v.order === "pre") { visit(n); ln = 2; snap(pm(n), `到 ${L(n)}：<b>先輸出 ${L(n)}</b>，` + (none ? "它沒有子樹。" : `再走${kids(n)}。`)); }
+          else (ln = 2), snap(pm(n), `到 ${L(n)}：${v.order === "in" ? (n.l ? `先走左子樹（${L(n.l)}），${L(n)} 等一下才輸出。` : `沒有左子樹。`) : none ? `${L(n)} 沒有子樹。` : `先走${kids(n)}，${L(n)} 最後才輸出。`}`);
           path.push(n.k);
           rec(n.l);
-          if (v.order === "in") { path.pop(); visit(n); snap(pm(n), `${n.l ? `${L(n)} 的左子樹走完了，` : ""}<b>輸出 ${L(n)}</b>${n.r ? `，再走右子樹（${L(n.r)}）` : ""}。`); path.push(n.k); }
+          if (v.order === "in") { path.pop(); visit(n); ln = 3; snap(pm(n), `${n.l ? `${L(n)} 的左子樹走完了，` : ""}<b>輸出 ${L(n)}</b>${n.r ? `，再走右子樹（${L(n.r)}）` : ""}。`); path.push(n.k); }
           rec(n.r);
           path.pop();
-          if (v.order === "post") { visit(n); snap(pm(n), `${L(n)} 的子樹都走完了 → <b>輸出 ${L(n)}</b>。`); }
+          if (v.order === "post") { visit(n); ln = 4; snap(pm(n), `${L(n)} 的子樹都走完了 → <b>輸出 ${L(n)}</b>。`); }
         })(root);
       }
+      ln = null;
       snap({}, `完成：<b>${out.map(k => by.get(k).label).join(" ")}</b>`);
       return F;
     }
@@ -786,6 +848,19 @@
   /* ---------- 由走訪重建二元樹 ---------- */
   defs.rebuild = {
     title: "由 inorder ＋ postorder（或 preorder）重建二元樹",
+    code: v => {
+      const o = v.kind === "pre" ? "pre" : "post";
+      return [
+        `build(in, ${o}):`,
+        "  if in is empty: return NIL",
+        o === "pre" ? "  r = first of pre  // 根" : "  r = last of post  // 根",
+        "  split in at r: L | r | R",
+        `  split ${o} by sizes: ${o}L, ${o}R`,
+        `  r.left  = build(L, ${o}L)`,
+        `  r.right = build(R, ${o}R)`,
+        "  return r"
+      ];
+    },
     fields: [
       { name: "inorder", label: "inorder", def: "ABCDEFGHIJ" },
       { name: "other", label: "另一個走訪", def: "ABDCGIHJFE" },
@@ -812,7 +887,7 @@
           }
           items.push(node("n" + s, x, y, s, st.n === s ? "cur" : ""));
         });
-        F.push({ items, cap });
+        F.push({ items, cap, line: st.line == null ? null : st.line });
       };
       snap({}, `${post ? "postorder 的<b>最後一個</b>" : "preorder 的<b>第一個</b>"}一定是根；在 inorder 裡找到根，<b>左邊全是左子樹、右邊全是右子樹</b>。對每棵子樹重複這件事。樹的節點會畫在它的 inorder 字母正下方。`);
       const side = (lo, hi, k) => i => (i === k ? "cur" : i >= lo && i < k ? "lpart" : i > k && i <= hi ? "rpart" : "");
@@ -826,11 +901,12 @@
         const oSide = i => (i === k2 ? "cur" : i >= lo2 && i < lo2 + nl ? "lpart" : i >= lo2 + nl && i < lo2 + nl + nr ? "rpart" : "");
         placed.set(r, { depth, parent });
         if (!root) root = r;
-        const seg = (a, b) => ino.slice(a, b + 1).join("") || "（空）";
-        snap({ a: side(iL, iR, k), b: oSide, n: r },
+        const seg = (a, b) => ino.slice(a, b + 1).join("");
+        const half = (lbl, str) => (str ? `${lbl} ${str}` : `${lbl}邊是空的`);
+        snap({ a: side(iL, iR, k), b: oSide, n: r, line: [2, 3, 4] },
           `${label}：${ON} 的這一段 ${oth.slice(oL, oR + 1).join("")}，${post ? "最後" : "第一"}一個是 <b>${r}</b> → 根。` +
-          `inorder 以 ${r} 切開：左子樹 <span class="vz-l">${seg(iL, k - 1)}</span>（${nl} 個）、右子樹 <span class="vz-r">${seg(k + 1, iR)}</span>（${nr} 個）。` +
-          `${ON} 也照個數切：左 ${oth.slice(lo2, lo2 + nl).join("") || "（空）"}、右 ${oth.slice(lo2 + nl, lo2 + nl + nr).join("") || "（空）"}。`);
+          `inorder 以 ${r} 切開：` + (nl ? `左子樹 <span class="vz-l">${seg(iL, k - 1)}</span>（${nl} 個）` : "沒有左子樹") + "、" + (nr ? `右子樹 <span class="vz-r">${seg(k + 1, iR)}</span>（${nr} 個）` : "沒有右子樹") + "。" +
+          (nl || nr ? `${ON} 也照個數切：${half("左", oth.slice(lo2, lo2 + nl).join(""))}、${half("右", oth.slice(lo2 + nl, lo2 + nl + nr).join(""))}。` : `${r} 是葉子。`));
         rec(iL, k - 1, lo2, lo2 + nl - 1, r, depth + 1, `${r} 的左子樹`);
         rec(k + 1, iR, lo2 + nl, lo2 + nl + nr - 1, r, depth + 1, `${r} 的右子樹`);
       })(0, ino.length - 1, 0, oth.length - 1, null, 0, "整棵樹");
