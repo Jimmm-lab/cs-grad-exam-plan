@@ -5025,6 +5025,40 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>看<strong>第一個左括號跟哪個右括號配對</strong>：它們中間有 <span class="arithmatex">\(k\)</span> 對，右邊還有 <span class="arithmatex">\(n-1-k\)</span> 對，兩邊各自任意合法排列。</p>
 <div class="arithmatex">\[C_n=\sum_{k=0}^{n-1}C_kC_{n-1-k}\]</div>
 <p><span class="arithmatex">\(C_3=C_0C_2+C_1C_1+C_2C_0=2+1+2=5\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。同樣的拆法也適用在「<span class="arithmatex">\(n\)</span> 個節點的二元樹有幾種形狀」（根的左子樹有 <span class="arithmatex">\(k\)</span> 個節點）和 stack 的輸出順序。</p>
+<div class="admonition key">
+<p class="admonition-title">DP 題要做什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>寫遞迴式</td>
+<td>定義狀態 → 看最後一步分類 → 寫邊界 → 用小數字驗證</td>
+</tr>
+<tr>
+<td>組合數（硬幣、郵票）</td>
+<td><span class="arithmatex">\(g(i,j)=g(i-1,j)+g(i,j-c_i)\)</span>，表格從左上往右下填</td>
+</tr>
+<tr>
+<td>鋪磚、括號、BST 形狀</td>
+<td>看最後一塊（或第一對括號、根）怎麼放；Catalan：<span class="arithmatex">\(C_n=\sum C_kC_{n-1-k}\)</span></td>
+</tr>
+<tr>
+<td>stack 輸出合不合法</td>
+<td>輸出 X 時，比 X 早進去、還沒出來的，之後要倒序出來</td>
+</tr>
+<tr>
+<td>LCS、0/1 背包</td>
+<td>填二維表，右下角是答案，再從右下角往回走找出解（<a href="#u6-classic">6.3</a>）</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：dynamic programming（動態規劃）、memoization（記表）、optimal substructure（最佳子結構）、overlapping subproblems（子問題重疊）、Catalan number（卡塔蘭數）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -5169,12 +5203,337 @@ swap(A[i + 1], A[r]);</code></pre>
 <div class="arithmatex">\[d(m)=d(m-1)+4d(m-2)+2d(m-3)\]</div>
 <p>所以 <span class="arithmatex">\(a=1\)</span>、<span class="arithmatex">\(b=4\)</span>、<span class="arithmatex">\(c=2\)</span>。驗算：<span class="arithmatex">\(d(3)=5+4\times1+2\times1=11\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>、<span class="arithmatex">\(d(4)=11+20+2=33\)</span>。</p>
 </div>
+<p>113 Q4 的三種結束方式畫出來（同一個顏色的三格是一個 L 形，單獨一格的綠色是正方形）：</p>
+<figure class="fig">
+<svg viewBox="0 0 360 232" role="img" aria-label="2 × m 的方塊最右邊有三種結束方式。第一種：最右一行是兩個正方形。第二種：最右兩行是一個 L 形加一個正方形，正方形可以在四個位置之一，共 4 種。第三種：最右三行是兩個 L 形互相咬合，共 2 種。">
+<text x="8" y="24" text-anchor="start" dominant-baseline="central" class="sm">最右一行：兩個正方形　<tspan class="ta">d(m−1)</tspan></text>
+<text x="30" y="56" text-anchor="middle" dominant-baseline="central" class="sm">…</text>
+<rect class="fc" x="44" y="36" width="20" height="20"/>
+<rect class="fc" x="44" y="56" width="20" height="20"/>
+<text x="8" y="98" text-anchor="start" dominant-baseline="central" class="sm">最右兩行：L ＋ 一個正方形（4 種）　<tspan class="ta">4·d(m−2)</tspan></text>
+<text x="30" y="130" text-anchor="middle" dominant-baseline="central" class="sm">…</text>
+<rect class="fc" x="44" y="110" width="20" height="20"/>
+<rect class="fa" x="44" y="130" width="20" height="20"/>
+<rect class="fa" x="64" y="110" width="20" height="20"/>
+<rect class="fa" x="64" y="130" width="20" height="20"/>
+<rect class="fa" x="108" y="110" width="20" height="20"/>
+<rect class="fa" x="108" y="130" width="20" height="20"/>
+<rect class="fc" x="128" y="110" width="20" height="20"/>
+<rect class="fa" x="128" y="130" width="20" height="20"/>
+<rect class="fa" x="172" y="110" width="20" height="20"/>
+<rect class="fc" x="172" y="130" width="20" height="20"/>
+<rect class="fa" x="192" y="110" width="20" height="20"/>
+<rect class="fa" x="192" y="130" width="20" height="20"/>
+<rect class="fa" x="236" y="110" width="20" height="20"/>
+<rect class="fa" x="236" y="130" width="20" height="20"/>
+<rect class="fa" x="256" y="110" width="20" height="20"/>
+<rect class="fc" x="256" y="130" width="20" height="20"/>
+<text x="8" y="172" text-anchor="start" dominant-baseline="central" class="sm">最右三行：兩個 L 咬在一起（2 種）　<tspan class="ta">2·d(m−3)</tspan></text>
+<text x="30" y="204" text-anchor="middle" dominant-baseline="central" class="sm">…</text>
+<rect class="fa" x="44" y="184" width="20" height="20"/>
+<rect class="fa" x="44" y="204" width="20" height="20"/>
+<rect class="fa" x="64" y="184" width="20" height="20"/>
+<rect class="fb" x="64" y="204" width="20" height="20"/>
+<rect class="fb" x="84" y="184" width="20" height="20"/>
+<rect class="fb" x="84" y="204" width="20" height="20"/>
+<rect class="fa" x="140" y="184" width="20" height="20"/>
+<rect class="fa" x="140" y="204" width="20" height="20"/>
+<rect class="fb" x="160" y="184" width="20" height="20"/>
+<rect class="fa" x="160" y="204" width="20" height="20"/>
+<rect class="fb" x="180" y="184" width="20" height="20"/>
+<rect class="fb" x="180" y="204" width="20" height="20"/>
+</svg>
+<figcaption>只看最右邊被什麼蓋住：剩下左邊的部分，就是更小的同一個問題</figcaption>
+</figure>
+
+<p>我用程式把 <span class="arithmatex">\(2\times1\)</span> 到 <span class="arithmatex">\(2\times6\)</span> 的鋪法全部列出來數，個數是 1, 5, 11, 33, 87, 241，跟遞迴算的一樣。</p>
 <div class="admonition example">
 <p class="admonition-title">113 Q2（10%）：二維陣列的蛇形編號，求 <span class="arithmatex">\(N[i][j]\)</span></p>
 <p>觀察：<span class="arithmatex">\(m=\max(i,j)\)</span> 相同的格子形成一個「L 形殼」，裡面的數字是 <span class="arithmatex">\(m^2\)</span> 到 <span class="arithmatex">\(m^2+2m\)</span>。<span class="arithmatex">\(m\)</span> 是偶數時從右上 <span class="arithmatex">\((0,m)\)</span> 往下再往左；<span class="arithmatex">\(m\)</span> 是奇數時從左下 <span class="arithmatex">\((m,0)\)</span> 往右再往上。</p>
 <div class="arithmatex">\[N[i][j]=\begin{cases}m^2+i &amp; m\text{ 偶數}, j=m\\ m^2+2m-j &amp; m\text{ 偶數}, i=m\\ m^2+j &amp; m\text{ 奇數}, i=m\\ m^2+2m-i &amp; m\text{ 奇數}, j=m\end{cases}\]</div>
 <p>驗算：<span class="arithmatex">\(N[0][2]=4\)</span>、<span class="arithmatex">\(N[2][0]=4+4-0=8\)</span>、<span class="arithmatex">\(N[3][3]=9+3=12\)</span>、<span class="arithmatex">\(N[0][3]=9+6-0=15\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </div>
+<h3 id="u6-classic">6.3 經典 DP：LCS 與 0/1 背包</h3>
+<p>這兩題是演算法課本最常拿來出 DP 填表題的例子，做法都是「填一張二維表」。</p>
+<h4 id="lcs">LCS：兩個字串最長的共同子序列</h4>
+<p>子序列可以跳著取，不用連續。<span class="arithmatex">\(c[i][j]\)</span> ＝ <span class="arithmatex">\(X\)</span> 的前 <span class="arithmatex">\(i\)</span> 個字和 <span class="arithmatex">\(Y\)</span> 的前 <span class="arithmatex">\(j\)</span> 個字的 LCS 長度：</p>
+<div class="arithmatex">\[c[i][j]=\begin{cases}0 &amp; i=0\text{ 或 }j=0\\ c[i-1][j-1]+1 &amp; x_i=y_j\\ \max(c[i-1][j],\ c[i][j-1]) &amp; x_i\ne y_j\end{cases}\]</div>
+<p><strong>為什麼</strong>：看兩個字串的最後一個字。一樣的話，它一定可以當 LCS 的最後一個字，剩下的就是兩邊都去掉它的問題；不一樣的話，LCS 不會同時用到這兩個字，去掉其中一個，取比較好的那邊。</p>
+<p><span class="arithmatex">\(X\)</span> ＝ ABCBD（列）、<span class="arithmatex">\(Y\)</span> ＝ BDCB（欄）：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>B</th>
+<th>D</th>
+<th>C</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>A</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>B</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>C</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>B</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>D</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td><strong>3</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>往回找出 LCS</strong>：從右下角開始，兩個字一樣就收下這個字、往左上走；不一樣就往值比較大的那邊（上或左）走。這裡依序收到 B、C、B，倒過來就是 <strong>BCB</strong>。時間 <span class="arithmatex">\(O(mn)\)</span>。</p>
+<h4 id="01">0/1 背包：每個物品拿或不拿</h4>
+<p>容量 <span class="arithmatex">\(W\)</span>，每個物品只能拿一次。<span class="arithmatex">\(K[i][w]\)</span> ＝ 只考慮前 <span class="arithmatex">\(i\)</span> 個物品、容量 <span class="arithmatex">\(w\)</span> 時的最大價值：</p>
+<div class="arithmatex">\[K[i][w]=\max\big(K[i-1][w],\ K[i-1][w-w_i]+v_i\big)\]</div>
+<p>第二項只在 <span class="arithmatex">\(w_i\le w\)</span> 時才有。看第 <span class="arithmatex">\(i\)</span> 個物品：不拿；或拿，容量少 <span class="arithmatex">\(w_i\)</span>、價值多 <span class="arithmatex">\(v_i\)</span>。</p>
+<p>容量 5，物品（重量, 價值）：(2, 3)、(3, 4)、(4, 5)、(5, 6)：</p>
+<table>
+<thead>
+<tr>
+<th>物品＼容量</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>沒有物品</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>＋(2, 3)</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>＋(3, 4)</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>4</td>
+<td>4</td>
+<td><strong>7</strong></td>
+</tr>
+<tr>
+<td>＋(4, 5)</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>7</td>
+</tr>
+<tr>
+<td>＋(5, 6)</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>4</td>
+<td>5</td>
+<td>7</td>
+</tr>
+</tbody>
+</table>
+<p>答案 7：拿 (2, 3) 和 (3, 4)。例如 <span class="arithmatex">\(K[2][5]=\max(K[1][5],\ K[1][2]+4)=\max(3,7)=7\)</span>。時間 <span class="arithmatex">\(O(nW)\)</span>。我用程式填過這兩張表，結果一樣。</p>
+<p><strong>跟硬幣的差別</strong>：硬幣可以重複用，第二項是<strong>同一列</strong>的 <span class="arithmatex">\(g(i,\ j-c_i)\)</span>；背包的物品只能用一次，第二項要回到<strong>上一列</strong> <span class="arithmatex">\(K[i-1][\cdots]\)</span>。</p>
+<h3 id="u6-concept">6.4 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> 直接遞迴算 <span class="arithmatex">\(f(n)=f(n-1)+f(n-2)\)</span>（不記表），呼叫次數大約怎麼成長？</p>
+<ol>
+<li><span class="arithmatex">\(O(n)\)</span></li>
+<li><span class="arithmatex">\(O(n\log n)\)</span></li>
+<li>指數成長（大約 <span class="arithmatex">\(1.618^n\)</span>）</li>
+<li><span class="arithmatex">\(O(n^2)\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。呼叫次數本身也滿足類似的遞迴，跟費氏數列一樣指數成長（<span class="arithmatex">\(f(5)\)</span> 就要 15 次呼叫）。記表之後每個 <span class="arithmatex">\(f(k)\)</span> 只算一次，變成 <span class="arithmatex">\(O(n)\)</span>（A）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-2.</strong> 一個問題適合用 DP，通常要有哪兩個性質？</p>
+<ol>
+<li>最佳子結構、子問題重疊</li>
+<li>貪婪選擇、子問題互相獨立</li>
+<li>只有一個子問題、輸入已經排好</li>
+<li>輸入很小、答案唯一</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。最佳子結構：大問題的最佳解由子問題的最佳解組成；子問題重疊：同一個子問題會被用很多次，記下來才有省到。子問題互相獨立、不重疊時，直接分治（例如 merge sort）就好。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> 4 對括號的合法排法有幾種？</p>
+<ol>
+<li>5</li>
+<li>10</li>
+<li>16</li>
+<li>14</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。<span class="arithmatex">\(C_4=C_0C_3+C_1C_2+C_2C_1+C_3C_0=5+2+2+5=14\)</span>，也等於 <span class="arithmatex">\(\frac15\binom84=14\)</span>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-4.</strong> 硬幣湊錢（不計順序）的 <span class="arithmatex">\(g(i,j)=g(i-1,j)+g(i,j-c_i)\)</span>，為什麼第二項是 <span class="arithmatex">\(g(i,\dots)\)</span>，不是 <span class="arithmatex">\(g(i-1,\dots)\)</span>？</p>
+<ol>
+<li>只是寫法不同，結果一樣</li>
+<li>用了一枚第 <span class="arithmatex">\(i\)</span> 種之後，還可以再用第 <span class="arithmatex">\(i\)</span> 種</li>
+<li>為了讓表格小一點</li>
+<li>因為 <span class="arithmatex">\(c_i\)</span> 一定是 1</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。寫成 <span class="arithmatex">\(g(i-1,\ j-c_i)\)</span> 就變成「第 <span class="arithmatex">\(i\)</span> 種最多用一枚」，那是 0/1 背包的寫法，答案會少算。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-5.</strong> LCS 的表格裡，<span class="arithmatex">\(x_i=y_j\)</span> 時 <span class="arithmatex">\(c[i][j]\)</span> 等於？</p>
+<ol>
+<li><span class="arithmatex">\(\max(c[i-1][j],\ c[i][j-1])\)</span></li>
+<li><span class="arithmatex">\(c[i-1][j-1]\)</span></li>
+<li><span class="arithmatex">\(c[i-1][j-1]+1\)</span></li>
+<li><span class="arithmatex">\(c[i][j-1]+1\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。最後一個字一樣，就收下它，剩下兩邊都去掉這個字：左上那格再加 1。A 是兩個字不一樣的時候。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 用 <span class="arithmatex">\(2\times1\)</span> 骨牌（可以直放、橫放）和 <span class="arithmatex">\(2\times2\)</span> 方塊鋪滿 <span class="arithmatex">\(2\times n\)</span>。寫出遞迴和初始值，算出 <span class="arithmatex">\(2\times4\)</span> 有幾種。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ul>
+<li><strong>看最右邊（<span class="arithmatex">\(a_n=a_{n-1}+2a_{n-2}\)</span>）</strong>：一張直放 → 前面 <span class="arithmatex">\(2\times(n-1)\)</span>，<span class="arithmatex">\(a_{n-1}\)</span>；兩張橫放疊起來 → <span class="arithmatex">\(a_{n-2}\)</span>；一個 <span class="arithmatex">\(2\times2\)</span> 方塊 → 也是 <span class="arithmatex">\(a_{n-2}\)</span>。</li>
+<li><strong>初始值（<span class="arithmatex">\(a_1=1\)</span>、<span class="arithmatex">\(a_2=3\)</span>）</strong>：<span class="arithmatex">\(2\times2\)</span> 可以兩張直放、兩張橫放、或一個方塊。</li>
+<li><strong>算到 4</strong>：<span class="arithmatex">\(a_3=3+2\times1=5\)</span>，<span class="arithmatex">\(a_4=5+2\times3=\)</span> <strong>11</strong>。</li>
+</ul>
+<p>我用程式把所有鋪法列出來數過：1, 3, 5, 11, 21，跟遞迴一樣。</p>
+</details>
+<p><strong>W-2.</strong> 求 <span class="arithmatex">\(X\)</span> ＝ ACBAD 和 <span class="arithmatex">\(Y\)</span> ＝ ABCD 的 LCS 長度，並找出所有的 LCS。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>A</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>C</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>B</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>D</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td><strong>3</strong></td>
+</tr>
+</tbody>
+</table>
+<p>長度 <strong>3</strong>。往回走時遇到上、左一樣大的格子，兩邊都能走，所以 LCS 不只一個：<strong>ACD</strong> 和 <strong>ABD</strong>。考試寫出一個就好，但要知道 LCS 可能不唯一。</p>
+</details>
 <h3 id="u6-quiz">單元 6 小考</h3>
 <p><strong>6-1.</strong> 1, 2, 3, 4, 5 依序 push，可能的輸出有幾種？</p>
 <details class="quiz">

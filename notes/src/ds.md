@@ -2994,6 +2994,17 @@ $$C_n=\sum_{k=0}^{n-1}C_kC_{n-1-k}$$
 
 $C_3=C_0C_2+C_1C_1+C_2C_0=2+1+2=5$ ✓。同樣的拆法也適用在「$n$ 個節點的二元樹有幾種形狀」（根的左子樹有 $k$ 個節點）和 stack 的輸出順序。
 
+!!! key "DP 題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | 寫遞迴式 | 定義狀態 → 看最後一步分類 → 寫邊界 → 用小數字驗證 |
+    | 組合數（硬幣、郵票） | $g(i,j)=g(i-1,j)+g(i,j-c_i)$，表格從左上往右下填 |
+    | 鋪磚、括號、BST 形狀 | 看最後一塊（或第一對括號、根）怎麼放；Catalan：$C_n=\sum C_kC_{n-1-k}$ |
+    | stack 輸出合不合法 | 輸出 X 時，比 X 早進去、還沒出來的，之後要倒序出來 |
+    | LCS、0/1 背包 | 填二維表，右下角是答案，再從右下角往回走找出解（[6.3](#u6-classic)） |
+
+    名詞對照：dynamic programming（動態規劃）、memoization（記表）、optimal substructure（最佳子結構）、overlapping subproblems（子問題重疊）、Catalan number（卡塔蘭數）。
+
 !!! read "還不懂？看別人怎麼講"
     - **中文投影片**：台大資訊之芽〈[動態規劃](https://www.csie.ntu.edu.tw/~sprout/algo2019/ppt_pdf/week07/dynamic_programming_1.pdf)〉從鋪骨牌推出費氏數列，跟這節 T-3 是同一題；台大演算法設計與分析（陳縕儂）的 [DP 投影片](https://www.csie.ntu.edu.tw/~yvchen/f111-ada/doc/220929_Dynamic-Programming-1.pdf)。
     - **中文文章**：iThome 鐵人賽[談硬幣問題的文章](https://ithelp.ithome.com.tw/articles/10221988)（面額 1、2、5 湊 11 元）。注意它算的是「最少幾枚硬幣」，這節和 112 Q4 算的是「有幾種組合」，遞迴式不一樣，可以兩個對照著看。
@@ -3091,12 +3102,202 @@ $C_n=\frac{1}{n+1}\binom{2n}{n}$：1, 1, 2, 5, 14, 42, …，遞迴 $C_n=\sum_{k
 
     所以 $a=1$、$b=4$、$c=2$。驗算：$d(3)=5+4\times1+2\times1=11$ ✓、$d(4)=11+20+2=33$。
 
+113 Q4 的三種結束方式畫出來（同一個顏色的三格是一個 L 形，單獨一格的綠色是正方形）：
+
+<figure class="fig">
+<svg viewBox="0 0 360 232" role="img" aria-label="2 × m 的方塊最右邊有三種結束方式。第一種：最右一行是兩個正方形。第二種：最右兩行是一個 L 形加一個正方形，正方形可以在四個位置之一，共 4 種。第三種：最右三行是兩個 L 形互相咬合，共 2 種。">
+<text x="8" y="24" text-anchor="start" dominant-baseline="central" class="sm">最右一行：兩個正方形　<tspan class="ta">d(m−1)</tspan></text>
+<text x="30" y="56" text-anchor="middle" dominant-baseline="central" class="sm">…</text>
+<rect class="fc" x="44" y="36" width="20" height="20"/>
+<rect class="fc" x="44" y="56" width="20" height="20"/>
+<text x="8" y="98" text-anchor="start" dominant-baseline="central" class="sm">最右兩行：L ＋ 一個正方形（4 種）　<tspan class="ta">4·d(m−2)</tspan></text>
+<text x="30" y="130" text-anchor="middle" dominant-baseline="central" class="sm">…</text>
+<rect class="fc" x="44" y="110" width="20" height="20"/>
+<rect class="fa" x="44" y="130" width="20" height="20"/>
+<rect class="fa" x="64" y="110" width="20" height="20"/>
+<rect class="fa" x="64" y="130" width="20" height="20"/>
+<rect class="fa" x="108" y="110" width="20" height="20"/>
+<rect class="fa" x="108" y="130" width="20" height="20"/>
+<rect class="fc" x="128" y="110" width="20" height="20"/>
+<rect class="fa" x="128" y="130" width="20" height="20"/>
+<rect class="fa" x="172" y="110" width="20" height="20"/>
+<rect class="fc" x="172" y="130" width="20" height="20"/>
+<rect class="fa" x="192" y="110" width="20" height="20"/>
+<rect class="fa" x="192" y="130" width="20" height="20"/>
+<rect class="fa" x="236" y="110" width="20" height="20"/>
+<rect class="fa" x="236" y="130" width="20" height="20"/>
+<rect class="fa" x="256" y="110" width="20" height="20"/>
+<rect class="fc" x="256" y="130" width="20" height="20"/>
+<text x="8" y="172" text-anchor="start" dominant-baseline="central" class="sm">最右三行：兩個 L 咬在一起（2 種）　<tspan class="ta">2·d(m−3)</tspan></text>
+<text x="30" y="204" text-anchor="middle" dominant-baseline="central" class="sm">…</text>
+<rect class="fa" x="44" y="184" width="20" height="20"/>
+<rect class="fa" x="44" y="204" width="20" height="20"/>
+<rect class="fa" x="64" y="184" width="20" height="20"/>
+<rect class="fb" x="64" y="204" width="20" height="20"/>
+<rect class="fb" x="84" y="184" width="20" height="20"/>
+<rect class="fb" x="84" y="204" width="20" height="20"/>
+<rect class="fa" x="140" y="184" width="20" height="20"/>
+<rect class="fa" x="140" y="204" width="20" height="20"/>
+<rect class="fb" x="160" y="184" width="20" height="20"/>
+<rect class="fa" x="160" y="204" width="20" height="20"/>
+<rect class="fb" x="180" y="184" width="20" height="20"/>
+<rect class="fb" x="180" y="204" width="20" height="20"/>
+</svg>
+<figcaption>只看最右邊被什麼蓋住：剩下左邊的部分，就是更小的同一個問題</figcaption>
+</figure>
+
+我用程式把 $2\times1$ 到 $2\times6$ 的鋪法全部列出來數，個數是 1, 5, 11, 33, 87, 241，跟遞迴算的一樣。
+
 !!! example "113 Q2（10%）：二維陣列的蛇形編號，求 $N[i][j]$"
     觀察：$m=\max(i,j)$ 相同的格子形成一個「L 形殼」，裡面的數字是 $m^2$ 到 $m^2+2m$。$m$ 是偶數時從右上 $(0,m)$ 往下再往左；$m$ 是奇數時從左下 $(m,0)$ 往右再往上。
 
     $$N[i][j]=\begin{cases}m^2+i & m\text{ 偶數}, j=m\\ m^2+2m-j & m\text{ 偶數}, i=m\\ m^2+j & m\text{ 奇數}, i=m\\ m^2+2m-i & m\text{ 奇數}, j=m\end{cases}$$
 
     驗算：$N[0][2]=4$、$N[2][0]=4+4-0=8$、$N[3][3]=9+3=12$、$N[0][3]=9+6-0=15$ ✓。
+
+### 6.3 經典 DP：LCS 與 0/1 背包 {#u6-classic}
+
+這兩題是演算法課本最常拿來出 DP 填表題的例子，做法都是「填一張二維表」。
+
+#### LCS：兩個字串最長的共同子序列
+
+子序列可以跳著取，不用連續。$c[i][j]$ ＝ $X$ 的前 $i$ 個字和 $Y$ 的前 $j$ 個字的 LCS 長度：
+
+$$c[i][j]=\begin{cases}0 & i=0\text{ 或 }j=0\\ c[i-1][j-1]+1 & x_i=y_j\\ \max(c[i-1][j],\ c[i][j-1]) & x_i\ne y_j\end{cases}$$
+
+**為什麼**：看兩個字串的最後一個字。一樣的話，它一定可以當 LCS 的最後一個字，剩下的就是兩邊都去掉它的問題；不一樣的話，LCS 不會同時用到這兩個字，去掉其中一個，取比較好的那邊。
+
+$X$ ＝ ABCBD（列）、$Y$ ＝ BDCB（欄）：
+
+| | | B | D | C | B |
+|---|---|---|---|---|---|
+| | 0 | 0 | 0 | 0 | 0 |
+| A | 0 | 0 | 0 | 0 | 0 |
+| B | 0 | 1 | 1 | 1 | 1 |
+| C | 0 | 1 | 1 | 2 | 2 |
+| B | 0 | 1 | 1 | 2 | 3 |
+| D | 0 | 1 | 2 | 2 | **3** |
+
+**往回找出 LCS**：從右下角開始，兩個字一樣就收下這個字、往左上走；不一樣就往值比較大的那邊（上或左）走。這裡依序收到 B、C、B，倒過來就是 **BCB**。時間 $O(mn)$。
+
+#### 0/1 背包：每個物品拿或不拿
+
+容量 $W$，每個物品只能拿一次。$K[i][w]$ ＝ 只考慮前 $i$ 個物品、容量 $w$ 時的最大價值：
+
+$$K[i][w]=\max\big(K[i-1][w],\ K[i-1][w-w_i]+v_i\big)$$
+
+第二項只在 $w_i\le w$ 時才有。看第 $i$ 個物品：不拿；或拿，容量少 $w_i$、價值多 $v_i$。
+
+容量 5，物品（重量, 價值）：(2, 3)、(3, 4)、(4, 5)、(5, 6)：
+
+| 物品＼容量 | 0 | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|---|
+| 沒有物品 | 0 | 0 | 0 | 0 | 0 | 0 |
+| ＋(2, 3) | 0 | 0 | 3 | 3 | 3 | 3 |
+| ＋(3, 4) | 0 | 0 | 3 | 4 | 4 | **7** |
+| ＋(4, 5) | 0 | 0 | 3 | 4 | 5 | 7 |
+| ＋(5, 6) | 0 | 0 | 3 | 4 | 5 | 7 |
+
+答案 7：拿 (2, 3) 和 (3, 4)。例如 $K[2][5]=\max(K[1][5],\ K[1][2]+4)=\max(3,7)=7$。時間 $O(nW)$。我用程式填過這兩張表，結果一樣。
+
+**跟硬幣的差別**：硬幣可以重複用，第二項是**同一列**的 $g(i,\ j-c_i)$；背包的物品只能用一次，第二項要回到**上一列** $K[i-1][\cdots]$。
+
+### 6.4 觀念小考 {#u6-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** 直接遞迴算 $f(n)=f(n-1)+f(n-2)$（不記表），呼叫次數大約怎麼成長？
+
+1. $O(n)$
+2. $O(n\log n)$
+3. 指數成長（大約 $1.618^n$）
+4. $O(n^2)$
+
+??? quiz "看解析"
+    **C**。呼叫次數本身也滿足類似的遞迴，跟費氏數列一樣指數成長（$f(5)$ 就要 15 次呼叫）。記表之後每個 $f(k)$ 只算一次，變成 $O(n)$（A）。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** 一個問題適合用 DP，通常要有哪兩個性質？
+
+1. 最佳子結構、子問題重疊
+2. 貪婪選擇、子問題互相獨立
+3. 只有一個子問題、輸入已經排好
+4. 輸入很小、答案唯一
+
+??? quiz "看解析"
+    **A**。最佳子結構：大問題的最佳解由子問題的最佳解組成；子問題重疊：同一個子問題會被用很多次，記下來才有省到。子問題互相獨立、不重疊時，直接分治（例如 merge sort）就好。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** 4 對括號的合法排法有幾種？
+
+1. 5
+2. 10
+3. 16
+4. 14
+
+??? quiz "看解析"
+    **D**。$C_4=C_0C_3+C_1C_2+C_2C_1+C_3C_0=5+2+2+5=14$，也等於 $\frac15\binom84=14$。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-4.** 硬幣湊錢（不計順序）的 $g(i,j)=g(i-1,j)+g(i,j-c_i)$，為什麼第二項是 $g(i,\dots)$，不是 $g(i-1,\dots)$？
+
+1. 只是寫法不同，結果一樣
+2. 用了一枚第 $i$ 種之後，還可以再用第 $i$ 種
+3. 為了讓表格小一點
+4. 因為 $c_i$ 一定是 1
+
+??? quiz "看解析"
+    **B**。寫成 $g(i-1,\ j-c_i)$ 就變成「第 $i$ 種最多用一枚」，那是 0/1 背包的寫法，答案會少算。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-5.** LCS 的表格裡，$x_i=y_j$ 時 $c[i][j]$ 等於？
+
+1. $\max(c[i-1][j],\ c[i][j-1])$
+2. $c[i-1][j-1]$
+3. $c[i-1][j-1]+1$
+4. $c[i][j-1]+1$
+
+??? quiz "看解析"
+    **C**。最後一個字一樣，就收下它，剩下兩邊都去掉這個字：左上那格再加 1。A 是兩個字不一樣的時候。
+
+</div>
+
+**W-1.** 用 $2\times1$ 骨牌（可以直放、橫放）和 $2\times2$ 方塊鋪滿 $2\times n$。寫出遞迴和初始值，算出 $2\times4$ 有幾種。
+
+??? quiz "看參考答案"
+    - **看最右邊（$a_n=a_{n-1}+2a_{n-2}$）**：一張直放 → 前面 $2\times(n-1)$，$a_{n-1}$；兩張橫放疊起來 → $a_{n-2}$；一個 $2\times2$ 方塊 → 也是 $a_{n-2}$。
+    - **初始值（$a_1=1$、$a_2=3$）**：$2\times2$ 可以兩張直放、兩張橫放、或一個方塊。
+    - **算到 4**：$a_3=3+2\times1=5$，$a_4=5+2\times3=$ **11**。
+
+    我用程式把所有鋪法列出來數過：1, 3, 5, 11, 21，跟遞迴一樣。
+
+**W-2.** 求 $X$ ＝ ACBAD 和 $Y$ ＝ ABCD 的 LCS 長度，並找出所有的 LCS。
+
+??? quiz "看參考答案"
+    | | | A | B | C | D |
+    |---|---|---|---|---|---|
+    | | 0 | 0 | 0 | 0 | 0 |
+    | A | 0 | 1 | 1 | 1 | 1 |
+    | C | 0 | 1 | 1 | 2 | 2 |
+    | B | 0 | 1 | 2 | 2 | 2 |
+    | A | 0 | 1 | 2 | 2 | 2 |
+    | D | 0 | 1 | 2 | 2 | **3** |
+
+    長度 **3**。往回走時遇到上、左一樣大的格子，兩邊都能走，所以 LCS 不只一個：**ACD** 和 **ABD**。考試寫出一個就好，但要知道 LCS 可能不唯一。
 
 ### 單元 6 小考 {#u6-quiz}
 
