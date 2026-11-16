@@ -1453,6 +1453,270 @@ printf("%d\n", v);</code></pre>
 <p><strong>SJF（7.75）</strong>：P1 0–8（不能被搶）、P2 8–12、P4 12–17、P3 17–26。等待 P1 0、P2 7、P4 9、P3 15，平均 <span class="arithmatex">\(\frac{31}{4}=7.75\)</span>。</p>
 <p>可以把這組數字貼進 <a href="#u1-2">1.2</a> 的動畫，切換演算法對照。</p>
 </details>
+<h3 id="u1-drill">1.5 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="_10">題型：排程的平均等待時間</h4>
+<p><strong>做法</strong>：先排出 Gantt 圖（誰在什麼時候跑），每個行程的等待時間 ＝ 完成 − 到達 − burst，再平均。</p>
+<div>
+<p><strong>P-1.</strong> 用 FCFS 排程下面的行程，畫出順序並算平均等待時間。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>到達</th>
+<th>burst</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>0</td>
+<td>5</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>2</td>
+<td>8</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>3</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>排程順序</strong>：P1（0–5） → P2（5–8） → P3（8–16） → P4（16–22）。</li>
+<li><strong>等待時間 ＝ 完成 − 到達 − burst</strong>：P1：5−0−5＝0、P2：8−1−3＝4、P3：16−2−8＝6、P4：22−3−6＝13。</li>
+<li><strong>平均等待時間</strong>：<span class="arithmatex">\(\frac{0+4+6+13}{4}=\)</span> <strong>5.75</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>P1 0 5, P2 1 3, P3 2 8, P4 3 6</code> 貼進 <a href="#u1-2">1.2 的動畫</a>，演算法選 FCFS。</p>
+</details>
+<div>
+<p><strong>P-2.</strong> 用 SJF（不搶）排程下面的行程，畫出順序並算平均等待時間。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>到達</th>
+<th>burst</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>0</td>
+<td>5</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>2</td>
+<td>8</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>3</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>排程順序</strong>：P1（0–5） → P2（5–8） → P4（8–14） → P3（14–22）。</li>
+<li><strong>等待時間 ＝ 完成 − 到達 − burst</strong>：P1：5−0−5＝0、P2：8−1−3＝4、P3：22−2−8＝12、P4：14−3−6＝5。</li>
+<li><strong>平均等待時間</strong>：<span class="arithmatex">\(\frac{0+4+12+5}{4}=\)</span> <strong>5.25</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>P1 0 5, P2 1 3, P3 2 8, P4 3 6</code> 貼進 <a href="#u1-2">1.2 的動畫</a>，演算法選 SJF（不搶）。</p>
+</details>
+<div>
+<p><strong>P-3.</strong> 用 SRTF（會搶）排程下面的行程，畫出順序並算平均等待時間。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>到達</th>
+<th>burst</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>0</td>
+<td>7</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>2</td>
+<td>4</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>4</td>
+<td>1</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>5</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>排程順序</strong>：P1（0–2） → P2（2–4） → P3（4–5） → P2（5–7） → P4（7–11） → P1（11–16）。</li>
+<li><strong>等待時間 ＝ 完成 − 到達 − burst</strong>：P1：16−0−7＝9、P2：7−2−4＝1、P3：5−4−1＝0、P4：11−5−4＝2。</li>
+<li><strong>平均等待時間</strong>：<span class="arithmatex">\(\frac{9+1+0+2}{4}=\)</span> <strong>3</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>P1 0 7, P2 2 4, P3 4 1, P4 5 4</code> 貼進 <a href="#u1-2">1.2 的動畫</a>，演算法選 SRTF。</p>
+</details>
+<div>
+<p><strong>P-4.</strong> 用 Round Robin（quantum ＝ 2）排程下面的行程，畫出順序並算平均等待時間。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>到達</th>
+<th>burst</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>0</td>
+<td>5</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>規則</strong>：每次最多跑 2；同一時間有新來的和被切下來的，新來的先排進 queue。</li>
+<li><strong>排程順序</strong>：P1（0–2） → P2（2–4） → P3（4–5） → P1（5–7） → P4（7–9） → P2（9–10） → P1（10–11）。</li>
+<li><strong>等待時間 ＝ 完成 − 到達 − burst</strong>：P1：11−0−5＝6、P2：10−1−3＝6、P3：5−2−1＝2、P4：9−3−2＝4。</li>
+<li><strong>平均等待時間</strong>：<span class="arithmatex">\(\frac{6+6+2+4}{4}=\)</span> <strong>4.5</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>P1 0 5, P2 1 3, P3 2 1, P4 3 2</code> 貼進 <a href="#u1-2">1.2 的動畫</a>，演算法選 Round Robin、quantum 填 2。</p>
+</details>
+<div>
+<p><strong>P-5.</strong> 用 Priority（數字小的先，不搶）排程下面的行程，畫出順序並算平均等待時間。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>到達</th>
+<th>burst</th>
+<th>priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>0</td>
+<td>4</td>
+<td>3</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>2</td>
+<td>1</td>
+<td>4</td>
+</tr>
+<tr>
+<td>P4</td>
+<td>3</td>
+<td>5</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>排程順序</strong>：P1（0–4） → P2（4–7） → P4（7–12） → P3（12–13）。</li>
+<li><strong>等待時間 ＝ 完成 − 到達 − burst</strong>：P1：4−0−4＝0、P2：7−1−3＝3、P3：13−2−1＝10、P4：12−3−5＝4。</li>
+<li><strong>平均等待時間</strong>：<span class="arithmatex">\(\frac{0+3+10+4}{4}=\)</span> <strong>4.25</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>P1 0 4 3, P2 1 3 1, P3 2 1 4, P4 3 5 2</code> 貼進 <a href="#u1-2">1.2 的動畫</a>，演算法選 Priority（不搶）。</p>
+</details>
+<div>
+<p><strong>P-6.</strong> 用 Round Robin（quantum ＝ 4）排程下面的行程，畫出順序並算平均等待時間。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>到達</th>
+<th>burst</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>0</td>
+<td>10</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>0</td>
+<td>4</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>0</td>
+<td>6</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>規則</strong>：每次最多跑 4；同一時間有新來的和被切下來的，新來的先排進 queue。</li>
+<li><strong>排程順序</strong>：P1（0–4） → P2（4–8） → P3（8–12） → P1（12–16） → P3（16–18） → P1（18–20）。</li>
+<li><strong>等待時間 ＝ 完成 − 到達 − burst</strong>：P1：20−0−10＝10、P2：8−0−4＝4、P3：18−0−6＝12。</li>
+<li><strong>平均等待時間</strong>：<span class="arithmatex">\(\frac{10+4+12}{3}=\)</span> <strong>8.67</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>P1 0 10, P2 0 4, P3 0 6</code> 貼進 <a href="#u1-2">1.2 的動畫</a>，演算法選 Round Robin、quantum 填 4。</p>
+</details>
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> 三個 process 在時間 0 依序到達，burst 6、3、1，FCFS 和 SJF 的平均等待時間？</p>
 <details class="quiz">
@@ -1607,7 +1871,7 @@ flag[i] = false;</code></pre>
 <li><strong>bounded waiting</strong>：對方出來會把 flag 放下；就算它馬上又想進去，也會先把 turn 讓給我，所以我最多等它一次。</li>
 </ul>
 <p>（現代 CPU 會重排記憶體存取，實際上要配合 memory barrier 才保證正確；考試照課本的三個性質論證即可。）</p>
-<h4 id="_10">硬體怎麼幫忙：不可分割的指令</h4>
+<h4 id="_11">硬體怎麼幫忙：不可分割的指令</h4>
 <p>所以要把「檢查」和「設定」合成一步，中間不能被插隊。</p>
 <p><code>test_and_set</code> 這類指令把「讀舊值、設成 true」<strong>合成一個不可分割的動作</strong>：</p>
 <ul>
@@ -1690,7 +1954,7 @@ signal(empty);</code></pre>
 <li><strong>影片</strong>：<a href="https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ">周志遠・作業系統播放清單</a>的 Process Synchronization 單元。</li>
 </ul>
 </div>
-<h4 id="_11">換你試試</h4>
+<h4 id="_12">換你試試</h4>
 <p><strong>T-1.</strong> counter ＝ 0，兩個 thread 各做一次 <code>counter++</code>，沒有 lock，最後可能是多少？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -1770,7 +2034,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q8(3)（5%）：two-phase locking 怎麼保證非序列排程的正確性？</p>
 <p>每個交易分兩個階段：先只拿 lock（growing），開始放 lock 之後就不能再拿（shrinking）。所有交易都這樣做，衝突的操作順序就會依照每個交易「拿到最後一把 lock」的時間（lock point）排好，所以結果等於依 lock point 順序一個一個執行，是 conflict serializable。</p>
 </div>
-<h4 id="_12">觀念小考</h4>
+<h4 id="_13">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 下面哪一個情況是 priority inversion？</p>
 <ol>
@@ -1933,7 +2197,7 @@ signal(empty);</code></pre>
 <p>死結要<strong>四個條件同時成立</strong>：mutual exclusion、hold and wait、no preemption、circular wait。破壞其中一個就不會死結。</p>
 </div>
 <h3 id="u3-0">3.0 觀念課：兩個人各拿一支筷子</h3>
-<h4 id="_13">最小的死結</h4>
+<h4 id="_14">最小的死結</h4>
 <p>P1 拿著資源 R1、在等 R2；P2 拿著 R2、在等 R1。兩人都不放手，永遠等下去。像兩個人吃飯，各拿了一支筷子，都在等對方的那一支。</p>
 <p>把四個必要條件對到這個例子：</p>
 <table>
@@ -2025,7 +2289,7 @@ signal(empty);</code></pre>
 <li><strong>沒有 cycle</strong>：一定沒有死結。</li>
 </ul>
 <p>所以 cycle 是死結的<strong>必要條件</strong>；只有在每種資源都只有 1 份時，才是充分條件。</p>
-<h4 id="_14">避免死結：銀行家只借「還得回來」的錢</h4>
+<h4 id="_15">避免死結：銀行家只借「還得回來」的錢</h4>
 <p>Banker's algorithm 的想法：銀行只在「借出去之後，<strong>仍然存在某個順序</strong>能讓每個客戶都借滿、用完、還錢」時才借。這種狀態叫 <strong>safe state</strong>。</p>
 <p><strong>小例子</strong>：一種資源共 10 份。</p>
 <table>
@@ -2143,7 +2407,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">unsafe 不等於死結</p>
 <p>unsafe 只是「系統沒辦法保證」：process 不一定真的會要到 Max，之後也可能平安做完。但 Banker's algorithm 保守地不讓系統進入 unsafe state。</p>
 </div>
-<h4 id="_15">偵測和復原：允許死結，發生了再處理</h4>
+<h4 id="_16">偵測和復原：允許死結，發生了再處理</h4>
 <ul>
 <li><strong>偵測</strong>：步驟跟 safety 一樣，只是把 Need 換成<strong>現在的 Request</strong>（正在等的量）。跑完還做不完的那些 process，就是死結的。每種資源只有 1 份時，也可以畫 <strong>wait-for graph</strong>（把資源節點拿掉，P → Q 表示 P 在等 Q），有 cycle 就是死結。</li>
 <li><strong>復原</strong>：<ul>
@@ -2197,7 +2461,7 @@ signal(empty);</code></pre>
 <li><strong>影片</strong>：<a href="https://www.youtube.com/playlist?list=PLS0SUwlYe8cxj8FCPRoPHAehIiN9Vo6VZ">周志遠・作業系統播放清單</a>的 Deadlocks 單元。</li>
 </ul>
 </div>
-<h4 id="_16">換你試試</h4>
+<h4 id="_17">換你試試</h4>
 <p><strong>T-1.</strong> 「要求行程一開始就申請所有需要的資源」破壞的是哪個條件？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2233,7 +2497,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u3-more">3.2 死結的考古題補充：哲學家、磁帶機、wait-die</h3>
 <p>100、101、103、104、105、107 年考過的死結題：條件和預防、避免的差別，加上三種固定題型。</p>
-<h4 id="_17">四個條件是「必要」不是「充分」</h4>
+<h4 id="_18">四個條件是「必要」不是「充分」</h4>
 <p>四個條件<strong>同時</strong>成立才可能死結，只有其中一個成立不會死結（101 Q2(b)）。102 Q5(2) 的是非題「四個條件中任何一個成立，死結就一定發生」是<strong>錯</strong>的。</p>
 <h4 id="preventionavoidance">預防（prevention）和避免（avoidance）差在哪</h4>
 <table>
@@ -2276,7 +2540,7 @@ signal(empty);</code></pre>
 </ul>
 <p><strong>一般公式</strong>：m 份資源、n 個 process、每個最多需要 k 份，不會死結的條件是 <span class="arithmatex">\(n(k-1)+1\le m\)</span>（每個人都只差一份時，還剩一份給某個人）。這題 <span class="arithmatex">\(n\times1+1\le6\)</span>，<span class="arithmatex">\(n\le5\)</span>。</p>
 </div>
-<h4 id="_18">哲學家：筷子放在中間</h4>
+<h4 id="_19">哲學家：筷子放在中間</h4>
 <div class="admonition example">
 <p class="admonition-title">100 Q3（15%）：哲學家用餐問題，筷子放在桌子中間，任何兩支都可以用；每次只要一支。找一個簡單的規則，判斷某個請求能不能給、又不會造成死結</p>
 <p><strong>規則</strong>：哲學家要拿<strong>第一支</strong>筷子時，如果桌上<strong>只剩最後一支</strong>、而且<strong>沒有任何人已經拿著兩支</strong>，就不給；其他情況都可以給。</p>
@@ -2320,7 +2584,7 @@ signal(empty);</code></pre>
 </ul>
 <p>107 Q7(9) 的是非題「wait-die 是 preemptive 的死結預防方法」是<strong>錯</strong>的：wait-die 不搶別人的資源，搶的是 wound-wait。</p>
 </div>
-<h4 id="_19">觀念小考</h4>
+<h4 id="_20">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> 10 份資源、n 個 process，每個最多需要 3 份。n 最大是多少時保證不會死結？</p>
 <ol>
@@ -2543,6 +2807,244 @@ signal(empty);</code></pre>
 <p><strong>(a) 沒有死結</strong>：Available (0, 0, 0)。P2 不用再等 → 做完，Work (0, 1, 0)；P0 要 1 份 B → 可以，Work (1, 1, 1)；P1 要 1 份 C → 可以，Work (2, 2, 1)；P3 → Work (3, 2, 1)。全部做得完。</p>
 <p><strong>(b) P0、P1、P2 死結</strong>：Work (0, 0, 0)，只有 P3 不用等 → 做完，Work (1, 0, 0)。剩下 P0 要 B、P1 和 P2 要 C，Work 裡都沒有，誰都做不完。P0 拿著唯一的那份 C，P1、P2 在等它；P0 要的 B 在 P1、P2 手上：互相等，就是死結。</p>
 </details>
+<h3 id="u3-drill">3.4 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="bankers-algorithm_1">題型：Banker's algorithm</h4>
+<p><strong>做法</strong>：算 Need 和 Available；反覆找 Need ≤ Work 的做完、Work 加上它的 Allocation；申請時先檢查、假裝給、再跑 safety（<a href="#u3-0">3.0</a>）。</p>
+<div>
+<p><strong>P-1.</strong> 三種資源 A、B、C，總數 (10, 5, 7)。這個狀態是 safe 嗎？是的話寫出一個順序。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>Allocation</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>0 1 0</td>
+<td>7 4 3</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>2 0 0</td>
+<td>3 2 2</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>3 0 2</td>
+<td>9 0 2</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>2 1 1</td>
+<td>2 2 2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>Need</strong>：P0 (7, 3, 3)、P1 (1, 2, 2)、P2 (6, 0, 0)、P3 (0, 1, 1)。</li>
+<li><strong>Available (3, 3, 4)</strong>：總數 (10, 5, 7) 減掉 Allocation 的和 (7, 2, 3)。</li>
+<li><strong>P1 做得完</strong>：Need (1, 2, 2) ≤ Work (3, 3, 4)，做完後 Work 變成 (5, 3, 4)。</li>
+<li><strong>P3 做得完</strong>：Need (0, 1, 1) ≤ Work (5, 3, 4)，做完後 Work 變成 (7, 4, 5)。</li>
+<li><strong>P0 做得完</strong>：Need (7, 3, 3) ≤ Work (7, 4, 5)，做完後 Work 變成 (7, 5, 5)。</li>
+<li><strong>P2 做得完</strong>：Need (6, 0, 0) ≤ Work (7, 5, 5)，做完後 Work 變成 (10, 5, 7)。</li>
+<li><strong>答案：safe</strong>，順序 P1、P3、P0、P2（每次從 P0 往下找第一個做得完的）。最後 Work ＝ 總數 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+</ul>
+<p>我用程式跑過 safety 演算法，結果一樣。</p>
+</details>
+<div>
+<p><strong>P-2.</strong> 三種資源 A、B、C，總數 (7, 6, 5)。這個狀態是 safe 嗎？是的話寫出一個順序。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>Allocation</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>1 2 0</td>
+<td>3 4 2</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>2 0 1</td>
+<td>4 1 3</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>1 1 1</td>
+<td>2 3 2</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>0 1 2</td>
+<td>2 3 4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>Need</strong>：P0 (2, 2, 2)、P1 (2, 1, 2)、P2 (1, 2, 1)、P3 (2, 2, 2)。</li>
+<li><strong>Available (3, 2, 1)</strong>：總數 (7, 6, 5) 減掉 Allocation 的和 (4, 4, 4)。</li>
+<li><strong>P2 做得完</strong>：Need (1, 2, 1) ≤ Work (3, 2, 1)，做完後 Work 變成 (4, 3, 2)。</li>
+<li><strong>P0 做得完</strong>：Need (2, 2, 2) ≤ Work (4, 3, 2)，做完後 Work 變成 (5, 5, 2)。</li>
+<li><strong>P1 做得完</strong>：Need (2, 1, 2) ≤ Work (5, 5, 2)，做完後 Work 變成 (7, 5, 3)。</li>
+<li><strong>P3 做得完</strong>：Need (2, 2, 2) ≤ Work (7, 5, 3)，做完後 Work 變成 (7, 6, 5)。</li>
+<li><strong>答案：safe</strong>，順序 P2、P0、P1、P3（每次從 P0 往下找第一個做得完的）。最後 Work ＝ 總數 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+</ul>
+<p>我用程式跑過 safety 演算法，結果一樣。</p>
+</details>
+<div>
+<p><strong>P-3.</strong> 三種資源 A、B、C，總數 (6, 5, 6)。這個狀態是 safe 嗎？是的話寫出一個順序。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>Allocation</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>2 1 1</td>
+<td>5 3 3</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>1 1 0</td>
+<td>2 2 1</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>0 2 2</td>
+<td>2 4 4</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>1 0 2</td>
+<td>3 1 3</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>Need</strong>：P0 (3, 2, 2)、P1 (1, 1, 1)、P2 (2, 2, 2)、P3 (2, 1, 1)。</li>
+<li><strong>Available (2, 1, 1)</strong>：總數 (6, 5, 6) 減掉 Allocation 的和 (4, 4, 5)。</li>
+<li><strong>P1 做得完</strong>：Need (1, 1, 1) ≤ Work (2, 1, 1)，做完後 Work 變成 (3, 2, 1)。</li>
+<li><strong>P3 做得完</strong>：Need (2, 1, 1) ≤ Work (3, 2, 1)，做完後 Work 變成 (4, 2, 3)。</li>
+<li><strong>P0 做得完</strong>：Need (3, 2, 2) ≤ Work (4, 2, 3)，做完後 Work 變成 (6, 3, 4)。</li>
+<li><strong>P2 做得完</strong>：Need (2, 2, 2) ≤ Work (6, 3, 4)，做完後 Work 變成 (6, 5, 6)。</li>
+<li><strong>答案：safe</strong>，順序 P1、P3、P0、P2（每次從 P0 往下找第一個做得完的）。最後 Work ＝ 總數 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+</ul>
+<p>我用程式跑過 safety 演算法，結果一樣。</p>
+</details>
+<div>
+<p><strong>P-4.</strong> 三種資源 A、B、C，總數 (5, 5, 5)。這個狀態是 safe 嗎？是的話寫出一個順序。</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>Allocation</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>2 1 0</td>
+<td>4 3 2</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>1 2 1</td>
+<td>2 4 3</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>0 1 2</td>
+<td>3 3 4</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>1 0 1</td>
+<td>2 3 2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>Need</strong>：P0 (2, 2, 2)、P1 (1, 2, 2)、P2 (3, 2, 2)、P3 (1, 3, 1)。</li>
+<li><strong>Available (1, 1, 1)</strong>：總數 (5, 5, 5) 減掉 Allocation 的和 (4, 4, 4)。</li>
+<li><strong>卡住</strong>：Work (1, 1, 1)，剩下的 P0、P1、P2、P3 的 Need 都有某一種資源超過 Work。</li>
+<li><strong>答案：unsafe</strong>。</li>
+</ul>
+<p>我用程式跑過 safety 演算法，結果一樣。</p>
+</details>
+<div>
+<p><strong>P-5.</strong> 三種資源 A、B、C，總數 (8, 6, 6)。P1 申請 (1, 1, 1)，能不能馬上給？</p>
+<table>
+<thead>
+<tr>
+<th>行程</th>
+<th>Allocation</th>
+<th>Max</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P0</td>
+<td>2 1 1</td>
+<td>5 4 3</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>1 2 0</td>
+<td>3 3 2</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>2 0 2</td>
+<td>3 2 4</td>
+</tr>
+<tr>
+<td>P3</td>
+<td>1 1 1</td>
+<td>2 3 2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>Need</strong>：P0 (3, 3, 2)、P1 (2, 1, 2)、P2 (1, 2, 2)、P3 (1, 2, 1)。</li>
+<li><strong>Available (2, 2, 2)</strong>：總數 (8, 6, 6) 減掉 Allocation 的和 (6, 4, 4)。</li>
+<li><strong>檢查</strong>：Request (1, 1, 1) ≤ Need (2, 1, 2)，也 ≤ Available (2, 2, 2)。</li>
+<li><strong>假裝給它</strong>：Available 變 (1, 1, 1)；P1 的 Allocation 變 (2, 3, 1)、Need 變 (1, 0, 1)。</li>
+<li><strong>P1 做得完</strong>：Need (1, 0, 1) ≤ Work (1, 1, 1)，Work 變成 (3, 4, 2)。</li>
+<li><strong>P0 做得完</strong>：Need (3, 3, 2) ≤ Work (3, 4, 2)，Work 變成 (5, 5, 3)。</li>
+<li><strong>P2 做得完</strong>：Need (1, 2, 2) ≤ Work (5, 5, 3)，Work 變成 (7, 5, 5)。</li>
+<li><strong>P3 做得完</strong>：Need (1, 2, 1) ≤ Work (7, 5, 5)，Work 變成 (8, 6, 6)。</li>
+<li><strong>答案：safe，可以給</strong>。最後 Work ＝ 總數 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+</ul>
+<p>我用程式跑過 safety 演算法，結果一樣。</p>
+</details>
 <h3 id="u3-quiz">單元 3 小考</h3>
 <p><strong>3-1.</strong> 為什麼「依編號遞增順序申請資源」能防止死結？</p>
 <details class="quiz">
@@ -2624,7 +3126,7 @@ signal(empty);</code></pre>
 <figcaption>圖上的編號就是上面的六個步驟；③ 到 ④ 要讀磁碟，是最花時間的部分</figcaption>
 </figure>
 <p>只在用到時才載入 page，叫 <strong>demand paging</strong>。</p>
-<h4 id="_20">踢誰出去：三種策略</h4>
+<h4 id="_21">踢誰出去：三種策略</h4>
 <p>3 個 frame，存取順序 7, 0, 1, 2, 0, 3, 0, 4：</p>
 <table>
 <thead>
@@ -2821,7 +3323,7 @@ signal(empty);</code></pre>
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10373783">談 FIFO、LRU、OPT 的文章</a>。</li>
 </ul>
 </div>
-<h4 id="_21">換你試試</h4>
+<h4 id="_22">換你試試</h4>
 <p><strong>T-1.</strong> 3 個 frame，存取 1, 2, 3, 1, 4, 1。FIFO 和 LRU 各幾次 page fault？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2900,7 +3402,7 @@ signal(empty);</code></pre>
 <li><strong>full virtual memory</strong>：完整的 page table 與 TLB，彈性最大，但轉換時間不確定，對即時系統不利。</li>
 </ol>
 </div>
-<h4 id="_22">一個邏輯位址怎麼轉：數字例子</h4>
+<h4 id="_23">一個邏輯位址怎麼轉：數字例子</h4>
 <p>page 大小 1 KB（1024 bytes），page table：page 0 → frame 5、page 1 → frame 2、page 2 → frame 7、page 3 → frame 1，其他 page 不在記憶體。</p>
 <p><strong>邏輯位址 3085</strong>：</p>
 <ul>
@@ -3052,7 +3554,7 @@ signal(empty);</code></pre>
 </ul>
 <h3 id="u4-pf">4.4 程式寫法與 page fault：二維陣列、次數的上下界</h3>
 <p>103、110 年各考一題「初始化二維陣列會發生幾次 page fault」（10%），兩題幾乎一樣，只換了數字和存放方式。103、106 年也各考一題 page fault 次數的上下界（10%）。</p>
-<h4 id="_23">陣列在記憶體裡是一長條</h4>
+<h4 id="_24">陣列在記憶體裡是一長條</h4>
 <p>記憶體是一維的，二維陣列要排成一長條，有兩種排法：</p>
 <table>
 <thead>
@@ -3076,13 +3578,13 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p><span class="arithmatex">\(n\times n\)</span> 的陣列裡，A[i][j] 是第幾個元素（從 0 數）：row-major 是 <span class="arithmatex">\(i\times n+j\)</span>，column-major 是 <span class="arithmatex">\(j\times n+i\)</span>。</p>
-<h4 id="_24">迴圈順序要跟著排法走</h4>
+<h4 id="_25">迴圈順序要跟著排法走</h4>
 <p>像書架上的書一排一排放好：照順序一本一本拿，一排拿完才走到下一排；如果每次都換一排只拿一本，每拿一本都要走一趟。</p>
 <ul>
 <li><strong>順序一致</strong>（row-major 用「i 在外、j 在內」；column-major 用「j 在外、i 在內」）：連續存取，一頁的元素全部用完才換下一頁 → <strong>page fault 次數 ＝ 陣列佔幾頁</strong>。</li>
 <li><strong>順序相反</strong>：每次存取都跳到另一頁。內層迴圈一圈會碰到很多頁，frame 卻只有幾個，回到同一頁時它早就被換掉 → <strong>每一次存取都 page fault</strong>。</li>
 </ul>
-<h4 id="_25">解題步驟</h4>
+<h4 id="_26">解題步驟</h4>
 <ol>
 <li><strong>一頁放幾個元素</strong> ＝ page 大小 ÷ 元素大小；<strong>陣列佔幾頁</strong> ＝ 元素總數 ÷ 一頁放幾個。</li>
 <li><strong>程式在 page 0，不會被換掉</strong>：每個指令都要從 page 0 讀，用 LRU 時它永遠是最近用過的。所以三個 frame 裡，陣列只能用 <strong>2 個</strong>。</li>
@@ -3119,7 +3621,7 @@ signal(empty);</code></pre>
 </ul>
 <p><strong>補充</strong>：如果 <span class="arithmatex">\(p\le m\)</span>，所有 page 都裝得下，不會有任何 page 被換掉，剛好 p 次。上界 n 要在 <span class="arithmatex">\(p&gt;m\)</span> 時才可能發生，例如只有 1 個 frame、reference string 每次都換一個 page。</p>
 </div>
-<h4 id="_26">觀念小考</h4>
+<h4 id="_27">觀念小考</h4>
 <div class="mcq" data-ans="1">
 <p><strong>C-1.</strong> C 語言的 <code>int a[100][100]</code>（row-major），要把整個陣列設成 0，哪一種迴圈順序 page fault 最少？</p>
 <ol>
@@ -3187,7 +3689,7 @@ signal(empty);</code></pre>
 <li><strong>limit register</strong>：這段有多長，邏輯位址超過就 trap（存取違規）。</li>
 </ul>
 <p>102 Q5(3) 的是非題「relocation register 是 1877、邏輯位址 123，實體位址是 2000」是<strong>對</strong>的。</p>
-<h4 id="_27">有一堆空洞時，要放哪一個</h4>
+<h4 id="_28">有一堆空洞時，要放哪一個</h4>
 <p>process 來來去去，記憶體裡會有很多大小不一的空洞（hole）。新的 process 要放進去：</p>
 <table>
 <thead>
@@ -3253,7 +3755,7 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p>這一組 best fit 最好，四個都放得下。用程式模擬過。</p>
-<h4 id="_28">兩種碎片</h4>
+<h4 id="_29">兩種碎片</h4>
 <table>
 <thead>
 <tr>
@@ -3384,7 +3886,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q7(2)（4%）：外部碎片和內部碎片的差別</p>
 <p>外部碎片：空的記憶體總量夠，但被切成很多不連續的小洞，放不下新的要求。內部碎片：分配出去的區塊比實際需要的大，多出來的部分在區塊裡面沒用到、別人也不能用。</p>
 </div>
-<h4 id="_29">觀念小考</h4>
+<h4 id="_30">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 空洞依序是 50K、300K、120K，要放 100K。best fit 會放在哪裡？</p>
 <ol>
@@ -3593,6 +4095,502 @@ signal(empty);</code></pre>
 <p>clock <strong>6 次</strong>，FIFO 也是 6 次；LRU 在存取 3 時會踢 4（1 比 4 晚用過），最後的 1 就 hit，只有 5 次。</p>
 <p>原因：1 在 4 之後被用過，但在存取 5 時兩個的 bit 都被清成 0 了。只有 1 個 bit，clock 分不出誰比較晚用，只能照指標的順序踢。我用程式跑過三種策略，次數都對。</p>
 </details>
+<h3 id="u4-drill">4.7 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="page-replacement-fault">題型一：page replacement 幾次 fault</h4>
+<p><strong>做法</strong>：畫表一格一格走，寫出每次踢掉誰（<a href="#u4-0">4.0</a>）。</p>
+<p><strong>P-1.</strong> 3 個 frame，存取順序 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5，用 FIFO 會有幾次 page fault？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>規則：踢最早進來的。</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>frame 內容</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>F</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1, 2</td>
+<td>F</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1, 2, 3</td>
+<td>F</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2, 3, 4</td>
+<td>F（踢 1）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3, 4, 1</td>
+<td>F（踢 2）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>4, 1, 2</td>
+<td>F（踢 3）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1, 2, 5</td>
+<td>F（踢 4）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1, 2, 5</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1, 2, 5</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2, 5, 3</td>
+<td>F（踢 1）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>5, 3, 4</td>
+<td>F（踢 2）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>5, 3, 4</td>
+<td>hit</td>
+</tr>
+</tbody>
+</table>
+<p>共 <strong>9 次</strong> page fault。</p>
+<p>用動畫對答案：把 <code>1,2,3,4,1,2,5,1,2,3,4,5</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 FIFO。</p>
+</details>
+<p><strong>P-2.</strong> 3 個 frame，存取順序 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5，用 LRU 會有幾次 page fault？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>規則：踢最久沒被用到的（frame 內容由舊到新排）。</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>frame 內容</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>F</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1, 2</td>
+<td>F</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1, 2, 3</td>
+<td>F</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2, 3, 4</td>
+<td>F（踢 1）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3, 4, 1</td>
+<td>F（踢 2）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>4, 1, 2</td>
+<td>F（踢 3）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1, 2, 5</td>
+<td>F（踢 4）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>2, 5, 1</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>2</td>
+<td>5, 1, 2</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1, 2, 3</td>
+<td>F（踢 5）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2, 3, 4</td>
+<td>F（踢 1）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>3, 4, 5</td>
+<td>F（踢 2）</td>
+</tr>
+</tbody>
+</table>
+<p>共 <strong>10 次</strong> page fault。</p>
+<p>用動畫對答案：把 <code>1,2,3,4,1,2,5,1,2,3,4,5</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 LRU。</p>
+</details>
+<p><strong>P-3.</strong> 3 個 frame，存取順序 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5，用 OPT 會有幾次 page fault？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>規則：踢未來最晚才用到（或再也不用）的。</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>frame 內容</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>F</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1, 2</td>
+<td>F</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1, 2, 3</td>
+<td>F</td>
+</tr>
+<tr>
+<td>4</td>
+<td>1, 2, 4</td>
+<td>F（踢 3）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1, 2, 4</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1, 2, 4</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1, 2, 5</td>
+<td>F（踢 4）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1, 2, 5</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1, 2, 5</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2, 5, 3</td>
+<td>F（踢 1）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>5, 3, 4</td>
+<td>F（踢 2）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>5, 3, 4</td>
+<td>hit</td>
+</tr>
+</tbody>
+</table>
+<p>共 <strong>7 次</strong> page fault。</p>
+<p>用動畫對答案：把 <code>1,2,3,4,1,2,5,1,2,3,4,5</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 OPT。</p>
+</details>
+<p><strong>P-4.</strong> 3 個 frame，存取順序 7, 0, 1, 2, 0, 3, 0, 4, 2, 3，用 FIFO 會有幾次 page fault？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>規則：踢最早進來的。</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>frame 內容</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td>7</td>
+<td>F</td>
+</tr>
+<tr>
+<td>0</td>
+<td>7, 0</td>
+<td>F</td>
+</tr>
+<tr>
+<td>1</td>
+<td>7, 0, 1</td>
+<td>F</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0, 1, 2</td>
+<td>F（踢 7）</td>
+</tr>
+<tr>
+<td>0</td>
+<td>0, 1, 2</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1, 2, 3</td>
+<td>F（踢 0）</td>
+</tr>
+<tr>
+<td>0</td>
+<td>2, 3, 0</td>
+<td>F（踢 1）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>3, 0, 4</td>
+<td>F（踢 2）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0, 4, 2</td>
+<td>F（踢 3）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>4, 2, 3</td>
+<td>F（踢 0）</td>
+</tr>
+</tbody>
+</table>
+<p>共 <strong>9 次</strong> page fault。</p>
+<p>用動畫對答案：把 <code>7,0,1,2,0,3,0,4,2,3</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 FIFO。</p>
+</details>
+<p><strong>P-5.</strong> 3 個 frame，存取順序 2, 3, 2, 1, 5, 2, 4, 5, 3, 2，用 LRU 會有幾次 page fault？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>規則：踢最久沒被用到的（frame 內容由舊到新排）。</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>frame 內容</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>F</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2, 3</td>
+<td>F</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3, 2</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3, 2, 1</td>
+<td>F</td>
+</tr>
+<tr>
+<td>5</td>
+<td>2, 1, 5</td>
+<td>F（踢 3）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1, 5, 2</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>4</td>
+<td>5, 2, 4</td>
+<td>F（踢 1）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>2, 4, 5</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>3</td>
+<td>4, 5, 3</td>
+<td>F（踢 2）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>5, 3, 2</td>
+<td>F（踢 4）</td>
+</tr>
+</tbody>
+</table>
+<p>共 <strong>7 次</strong> page fault。</p>
+<p>用動畫對答案：把 <code>2,3,2,1,5,2,4,5,3,2</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 LRU。</p>
+</details>
+<p><strong>P-6.</strong> 3 個 frame，存取順序 2, 3, 2, 1, 5, 2, 4, 5, 3, 2，用 OPT 會有幾次 page fault？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>規則：踢未來最晚才用到（或再也不用）的。</p>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>frame 內容</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>F</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2, 3</td>
+<td>F</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2, 3</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>1</td>
+<td>2, 3, 1</td>
+<td>F</td>
+</tr>
+<tr>
+<td>5</td>
+<td>2, 3, 5</td>
+<td>F（踢 1）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2, 3, 5</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>4</td>
+<td>3, 5, 4</td>
+<td>F（踢 2）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>3, 5, 4</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3, 5, 4</td>
+<td>hit</td>
+</tr>
+<tr>
+<td>2</td>
+<td>5, 4, 2</td>
+<td>F（踢 3）</td>
+</tr>
+</tbody>
+</table>
+<p>共 <strong>6 次</strong> page fault。</p>
+<p>用動畫對答案：把 <code>2,3,2,1,5,2,4,5,3,2</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 OPT。</p>
+</details>
+<h4 id="eat-page-fault-rate">題型二：EAT 與 page fault rate</h4>
+<p><strong>做法</strong>：EAT ＝ <span class="arithmatex">\((1-p)\times\)</span> 記憶體時間 ＋ <span class="arithmatex">\(p\times\)</span> fault 處理時間；問上限就把不等式解出 <span class="arithmatex">\(p\)</span>。</p>
+<p><strong>P-7.</strong> 記憶體存取 200 ns、處理一次 page fault 8 ms，page fault rate 是 0.001。EAT 是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>列式</strong>：<span class="arithmatex">\((1-p)\times200+p\times8\times10^6\)</span>。</li>
+<li><strong>代入</strong>：<span class="arithmatex">\(0.999\times200+0.001\times8\times10^6=199.8+8000\)</span>。</li>
+<li><strong>答案</strong>：約 <strong>8199.8 ns</strong>，是原本的 41 倍。</li>
+</ul>
+</details>
+<p><strong>P-8.</strong> 記憶體 100 ns、page fault 10 ms。要讓 EAT 比沒有 page fault 時最多慢 10%，page fault rate 最多多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>列式</strong>：<span class="arithmatex">\((1-p)\times100+p\times10^7&lt;110\)</span>。</li>
+<li><strong>解</strong>：<span class="arithmatex">\(p\,(10^7-100)&lt;10\)</span>，<span class="arithmatex">\(p&lt;\frac{10}{9999900}\approx1.0\times10^{-6}\)</span>。</li>
+<li><strong>答案</strong>：大約<strong>每一百萬次存取最多 1 次</strong> page fault。</li>
+</ul>
+</details>
+<p><strong>P-9.</strong> 記憶體 100 ns。page fault 時，被換掉的 page 沒改過要 8 ms、改過（要先寫回）要 20 ms，70% 的情況是改過的。page fault rate <span class="arithmatex">\(10^{-6}\)</span>，EAT？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>平均處理時間（16.4 ms）</strong>：<span class="arithmatex">\(0.3\times8+0.7\times20=2.4+14\)</span>。</li>
+<li><strong>EAT</strong>：<span class="arithmatex">\((1-10^{-6})\times100+10^{-6}\times16.4\times10^6\approx100+16.4\)</span>。</li>
+<li><strong>答案</strong>：約 <strong>116.4 ns</strong>。如果每次都只要 8 ms（都沒改過），只要約 108 ns：dirty bit 讓沒改過的 page 不用寫回，省的就是這段。</li>
+</ul>
+</details>
+<p><strong>P-10.</strong> 記憶體 120 ns、page fault 50000 ns。要讓 EAT ＜ 150 ns，page fault rate 最多多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>列式</strong>：<span class="arithmatex">\((1-p)\times120+50000p&lt;150\)</span>。</li>
+<li><strong>解</strong>：<span class="arithmatex">\(49880p&lt;30\)</span>，<span class="arithmatex">\(p&lt;\frac{30}{49880}\approx\)</span> <strong><span class="arithmatex">\(6.01\times10^{-4}\)</span></strong>。</li>
+</ul>
+</details>
+<p><strong>P-11.</strong> 記憶體 100 ns、page fault 5 ms。要讓 EAT 不超過記憶體時間的 2 倍，平均多少次存取最多只能有 1 次 page fault？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>列式</strong>：<span class="arithmatex">\((1-p)\times100+p\times5\times10^6\le200\)</span>。</li>
+<li><strong>解</strong>：<span class="arithmatex">\(p\,(5\times10^6-100)\le100\)</span>，<span class="arithmatex">\(p\le\frac{100}{4999900}\approx2\times10^{-5}\)</span>。</li>
+<li><strong>答案</strong>：大約<strong>每 50000 次存取最多 1 次</strong>。</li>
+</ul>
+</details>
+<p><strong>P-12.</strong> 記憶體 100 ns、page fault 10 ms、page fault rate 0.0001。EAT 是多少？比沒有 page fault 慢幾倍？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>EAT</strong>：<span class="arithmatex">\(0.9999\times100+0.0001\times10^7=99.99+1000\approx\)</span> <strong>1100 ns</strong>。</li>
+<li><strong>慢了約 11 倍</strong>：每一萬次才 fault 一次，平均時間還是被它主宰。</li>
+</ul>
+</details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？</p>
 <details class="quiz">
@@ -3622,7 +4620,7 @@ signal(empty);</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：儲存、檔案與 I/O</h2>
 <h3 id="u5-0">5.0 觀念課：硬碟像一台唱片機</h3>
-<h4 id="_30">讀一個區塊要花三段時間</h4>
+<h4 id="_31">讀一個區塊要花三段時間</h4>
 <p>硬碟是好幾片疊在一起旋轉的碟片，讀寫頭裝在一支可以前後移動的手臂上，像唱片機。</p>
 <table>
 <thead>
@@ -3652,7 +4650,7 @@ signal(empty);</code></pre>
 </table>
 <p><strong>平均 rotational latency ＝ 轉半圈的時間</strong>。7200 RPM：一圈 <span class="arithmatex">\(\frac{60}{7200}\)</span> 秒 ≈ 8.33 ms，半圈約 4.17 ms。</p>
 <p>隨機讀取時，seek 和 rotational latency 遠大於 transfer，所以把同一個檔案的區塊<strong>放在一起</strong>（111 Q7 的 clustering）可以省下大量時間。</p>
-<h4 id="_31">檔案的區塊怎麼配置：連續、鏈結、索引</h4>
+<h4 id="_32">檔案的區塊怎麼配置：連續、鏈結、索引</h4>
 <p>一個檔案有好幾個區塊，要記錄它們在磁碟的哪裡。三種方法：</p>
 <figure class="fig">
 <svg viewBox="0 0 360 290" role="img" aria-label="同一個 4 個區塊的檔案，三種放法。連續配置：放在第 4 到 7 塊，記起點 4、長度 4。鏈結配置：放在第 2、9、5、12 塊，每一塊記下一塊在哪。索引配置：第 6 塊是索引區塊，裡面列出 2、9、5、12。">
@@ -3949,7 +4947,7 @@ signal(empty);</code></pre>
 <li><strong>練習（英文）</strong>：恐龍書官網的 <a href="https://www.os-book.com/OS10/regular-exercises/PDF-regular-exer-dir/11.pdf">Mass-Storage 習題</a>。</li>
 </ul>
 </div>
-<h4 id="_32">換你試試</h4>
+<h4 id="_33">換你試試</h4>
 <p><strong>T-1.</strong> 10000 RPM 的硬碟，平均 rotational latency？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -4027,7 +5025,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u5-sched">5.4 磁碟排程：讀寫頭怎麼移動</h3>
 <p>101、102、104、107、110 年都考過（每次 6–10%）：給一串要求的磁柱（cylinder）編號，照某種演算法排出服務順序、算讀寫頭總共移動多遠。規則固定、只要加減法，是最容易拿的分數。</p>
-<h4 id="_33">觀念：讀寫頭像電梯</h4>
+<h4 id="_34">觀念：讀寫頭像電梯</h4>
 <p>很多要求在等，讀寫頭一次只能停在一個位置。移動越遠，seek time 越長（見 <a href="#u5-0">5.0</a>），所以目標是<strong>總移動距離越短越好</strong>，又不能讓某些要求等太久。</p>
 <table>
 <thead>
@@ -4078,13 +5076,13 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p><strong>為什麼 C-SCAN 比較公平</strong>：SCAN 回頭時，剛掃過的一端要等來回一趟；中間的位置來回各被掃一次。C-SCAN 永遠同一個方向掃，每個位置等的時間差不多。</p>
-<h4 id="_34">題目沒講清楚的，要自己寫假設</h4>
+<h4 id="_35">題目沒講清楚的，要自己寫假設</h4>
 <ol>
 <li><strong>方向</strong>：「前一個要求在 125、現在在 175」代表正往<strong>編號大的</strong>方向走。只給現在位置時，寫「假設往編號大的方向移動」。</li>
 <li><strong>盡頭在哪</strong>：SCAN、C-SCAN 走到磁柱編號的最大值（0–999 就是 999）或 0。</li>
 <li><strong>C-SCAN、C-LOOK 跳回去那一段算不算距離</strong>：回程不服務要求，但手臂確實有移動，各本書算法不同。<strong>兩個都寫最保險</strong>，例如「含跳回 1925，不含 925」。</li>
 </ol>
-<h4 id="_35">算距離的捷徑</h4>
+<h4 id="_36">算距離的捷徑</h4>
 <p>電梯類（SCAN、LOOK）只要算<strong>轉折點</strong>：例如 LOOK 往上走到最大的要求再回頭到最小的要求，距離 ＝（最大 − 起點）＋（最大 − 最小），不用一段一段加。</p>
 <div class="viz" data-viz="disk" data-reqs="98,183,37,122,14,124,65,67" data-head="53" data-dir="down" data-max="199" data-algo="sstf" data-title="102 Q7 的資料：切換演算法和方向，比較總距離"></div>
 
@@ -4244,7 +5242,7 @@ signal(empty);</code></pre>
 <p><strong>服務順序：F, D, A, H, G, E, B, J, I, C</strong>。</p>
 <p>如果不分批，截止時間又都不一樣，SCAN-EDF 就等於單純的 EDF：F, D, H, A, G, B, J, E, I, C。考試寫出你用的分批方法。</p>
 </div>
-<h4 id="_36">觀念小考</h4>
+<h4 id="_37">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 哪一種演算法可能讓某些要求等非常久（starvation）？</p>
 <ol>
@@ -4322,7 +5320,7 @@ signal(empty);</code></pre>
 </details>
 <h3 id="u5-more">5.5 檔案系統與 I/O 的考古題補充：目錄、mount、開檔表、I/O 方式</h3>
 <p>104、105、107 年的「File System and I/O」小題，每題 2–4%，加起來將近 25%：目錄有哪幾種結構、mount point 是什麼、開檔時 UNIX 記住哪些資訊、CPU 怎麼知道 I/O 做完了、memory-mapped I/O。都是恐龍書的名詞，<strong>會講「為什麼要這樣做」</strong>就能拿分。</p>
-<h4 id="_37">目錄結構：檔案越來越多，怎麼放？</h4>
+<h4 id="_38">目錄結構：檔案越來越多，怎麼放？</h4>
 <table>
 <thead>
 <tr>
@@ -4460,7 +5458,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q7(4)（3%）：什麼是 memory-mapped I/O？為什麼需要它？</p>
 <p>把裝置的控制暫存器（和緩衝區）對應到記憶體位址空間，CPU 用一般的 load／store 指令讀寫裝置。<strong>需要的原因</strong>：不用額外的 I/O 指令，程式和硬體都比較簡單；大量資料（例如畫面）可以直接寫到對應的記憶體，速度快。</p>
 </div>
-<h4 id="_38">觀念小考</h4>
+<h4 id="_39">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> acyclic-graph 目錄讓同一個檔案出現在好幾個目錄。刪除檔案時最需要處理的問題是？</p>
 <ol>
@@ -4591,6 +5589,124 @@ signal(empty);</code></pre>
 <div class="arithmatex">\[48\text{ KB}+4\text{ MB}+4\text{ GB}+4\text{ TB}\approx4\text{ TB}\]</div>
 <p><strong>(b) 2 次</strong>：<span class="arithmatex">\(3000000\div4096=732\)</span> 餘 1728，是第 732 塊（從 0 算）。direct 管第 0–11 塊，single indirect 管第 12–1035 塊，所以在 single indirect 的範圍：先讀那個索引區塊，再讀資料區塊。</p>
 </details>
+<h3 id="u5-drill">5.7 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="_40">題型一：磁碟排程的移動距離</h4>
+<p><strong>做法</strong>：照演算法排出服務順序，相鄰相減加總；C-SCAN、C-LOOK 把含跳回和不含的都寫出來（<a href="#u5-sched">5.4</a>）。</p>
+<p><strong>P-1.</strong> 磁柱 0～199，讀寫頭在 53、正往編號大的方向移動。要求依序是 98, 183, 37, 122, 14, 124, 65, 67。用 FCFS，服務順序和總移動距離？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>服務順序</strong>：53 → 98 → 183 → 37 → 122 → 14 → 124 → 65 → 67。</li>
+<li><strong>相鄰相減加總</strong>：45 ＋ 85 ＋ 146 ＋ 85 ＋ 108 ＋ 110 ＋ 59 ＋ 2 ＝ <strong>640</strong>。</li>
+</ul>
+<p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>98,183,37,122,14,124,65,67</code>、讀寫頭 53、方向往大、最大 199，演算法選 FCFS。</p>
+</details>
+<p><strong>P-2.</strong> 磁柱 0～199，讀寫頭在 53、正往編號大的方向移動。要求依序是 98, 183, 37, 122, 14, 124, 65, 67。用 SSTF，服務順序和總移動距離？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>服務順序</strong>：53 → 65 → 67 → 37 → 14 → 98 → 122 → 124 → 183。</li>
+<li><strong>相鄰相減加總</strong>：12 ＋ 2 ＋ 30 ＋ 23 ＋ 84 ＋ 24 ＋ 2 ＋ 59 ＝ <strong>236</strong>。</li>
+</ul>
+<p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>98,183,37,122,14,124,65,67</code>、讀寫頭 53、方向往大、最大 199，演算法選 SSTF。</p>
+</details>
+<p><strong>P-3.</strong> 磁柱 0～199，讀寫頭在 143、正往編號大的方向移動。要求依序是 86, 147, 91, 177, 94, 150, 102, 175, 130。用 SCAN，服務順序和總移動距離？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>服務順序</strong>：143 → 147 → 150 → 175 → 177 → 130 → 102 → 94 → 91 → 86。</li>
+<li><strong>往大的方向走到盡頭 199 再回頭</strong>：<span class="arithmatex">\((199-143)+(199-86)=169\)</span>。</li>
+<li><strong>答案</strong>：<strong>169</strong>。</li>
+</ul>
+<p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>86,147,91,177,94,150,102,175,130</code>、讀寫頭 143、方向往大、最大 199，演算法選 SCAN。</p>
+</details>
+<p><strong>P-4.</strong> 磁柱 0～199，讀寫頭在 143、正往編號大的方向移動。要求依序是 86, 147, 91, 177, 94, 150, 102, 175, 130。用 LOOK，服務順序和總移動距離？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>服務順序</strong>：143 → 147 → 150 → 175 → 177 → 130 → 102 → 94 → 91 → 86。</li>
+<li><strong>走到最遠的要求 177 就回頭</strong>：<span class="arithmatex">\((177-143)+(177-86)=125\)</span>。</li>
+<li><strong>答案</strong>：<strong>125</strong>。</li>
+</ul>
+<p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>86,147,91,177,94,150,102,175,130</code>、讀寫頭 143、方向往大、最大 199，演算法選 LOOK。</p>
+</details>
+<p><strong>P-5.</strong> 磁柱 0～199，讀寫頭在 50、正往編號大的方向移動。要求依序是 45, 21, 67, 90, 4, 55, 89, 52, 61, 87。用 C-SCAN，服務順序和總移動距離？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>服務順序</strong>：50 → 52 → 55 → 61 → 67 → 87 → 89 → 90 → 4 → 21 → 45。</li>
+<li><strong>往大走到 199，跳回 0，再往大服務剩下的</strong>：服務時移動 <span class="arithmatex">\((199-50)+(45-0)=194\)</span>，跳回去那一段 199。</li>
+<li><strong>答案</strong>：不含跳回 <strong>194</strong>，含跳回 <strong>393</strong>（兩個都寫最保險）。</li>
+</ul>
+<p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>45,21,67,90,4,55,89,52,61,87</code>、讀寫頭 50、方向往大、最大 199，演算法選 C-SCAN；跳回那段選「算進」會得到 393、選「不算」會得到 194。</p>
+</details>
+<p><strong>P-6.</strong> 磁柱 0～199，讀寫頭在 50、正往編號大的方向移動。要求依序是 45, 21, 67, 90, 4, 55, 89, 52, 61, 87。用 C-LOOK，服務順序和總移動距離？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>服務順序</strong>：50 → 52 → 55 → 61 → 67 → 87 → 89 → 90 → 4 → 21 → 45。</li>
+<li><strong>往大走到最遠的 90，跳到另一邊最遠的 4，再往大服務</strong>：服務時移動 <span class="arithmatex">\((90-50)+(45-4)=81\)</span>，跳的那一段 86。</li>
+<li><strong>答案</strong>：不含跳回 <strong>81</strong>，含跳回 <strong>167</strong>。</li>
+</ul>
+<p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>45,21,67,90,4,55,89,52,61,87</code>、讀寫頭 50、方向往大、最大 199，演算法選 C-LOOK；跳回那段選「算進」會得到 167、選「不算」會得到 81。</p>
+</details>
+<h4 id="i-node_1">題型二：i-node 最大檔案</h4>
+<p><strong>做法</strong>：一塊放 <span class="arithmatex">\(k\)</span> ＝ 區塊 ÷ 指標 個指標；資料區塊數 ＝ direct ＋ <span class="arithmatex">\(k\)</span> ＋ <span class="arithmatex">\(k^2\)</span> ＋ <span class="arithmatex">\(k^3\)</span>。</p>
+<p><strong>P-7.</strong> 區塊 4096 B、指標 4 B，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一個區塊放幾個指標（1024）</strong>：<span class="arithmatex">\(4096\div4\)</span>。</li>
+<li><strong>資料區塊數（1074791436）</strong>：12（direct） <span class="arithmatex">\(+\)</span> 1024（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^3\)</span>。</li>
+<li><strong>最大檔案</strong>：<span class="arithmatex">\(1074791436\times4096\)</span> B，約 4 TB。</li>
+</ul>
+</details>
+<p><strong>P-8.</strong> 區塊 1024 B、指標 4 B，i-node 有 10 個 direct 和 single、double indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一個區塊放幾個指標（256）</strong>：<span class="arithmatex">\(1024\div4\)</span>。</li>
+<li><strong>資料區塊數（65802）</strong>：10（direct） <span class="arithmatex">\(+\)</span> 256（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(256^2\)</span>。</li>
+<li><strong>最大檔案</strong>：<span class="arithmatex">\(65802\times1024\)</span> B，約 64.3 MB。</li>
+</ul>
+</details>
+<p><strong>P-9.</strong> 區塊 8192 B、指標 8 B，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一個區塊放幾個指標（1024）</strong>：<span class="arithmatex">\(8192\div8\)</span>。</li>
+<li><strong>資料區塊數（1074791436）</strong>：12（direct） <span class="arithmatex">\(+\)</span> 1024（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^3\)</span>。</li>
+<li><strong>最大檔案</strong>：<span class="arithmatex">\(1074791436\times8192\)</span> B，約 8.01 TB。</li>
+</ul>
+</details>
+<p><strong>P-10.</strong> 區塊 2048 B、指標 4 B，i-node 有 10 個 direct 和 single indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一個區塊放幾個指標（512）</strong>：<span class="arithmatex">\(2048\div4\)</span>。</li>
+<li><strong>資料區塊數（522）</strong>：10（direct） <span class="arithmatex">\(+\)</span> 512（single）。</li>
+<li><strong>最大檔案</strong>：<span class="arithmatex">\(522\times2048\)</span> B，約 1.02 MB。</li>
+</ul>
+</details>
+<p><strong>P-11.</strong> 區塊 4096 B、指標 8 B，i-node 有 12 個 direct 和 single、double indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一個區塊放幾個指標（512）</strong>：<span class="arithmatex">\(4096\div8\)</span>。</li>
+<li><strong>資料區塊數（262668）</strong>：12（direct） <span class="arithmatex">\(+\)</span> 512（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(512^2\)</span>。</li>
+<li><strong>最大檔案</strong>：<span class="arithmatex">\(262668\times4096\)</span> B，約 1 GB。</li>
+</ul>
+</details>
+<p><strong>P-12.</strong> 區塊 512 B、指標 4 B，i-node 有 10 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一個區塊放幾個指標（128）</strong>：<span class="arithmatex">\(512\div4\)</span>。</li>
+<li><strong>資料區塊數（2113674）</strong>：10（direct） <span class="arithmatex">\(+\)</span> 128（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(128^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(128^3\)</span>。</li>
+<li><strong>最大檔案</strong>：<span class="arithmatex">\(2113674\times512\)</span> B，約 1.01 GB。</li>
+</ul>
+</details>
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> i-node 有 12 個直接區塊和 single、double indirect，區塊 4 KB、指標 4 B，最大檔案幾個資料區塊？</p>
 <details class="quiz">
@@ -4640,9 +5756,9 @@ signal(empty);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_39">最小權限</h4>
+<h4 id="_41">最小權限</h4>
 <p><strong>principle of least privilege</strong>（最小權限）和 <strong>need-to-know</strong> 是同一類想法：每個行程、每個使用者只拿到<strong>完成目前工作需要</strong>的權限和資源。出事時，損害才會被限制在小範圍。兩者在恐龍書裡的說法有一點差別，是非題考過，見 <a href="#u6-more">6.2</a>。</p>
-<h4 id="_40">存取矩陣：誰能對什麼做什麼</h4>
+<h4 id="_42">存取矩陣：誰能對什麼做什麼</h4>
 <p>把權限畫成一張表：列是使用者（domain），欄是檔案（object），格子裡是權限。</p>
 <table>
 <thead>
@@ -4708,7 +5824,7 @@ signal(empty);</code></pre>
 </figure>
 
 <p><strong>哪一種比較方便</strong>：要知道「這個檔案誰能用」，或要撤銷某個檔案的所有權限，ACL 一次看完；要知道「這個人能用哪些東西」，capability list 一次看完。實際的系統常常兩個混著用。</p>
-<h4 id="_41">惡意程式的名詞</h4>
+<h4 id="_43">惡意程式的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -4784,7 +5900,7 @@ signal(empty);</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/izkd4JwXRwub_ZmhSMTlNw">OS 筆記 Chapter 14: Protection</a>〉：保護的原則、存取矩陣、ACL 與 capability 的實作、權限撤銷，就是這節表格的完整版。</li>
 </ul>
 </div>
-<h4 id="_42">換你試試</h4>
+<h4 id="_44">換你試試</h4>
 <p><strong>T-1.</strong> 有人偷改了資料庫裡的成績，破壞的是 CIA 的哪一項？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -4911,7 +6027,7 @@ signal(empty);</code></pre>
 </table>
 <p><span class="arithmatex">\(H(m)\)</span> 是 <a href="ds.html#u4-theory">資結 4.2</a> 的密碼學雜湊函數，先把訊息壓短再簽。</p>
 <p><strong>公鑰怎麼發</strong>（105 Q4(4)）：公鑰可以公開，問題是怎麼確定這把公鑰真的是對方的（不然中間人可以換成自己的）。做法是<strong>數位憑證</strong>（digital certificate）：可信任的憑證機構（CA）用它的私鑰簽署「這把公鑰屬於某某人」，CA 的公鑰事先內建在瀏覽器或作業系統裡。</p>
-<h4 id="_43">攻擊手法的名詞</h4>
+<h4 id="_45">攻擊手法的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -4992,7 +6108,7 @@ signal(empty);</code></pre>
 <li>「location transparency 能在不同時間把同一個檔名對應到不同位置，所以比 location independence 強」：<strong>錯</strong>，說反了。能動態改變對應位置的是 <strong>location independence</strong>，它比 location transparency 強。</li>
 </ol>
 </div>
-<h4 id="_44">觀念小考</h4>
+<h4 id="_46">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 哪一種方法能提供 nonrepudiation（送的人事後不能否認）？</p>
 <ol>
@@ -5034,7 +6150,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u6-dist">6.3 分散式系統與網路：CSMA/CD、token passing、事件的先後</h3>
 <p>101 年（區域網路怎麼避免碰撞，10%）、102 年（分散式系統的事件順序，10%）、104 年（分散式檔案系統的名詞，1%）考過。另外 102 年的分散式檔案系統命名在 <a href="#u6-more">6.2</a>，atomic transaction、two-phase locking 在 <a href="#u2-more">2.2</a>，分散式檔案系統的 cache 在 <a href="#u6-1">6.1</a>。</p>
-<h4 id="_45">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
+<h4 id="_47">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
 <p>同一條線上的電腦同時送資料，訊號會疊在一起變成雜訊，叫<strong>碰撞</strong>（collision）。兩種做法：</p>
 <p><strong>CSMA/CD</strong>（carrier sense multiple access with collision detection，乙太網路用的）：</p>
 <ol>
@@ -5079,7 +6195,7 @@ signal(empty);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_46">分散式系統裡，為什麼很難知道誰先發生？</h4>
+<h4 id="_48">分散式系統裡，為什麼很難知道誰先發生？</h4>
 <p>分散式系統的電腦<strong>沒有共用的時鐘、也沒有共用的記憶體</strong>，只能傳訊息。每台電腦的時鐘快慢不一樣（會漂移），訊息在網路上要花多久也不固定。所以 A 機器記錄 10:00:01、B 機器記錄 10:00:02，<strong>不能保證 A 的事件真的比較早</strong>。</p>
 <h4 id="happened-before">happened-before（→）：只用能確定的事排順序</h4>
 <p>Lamport 定義的 happened-before 關係，A → B 讀作「A 在 B 之前發生」：</p>
@@ -5207,7 +6323,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q6(3)（1%）：分散式檔案系統的 component unit 是什麼？</p>
 <p><strong>可以放在同一台機器上、跟其他 unit 互不相關的最小一組檔案</strong>。同一個 component unit 裡的檔案一定放在同一個地方，命名和搬移都以它為單位。</p>
 </div>
-<h4 id="_47">觀念小考</h4>
+<h4 id="_49">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> CSMA/CD 偵測到碰撞之後，為什麼要等一段<strong>隨機</strong>的時間再重傳？</p>
 <ol>
