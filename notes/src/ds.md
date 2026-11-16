@@ -2442,15 +2442,101 @@ key 的集合**固定不變**（例如程式語言的保留字）時，可以做
 - **Prim**：從一個點開始長大，每次加「樹內連到樹外最便宜的邊」。
 - **Kruskal**：所有邊由便宜到貴排好，依序加入，**會成環的跳過**。
 
+<figure class="fig">
+<svg viewBox="0 0 360 206" role="img" aria-label="左邊一群 A、B、C，右邊一群 D、E。跨兩群的邊有 B–D 5、C–D 2、C–E 7，最便宜的是 C–D 2，它一定可以放進某個最小生成樹。">
+<rect class="fc" x="8" y="22" width="150" height="160" rx="14"/>
+<text x="83" y="12" text-anchor="middle" dominant-baseline="central" class="sm tc">第一群</text>
+<rect class="fb" x="222" y="22" width="130" height="160" rx="14"/>
+<text x="287" y="12" text-anchor="middle" dominant-baseline="central" class="sm tb">第二群</text>
+<line class="arw" x1="58.4085" y1="65.8291" x2="105.592" y2="52.1709"/>
+<line class="arw" x1="52.4703" y1="82.3796" x2="87.5297" y2="133.62"/>
+<line class="arw" x1="116.432" y1="62.5695" x2="99.568" y2="131.431"/>
+<line class="arw" x1="272.986" y1="83.2738" x2="299.014" y2="132.726"/>
+<line class="ln" x1="134.833" y1="50.235" x2="251.167" y2="67.765"/>
+<line class="arw-a" x1="109.694" y1="139.878" x2="252.306" y2="76.122"/>
+<line class="ln" x1="111" y1="146" x2="291" y2="146"/>
+<rect x="73" y="50" width="18" height="16" rx="3" style="fill:var(--card)"/>
+<text x="82" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<rect x="61" y="99" width="18" height="16" rx="3" style="fill:var(--card)"/>
+<text x="70" y="107" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<rect x="99" y="88" width="18" height="16" rx="3" style="fill:var(--card)"/>
+<text x="108" y="96" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<rect x="277" y="99" width="18" height="16" rx="3" style="fill:var(--card)"/>
+<text x="286" y="107" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<rect x="184" y="50" width="18" height="16" rx="3" style="fill:var(--card)"/>
+<text x="193" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<rect x="172" y="99" width="18" height="16" rx="3" style="fill:var(--card)"/>
+<text x="181" y="107" text-anchor="middle" dominant-baseline="central" class="sm mono ta">2</text>
+<rect x="192" y="137" width="18" height="16" rx="3" style="fill:var(--card)"/>
+<text x="201" y="145" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<circle class="box" cx="44" cy="70" r="15"/>
+<text x="44" y="70" text-anchor="middle" dominant-baseline="central" class="mono">A</text>
+<circle class="box" cx="120" cy="48" r="15"/>
+<text x="120" y="48" text-anchor="middle" dominant-baseline="central" class="mono">B</text>
+<circle class="box" cx="96" cy="146" r="15"/>
+<text x="96" y="146" text-anchor="middle" dominant-baseline="central" class="mono">C</text>
+<circle class="box" cx="266" cy="70" r="15"/>
+<text x="266" y="70" text-anchor="middle" dominant-baseline="central" class="mono">D</text>
+<circle class="box" cx="306" cy="146" r="15"/>
+<text x="306" y="146" text-anchor="middle" dominant-baseline="central" class="mono">E</text>
+<text x="190" y="198" text-anchor="middle" dominant-baseline="central" class="sm">跨過去的邊：粗線；最便宜的是 C–D</text>
+</svg>
+<figcaption>不管怎麼分兩群，跨過去最便宜的那條邊都可以放進最小生成樹（這張圖的 MST 是 D–E、C–D、A–B、B–C，總權重 10）</figcaption>
+</figure>
+
 #### 最短路徑：Dijkstra
 
 從起點出發，每次挑「目前離起點最近、還沒確定」的點，確定它的距離，再用它更新鄰居的距離。前提是**邊的權重不能是負的**，不然「已經確定的最短距離」可能被後來的負邊推翻。
 
 **為什麼「目前最近的」可以直接確定**：假設 $u$ 是還沒確定的點裡距離最小的。任何其他走法要到 $u$，都得先經過某個還沒確定的點 $x$，光到 $x$ 就已經 $\ge d(u)$，邊又不是負的，後面只會更長。所以 $d(u)$ 不可能再變小。
 
+**負的邊為什麼不行**：
+
+<figure class="fig">
+<svg viewBox="0 0 360 168" role="img" aria-label="有向圖：A 到 B 權重 2、A 到 C 權重 3、C 到 B 權重 −2。Dijkstra 從 A 出發，先把 B 確定成 2；但走 A→C→B 只要 3 + (−2) = 1，比較短。">
+<line class="arw" x1="54.5907" y1="77.4342" x2="137.2" y2="40.3"/>
+<polygon class="ah" points="144.5,37.0 139.0,44.4 135.4,36.2"/>
+<rect x="91" y="49" width="18" height="16" rx="3" style="fill:var(--card)"/>
+<text x="100" y="57" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<line class="arw" x1="54.5907" y1="90.5658" x2="137.2" y2="127.7"/>
+<polygon class="ah" points="144.5,131.0 135.4,131.8 139.0,123.6"/>
+<rect x="91" y="103" width="18" height="16" rx="3" style="fill:var(--card)"/>
+<text x="100" y="111" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<line class="arw-a" x1="160" y1="122" x2="160.0" y2="55.0"/>
+<polygon class="ah-a" points="160.0,47.0 164.5,55.0 155.5,55.0"/>
+<rect x="158" y="76" width="24" height="16" rx="3" style="fill:var(--card)"/>
+<text x="170" y="84" text-anchor="middle" dominant-baseline="central" class="sm mono ta">-2</text>
+<circle class="box" cx="40" cy="84" r="15"/>
+<text x="40" y="84" text-anchor="middle" dominant-baseline="central" class="mono">A</text>
+<circle class="fa" cx="160" cy="30" r="15"/>
+<text x="160" y="30" text-anchor="middle" dominant-baseline="central" class="mono">B</text>
+<circle class="box" cx="160" cy="138" r="15"/>
+<text x="160" y="138" text-anchor="middle" dominant-baseline="central" class="mono">C</text>
+<text x="204" y="40" text-anchor="start" dominant-baseline="central" class="sm">Dijkstra：</text>
+<text x="204" y="60" text-anchor="start" dominant-baseline="central" class="sm tt">先確定 B ＝ 2</text>
+<text x="204" y="100" text-anchor="start" dominant-baseline="central" class="sm">其實：A→C→B</text>
+<text x="204" y="120" text-anchor="start" dominant-baseline="central" class="sm ta">3 ＋（−2）＝ 1</text>
+</svg>
+<figcaption>B 一被確定就不再更新，後來發現的更短路線（經過負邊）就被漏掉了</figcaption>
+</figure>
+
+有負邊時要用 **Bellman–Ford**：每條邊反覆放鬆 $V-1$ 輪，$O(VE)$，還能偵測負環。
+
 下面的動畫可以切換三種演算法。圖可以自己改（`A-B 4` 表示 A、B 之間有一條權重 4 的邊）：
 
 <div class="viz" data-viz="graph" data-edges="A-B 3, A-C 1, B-C 1, B-D 2, C-D 6, C-E 4, D-E 1" data-algo="dijkstra" data-start="A"></div>
+
+!!! key "圖的題目要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | BFS／DFS 順序 | BFS 用 queue 一層一層；DFS 一看到沒走過的鄰居就立刻走下去（[5.2](#u5-bfs)） |
+    | Prim | 從起點長大，每次加「樹內連到樹外」最便宜的邊 |
+    | Kruskal | 邊由小到大，會成環就跳過（用 union-find 判斷，[5.1](#u5-1)） |
+    | Dijkstra | 每次確定「還沒確定的點裡距離最小」的那個，再更新它的鄰居；不能有負邊 |
+    | 拓撲排序 | 一直拿掉入度 0 的點（[5.3](#u5-topo)） |
+    | 複雜度 | 鄰接串列：BFS／DFS $O(V+E)$；heap 版 Prim、Dijkstra $O(E\log V)$；Kruskal $O(E\log E)$ |
+
+    名詞對照：adjacency matrix／list（鄰接矩陣／串列）、minimum spanning tree（最小生成樹）、cut（切割）、shortest path（最短路徑）、topological sort（拓撲排序）、in-degree（入度）。
 
 !!! read "還不懂？看別人怎麼講"
     - **動畫**：[VisuAlgo 最小生成樹（中文）](https://visualgo.net/zh/mst)：Kruskal 和 Prim 一步一步加邊，還有 Kruskal 為什麼正確的說明；[VisuAlgo 最短路徑](https://visualgo.net/en/sssp)：Dijkstra 的過程。
@@ -2500,6 +2586,16 @@ key 的集合**固定不變**（例如程式語言的保留字）時，可以做
 - **Prim**：用 binary heap 時，每條邊最多讓 heap 更新一次，每次 $O(\log V)$ → $O(E\log V)$。用陣列時每一步花 $O(V)$ 找最小、做 $V$ 步 → $O(V^2)$，邊很多（$E$ 接近 $V^2$）時陣列反而比較快。
 - **Kruskal**：主要時間是把 $E$ 條邊排序，$O(E\log E)$。因為 $E\le V^2$，$\log E\le2\log V$，也可以寫成 $O(E\log V)$。
 - **Dijkstra**：結構跟 Prim 一樣，只是 heap 裡放「到起點的距離」。
+
+#### Kruskal 怎麼知道會不會成環：union-find
+
+把已經連在一起的點看成一群，每群選一個代表（根）。
+
+- **find(x)**：沿著「爸爸」指標一路往上走到根，就是 x 那一群的代表。
+- **union(x, y)**：把一群的根接到另一群的根下面。
+- **判斷成環**：考慮邊 (u, v) 時，find(u) ＝ find(v) 表示 u、v 已經連通，再加就成環，跳過；不然就加入，再 union(u, v)。
+
+再加兩個技巧：**union by rank**（矮的樹接到高的樹下面）和 **path compression**（find 時把路上的點直接接到根），每次操作幾乎是常數時間，所以 Kruskal 的時間主要花在排序。
 
 !!! example "115 Q8（10%）：鄰接矩陣的無向圖，從 A 開始用 Prim"
     邊：AB 2、AC 4、AE 5、BC 1、BD 9、BF 7、CE 6、CF 10、DF 8、EF 3。
@@ -2708,6 +2804,131 @@ BFS 一層一層往外，所以第幾層就是「離起點幾條邊」，**無�
 ??? quiz "看參考答案"
     - **BFS**：用 queue，一層一層往外，離起點近的先拜訪。適合找**無權重圖的最短路徑**（例如走迷宮最少幾步）。
     - **DFS**：用 stack 或遞迴，一路走到底再退回來。適合**檢查連通、找環、拓樸排序**，以及需要「試完一條路再換下一條」的問題。
+
+### 5.3 拓撲排序 {#u5-topo}
+
+**問題**：有些事情有先後關係（修課的擋修、程式的編譯順序），要排出一個順序，讓每條邊 $u\to v$ 的 $u$ 都排在 $v$ 前面。課本也叫它 AOV 網路（activity on vertex）。只有**沒有環的有向圖（DAG）**才排得出來。
+
+**做法（Kahn）**：
+
+1. 算每個點的**入度**（有幾條邊指向它）。
+2. 從入度 0 的點裡挑一個（題目要求照字母順序，就挑最小的），寫進答案；把它指出去的邊拿掉，鄰居的入度減 1。
+3. 重複到所有點都寫完。如果還有點沒寫，卻找不到入度 0 的點，就是有環。
+
+邊：C→A、C→B、A→D、B→D、B→E、D→F、E→F。
+
+| 步驟 | 入度 0、可以挑的 | 挑 | 拿掉它的邊之後，誰的入度變 0 |
+|---|---|---|---|
+| 1 | C | C | A、B |
+| 2 | A、B | A | 沒有（D 還有 B 指向它） |
+| 3 | B | B | D、E |
+| 4 | D、E | D | 沒有 |
+| 5 | E | E | F |
+| 6 | F | F | |
+
+答案 **C, A, B, D, E, F**。拓撲排序通常不唯一，例如 C, B, A, E, D, F 也對。
+
+另一種做法是 DFS：每個點**做完**（後代都走完）時記下來，最後把這個順序反過來。兩種都是 $O(V+E)$。
+
+### 5.4 觀念小考 {#u5-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** $V$ 個點、$E$ 條邊的稀疏圖（$E$ 遠小於 $V^2$），用哪一種方式存比較省空間？
+
+1. 鄰接矩陣
+2. 鄰接串列
+3. 兩種一樣
+4. 都要 $O(E^2)$
+
+??? quiz "看解析"
+    **B**。鄰接矩陣不管有沒有邊都要 $V^2$ 格；鄰接串列只記真的存在的邊，$O(V+E)$。邊很多（接近 $V^2$）時，矩陣查「u、v 之間有沒有邊」只要 $O(1)$，反而方便。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-2.** Dijkstra 遇到權重是負的邊，會怎樣？
+
+1. 一樣正確
+2. 永遠跑不完
+3. 只要沒有負環就一定正確
+4. 可能算錯：已經確定的點，後來可能經過負邊得到更短的距離
+
+??? quiz "看解析"
+    **D**。Dijkstra 確定一個點之後就不再改它（上面的圖：B 先被確定成 2，其實是 1）。C 是 Bellman–Ford 的性質，不是 Dijkstra 的。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** Kruskal 考慮邊 (u, v) 時，怎麼知道加進去會不會成環？
+
+1. 用 union-find 看 u、v 是不是已經在同一群
+2. 看 u、v 的度數
+3. 看這條邊的權重是不是比前一條大
+4. 跑一次 Dijkstra
+
+??? quiz "看解析"
+    **A**。u、v 已經連通，再加 (u, v) 就會形成環；find(u) 和 find(v) 一樣就是已經連通。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-4.** 下面哪一張有向圖做不出拓撲排序？
+
+1. 一條鏈 A→B→C
+2. 沒有任何邊的 3 個點
+3. 有環 A→B→C→A
+4. 一棵所有邊都從爸爸指向孩子的樹
+
+??? quiz "看解析"
+    **C**。環上的點互相要排在對方前面，不可能。用 Kahn 做的話，環上每個點的入度都至少是 1，永遠等不到入度 0。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 沒有權重的圖，要找起點到每個點最少要走幾條邊，最簡單的方法是？
+
+1. DFS
+2. BFS
+3. Prim
+4. Kruskal
+
+??? quiz "看解析"
+    **B**。BFS 一層一層往外，第 $k$ 層的點就是離起點 $k$ 條邊，第一次被發現時的層數就是最短距離。DFS 走的路不一定最短；Prim、Kruskal 是在找最小生成樹。
+
+</div>
+
+**W-1.** 照字母順序（每次從入度 0 的點挑字母最小的），對這張圖做拓撲排序：B→A、B→D、C→A、A→E、D→E、E→F、C→F。
+
+??? quiz "看參考答案"
+    | 步驟 | 入度 0、可以挑的 | 挑 | 誰的入度變 0 |
+    |---|---|---|---|
+    | 1 | B、C | B | D（A 還有 C 指向它） |
+    | 2 | C、D | C | A（F 還有 E 指向它） |
+    | 3 | A、D | A | 沒有（E 還有 D） |
+    | 4 | D | D | E |
+    | 5 | E | E | F |
+    | 6 | F | F | |
+
+    答案 **B, C, A, D, E, F**。這張圖一共有 5 種合法的順序。注意：如果用普通的 queue（先進先出），步驟 3 會先拿 D，得到 B, C, D, A, E, F；題目說「照字母順序」時，要每次挑最小的。我用程式跑過兩種做法，也列出了全部合法順序。
+
+**W-2.** 有向圖 S→A 1、S→B 5、A→C 3、B→C −4。用 Dijkstra 從 S 出發，依序確定哪些點？算出來的 d(C) 是多少？真正的最短距離呢？
+
+??? quiz "看參考答案"
+    | 步驟 | 確定 | 更新 | d(A), d(B), d(C) |
+    |---|---|---|---|
+    | 1 | S（0） | A：1、B：5 | 1, 5, ∞ |
+    | 2 | A（1） | C：1＋3＝4 | 1, 5, 4 |
+    | 3 | C（4） | — | 1, 5, 4 |
+    | 4 | B（5） | B→C 可以變成 1，但 C 已經確定了，不再改 | 1, 5, 4 |
+
+    Dijkstra 算出 **d(C) ＝ 4**；真正最短的是 S→B→C，$5+(-4)=$ **1**。C 在步驟 3 就被確定，因為那時 4 比 B 的 5 小；Dijkstra 假設「後面的路只會更長」，負邊破壞了這個假設。用 Bellman–Ford 才會得到 1。
 
 ### 單元 5 小考 {#u5-quiz}
 
