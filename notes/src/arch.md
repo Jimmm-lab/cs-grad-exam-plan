@@ -4072,6 +4072,66 @@ for (i = 0; i < 100; i += 4) {       /* 攤開 4 次 */
 
 從 0111（7）再加 1 就繞到 1000（−8），像時鐘一樣。所以範圍是 −8 到 7，**負數多一個**，因為 0 佔掉了非負那一半的一個位置。
 
+<figure class="fig">
+<svg viewBox="0 0 360 268" role="img" aria-label="4 位元的 16 個 pattern 排成一圈，0000 在最上面，順時針每格加 1。右半圈 0001 到 0111 是 1 到 7，左半圈 1000 到 1111 是 −8 到 −1。從 0111（7）再加 1 就跳到 1000（−8），這就是溢位。">
+<circle class="fb" cx="180" cy="48" r="12"/>
+<text x="180" y="48" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<text x="180" y="20" text-anchor="middle" dominant-baseline="central" class="sm mono">0000</text>
+<circle class="fb" cx="209.084" cy="53.7852" r="12"/>
+<text x="209.084" y="53.7852" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="222.095" y="27.9165" text-anchor="middle" dominant-baseline="central" class="sm mono">0001</text>
+<circle class="fb" cx="233.74" cy="70.2599" r="12"/>
+<text x="233.74" y="70.2599" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="257.782" y="50.4609" text-anchor="middle" dominant-baseline="central" class="sm mono">0010</text>
+<circle class="fb" cx="250.215" cy="94.9161" r="12"/>
+<text x="250.215" y="94.9161" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="281.627" y="84.2009" text-anchor="middle" dominant-baseline="central" class="sm mono">0011</text>
+<circle class="fb" cx="256" cy="124" r="12"/>
+<text x="256" y="124" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<text x="290" y="124" text-anchor="middle" dominant-baseline="central" class="sm mono">0100</text>
+<circle class="fb" cx="250.215" cy="153.084" r="12"/>
+<text x="250.215" y="153.084" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<text x="281.627" y="163.799" text-anchor="middle" dominant-baseline="central" class="sm mono">0101</text>
+<circle class="fb" cx="233.74" cy="177.74" r="12"/>
+<text x="233.74" y="177.74" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<text x="257.782" y="197.539" text-anchor="middle" dominant-baseline="central" class="sm mono">0110</text>
+<circle class="fb" cx="209.084" cy="194.215" r="12"/>
+<text x="209.084" y="194.215" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<text x="222.095" y="220.083" text-anchor="middle" dominant-baseline="central" class="sm mono">0111</text>
+<circle class="fa" cx="180" cy="200" r="12"/>
+<text x="180" y="200" text-anchor="middle" dominant-baseline="central" class="sm mono">-8</text>
+<text x="180" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">1000</text>
+<circle class="fa" cx="150.916" cy="194.215" r="12"/>
+<text x="150.916" y="194.215" text-anchor="middle" dominant-baseline="central" class="sm mono">-7</text>
+<text x="137.905" y="220.083" text-anchor="middle" dominant-baseline="central" class="sm mono">1001</text>
+<circle class="fa" cx="126.26" cy="177.74" r="12"/>
+<text x="126.26" y="177.74" text-anchor="middle" dominant-baseline="central" class="sm mono">-6</text>
+<text x="102.218" y="197.539" text-anchor="middle" dominant-baseline="central" class="sm mono">1010</text>
+<circle class="fa" cx="109.785" cy="153.084" r="12"/>
+<text x="109.785" y="153.084" text-anchor="middle" dominant-baseline="central" class="sm mono">-5</text>
+<text x="78.3733" y="163.799" text-anchor="middle" dominant-baseline="central" class="sm mono">1011</text>
+<circle class="fa" cx="104" cy="124" r="12"/>
+<text x="104" y="124" text-anchor="middle" dominant-baseline="central" class="sm mono">-4</text>
+<text x="70" y="124" text-anchor="middle" dominant-baseline="central" class="sm mono">1100</text>
+<circle class="fa" cx="109.785" cy="94.9161" r="12"/>
+<text x="109.785" y="94.9161" text-anchor="middle" dominant-baseline="central" class="sm mono">-3</text>
+<text x="78.3733" y="84.2009" text-anchor="middle" dominant-baseline="central" class="sm mono">1101</text>
+<circle class="fa" cx="126.26" cy="70.2599" r="12"/>
+<text x="126.26" y="70.2599" text-anchor="middle" dominant-baseline="central" class="sm mono">-2</text>
+<text x="102.218" y="50.4609" text-anchor="middle" dominant-baseline="central" class="sm mono">1110</text>
+<circle class="fa" cx="150.916" cy="53.7852" r="12"/>
+<text x="150.916" y="53.7852" text-anchor="middle" dominant-baseline="central" class="sm mono">-1</text>
+<text x="137.905" y="27.9165" text-anchor="middle" dominant-baseline="central" class="sm mono">1111</text>
+<line class="arw-a" x1="191.315" y1="180.886" x2="198.338" y2="216.194"/>
+<text x="180" y="114" text-anchor="middle" dominant-baseline="central" class="sm">＋1 就往</text>
+<text x="180" y="134" text-anchor="middle" dominant-baseline="central" class="sm">順時針走一格</text>
+<text x="180" y="256" text-anchor="middle" dominant-baseline="central" class="sm ta">7 ＋ 1 → −8：跨過紅線就是溢位</text>
+<text x="330" y="44" text-anchor="middle" dominant-baseline="central" class="sm tb">正</text>
+<text x="30" y="44" text-anchor="middle" dominant-baseline="central" class="sm ta">負</text>
+</svg>
+<figcaption>加法就是順時針走：走過最下面 7 和 −8 的交界，就是溢位</figcaption>
+</figure>
+
 **為什麼「反相再加 1」就是取負**：$x$ 和 $\sim x$ 每一位都相反，加起來是 1111，也就是 −1。所以 $x+\sim x=-1$，移項得 $-x=\sim x+1$。
 
 例：$-3$：$3=0011$，反相 1100，加 1 得 **1101**。
@@ -4094,6 +4154,26 @@ $$(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\tex
 - $e=2+127=129=1000\,0001$
 - $f=0100\cdots0$（小數點後的 01，後面補 0）
 
+<figure class="fig">
+<svg viewBox="0 0 360 168" role="img" aria-label="單精度浮點數 5.0 的 32 個位元：符號 s 1 位是 0；指數 e 8 位是 1000 0001，也就是 129；小數 f 23 位是 0100 後面全是 0。數值等於 1.01（二進位）乘以 2 的 129 減 127 次方，等於 1.25 乘 4 等於 5。">
+<rect class="fa" x="10" y="40" width="30" height="34"/>
+<text x="25" y="57" text-anchor="middle" dominant-baseline="central" class="mono">0</text>
+<rect class="fb" x="40" y="40" width="112" height="34"/>
+<text x="96" y="57" text-anchor="middle" dominant-baseline="central" class="mono">1000 0001</text>
+<rect class="fc" x="152" y="40" width="198" height="34"/>
+<text x="251" y="57" text-anchor="middle" dominant-baseline="central" class="mono">0100 0000 … 0</text>
+<text x="25" y="28" text-anchor="middle" dominant-baseline="central" class="sm mono ta">s</text>
+<text x="96" y="28" text-anchor="middle" dominant-baseline="central" class="sm tb">e：8 位</text>
+<text x="251" y="28" text-anchor="middle" dominant-baseline="central" class="sm tc">f：23 位</text>
+<text x="25" y="92" text-anchor="middle" dominant-baseline="central" class="sm">正</text>
+<text x="96" y="92" text-anchor="middle" dominant-baseline="central" class="sm">129 ＝ 2 ＋ 127</text>
+<text x="251" y="92" text-anchor="middle" dominant-baseline="central" class="sm">1.01 的小數部分 01</text>
+<text x="180" y="130" text-anchor="middle" dominant-baseline="central" class="sm mono">(−1)⁰ × 1.01₂ × 2^(129−127) ＝ 1.25 × 4 ＝ 5</text>
+<text x="180" y="152" text-anchor="middle" dominant-baseline="central" class="sm mono">十六進位 0x40A00000</text>
+</svg>
+<figcaption>32 個位元切成 1、8、23 三段；前面那個 1 不存，指數多存 127</figcaption>
+</figure>
+
 **為什麼浮點加法不滿足結合律**：$f$ 只有固定幾位，結果要捨入。用「十進位只保留 4 位有效數字」來想：
 
 - $(1000+0.4)+0.4$：$1000.4$ 捨入成 $1000$，再加 $0.4$ 又捨入成 $1000$
@@ -4105,6 +4185,17 @@ $$(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\tex
 
 - **RISC**：每條指令都簡單、一樣長，像標準化的零件，流水線每一站的工作量平均，容易 pipeline。
 - **PC-relative**：「往後跳 3 條」而不是「跳到 1000 號」。整個程式搬到別的位址，「往後 3 條」還是對的；而且 3 這個數字很小，用很少位元就能寫進指令裡。
+
+!!! key "數字表示題要算什麼"
+    | 題目問 | 怎麼算 |
+    |---|---|
+    | 二補數取負 | 反相再加 1；$n$ 位元的範圍是 $-2^{n-1}$ 到 $2^{n-1}-1$ |
+    | 最高位是 1 的 pattern 是多少 | 取負得到它的大小，再加負號；或最高位當 $-2^{n-1}$，加上其餘位元 |
+    | 加法有沒有溢位 | 兩個同號的數相加、結果變號才溢位；異號相加不會溢位 |
+    | 十進位 → IEEE 754 | 寫成 $1.xxx\times2^k$；$e=k+127$；$f$ 是小數點後的位元 |
+    | IEEE 754 → 十進位 | 切成 1／8／23 位：$(-1)^s\times1.f\times2^{e-127}$（[9.2](#u9-dec)） |
+
+    名詞對照：two's complement（二補數）、overflow（溢位）、sign／exponent／fraction（符號／指數／小數）、bias（偏移量）、normalized（正規化）。
 
 !!! read "還不懂？看別人怎麼講"
     - **中文筆記（資工所考生整理）**：[指令：計算機的語言](https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter01.html)：ISA、MIPS 暫存器與記憶體、程式的轉譯（組譯、連結、載入）。
@@ -4671,6 +4762,100 @@ $$C_4=G_3+P_3G_2+P_3P_2G_1+P_3P_2P_1G_0+P_3P_2P_1P_0c_0$$
     | 4 | 0 | 不加，右移 | 0000 1111 |
 
     結果 `0000 1111` ＝ 15 ＝ 3 × 5 ✓。乘數 0101 的第 0、2 位是 1，所以只有第 1、3 輪有加。
+
+### 9.5 觀念小考 {#u9-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** 8 位元二補數 1111 1100 是多少？
+
+1. 252
+2. −3
+3. −4
+4. −124
+
+??? quiz "看解析"
+    **C**。最高位是 1，是負數。取負：反相 0000 0011，加 1 得 0000 0100 ＝ 4，所以是 −4。A 是當成無號數；D 是把最高位當成正負號、剩下的當大小（那是 sign-magnitude）。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-2.** 4 位元二補數算 $(-5)+(-4)$，結果是？
+
+1. −9，沒有溢位
+2. 0111（7），溢位
+3. 1001（−7），沒有溢位
+4. 1001（−7），溢位
+
+??? quiz "看解析"
+    **B**。$1011+1100=1\,0111$，只留 4 位元是 0111 ＝ 7。兩個負數加出正數，溢位。−9 超出 4 位元的範圍（−8 到 7），本來就放不下。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** 單精度浮點數的指數 bias 是多少？
+
+1. 128
+2. 255
+3. 1023
+4. 127
+
+??? quiz "看解析"
+    **D**。存的是「實際指數 ＋ 127」，8 位元的 1 到 254 對應指數 −126 到 127。C 的 1023 是雙精度（11 位元指數）的 bias。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-4.** $-0.75$ 的單精度浮點表示（十六進位）是？
+
+1. 0xBF400000
+2. 0x3F400000
+3. 0xBF000000
+4. 0xC0400000
+
+??? quiz "看解析"
+    **A**。$0.75=0.11_2=1.1\times2^{-1}$：$s=1$、$e=-1+127=126=0111\,1110$、$f=1000\cdots$。合起來 1011 1111 0100 0000 … ＝ 0xBF400000。B 是 +0.75；C 是 −0.5；D 是 −3.0。我用程式轉過這四個數。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** PC-relative 定址最主要的好處是？
+
+1. 可以跳到記憶體裡任何一個位址
+2. 程式搬到別的位址還能用，而且 offset 很小、指令短
+3. 不需要 ALU 算位址
+4. 讓 cache 變大
+
+??? quiz "看解析"
+    **B**。目標寫成「離現在幾條」，整個程式搬家也不用改；branch 目標通常很近，用少少的位元就夠（115 Q3）。A 反而是它做不到的：offset 位元有限，跳不遠。
+
+</div>
+
+**W-1.** 0xC1480000 當成單精度浮點數是多少？當成 32 位元二補數整數又是多少？
+
+??? quiz "看參考答案"
+    - **切位元**：C1480000 ＝ 1100 0001 0100 1000 0000 …，$s=1$、$e=1000\,0010=130$、$f=1001\,000\cdots$。
+    - **浮點數（−12.5）**：$-1.1001_2\times2^{130-127}=-1.5625\times8=-12.5$。
+    - **二補數整數（−1052246016）**：最高位是 1，是負數，值 ＝ $\text{0xC1480000}-2^{32}=3242721280-4294967296$。
+
+    同一串位元，看你怎麼解讀，數值完全不同。我用程式轉過，兩個答案都對。
+
+**W-2.** 說明二補數加法什麼時候會溢位，並用 8 位元算 $100+50$、$(-100)+(-50)$、$100+(-50)$。
+
+??? quiz "看參考答案"
+    **規則**：兩個同號的數相加、結果的正負號跟它們不一樣，才溢位；一正一負相加，結果的大小不會超過其中一個，不會溢位。（硬體的判斷法：進到最高位的進位 ≠ 最高位出去的進位。）
+
+    | 算式 | 位元 | 讀成 | 溢位？ |
+    |---|---|---|---|
+    | $100+50$ | 0110 0100 ＋ 0011 0010 ＝ 1001 0110 | −106 | 是：兩個正數加出負數 |
+    | $(-100)+(-50)$ | 1001 1100 ＋ 1100 1110 ＝ (1)0110 1010 | 106 | 是：兩個負數加出正數 |
+    | $100+(-50)$ | 0110 0100 ＋ 1100 1110 ＝ (1)0011 0010 | 50 | 否：最高位出去的 1 直接丟掉 |
 
 ### 單元 9 小考 {#u9-quiz}
 

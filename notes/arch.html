@@ -6577,6 +6577,66 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 </tbody>
 </table>
 <p>從 0111（7）再加 1 就繞到 1000（−8），像時鐘一樣。所以範圍是 −8 到 7，<strong>負數多一個</strong>，因為 0 佔掉了非負那一半的一個位置。</p>
+<figure class="fig">
+<svg viewBox="0 0 360 268" role="img" aria-label="4 位元的 16 個 pattern 排成一圈，0000 在最上面，順時針每格加 1。右半圈 0001 到 0111 是 1 到 7，左半圈 1000 到 1111 是 −8 到 −1。從 0111（7）再加 1 就跳到 1000（−8），這就是溢位。">
+<circle class="fb" cx="180" cy="48" r="12"/>
+<text x="180" y="48" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<text x="180" y="20" text-anchor="middle" dominant-baseline="central" class="sm mono">0000</text>
+<circle class="fb" cx="209.084" cy="53.7852" r="12"/>
+<text x="209.084" y="53.7852" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="222.095" y="27.9165" text-anchor="middle" dominant-baseline="central" class="sm mono">0001</text>
+<circle class="fb" cx="233.74" cy="70.2599" r="12"/>
+<text x="233.74" y="70.2599" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="257.782" y="50.4609" text-anchor="middle" dominant-baseline="central" class="sm mono">0010</text>
+<circle class="fb" cx="250.215" cy="94.9161" r="12"/>
+<text x="250.215" y="94.9161" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="281.627" y="84.2009" text-anchor="middle" dominant-baseline="central" class="sm mono">0011</text>
+<circle class="fb" cx="256" cy="124" r="12"/>
+<text x="256" y="124" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<text x="290" y="124" text-anchor="middle" dominant-baseline="central" class="sm mono">0100</text>
+<circle class="fb" cx="250.215" cy="153.084" r="12"/>
+<text x="250.215" y="153.084" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<text x="281.627" y="163.799" text-anchor="middle" dominant-baseline="central" class="sm mono">0101</text>
+<circle class="fb" cx="233.74" cy="177.74" r="12"/>
+<text x="233.74" y="177.74" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<text x="257.782" y="197.539" text-anchor="middle" dominant-baseline="central" class="sm mono">0110</text>
+<circle class="fb" cx="209.084" cy="194.215" r="12"/>
+<text x="209.084" y="194.215" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<text x="222.095" y="220.083" text-anchor="middle" dominant-baseline="central" class="sm mono">0111</text>
+<circle class="fa" cx="180" cy="200" r="12"/>
+<text x="180" y="200" text-anchor="middle" dominant-baseline="central" class="sm mono">-8</text>
+<text x="180" y="228" text-anchor="middle" dominant-baseline="central" class="sm mono">1000</text>
+<circle class="fa" cx="150.916" cy="194.215" r="12"/>
+<text x="150.916" y="194.215" text-anchor="middle" dominant-baseline="central" class="sm mono">-7</text>
+<text x="137.905" y="220.083" text-anchor="middle" dominant-baseline="central" class="sm mono">1001</text>
+<circle class="fa" cx="126.26" cy="177.74" r="12"/>
+<text x="126.26" y="177.74" text-anchor="middle" dominant-baseline="central" class="sm mono">-6</text>
+<text x="102.218" y="197.539" text-anchor="middle" dominant-baseline="central" class="sm mono">1010</text>
+<circle class="fa" cx="109.785" cy="153.084" r="12"/>
+<text x="109.785" y="153.084" text-anchor="middle" dominant-baseline="central" class="sm mono">-5</text>
+<text x="78.3733" y="163.799" text-anchor="middle" dominant-baseline="central" class="sm mono">1011</text>
+<circle class="fa" cx="104" cy="124" r="12"/>
+<text x="104" y="124" text-anchor="middle" dominant-baseline="central" class="sm mono">-4</text>
+<text x="70" y="124" text-anchor="middle" dominant-baseline="central" class="sm mono">1100</text>
+<circle class="fa" cx="109.785" cy="94.9161" r="12"/>
+<text x="109.785" y="94.9161" text-anchor="middle" dominant-baseline="central" class="sm mono">-3</text>
+<text x="78.3733" y="84.2009" text-anchor="middle" dominant-baseline="central" class="sm mono">1101</text>
+<circle class="fa" cx="126.26" cy="70.2599" r="12"/>
+<text x="126.26" y="70.2599" text-anchor="middle" dominant-baseline="central" class="sm mono">-2</text>
+<text x="102.218" y="50.4609" text-anchor="middle" dominant-baseline="central" class="sm mono">1110</text>
+<circle class="fa" cx="150.916" cy="53.7852" r="12"/>
+<text x="150.916" y="53.7852" text-anchor="middle" dominant-baseline="central" class="sm mono">-1</text>
+<text x="137.905" y="27.9165" text-anchor="middle" dominant-baseline="central" class="sm mono">1111</text>
+<line class="arw-a" x1="191.315" y1="180.886" x2="198.338" y2="216.194"/>
+<text x="180" y="114" text-anchor="middle" dominant-baseline="central" class="sm">＋1 就往</text>
+<text x="180" y="134" text-anchor="middle" dominant-baseline="central" class="sm">順時針走一格</text>
+<text x="180" y="256" text-anchor="middle" dominant-baseline="central" class="sm ta">7 ＋ 1 → −8：跨過紅線就是溢位</text>
+<text x="330" y="44" text-anchor="middle" dominant-baseline="central" class="sm tb">正</text>
+<text x="30" y="44" text-anchor="middle" dominant-baseline="central" class="sm ta">負</text>
+</svg>
+<figcaption>加法就是順時針走：走過最下面 7 和 −8 的交界，就是溢位</figcaption>
+</figure>
+
 <p><strong>為什麼「反相再加 1」就是取負</strong>：<span class="arithmatex">\(x\)</span> 和 <span class="arithmatex">\(\sim x\)</span> 每一位都相反，加起來是 1111，也就是 −1。所以 <span class="arithmatex">\(x+\sim x=-1\)</span>，移項得 <span class="arithmatex">\(-x=\sim x+1\)</span>。</p>
 <p>例：<span class="arithmatex">\(-3\)</span>：<span class="arithmatex">\(3=0011\)</span>，反相 1100，加 1 得 <strong>1101</strong>。</p>
 <p><strong>溢位</strong>：兩個正數相加得到負數（或兩個負數相加得到正數），結果就超出範圍了。例：<span class="arithmatex">\(5+4=1001\)</span>，讀起來是 −7，溢位。</p>
@@ -6594,6 +6654,26 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <li><span class="arithmatex">\(e=2+127=129=1000\,0001\)</span></li>
 <li><span class="arithmatex">\(f=0100\cdots0\)</span>（小數點後的 01，後面補 0）</li>
 </ul>
+<figure class="fig">
+<svg viewBox="0 0 360 168" role="img" aria-label="單精度浮點數 5.0 的 32 個位元：符號 s 1 位是 0；指數 e 8 位是 1000 0001，也就是 129；小數 f 23 位是 0100 後面全是 0。數值等於 1.01（二進位）乘以 2 的 129 減 127 次方，等於 1.25 乘 4 等於 5。">
+<rect class="fa" x="10" y="40" width="30" height="34"/>
+<text x="25" y="57" text-anchor="middle" dominant-baseline="central" class="mono">0</text>
+<rect class="fb" x="40" y="40" width="112" height="34"/>
+<text x="96" y="57" text-anchor="middle" dominant-baseline="central" class="mono">1000 0001</text>
+<rect class="fc" x="152" y="40" width="198" height="34"/>
+<text x="251" y="57" text-anchor="middle" dominant-baseline="central" class="mono">0100 0000 … 0</text>
+<text x="25" y="28" text-anchor="middle" dominant-baseline="central" class="sm mono ta">s</text>
+<text x="96" y="28" text-anchor="middle" dominant-baseline="central" class="sm tb">e：8 位</text>
+<text x="251" y="28" text-anchor="middle" dominant-baseline="central" class="sm tc">f：23 位</text>
+<text x="25" y="92" text-anchor="middle" dominant-baseline="central" class="sm">正</text>
+<text x="96" y="92" text-anchor="middle" dominant-baseline="central" class="sm">129 ＝ 2 ＋ 127</text>
+<text x="251" y="92" text-anchor="middle" dominant-baseline="central" class="sm">1.01 的小數部分 01</text>
+<text x="180" y="130" text-anchor="middle" dominant-baseline="central" class="sm mono">(−1)⁰ × 1.01₂ × 2^(129−127) ＝ 1.25 × 4 ＝ 5</text>
+<text x="180" y="152" text-anchor="middle" dominant-baseline="central" class="sm mono">十六進位 0x40A00000</text>
+</svg>
+<figcaption>32 個位元切成 1、8、23 三段；前面那個 1 不存，指數多存 127</figcaption>
+</figure>
+
 <p><strong>為什麼浮點加法不滿足結合律</strong>：<span class="arithmatex">\(f\)</span> 只有固定幾位，結果要捨入。用「十進位只保留 4 位有效數字」來想：</p>
 <ul>
 <li><span class="arithmatex">\((1000+0.4)+0.4\)</span>：<span class="arithmatex">\(1000.4\)</span> 捨入成 <span class="arithmatex">\(1000\)</span>，再加 <span class="arithmatex">\(0.4\)</span> 又捨入成 <span class="arithmatex">\(1000\)</span></li>
@@ -6605,6 +6685,40 @@ for (i = 0; i &lt; 100; i += 4) {       /* 攤開 4 次 */
 <li><strong>RISC</strong>：每條指令都簡單、一樣長，像標準化的零件，流水線每一站的工作量平均，容易 pipeline。</li>
 <li><strong>PC-relative</strong>：「往後跳 3 條」而不是「跳到 1000 號」。整個程式搬到別的位址，「往後 3 條」還是對的；而且 3 這個數字很小，用很少位元就能寫進指令裡。</li>
 </ul>
+<div class="admonition key">
+<p class="admonition-title">數字表示題要算什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>二補數取負</td>
+<td>反相再加 1；<span class="arithmatex">\(n\)</span> 位元的範圍是 <span class="arithmatex">\(-2^{n-1}\)</span> 到 <span class="arithmatex">\(2^{n-1}-1\)</span></td>
+</tr>
+<tr>
+<td>最高位是 1 的 pattern 是多少</td>
+<td>取負得到它的大小，再加負號；或最高位當 <span class="arithmatex">\(-2^{n-1}\)</span>，加上其餘位元</td>
+</tr>
+<tr>
+<td>加法有沒有溢位</td>
+<td>兩個同號的數相加、結果變號才溢位；異號相加不會溢位</td>
+</tr>
+<tr>
+<td>十進位 → IEEE 754</td>
+<td>寫成 <span class="arithmatex">\(1.xxx\times2^k\)</span>；<span class="arithmatex">\(e=k+127\)</span>；<span class="arithmatex">\(f\)</span> 是小數點後的位元</td>
+</tr>
+<tr>
+<td>IEEE 754 → 十進位</td>
+<td>切成 1／8／23 位：<span class="arithmatex">\((-1)^s\times1.f\times2^{e-127}\)</span>（<a href="#u9-dec">9.2</a>）</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：two's complement（二補數）、overflow（溢位）、sign／exponent／fraction（符號／指數／小數）、bias（偏移量）、normalized（正規化）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -7477,6 +7591,118 @@ sw  $t0,48($s3)</code></pre>
 </tbody>
 </table>
 <p>結果 <code>0000 1111</code> ＝ 15 ＝ 3 × 5 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。乘數 0101 的第 0、2 位是 1，所以只有第 1、3 輪有加。</p>
+</details>
+<h3 id="u9-concept">9.5 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="3">
+<p><strong>C-1.</strong> 8 位元二補數 1111 1100 是多少？</p>
+<ol>
+<li>252</li>
+<li>−3</li>
+<li>−4</li>
+<li>−124</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。最高位是 1，是負數。取負：反相 0000 0011，加 1 得 0000 0100 ＝ 4，所以是 −4。A 是當成無號數；D 是把最高位當成正負號、剩下的當大小（那是 sign-magnitude）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-2.</strong> 4 位元二補數算 <span class="arithmatex">\((-5)+(-4)\)</span>，結果是？</p>
+<ol>
+<li>−9，沒有溢位</li>
+<li>0111（7），溢位</li>
+<li>1001（−7），沒有溢位</li>
+<li>1001（−7），溢位</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(1011+1100=1\,0111\)</span>，只留 4 位元是 0111 ＝ 7。兩個負數加出正數，溢位。−9 超出 4 位元的範圍（−8 到 7），本來就放不下。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-3.</strong> 單精度浮點數的指數 bias 是多少？</p>
+<ol>
+<li>128</li>
+<li>255</li>
+<li>1023</li>
+<li>127</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。存的是「實際指數 ＋ 127」，8 位元的 1 到 254 對應指數 −126 到 127。C 的 1023 是雙精度（11 位元指數）的 bias。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-4.</strong> <span class="arithmatex">\(-0.75\)</span> 的單精度浮點表示（十六進位）是？</p>
+<ol>
+<li>0xBF400000</li>
+<li>0x3F400000</li>
+<li>0xBF000000</li>
+<li>0xC0400000</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。<span class="arithmatex">\(0.75=0.11_2=1.1\times2^{-1}\)</span>：<span class="arithmatex">\(s=1\)</span>、<span class="arithmatex">\(e=-1+127=126=0111\,1110\)</span>、<span class="arithmatex">\(f=1000\cdots\)</span>。合起來 1011 1111 0100 0000 … ＝ 0xBF400000。B 是 +0.75；C 是 −0.5；D 是 −3.0。我用程式轉過這四個數。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> PC-relative 定址最主要的好處是？</p>
+<ol>
+<li>可以跳到記憶體裡任何一個位址</li>
+<li>程式搬到別的位址還能用，而且 offset 很小、指令短</li>
+<li>不需要 ALU 算位址</li>
+<li>讓 cache 變大</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。目標寫成「離現在幾條」，整個程式搬家也不用改；branch 目標通常很近，用少少的位元就夠（115 Q3）。A 反而是它做不到的：offset 位元有限，跳不遠。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 0xC1480000 當成單精度浮點數是多少？當成 32 位元二補數整數又是多少？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ul>
+<li><strong>切位元</strong>：C1480000 ＝ 1100 0001 0100 1000 0000 …，<span class="arithmatex">\(s=1\)</span>、<span class="arithmatex">\(e=1000\,0010=130\)</span>、<span class="arithmatex">\(f=1001\,000\cdots\)</span>。</li>
+<li><strong>浮點數（−12.5）</strong>：<span class="arithmatex">\(-1.1001_2\times2^{130-127}=-1.5625\times8=-12.5\)</span>。</li>
+<li><strong>二補數整數（−1052246016）</strong>：最高位是 1，是負數，值 ＝ <span class="arithmatex">\(\text{0xC1480000}-2^{32}=3242721280-4294967296\)</span>。</li>
+</ul>
+<p>同一串位元，看你怎麼解讀，數值完全不同。我用程式轉過，兩個答案都對。</p>
+</details>
+<p><strong>W-2.</strong> 說明二補數加法什麼時候會溢位，並用 8 位元算 <span class="arithmatex">\(100+50\)</span>、<span class="arithmatex">\((-100)+(-50)\)</span>、<span class="arithmatex">\(100+(-50)\)</span>。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>規則</strong>：兩個同號的數相加、結果的正負號跟它們不一樣，才溢位；一正一負相加，結果的大小不會超過其中一個，不會溢位。（硬體的判斷法：進到最高位的進位 ≠ 最高位出去的進位。）</p>
+<table>
+<thead>
+<tr>
+<th>算式</th>
+<th>位元</th>
+<th>讀成</th>
+<th>溢位？</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(100+50\)</span></td>
+<td>0110 0100 ＋ 0011 0010 ＝ 1001 0110</td>
+<td>−106</td>
+<td>是：兩個正數加出負數</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\((-100)+(-50)\)</span></td>
+<td>1001 1100 ＋ 1100 1110 ＝ (1)0110 1010</td>
+<td>106</td>
+<td>是：兩個負數加出正數</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(100+(-50)\)</span></td>
+<td>0110 0100 ＋ 1100 1110 ＝ (1)0011 0010</td>
+<td>50</td>
+<td>否：最高位出去的 1 直接丟掉</td>
+</tr>
+</tbody>
+</table>
 </details>
 <h3 id="u9-quiz">單元 9 小考</h3>
 <p><strong>9-1.</strong> <span class="arithmatex">\(-5\)</span> 的 8 位元二補數？<span class="arithmatex">\(100+50\)</span> 在 8 位元有號運算會怎樣？</p>
