@@ -4743,7 +4743,62 @@ $$\sum_{v\in V}\deg(v)=2|E|$$
 2. **數度數**：握手定理加上不等式。（100 Q6 的第二種證法）
 3. **反證法**：假設不連通（或兩個都是平面圖），算出矛盾。（104 Q6、100 Q4）
 
+<figure class="fig">
+<svg viewBox="0 0 360 214" role="img" aria-label="最長路徑 v0、v1、…、v4。情況一：v0 的另一個鄰居 w 在路徑上，例如 v3，就會繞成一個環。情況二：w 不在路徑上，w 接在 v0 前面得到更長的路徑。兩種都不行，所以在樹裡 v0 的度數是 1。">
+<text x="8" y="24" text-anchor="start" dominant-baseline="central" class="sm">鄰居 w 在路徑上：繞成環</text>
+<line class="ln" x1="102" y1="58" x2="138" y2="58"/>
+<line class="ln" x1="162" y1="58" x2="198" y2="58"/>
+<line class="ln" x1="222" y1="58" x2="258" y2="58"/>
+<line class="ln" x1="282" y1="58" x2="318" y2="58"/>
+<circle class="fa" cx="90" cy="58" r="12"/>
+<text x="90" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">v0</text>
+<circle class="box" cx="150" cy="58" r="12"/>
+<text x="150" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">v1</text>
+<circle class="box" cx="210" cy="58" r="12"/>
+<text x="210" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">v2</text>
+<circle class="box" cx="270" cy="58" r="12"/>
+<text x="270" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">v3</text>
+<circle class="box" cx="330" cy="58" r="12"/>
+<text x="330" y="58" text-anchor="middle" dominant-baseline="central" class="sm mono">v4</text>
+<path class="dash" d="M96,68 Q180,102 263.1,68.4"/>
+<polygon class="ah" points="264.0,68.0 263.1,68.5 263.0,68.3"/>
+<text x="180" y="92" text-anchor="middle" dominant-baseline="central" class="sm tt">多一條邊 → 環</text>
+<text x="8" y="124" text-anchor="start" dominant-baseline="central" class="sm">鄰居 w 不在路徑上：路徑更長</text>
+<line class="ln" x1="102" y1="158" x2="138" y2="158"/>
+<line class="ln" x1="162" y1="158" x2="198" y2="158"/>
+<line class="ln" x1="222" y1="158" x2="258" y2="158"/>
+<line class="ln" x1="282" y1="158" x2="318" y2="158"/>
+<circle class="fa" cx="90" cy="158" r="12"/>
+<text x="90" y="158" text-anchor="middle" dominant-baseline="central" class="sm mono">v0</text>
+<circle class="box" cx="150" cy="158" r="12"/>
+<text x="150" y="158" text-anchor="middle" dominant-baseline="central" class="sm mono">v1</text>
+<circle class="box" cx="210" cy="158" r="12"/>
+<text x="210" y="158" text-anchor="middle" dominant-baseline="central" class="sm mono">v2</text>
+<circle class="box" cx="270" cy="158" r="12"/>
+<text x="270" y="158" text-anchor="middle" dominant-baseline="central" class="sm mono">v3</text>
+<circle class="box" cx="330" cy="158" r="12"/>
+<text x="330" y="158" text-anchor="middle" dominant-baseline="central" class="sm mono">v4</text>
+<circle class="fc" cx="30" cy="158" r="12"/>
+<text x="30" y="158" text-anchor="middle" dominant-baseline="central" class="sm mono">w</text>
+<line class="dash" x1="42" y1="158" x2="78" y2="158"/>
+<text x="30" y="188" text-anchor="middle" dominant-baseline="central" class="sm tc">更長</text>
+</svg>
+<figcaption>套路 1 的兩種情況：最長路徑的端點如果還有別的鄰居，不是繞成環，就是路徑還能再變長</figcaption>
+</figure>
+
 鴿籠也常出現：度數的可能值比點數少，就有兩點度數一樣（101 Q3）。
+
+!!! key "圖論題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | 邊數、度數 | 握手定理 $\sum\deg=2|E|$；奇數度的點有偶數個 |
+    | 樹 | $n$ 個點 $n-1$ 條邊；連通、沒有環、$n-1$ 條邊，任兩個成立就推得出第三個 |
+    | 證明有某種路徑或葉子 | 取最長的路徑，看端點的鄰居 |
+    | 二分圖 | 塗兩種顏色（BFS 分層）；⇔ 沒有奇數環 |
+    | 平面圖 | $v-e+f=2$；簡單平面圖 $e\le3v-6$，沒有三角形時 $e\le2v-4$ |
+    | 一筆畫 | 奇數度的點 0 個 → Euler 迴路；2 個 → Euler 路徑（[10.4](#u10-euler)） |
+
+    名詞對照：degree（度數）、handshaking lemma（握手定理）、bipartite（二分）、planar（平面）、Euler circuit（Euler 迴路）、Hamiltonian cycle（Hamilton 環）。
 
 #### 換你試試
 
@@ -4867,6 +4922,148 @@ $$2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6$$
 
     - **平面 → 球面**：把平面上的畫法投影到球面上，邊還是不交叉。
     - **球面 → 平面**：圖在球面上只佔有限的線條，一定找得到一點不在任何點或邊上。把球轉一下，讓這一點當 N，再投影到平面上。∎
+
+### 10.4 一筆畫：Euler 路徑與 Hamilton 環 {#u10-euler}
+
+**Euler 迴路（Euler circuit）**：從一點出發，**每條邊剛好走一次**，最後回到起點。**Euler 路徑**：每條邊剛好走一次，但不用回到起點。
+
+**判斷方法**（圖要連通）：
+
+| 奇數度的點有幾個 | 結果 |
+|---|---|
+| 0 個 | 有 Euler 迴路，從哪一點出發都可以 |
+| 2 個 | 沒有迴路，但有 Euler 路徑：從一個奇數度的點出發，到另一個結束 |
+| 4 個以上 | 一筆畫不完 |
+
+**為什麼**：路上每經過一個點（不是起點、終點），都是「進來一條、出去一條」，一次用掉 2 條邊，所以中間的點度數一定是偶數。只有起點和終點可以是奇數。
+
+<figure class="fig">
+<svg viewBox="0 0 360 214" role="img" aria-label="「房子」圖：A 左下、B 右下、C 右上、D 左上、E 是屋頂。邊有 AB、BC、CD、DA、AC、BD、DE、CE。度數 A 3、B 3、C 4、D 4、E 2，只有 A、B 是奇數，所以可以從 A 一筆畫到 B，例如 A B C A D C E D B。">
+<line class="ln" x1="122" y1="180" x2="218" y2="180"/>
+<line class="ln" x1="230" y1="168" x2="230" y2="92"/>
+<line class="ln" x1="218" y1="80" x2="122" y2="80"/>
+<line class="ln" x1="110" y1="92" x2="110" y2="168"/>
+<line class="ln" x1="119.219" y1="172.318" x2="220.781" y2="87.6822"/>
+<line class="ln" x1="220.781" y1="172.318" x2="119.219" y2="87.6822"/>
+<line class="ln" x1="118.773" y1="71.8122" x2="161.227" y2="32.1878"/>
+<line class="ln" x1="221.227" y1="71.8122" x2="178.773" y2="32.1878"/>
+<circle class="fa" cx="110" cy="180" r="12"/>
+<text x="110" y="180" text-anchor="middle" dominant-baseline="central" class="sm mono">A</text>
+<text x="86" y="180" text-anchor="middle" dominant-baseline="central" class="sm mono ta">3</text>
+<circle class="fa" cx="230" cy="180" r="12"/>
+<text x="230" y="180" text-anchor="middle" dominant-baseline="central" class="sm mono">B</text>
+<text x="254" y="180" text-anchor="middle" dominant-baseline="central" class="sm mono ta">3</text>
+<circle class="box" cx="230" cy="80" r="12"/>
+<text x="230" y="80" text-anchor="middle" dominant-baseline="central" class="sm mono">C</text>
+<text x="254" y="80" text-anchor="middle" dominant-baseline="central" class="sm mono tb">4</text>
+<circle class="box" cx="110" cy="80" r="12"/>
+<text x="110" y="80" text-anchor="middle" dominant-baseline="central" class="sm mono">D</text>
+<text x="86" y="80" text-anchor="middle" dominant-baseline="central" class="sm mono tb">4</text>
+<circle class="box" cx="170" cy="24" r="12"/>
+<text x="170" y="24" text-anchor="middle" dominant-baseline="central" class="sm mono">E</text>
+<text x="200" y="24" text-anchor="middle" dominant-baseline="central" class="sm mono tb">2</text>
+<text x="300" y="120" text-anchor="middle" dominant-baseline="central" class="sm ta">奇數度：A、B</text>
+<text x="300" y="140" text-anchor="middle" dominant-baseline="central" class="sm">→ 從 A 畫到 B</text>
+</svg>
+<figcaption>點旁邊的數字是度數：只有 A、B 是奇數，從 A 出發就能一筆畫到 B</figcaption>
+</figure>
+
+**Königsberg 七橋**：四塊陸地、七座橋，度數是 5、3、3、3，四個都是奇數，所以不可能每座橋剛好走一次。Euler 在 1736 年證明了這件事，這是圖論的開始。
+
+**Hamilton 環（Hamiltonian cycle）**：**每個點剛好經過一次**再回到起點。看起來跟 Euler 很像，但沒有簡單的判斷方法（判斷有沒有是 NP-complete 問題）。常用的充分條件：
+
+- **Dirac 定理**：$n\ge3$ 個點的簡單圖，每個點的度數都 $\ge\frac n2$，就有 Hamilton 環。
+- 這只是充分條件：環 $C_n$ 每個點度數只有 2，也有 Hamilton 環。
+
+### 10.5 觀念小考 {#u10-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 下面哪一個圖有 Euler 迴路？
+
+1. $K_4$
+2. $K_5$
+3. $K_{3,3}$
+4. 路徑 $P_4$
+
+??? quiz "看解析"
+    **B**。$K_5$ 每個點度數 4，全部是偶數，而且連通。$K_4$、$K_{3,3}$ 每個點度數 3（奇數）；$P_4$ 兩端度數 1，只有 Euler 路徑，沒有迴路。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-2.** Königsberg 七橋問題：四塊陸地的度數是 5、3、3、3。為什麼不可能每座橋剛好走一次？
+
+1. 橋太多了
+2. 這個圖不連通
+3. 有一塊陸地的度數是 5
+4. 奇數度的點有 4 個，一筆畫最多只能有 2 個
+
+??? quiz "看解析"
+    **D**。只有起點和終點的度數可以是奇數，所以奇數度的點最多 2 個。度數 5 本身不是問題，問題是奇數度的點太多。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** 完全二分圖 $K_{m,n}$ 什麼時候有 Euler 迴路？
+
+1. $m$、$n$ 都是偶數
+2. $m=n$
+3. $m$、$n$ 都是奇數
+4. $m+n$ 是偶數
+
+??? quiz "看解析"
+    **A**。$m$ 那一邊的點度數是 $n$，$n$ 那一邊的點度數是 $m$，兩個都要是偶數。C 的例子 $K_{3,3}$ 每個點度數 3，不行。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-4.** Euler 迴路和 Hamilton 環差在哪？
+
+1. 兩個是同一件事
+2. Hamilton 要經過每一條邊
+3. Euler 是每條邊剛好一次；Hamilton 是每個點剛好一次，而且沒有簡單的判斷條件
+4. Hamilton 環只會出現在樹裡
+
+??? quiz "看解析"
+    **C**。Euler 看度數就能判斷；Hamilton 只有充分條件（例如 Dirac 定理）。D 剛好相反：樹沒有環，當然沒有 Hamilton 環。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 取一條最長的路徑 $v_0,v_1,\dots,v_k$。為什麼 $v_0$ 的鄰居一定都在這條路徑上？
+
+1. 因為這個圖是樹
+2. 如果有鄰居 $w$ 不在路徑上，$w,v_0,\dots,v_k$ 更長，跟「最長」矛盾
+3. 因為 $v_0$ 的度數一定是 1
+4. 因為最長的路徑一定是環
+
+??? quiz "看解析"
+    **B**。這一步不需要圖是樹，任何圖都成立（101 Q4 就是用這個）。是樹的時候，再加上「鄰居在路徑上就會繞成環」，才推得出 $v_0$ 的度數是 1。
+
+</div>
+
+**W-1.** 圖的邊是 AB、AC、BC、BD、CD、CE、DE、DF、EF。能不能一筆畫（每條邊剛好一次）？能的話從哪裡開始、寫出一種畫法。
+
+??? quiz "看參考答案"
+    - **度數**：A 2、B 3、C 4、D 4、E 3、F 2。
+    - **奇數度的點（B、E）**：剛好 2 個，圖又連通，所以有 Euler 路徑，沒有 Euler 迴路。
+    - **畫法**：從 B 出發、到 E 結束，例如 B → A → C → B → D → C → E → D → F → E，9 條邊各一次。
+
+    我用程式檢查過這條路線，9 條邊剛好都用到一次。
+
+**W-2.** 6 個點、每個點度數至少 3 的簡單圖，一定有 Hamilton 環嗎？用 $K_{3,3}$ 驗證，並找出一個 Hamilton 環。
+
+??? quiz "看參考答案"
+    **一定有**：$n=6$，每個點度數 $\ge3=\frac n2$，符合 Dirac 定理。
+
+    $K_{3,3}$ 的兩群是 $\{a_1,a_2,a_3\}$、$\{b_1,b_2,b_3\}$，每個點度數 3。Hamilton 環：$a_1\to b_1\to a_2\to b_2\to a_3\to b_3\to a_1$，6 個點各一次、相鄰的都在不同群（都有邊）。注意 $K_{3,3}$ 每個點度數 3 是奇數，**沒有** Euler 迴路，兩件事沒有關係。
 
 ### 單元 10 小考 {#u10-quiz}
 
