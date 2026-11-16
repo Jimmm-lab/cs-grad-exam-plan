@@ -5201,12 +5201,133 @@ $$2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6$$
 - $(\mathbb Z_n,+)$ 裡，a 是生成元 ⇔ $\gcd(a,n)=1$，所以有 $\varphi(n)$ 個生成元。**任何 n 個元素的循環群都有 $\varphi(n)$ 個生成元。**
 - $\mathbb Z_p^*$（p 是質數）一定是循環群，它的生成元叫**原根**（primitive root），要一個一個試：例如 $\mathbb Z_5^*$ 裡 2 的次方是 2、4、3、1，全部都有，所以 2 是生成元。
 
+<figure class="fig">
+<svg viewBox="0 0 360 214" role="img" aria-label="兩個 12 小時的時鐘。左邊每次加 5：0、5、10、3、8、1、6、11、4、9、2、7，走遍 12 格才回到 0，所以 5 是生成元。右邊每次加 4：0、4、8，三步就回到 0，只走到 3 格，order 是 3。">
+<line class="arw-a" x1="94.847" y1="42.6252" x2="120.6" y2="138.7"/>
+<polygon class="ah-a" points="122.2,144.5 117.5,139.6 123.7,137.9"/>
+<line class="arw-a" x1="117.222" y1="147.38" x2="46.9" y2="77.0"/>
+<polygon class="ah-a" points="42.6,72.8 49.1,74.8 44.6,79.3"/>
+<line class="arw-a" x1="45.4675" y1="67.847" x2="141.6" y2="93.6"/>
+<polygon class="ah-a" points="147.4,95.2 140.8,96.7 142.4,90.5"/>
+<line class="arw-a" x1="147.375" y1="100.847" x2="51.3" y2="126.6"/>
+<polygon class="ah-a" points="45.5,128.2 50.4,123.5 52.1,129.7"/>
+<line class="arw-a" x1="42.6205" y1="123.222" x2="113.0" y2="52.9"/>
+<polygon class="ah-a" points="117.2,48.6 115.2,55.1 110.7,50.6"/>
+<line class="arw-a" x1="122.153" y1="51.4675" x2="96.4" y2="147.6"/>
+<polygon class="ah-a" points="94.8,153.4 93.3,146.8 99.5,148.4"/>
+<line class="arw-a" x1="89.153" y1="153.375" x2="63.4" y2="57.3"/>
+<polygon class="ah-a" points="61.8,51.5 66.5,56.4 60.3,58.1"/>
+<line class="arw-a" x1="66.7782" y1="48.6205" x2="137.1" y2="119.0"/>
+<polygon class="ah-a" points="141.4,123.2 134.9,121.2 139.4,116.7"/>
+<line class="arw-a" x1="138.532" y1="128.153" x2="42.4" y2="102.4"/>
+<polygon class="ah-a" points="36.6,100.8 43.2,99.3 41.6,105.5"/>
+<line class="arw-a" x1="36.6252" y1="95.153" x2="132.7" y2="69.4"/>
+<polygon class="ah-a" points="138.5,67.8 133.6,72.5 131.9,66.3"/>
+<line class="arw-a" x1="141.38" y1="72.7782" x2="71.0" y2="143.1"/>
+<polygon class="ah-a" points="66.8,147.4 68.8,140.9 73.3,145.4"/>
+<line class="arw-a" x1="61.847" y1="144.532" x2="87.6" y2="48.4"/>
+<polygon class="ah-a" points="89.2,42.6 90.7,49.2 84.5,47.6"/>
+<circle class="box" cx="92" cy="32" r="10"/>
+<text x="92" y="32" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<circle class="box" cx="125" cy="40.8423" r="10"/>
+<text x="125" y="40.8423" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<circle class="box" cx="149.158" cy="65" r="10"/>
+<text x="149.158" y="65" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<circle class="box" cx="158" cy="98" r="10"/>
+<text x="158" y="98" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<circle class="box" cx="149.158" cy="131" r="10"/>
+<text x="149.158" y="131" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<circle class="box" cx="125" cy="155.158" r="10"/>
+<text x="125" y="155.158" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<circle class="box" cx="92" cy="164" r="10"/>
+<text x="92" y="164" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<circle class="box" cx="59" cy="155.158" r="10"/>
+<text x="59" y="155.158" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<circle class="box" cx="34.8423" cy="131" r="10"/>
+<text x="34.8423" y="131" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<circle class="box" cx="26" cy="98" r="10"/>
+<text x="26" y="98" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<circle class="box" cx="34.8423" cy="65" r="10"/>
+<text x="34.8423" y="65" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<circle class="box" cx="59" cy="40.8423" r="10"/>
+<text x="59" y="40.8423" text-anchor="middle" dominant-baseline="central" class="sm mono">11</text>
+<text x="92" y="194" text-anchor="middle" dominant-baseline="central" class="sm">每次加 5：走遍 12 格</text>
+<line class="arw" x1="273.5" y1="41.5263" x2="316.7" y2="116.3"/>
+<polygon class="ah" points="319.7,121.5 313.9,117.9 319.4,114.7"/>
+<line class="arw" x1="314.158" y1="131" x2="227.8" y2="131.0"/>
+<polygon class="ah" points="221.8,131.0 227.8,127.8 227.8,134.2"/>
+<line class="arw" x1="216.342" y1="121.474" x2="259.5" y2="46.7"/>
+<polygon class="ah" points="262.5,41.5 262.3,48.3 256.7,45.1"/>
+<circle class="fb" cx="268" cy="32" r="10"/>
+<text x="268" y="32" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<circle class="box" cx="301" cy="40.8423" r="10"/>
+<text x="301" y="40.8423" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<circle class="box" cx="325.158" cy="65" r="10"/>
+<text x="325.158" y="65" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<circle class="box" cx="334" cy="98" r="10"/>
+<text x="334" y="98" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<circle class="fb" cx="325.158" cy="131" r="10"/>
+<text x="325.158" y="131" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<circle class="box" cx="301" cy="155.158" r="10"/>
+<text x="301" y="155.158" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<circle class="box" cx="268" cy="164" r="10"/>
+<text x="268" y="164" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<circle class="box" cx="235" cy="155.158" r="10"/>
+<text x="235" y="155.158" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<circle class="fb" cx="210.842" cy="131" r="10"/>
+<text x="210.842" y="131" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<circle class="box" cx="202" cy="98" r="10"/>
+<text x="202" y="98" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<circle class="box" cx="210.842" cy="65" r="10"/>
+<text x="210.842" y="65" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<circle class="box" cx="235" cy="40.8423" r="10"/>
+<text x="235" y="40.8423" text-anchor="middle" dominant-baseline="central" class="sm mono">11</text>
+<text x="268" y="194" text-anchor="middle" dominant-baseline="central" class="sm">每次加 4：只走 3 格</text>
+</svg>
+<figcaption>(ℤ₁₂, ＋)：5 跟 12 互質，一步一步走會經過每一格；4 跟 12 的 gcd 是 4，只走得到 12 ÷ 4 ＝ 3 格</figcaption>
+</figure>
+
 #### Lagrange 定理與 Euler 定理
 
 - **子群**（subgroup）H：G 的子集合，自己也是一個群。
 - **陪集**（coset）：$aH=\{a*h: h\in H\}$（左陪集）。例：$G=\mathbb Z_8$、$H=\{0,4\}$，陪集是 $\{0,4\}$、$\{1,5\}$、$\{2,6\}$、$\{3,7\}$。
 - 陪集把 G **切成大小一樣的幾塊**（每塊都有 $|H|$ 個），所以 **$|H|$ 整除 $|G|$**，這就是 **Lagrange 定理**。元素 a 能生成一個大小 ＝ order(a) 的子群，所以 **order(a) 整除 $|G|$**。
 - 套到 $\mathbb Z_n^*$（大小 $\varphi(n)$）：**Euler 定理** $\gcd(a,n)=1\Rightarrow a^{\varphi(n)}\equiv1\pmod n$。n 是質數時就是 Fermat 小定理（[5.3](#u5-3)）。
+
+<figure class="fig">
+<svg viewBox="0 0 360 214" role="img" aria-label="Z8 的 8 個元素排成一圈，子群 H = {0, 4}。陪集 {0,4}、{1,5}、{2,6}、{3,7} 用四種顏色表示，每一組都是 2 個，把 8 個元素平均切成 4 組。">
+<line class="dash" x1="120" y1="45" x2="120" y2="151"/>
+<line class="dash" x1="157.477" y1="60.5233" x2="82.5233" y2="135.477"/>
+<line class="dash" x1="173" y1="98" x2="67" y2="98"/>
+<line class="dash" x1="157.477" y1="135.477" x2="82.5233" y2="60.5233"/>
+<circle class="fa" cx="120" cy="30" r="14"/>
+<text x="120" y="30" text-anchor="middle" dominant-baseline="central" class="mono">0</text>
+<circle class="fb" cx="168.083" cy="49.9167" r="14"/>
+<text x="168.083" y="49.9167" text-anchor="middle" dominant-baseline="central" class="mono">1</text>
+<circle class="fc" cx="188" cy="98" r="14"/>
+<text x="188" y="98" text-anchor="middle" dominant-baseline="central" class="mono">2</text>
+<circle class="fk" cx="168.083" cy="146.083" r="14"/>
+<text x="168.083" y="146.083" text-anchor="middle" dominant-baseline="central" class="mono">3</text>
+<circle class="fa" cx="120" cy="166" r="14"/>
+<text x="120" y="166" text-anchor="middle" dominant-baseline="central" class="mono">4</text>
+<circle class="fb" cx="71.9167" cy="146.083" r="14"/>
+<text x="71.9167" y="146.083" text-anchor="middle" dominant-baseline="central" class="mono">5</text>
+<circle class="fc" cx="52" cy="98" r="14"/>
+<text x="52" y="98" text-anchor="middle" dominant-baseline="central" class="mono">6</text>
+<circle class="fk" cx="71.9167" cy="49.9167" r="14"/>
+<text x="71.9167" y="49.9167" text-anchor="middle" dominant-baseline="central" class="mono">7</text>
+<rect class="fa" x="222" y="36" width="16" height="16" rx="3"/>
+<text x="246" y="44" text-anchor="start" dominant-baseline="central" class="sm mono">{0, 4} ＝ H</text>
+<rect class="fb" x="222" y="66" width="16" height="16" rx="3"/>
+<text x="246" y="74" text-anchor="start" dominant-baseline="central" class="sm mono">{1, 5} ＝ 1＋H</text>
+<rect class="fc" x="222" y="96" width="16" height="16" rx="3"/>
+<text x="246" y="104" text-anchor="start" dominant-baseline="central" class="sm mono">{2, 6} ＝ 2＋H</text>
+<rect class="fk" x="222" y="126" width="16" height="16" rx="3"/>
+<text x="246" y="134" text-anchor="start" dominant-baseline="central" class="sm mono">{3, 7} ＝ 3＋H</text>
+<text x="180" y="204" text-anchor="middle" dominant-baseline="central" class="sm">每組都是 |H| ＝ 2 個：4 × 2 ＝ 8，所以 |H| 整除 |G|</text>
+</svg>
+<figcaption>陪集把 ℤ₈ 平均切成 4 塊，每塊都跟 H 一樣大：這就是 Lagrange 定理的證明</figcaption>
+</figure>
 
 **算很大的次方 $a^e\bmod n$**：
 
@@ -5224,6 +5345,19 @@ $$2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6$$
 - **環**（ring）$(R,+,\cdot)$：$(R,+)$ 是交換群，乘法有結合律，而且有分配律。例：整數 $\mathbb Z$、$\mathbb Z_n$。
 - **整環**（integral domain）：有乘法單位 1 的交換環，而且**沒有零因子**（$ab=0$ 就一定 $a=0$ 或 $b=0$）。$\mathbb Z_6$ 不是：$2\cdot3=0$。
 - **體**（field）：每個不是 0 的元素都有乘法反元素。例：有理數 $\mathbb Q$、$\mathbb Z_p$（p 是質數）。$\mathbb Z$ 是整環但不是體（2 沒有整數的倒數）。
+
+!!! key "群、環、體題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | 是不是群 | 檢查封閉、結合律、單位元素、反元素；交換群再加交換律 |
+    | $\mathbb Z_n^*$ 有幾個元素 | $\varphi(n)=n\prod_{p\mid n}(1-\frac1p)$ |
+    | $(\mathbb Z_n,+)$ 裡 a 的 order、是不是生成元 | order ＝ $\frac{n}{\gcd(a,n)}$；生成元 ⇔ $\gcd(a,n)=1$，共 $\varphi(n)$ 個 |
+    | $\mathbb Z_p^*$ 的生成元 | 一個一個算次方，第一次回到 1 的次方等於 $p-1$ 才是 |
+    | 子群可能多大 | Lagrange：要整除群的大小 |
+    | 很大的次方 mod n | 互質時指數先 mod $\varphi(n)$，再重複平方 |
+    | 是不是體 | 每個非 0 元素都有乘法反元素；$\mathbb Z_n$ 是體 ⇔ n 是質數 |
+
+    名詞對照：group（群）、abelian（交換）、order（階）、generator（生成元）、cyclic group（循環群）、coset（陪集）、homomorphism／isomorphism（同態／同構）、ring（環）、field（體）。
 
 #### 換你試試
 
@@ -5327,6 +5461,96 @@ $$2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6$$
     - **D 是有限集合**，一對一的 $f:D\to D$ 一定是映成。所以存在 x 使得 $ax=1$，x 就是 a 的反元素。
 
     每個不是 0 的元素都有反元素，D 是體。∎ 推論：$\mathbb Z_p$（p 是質數）沒有零因子，又是有限的，所以是體。
+
+### 11.2 觀念小考 {#u11-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** 在 $(\mathbb Z_{12},+)$ 裡，8 的 order 是多少？
+
+1. 8
+2. 4
+3. 3
+4. 12
+
+??? quiz "看解析"
+    **C**。$\frac{12}{\gcd(8,12)}=\frac{12}4=3$：8、16≡4、24≡0，三步回到 0。B 是 gcd 本身。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** $\mathbb Z_{15}^*$ 有幾個元素？
+
+1. 8
+2. 14
+3. 15
+4. 10
+
+??? quiz "看解析"
+    **A**。$\varphi(15)=\varphi(3)\varphi(5)=2\times4=8$：1、2、4、7、8、11、13、14。B 是把 1 到 14 全部算進去，但 3、5、6、9、10、12 跟 15 不互質，沒有乘法反元素。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** 一個有 12 個元素的群，下面哪一個**不可能**是某個子群的大小？
+
+1. 4
+2. 6
+3. 3
+4. 5
+
+??? quiz "看解析"
+    **D**。Lagrange 定理：子群的大小要整除 12，可能的只有 1、2、3、4、6、12。5 不整除 12。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-4.** $7^{100}\bmod15$ 是多少？
+
+1. 7
+2. 1
+3. 4
+4. 13
+
+??? quiz "看解析"
+    **B**。$\gcd(7,15)=1$、$\varphi(15)=8$，$100=8\times12+4$，所以 $7^{100}\equiv7^4$。$7^2=49\equiv4$，$7^4\equiv16\equiv1$。其實 7 的 order 是 4（7、4、13、1），整除 8，跟 Lagrange 一致。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-5.** 下面哪一個是體（field）？
+
+1. $\mathbb Z_6$
+2. 整數 $\mathbb Z$
+3. $\mathbb Z_7$
+4. $\mathbb Z_8$
+
+??? quiz "看解析"
+    **C**。7 是質數，1 到 6 都跟 7 互質，每個都有乘法反元素。$\mathbb Z_6$、$\mathbb Z_8$ 有零因子（$2\cdot3\equiv0$、$2\cdot4\equiv0$）；$\mathbb Z$ 裡 2 沒有整數的倒數。
+
+</div>
+
+**W-1.** 寫出 $\mathbb Z_9^*$ 的所有元素和大小。2 是不是它的生成元？
+
+??? quiz "看參考答案"
+    - **元素（6 個）**：1～8 裡跟 9 互質的：1、2、4、5、7、8；$\varphi(9)=9-3=6$。
+    - **2 的次方**：$2,4,8,16\equiv7,14\equiv5,10\equiv1$，第 6 次才回到 1。
+    - **是生成元**：2 的 order 是 6，等於群的大小，次方跑遍了全部 6 個元素，所以 $\mathbb Z_9^*$ 是循環群，2 是生成元。
+
+**W-2.** 用 Euler 定理算 $3^{2027}\bmod20$。
+
+??? quiz "看參考答案"
+    - **可以用 Euler 定理**：$\gcd(3,20)=1$，$\varphi(20)=20\cdot\frac12\cdot\frac45=8$，所以 $3^8\equiv1$。
+    - **指數 mod 8**：$2027=8\times253+3$，所以 $3^{2027}\equiv3^3=27$。
+    - **答案（7）**：$27\bmod20=7$。
+
+    我用程式直接算 $3^{2027}\bmod20$，也是 7。
 
 ### 單元 11 小考 {#u11-quiz}
 
