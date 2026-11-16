@@ -9799,6 +9799,403 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>答案</strong>：連了 <strong>4</strong> 次（進位的次數）。</li>
 </ul>
 </details>
+<h4 id="clrs_1">題型三：紅黑樹插入（CLRS）</h4>
+<p><strong>做法</strong>：新節點塗紅；父親也是紅時看叔叔：叔叔紅（case 1）→ 父親、叔叔改黑，祖父改紅，往上看；叔叔黑 → 內側先轉成外側（case 2），再對祖父旋轉、交換顏色（case 3）。最後根塗黑（<a href="#u7-1">7.1</a>）。</p>
+<p><strong>P-11.</strong> 從空的紅黑樹開始，照 CLRS 的方法依序插入 10, 20, 30, 15, 25, 5。寫出每一次插入是哪一種情況，畫出最後的樹（標出顏色）。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>插入 10</strong>：樹是空的，10 當根，塗黑。</li>
+<li><strong>插入 20</strong>：接在 10 的右邊，塗紅；父親 10 是黑色，不用調整。</li>
+<li><strong>插入 30</strong>：接在 20 的右邊，塗紅；父親 20 也是紅色，要調整。叔叔（NIL）是黑色，30 在外側（case 3）：20 改黑、10 改紅，對 10 左旋。</li>
+<li><strong>插入 15</strong>：接在 10 的右邊，塗紅；父親 10 也是紅色，要調整。叔叔 30 是紅色（case 1）：10、30 改黑，祖父 20 改紅，接著看 20。根 20 變成紅色了，改回黑色。</li>
+<li><strong>插入 25</strong>：接在 30 的左邊，塗紅；父親 30 是黑色，不用調整。</li>
+<li><strong>插入 5</strong>：接在 10 的左邊，塗紅；父親 10 是黑色，不用調整。</li>
+</ul>
+<p>最後的樹（B 黑、R 紅）：</p>
+<pre class="highlight"><code class="language-text">20(B)
++-- L 10(B)
+|   +-- L 5(R)
+|   `-- R 15(R)
+`-- R 30(B)
+    `-- L 25(R)</code></pre>
+<p><strong>答案</strong>：共旋轉 <strong>1</strong> 次；根的 black-height 是 2（不算 NIL），每條路徑上的黑色節點一樣多、沒有連續的紅色。我用程式照 CLRS 的 RB-INSERT 跑過，也檢查了五個性質。</p>
+</details>
+<p><strong>P-12.</strong> 從空的紅黑樹開始，照 CLRS 的方法依序插入 41, 38, 31, 12, 19, 8。寫出每一次插入是哪一種情況，畫出最後的樹（標出顏色）。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>插入 41</strong>：樹是空的，41 當根，塗黑。</li>
+<li><strong>插入 38</strong>：接在 41 的左邊，塗紅；父親 41 是黑色，不用調整。</li>
+<li><strong>插入 31</strong>：接在 38 的左邊，塗紅；父親 38 也是紅色，要調整。叔叔（NIL）是黑色，31 在外側（case 3）：38 改黑、41 改紅，對 41 右旋。</li>
+<li><strong>插入 12</strong>：接在 31 的左邊，塗紅；父親 31 也是紅色，要調整。叔叔 41 是紅色（case 1）：31、41 改黑，祖父 38 改紅，接著看 38。根 38 變成紅色了，改回黑色。</li>
+<li><strong>插入 19</strong>：接在 12 的右邊，塗紅；父親 12 也是紅色，要調整。叔叔（NIL）是黑色，19 在內側（case 2）：先對 12 左旋，變成 case 3。case 3：19 改黑、31 改紅，對 31 右旋。</li>
+<li><strong>插入 8</strong>：接在 12 的左邊，塗紅；父親 12 也是紅色，要調整。叔叔 31 是紅色（case 1）：12、31 改黑，祖父 19 改紅，接著看 19。</li>
+</ul>
+<p>最後的樹（B 黑、R 紅）：</p>
+<pre class="highlight"><code class="language-text">38(B)
++-- L 19(R)
+|   +-- L 12(B)
+|   |   `-- L 8(R)
+|   `-- R 31(B)
+`-- R 41(B)</code></pre>
+<p><strong>答案</strong>：共旋轉 <strong>3</strong> 次；根的 black-height 是 2（不算 NIL），每條路徑上的黑色節點一樣多、沒有連續的紅色。我用程式照 CLRS 的 RB-INSERT 跑過，也檢查了五個性質。</p>
+</details>
+<p><strong>P-13.</strong> 從空的紅黑樹開始，照 CLRS 的方法依序插入 1, 2, 3, 4, 5, 6, 7, 8。寫出每一次插入是哪一種情況，畫出最後的樹（標出顏色）。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>插入 1</strong>：樹是空的，1 當根，塗黑。</li>
+<li><strong>插入 2</strong>：接在 1 的右邊，塗紅；父親 1 是黑色，不用調整。</li>
+<li><strong>插入 3</strong>：接在 2 的右邊，塗紅；父親 2 也是紅色，要調整。叔叔（NIL）是黑色，3 在外側（case 3）：2 改黑、1 改紅，對 1 左旋。</li>
+<li><strong>插入 4</strong>：接在 3 的右邊，塗紅；父親 3 也是紅色，要調整。叔叔 1 是紅色（case 1）：3、1 改黑，祖父 2 改紅，接著看 2。根 2 變成紅色了，改回黑色。</li>
+<li><strong>插入 5</strong>：接在 4 的右邊，塗紅；父親 4 也是紅色，要調整。叔叔（NIL）是黑色，5 在外側（case 3）：4 改黑、3 改紅，對 3 左旋。</li>
+<li><strong>插入 6</strong>：接在 5 的右邊，塗紅；父親 5 也是紅色，要調整。叔叔 3 是紅色（case 1）：5、3 改黑，祖父 4 改紅，接著看 4。</li>
+<li><strong>插入 7</strong>：接在 6 的右邊，塗紅；父親 6 也是紅色，要調整。叔叔（NIL）是黑色，7 在外側（case 3）：6 改黑、5 改紅，對 5 左旋。</li>
+<li><strong>插入 8</strong>：接在 7 的右邊，塗紅；父親 7 也是紅色，要調整。叔叔 5 是紅色（case 1）：7、5 改黑，祖父 6 改紅，接著看 6。叔叔 1 是黑色，6 在外側（case 3）：4 改黑、2 改紅，對 2 左旋。</li>
+</ul>
+<p>最後的樹（B 黑、R 紅）：</p>
+<pre class="highlight"><code class="language-text">4(B)
++-- L 2(R)
+|   +-- L 1(B)
+|   `-- R 3(B)
+`-- R 6(R)
+    +-- L 5(B)
+    `-- R 7(B)
+        `-- R 8(R)</code></pre>
+<p><strong>答案</strong>：共旋轉 <strong>4</strong> 次；根的 black-height 是 2（不算 NIL），每條路徑上的黑色節點一樣多、沒有連續的紅色。我用程式照 CLRS 的 RB-INSERT 跑過，也檢查了五個性質。</p>
+</details>
+<p><strong>P-14.</strong> 從空的紅黑樹開始，照 CLRS 的方法依序插入 50, 30, 70, 20, 40, 35, 45。寫出每一次插入是哪一種情況，畫出最後的樹（標出顏色）。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>插入 50</strong>：樹是空的，50 當根，塗黑。</li>
+<li><strong>插入 30</strong>：接在 50 的左邊，塗紅；父親 50 是黑色，不用調整。</li>
+<li><strong>插入 70</strong>：接在 50 的右邊，塗紅；父親 50 是黑色，不用調整。</li>
+<li><strong>插入 20</strong>：接在 30 的左邊，塗紅；父親 30 也是紅色，要調整。叔叔 70 是紅色（case 1）：30、70 改黑，祖父 50 改紅，接著看 50。根 50 變成紅色了，改回黑色。</li>
+<li><strong>插入 40</strong>：接在 30 的右邊，塗紅；父親 30 是黑色，不用調整。</li>
+<li><strong>插入 35</strong>：接在 40 的左邊，塗紅；父親 40 也是紅色，要調整。叔叔 20 是紅色（case 1）：40、20 改黑，祖父 30 改紅，接著看 30。</li>
+<li><strong>插入 45</strong>：接在 40 的右邊，塗紅；父親 40 是黑色，不用調整。</li>
+</ul>
+<p>最後的樹（B 黑、R 紅）：</p>
+<pre class="highlight"><code class="language-text">50(B)
++-- L 30(R)
+|   +-- L 20(B)
+|   `-- R 40(B)
+|       +-- L 35(R)
+|       `-- R 45(R)
+`-- R 70(B)</code></pre>
+<p><strong>答案</strong>：共旋轉 <strong>0</strong> 次；根的 black-height 是 2（不算 NIL），每條路徑上的黑色節點一樣多、沒有連續的紅色。我用程式照 CLRS 的 RB-INSERT 跑過，也檢查了五個性質。</p>
+</details>
+<p><strong>P-15.</strong> 從空的紅黑樹開始，照 CLRS 的方法依序插入 8, 18, 5, 15, 17, 25, 40, 80。寫出每一次插入是哪一種情況，畫出最後的樹（標出顏色）。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>插入 8</strong>：樹是空的，8 當根，塗黑。</li>
+<li><strong>插入 18</strong>：接在 8 的右邊，塗紅；父親 8 是黑色，不用調整。</li>
+<li><strong>插入 5</strong>：接在 8 的左邊，塗紅；父親 8 是黑色，不用調整。</li>
+<li><strong>插入 15</strong>：接在 18 的左邊，塗紅；父親 18 也是紅色，要調整。叔叔 5 是紅色（case 1）：18、5 改黑，祖父 8 改紅，接著看 8。根 8 變成紅色了，改回黑色。</li>
+<li><strong>插入 17</strong>：接在 15 的右邊，塗紅；父親 15 也是紅色，要調整。叔叔（NIL）是黑色，17 在內側（case 2）：先對 15 左旋，變成 case 3。case 3：17 改黑、18 改紅，對 18 右旋。</li>
+<li><strong>插入 25</strong>：接在 18 的右邊，塗紅；父親 18 也是紅色，要調整。叔叔 15 是紅色（case 1）：18、15 改黑，祖父 17 改紅，接著看 17。</li>
+<li><strong>插入 40</strong>：接在 25 的右邊，塗紅；父親 25 也是紅色，要調整。叔叔（NIL）是黑色，40 在外側（case 3）：25 改黑、18 改紅，對 18 左旋。</li>
+<li><strong>插入 80</strong>：接在 40 的右邊，塗紅；父親 40 也是紅色，要調整。叔叔 18 是紅色（case 1）：40、18 改黑，祖父 25 改紅，接著看 25。叔叔 5 是黑色，25 在外側（case 3）：17 改黑、8 改紅，對 8 左旋。</li>
+</ul>
+<p>最後的樹（B 黑、R 紅）：</p>
+<pre class="highlight"><code class="language-text">17(B)
++-- L 8(R)
+|   +-- L 5(B)
+|   `-- R 15(B)
+`-- R 25(R)
+    +-- L 18(B)
+    `-- R 40(B)
+        `-- R 80(R)</code></pre>
+<p><strong>答案</strong>：共旋轉 <strong>4</strong> 次；根的 black-height 是 2（不算 NIL），每條路徑上的黑色節點一樣多、沒有連續的紅色。我用程式照 CLRS 的 RB-INSERT 跑過，也檢查了五個性質。</p>
+</details>
+<h4 id="fibonacci-heap">題型四：Fibonacci heap</h4>
+<p><strong>做法</strong>：decrease-key：比父親小就剪到 root list；父親沒被 mark 就 mark 它，已經被 mark 就連它也剪（cascading cut）。extract-min 之後 consolidate，度數一樣的樹兩兩合併（<a href="#u7-4">7.4</a>）。</p>
+<div>
+<p><strong>P-16.</strong> 下面的 Fibonacci heap（* 是被 mark 的節點），依序做 decrease-key(46 → 15)、decrease-key(35 → 5)。寫出每一步，畫出結果。</p>
+<pre class="highlight"><code class="language-text">3   &lt;- min
++-- 18
+|   `-- 39
++-- 52
+`-- 38
+    `-- 41
+17
+`-- 30
+24
++-- 26*
+|   `-- 35
+`-- 46</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>46 改成 15</strong>：比父親 24 小 → 把 15 剪到 root list（mark 清掉）；24 是根，停。</li>
+<li><strong>35 改成 5</strong>：比父親 26 小 → 把 5 剪到 root list（mark 清掉）；26 已經被 mark → 也剪到 root list（cascading cut）；24 是根，停。</li>
+</ul>
+<p>結果（root list 照順序；* 是被 mark 的節點）：</p>
+<pre class="highlight"><code class="language-text">3   &lt;- min
++-- 18
+|   `-- 39
++-- 52
+`-- 38
+    `-- 41
+17
+`-- 30
+24
+15
+5
+26</code></pre>
+<p><strong>答案</strong>：root list 有 6 棵，最小值是 <strong>3</strong>，被 mark 的節點 0 個。位能 <span class="arithmatex">\(\Phi=t+2m\)</span> 從 <span class="arithmatex">\(3+2\times1=5\)</span> 變成 <span class="arithmatex">\(6+2\times0=6\)</span>。</p>
+</details>
+<div>
+<p><strong>P-17.</strong> 下面的 Fibonacci heap（* 是被 mark 的節點），依序做 decrease-key(52 → 10)、decrease-key(41 → 2)。寫出每一步，畫出結果。</p>
+<pre class="highlight"><code class="language-text">7   &lt;- min
++-- 24
+|   +-- 26*
+|   |   `-- 35
+|   `-- 46
++-- 17
+|   `-- 30
+`-- 23
+18*
++-- 21*
+|   `-- 52
+`-- 39
+38
+`-- 41</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>52 改成 10</strong>：比父親 21 小 → 把 10 剪到 root list（mark 清掉）；21 已經被 mark → 也剪到 root list（cascading cut）；18 是根，停。</li>
+<li><strong>41 改成 2</strong>：比父親 38 小 → 把 2 剪到 root list（mark 清掉）；38 是根，停。</li>
+</ul>
+<p>結果（root list 照順序；* 是被 mark 的節點）：</p>
+<pre class="highlight"><code class="language-text">7
++-- 24
+|   +-- 26*
+|   |   `-- 35
+|   `-- 46
++-- 17
+|   `-- 30
+`-- 23
+18*
+`-- 39
+38
+10
+21
+2   &lt;- min</code></pre>
+<p><strong>答案</strong>：root list 有 6 棵，最小值是 <strong>2</strong>，被 mark 的節點 2 個。位能 <span class="arithmatex">\(\Phi=t+2m\)</span> 從 <span class="arithmatex">\(3+2\times3=9\)</span> 變成 <span class="arithmatex">\(6+2\times2=10\)</span>。</p>
+</details>
+<div>
+<p><strong>P-18.</strong> 下面的 Fibonacci heap（* 是被 mark 的節點），依序做 decrease-key(31 → 8)、decrease-key(25 → 4)。寫出每一步，畫出結果。</p>
+<pre class="highlight"><code class="language-text">5   &lt;- min
++-- 12*
+|   +-- 20*
+|   |   `-- 31
+|   `-- 25
+`-- 9
+    `-- 15
+40
+`-- 44</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>31 改成 8</strong>：比父親 20 小 → 把 8 剪到 root list（mark 清掉）；20 已經被 mark → 也剪到 root list（cascading cut）；12 已經被 mark → 也剪到 root list（cascading cut）；5 是根，停。</li>
+<li><strong>25 改成 4</strong>：比父親 12 小 → 把 4 剪到 root list（mark 清掉）；12 是根，停。</li>
+</ul>
+<p>結果（root list 照順序；* 是被 mark 的節點）：</p>
+<pre class="highlight"><code class="language-text">5
+`-- 9
+    `-- 15
+40
+`-- 44
+8
+20
+12
+4   &lt;- min</code></pre>
+<p><strong>答案</strong>：root list 有 6 棵，最小值是 <strong>4</strong>，被 mark 的節點 0 個。位能 <span class="arithmatex">\(\Phi=t+2m\)</span> 從 <span class="arithmatex">\(2+2\times2=6\)</span> 變成 <span class="arithmatex">\(6+2\times0=6\)</span>。</p>
+</details>
+<div>
+<p><strong>P-19.</strong> 下面的 Fibonacci heap（* 是被 mark 的節點），依序做 decrease-key(22 → 1)、decrease-key(16 → 13)。寫出每一步，畫出結果。</p>
+<pre class="highlight"><code class="language-text">2   &lt;- min
++-- 10
+|   +-- 14*
+|   |   `-- 18*
+|   |       `-- 22
+|   `-- 16
+`-- 6
+    `-- 8
+30</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>22 改成 1</strong>：比父親 18 小 → 把 1 剪到 root list（mark 清掉）；18 已經被 mark → 也剪到 root list（cascading cut）；14 已經被 mark → 也剪到 root list（cascading cut）；10 還沒被 mark → mark 它，停。</li>
+<li><strong>16 改成 13</strong>：沒有比父親 10 小，heap 順序沒壞，不用剪。</li>
+</ul>
+<p>結果（root list 照順序；* 是被 mark 的節點）：</p>
+<pre class="highlight"><code class="language-text">2
++-- 10*
+|   `-- 13
+`-- 6
+    `-- 8
+30
+1   &lt;- min
+18
+14</code></pre>
+<p><strong>答案</strong>：root list 有 5 棵，最小值是 <strong>1</strong>，被 mark 的節點 1 個。位能 <span class="arithmatex">\(\Phi=t+2m\)</span> 從 <span class="arithmatex">\(2+2\times2=6\)</span> 變成 <span class="arithmatex">\(5+2\times1=7\)</span>。</p>
+</details>
+<p><strong>P-20.</strong> 空的 Fibonacci heap 依序 insert 12 個不同的 key，再做一次 extract-min。做完之後 root list 有幾棵樹？各是幾度（根有幾個孩子）？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>insert 只是丟進 root list</strong>：12 次 insert 後是 12 棵只有一個點的樹，還沒整理。</li>
+<li><strong>extract-min</strong>：拿掉最小的那個（它沒有孩子），剩 11 個點，接著 consolidate：度數一樣的兩棵就連起來（key 小的當根），一直做到每種度數最多一棵。</li>
+<li><strong>像二進位進位</strong>：從單點開始兩兩合併，每棵樹都是 <span class="arithmatex">\(2^d\)</span> 個點的 binomial tree，所以有哪些度數就看 11 的二進位 1011₂。</li>
+<li><strong>答案</strong>：3 棵，度數 0、1、3（大小 1、2、8）。</li>
+</ul>
+</details>
+<p><strong>P-21.</strong> 空的 Fibonacci heap 依序 insert 20 個不同的 key，再做一次 extract-min。做完之後 root list 有幾棵樹？各是幾度（根有幾個孩子）？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>insert 只是丟進 root list</strong>：20 次 insert 後是 20 棵只有一個點的樹，還沒整理。</li>
+<li><strong>extract-min</strong>：拿掉最小的那個（它沒有孩子），剩 19 個點，接著 consolidate：度數一樣的兩棵就連起來（key 小的當根），一直做到每種度數最多一棵。</li>
+<li><strong>像二進位進位</strong>：從單點開始兩兩合併，每棵樹都是 <span class="arithmatex">\(2^d\)</span> 個點的 binomial tree，所以有哪些度數就看 19 的二進位 10011₂。</li>
+<li><strong>答案</strong>：3 棵，度數 0、1、4（大小 1、2、16）。</li>
+</ul>
+</details>
+<h4 id="treap_1">題型五：treap</h4>
+<p><strong>做法</strong>：插入先照 key 放到 BST 的葉子，priority 比父親小就往上轉（左孩子右旋、右孩子左旋）；刪除時跟 priority 比較小的孩子旋轉，轉到只剩一個孩子再拿掉（<a href="#u7-treap">7.5</a>）。</p>
+<p><strong>P-22.</strong> 從空的 treap 開始（priority 是 min-heap：小的在上面），依序插入 M:30、D:50、T:20、B:70、G:10。畫出每一次插入的旋轉和最後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>插入 M:30</strong>：樹是空的，M:30 當根。</li>
+<li><strong>插入 D:50</strong>：BST 的位置是 M:30 的左孩子；50 &gt; 30（父親 M），停。</li>
+<li><strong>插入 T:20</strong>：BST 的位置是 M:30 的右孩子；20 &lt; 30，在 M 左旋；轉到根了。</li>
+<li><strong>插入 B:70</strong>：BST 的位置是 D:50 的左孩子；70 &gt; 50（父親 D），停。</li>
+<li><strong>插入 G:10</strong>：BST 的位置是 D:50 的右孩子；10 &lt; 50，在 D 左旋；10 &lt; 30，在 M 右旋；10 &lt; 20，在 T 右旋；轉到根了。</li>
+</ul>
+<p>最後的 treap：</p>
+<pre class="highlight"><code class="language-text">G:10
++-- L D:50
+|   `-- L B:70
+`-- R T:20
+    `-- L M:30</code></pre>
+<p><strong>驗算</strong>：priority 最小的 G:10 一定是根；同一組 key 和 priority，不管插入順序，treap 的形狀都一樣。我用程式另外照「最小的當根、左右遞迴」建一次，結果相同。</p>
+</details>
+<p><strong>P-23.</strong> 從空的 treap 開始（priority 是 min-heap：小的在上面），依序插入 E:9、B:4、H:6、A:12、C:2、K:7。畫出每一次插入的旋轉和最後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>插入 E:9</strong>：樹是空的，E:9 當根。</li>
+<li><strong>插入 B:4</strong>：BST 的位置是 E:9 的左孩子；4 &lt; 9，在 E 右旋；轉到根了。</li>
+<li><strong>插入 H:6</strong>：BST 的位置是 E:9 的右孩子；6 &lt; 9，在 E 左旋；6 &gt; 4（父親 B），停。</li>
+<li><strong>插入 A:12</strong>：BST 的位置是 B:4 的左孩子；12 &gt; 4（父親 B），停。</li>
+<li><strong>插入 C:2</strong>：BST 的位置是 E:9 的左孩子；2 &lt; 9，在 E 右旋；2 &lt; 6，在 H 右旋；2 &lt; 4，在 B 左旋；轉到根了。</li>
+<li><strong>插入 K:7</strong>：BST 的位置是 H:6 的右孩子；7 &gt; 6（父親 H），停。</li>
+</ul>
+<p>最後的 treap：</p>
+<pre class="highlight"><code class="language-text">C:2
++-- L B:4
+|   `-- L A:12
+`-- R H:6
+    +-- L E:9
+    `-- R K:7</code></pre>
+<p><strong>驗算</strong>：priority 最小的 C:2 一定是根；同一組 key 和 priority，不管插入順序，treap 的形狀都一樣。我用程式另外照「最小的當根、左右遞迴」建一次，結果相同。</p>
+</details>
+<p><strong>P-24.</strong> 從空的 treap 開始（priority 是 min-heap：小的在上面），依序插入 50:12、30:25、70:30、20:40、40:8、60:5。畫出每一次插入的旋轉和最後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>插入 50:12</strong>：樹是空的，50:12 當根。</li>
+<li><strong>插入 30:25</strong>：BST 的位置是 50:12 的左孩子；25 &gt; 12（父親 50），停。</li>
+<li><strong>插入 70:30</strong>：BST 的位置是 50:12 的右孩子；30 &gt; 12（父親 50），停。</li>
+<li><strong>插入 20:40</strong>：BST 的位置是 30:25 的左孩子；40 &gt; 25（父親 30），停。</li>
+<li><strong>插入 40:8</strong>：BST 的位置是 30:25 的右孩子；8 &lt; 25，在 30 左旋；8 &lt; 12，在 50 右旋；轉到根了。</li>
+<li><strong>插入 60:5</strong>：BST 的位置是 70:30 的左孩子；5 &lt; 30，在 70 右旋；5 &lt; 12，在 50 左旋；5 &lt; 8，在 40 左旋；轉到根了。</li>
+</ul>
+<p>最後的 treap：</p>
+<pre class="highlight"><code class="language-text">60:5
++-- L 40:8
+|   +-- L 30:25
+|   |   `-- L 20:40
+|   `-- R 50:12
+`-- R 70:30</code></pre>
+<p><strong>驗算</strong>：priority 最小的 60:5 一定是根；同一組 key 和 priority，不管插入順序，treap 的形狀都一樣。我用程式另外照「最小的當根、左右遞迴」建一次，結果相同。</p>
+</details>
+<p><strong>P-25.</strong> 從空的 treap 開始（priority 是 min-heap：小的在上面），依序插入 G:4、B:7、H:5、A:10、E:23、K:65、C:25、I:73。再刪除 B（有兩個孩子時，跟 priority 比較小的孩子旋轉，轉到下面再拿掉）。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>插入 G:4</strong>：樹是空的，G:4 當根。</li>
+<li><strong>插入 B:7</strong>：BST 的位置是 G:4 的左孩子；7 &gt; 4（父親 G），停。</li>
+<li><strong>插入 H:5</strong>：BST 的位置是 G:4 的右孩子；5 &gt; 4（父親 G），停。</li>
+<li><strong>插入 A:10</strong>：BST 的位置是 B:7 的左孩子；10 &gt; 7（父親 B），停。</li>
+<li><strong>插入 E:23</strong>：BST 的位置是 B:7 的右孩子；23 &gt; 7（父親 B），停。</li>
+<li><strong>插入 K:65</strong>：BST 的位置是 H:5 的右孩子；65 &gt; 5（父親 H），停。</li>
+<li><strong>插入 C:25</strong>：BST 的位置是 E:23 的左孩子；25 &gt; 23（父親 E），停。</li>
+<li><strong>插入 I:73</strong>：BST 的位置是 K:65 的左孩子；73 &gt; 65（父親 K），停。</li>
+</ul>
+<p>插入完的 treap：</p>
+<pre class="highlight"><code class="language-text">G:4
++-- L B:7
+|   +-- L A:10
+|   `-- R E:23
+|       `-- L C:25
+`-- R H:5
+    `-- R K:65
+        `-- L I:73</code></pre>
+<ul>
+<li><strong>刪除 B</strong>：孩子裡 priority 小的是 A:10 → 在 B 右旋，A 上來；只剩一個孩子 E:23，直接接上去。</li>
+</ul>
+<p>刪除後：</p>
+<pre class="highlight"><code class="language-text">G:4
++-- L A:10
+|   `-- R E:23
+|       `-- L C:25
+`-- R H:5
+    `-- R K:65
+        `-- L I:73</code></pre>
+<p><strong>驗算</strong>：刪除後的形狀，跟只用剩下的節點直接建出來的 treap 一樣（我用程式比對過）。</p>
+</details>
+<p><strong>P-26.</strong> 從空的 treap 開始（priority 是 min-heap：小的在上面），依序插入 40:3、20:9、60:7、10:15、30:11、50:20、70:12。再刪除 40（有兩個孩子時，跟 priority 比較小的孩子旋轉，轉到下面再拿掉）。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>插入 40:3</strong>：樹是空的，40:3 當根。</li>
+<li><strong>插入 20:9</strong>：BST 的位置是 40:3 的左孩子；9 &gt; 3（父親 40），停。</li>
+<li><strong>插入 60:7</strong>：BST 的位置是 40:3 的右孩子；7 &gt; 3（父親 40），停。</li>
+<li><strong>插入 10:15</strong>：BST 的位置是 20:9 的左孩子；15 &gt; 9（父親 20），停。</li>
+<li><strong>插入 30:11</strong>：BST 的位置是 20:9 的右孩子；11 &gt; 9（父親 20），停。</li>
+<li><strong>插入 50:20</strong>：BST 的位置是 60:7 的左孩子；20 &gt; 7（父親 60），停。</li>
+<li><strong>插入 70:12</strong>：BST 的位置是 60:7 的右孩子；12 &gt; 7（父親 60），停。</li>
+</ul>
+<p>插入完的 treap：</p>
+<pre class="highlight"><code class="language-text">40:3
++-- L 20:9
+|   +-- L 10:15
+|   `-- R 30:11
+`-- R 60:7
+    +-- L 50:20
+    `-- R 70:12</code></pre>
+<ul>
+<li><strong>刪除 40</strong>：孩子裡 priority 小的是 60:7 → 在 40 左旋，60 上來；孩子裡 priority 小的是 20:9 → 在 40 右旋，20 上來；孩子裡 priority 小的是 30:11 → 在 40 右旋，30 上來；只剩一個孩子 50:20，直接接上去。</li>
+</ul>
+<p>刪除後：</p>
+<pre class="highlight"><code class="language-text">60:7
++-- L 20:9
+|   +-- L 10:15
+|   `-- R 30:11
+|       `-- R 50:20
+`-- R 70:12</code></pre>
+<p><strong>驗算</strong>：刪除後的形狀，跟只用剩下的節點直接建出來的 treap 一樣（我用程式比對過）。</p>
+</details>
 <h3 id="u7-quiz">單元 7 小考</h3>
 <div class="mcq" data-ans="2">
 <p><strong>7-1.</strong> 紅黑樹裡，一條路徑上可以有兩個紅色節點連在一起嗎？</p>
