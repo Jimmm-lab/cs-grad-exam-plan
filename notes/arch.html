@@ -1333,6 +1333,109 @@ window.MathJax = {
 <div class="arithmatex">\[10+\frac{90}{s}=50\ \Rightarrow\ \frac{90}{s}=40\ \Rightarrow\ s=2.25\]</div>
 <p>CPU 的部分要快 <strong>2.25 倍</strong>。檢查上限：I/O 的 10 秒怎麼樣都在，最多快 <span class="arithmatex">\(100\div10=10\)</span> 倍，50 秒（2 倍）在範圍內。</p>
 </details>
+<h3 id="u1-drill">1.6 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="cpu-time">題型一：CPU time 與誰比較快</h4>
+<p><strong>做法</strong>：CPU time ＝ IC × CPI ÷ 時脈；三個數字一起算，比時間（<a href="#u1-1">1.1</a>）。</p>
+<p><strong>P-1.</strong> 同一個程式（<span class="arithmatex">\(2\times10^9\)</span> 條指令），A 的 CPI 1.5、時脈 3 GHz；B 的 CPI 2、時脈 5 GHz。誰比較快？快幾倍？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>A（1 秒）</strong>：<span class="arithmatex">\(\frac{2\times10^9\times1.5}{3\times10^9}\)</span>。</li>
+<li><strong>B（0.8 秒）</strong>：<span class="arithmatex">\(\frac{2\times10^9\times2}{5\times10^9}\)</span>。</li>
+<li><strong>答案</strong>：B 比較快，<span class="arithmatex">\(1\div0.8=\)</span> <strong>1.25 倍</strong>。</li>
+</ul>
+</details>
+<p><strong>P-2.</strong> 指令組合：ALU 40%（CPI 1）、load 30%（CPI 4）、store 10%（CPI 3）、branch 20%（CPI 2）。<span class="arithmatex">\(10^9\)</span> 條指令、時脈 2 GHz，CPU time 是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>平均 CPI（2.3）</strong>：<span class="arithmatex">\(0.4\times1+0.3\times4+0.1\times3+0.2\times2=0.4+1.2+0.3+0.4\)</span>。</li>
+<li><strong>CPU time（1.15 秒）</strong>：<span class="arithmatex">\(\frac{10^9\times2.3}{2\times10^9}\)</span>。</li>
+</ul>
+</details>
+<p><strong>P-3.</strong> 換了編譯器之後，指令數少了 25%，CPI 多了 20%，時脈不變。新的程式快了幾倍？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>時間比（0.9）</strong>：<span class="arithmatex">\(0.75\times1.2=0.9\)</span>，新的時間是原本的 0.9 倍。</li>
+<li><strong>答案</strong>：快了 <span class="arithmatex">\(1\div0.9\approx\)</span> <strong>1.11 倍</strong>。百分比要相乘，不能直接相減（−25%＋20%）。</li>
+</ul>
+</details>
+<p><strong>P-4.</strong> A：4 GHz、CPI 2.0；B：3 GHz、CPI 1.2。同一個程式誰快？快幾倍？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>每條指令的時間</strong>：A 是 <span class="arithmatex">\(2.0\div4\text{ GHz}=0.5\)</span> ns，B 是 <span class="arithmatex">\(1.2\div3\text{ GHz}=0.4\)</span> ns。</li>
+<li><strong>答案</strong>：B 比較快，<span class="arithmatex">\(0.5\div0.4=\)</span> <strong>1.25 倍</strong>，雖然它的時脈比較低。</li>
+</ul>
+</details>
+<p><strong>P-5.</strong> 一個程式現在跑 10 秒。換新的處理器後 CPI 會變成原本的 1.2 倍，想讓它只跑 6 秒，時脈要變成原本的幾倍？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>列式</strong>：<span class="arithmatex">\(\frac{\text{IC}\times1.2\,\text{CPI}}{f_{\text{新}}}=6\)</span>、<span class="arithmatex">\(\frac{\text{IC}\times\text{CPI}}{f}=10\)</span>。</li>
+<li><strong>相除</strong>：<span class="arithmatex">\(\frac{1.2\,f}{f_{\text{新}}}=\frac{6}{10}\)</span>，所以 <span class="arithmatex">\(f_{\text{新}}=\frac{1.2\times10}{6}f=2f\)</span>。</li>
+<li><strong>答案</strong>：時脈要變成 <strong>2 倍</strong>。</li>
+</ul>
+</details>
+<p><strong>P-6.</strong> <span class="arithmatex">\(3\times10^9\)</span> 條指令、CPI 1.5、時脈 2 GHz。CPU time 和 MIPS 值各是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>CPU time（2.25 秒）</strong>：<span class="arithmatex">\(\frac{3\times10^9\times1.5}{2\times10^9}\)</span>。</li>
+<li><strong>MIPS（約 1333）</strong>：<span class="arithmatex">\(\frac{\text{時脈}}{\text{CPI}\times10^6}=\frac{2\times10^9}{1.5\times10^6}\)</span>。也可以用 <span class="arithmatex">\(\frac{\text{IC}}{\text{時間}\times10^6}=\frac{3\times10^9}{2.25\times10^6}\)</span>，一樣。</li>
+</ul>
+</details>
+<h4 id="amdahl_1">題型二：Amdahl 定律</h4>
+<p><strong>做法</strong>：新時間 ＝ <span class="arithmatex">\((1-f)+f/s\)</span>；反推 <span class="arithmatex">\(s\)</span> 時先算上限 <span class="arithmatex">\(\frac1{1-f}\)</span>（<a href="#u1-2">1.2</a>）。</p>
+<p><strong>P-7.</strong> 70% 的時間可以加速 5 倍，整體 speedup 是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>新時間（0.44）</strong>：<span class="arithmatex">\(0.3+\frac{0.7}{5}=0.3+0.14\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(\frac1{0.44}\approx\)</span> <strong>2.27</strong>。</li>
+</ul>
+</details>
+<p><strong>P-8.</strong> 90% 的時間可以加速 10 倍，整體 speedup 是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>新時間（0.19）</strong>：<span class="arithmatex">\(0.1+\frac{0.9}{10}=0.1+0.09\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(\frac1{0.19}\approx\)</span> <strong>5.26</strong>。只快 10 倍的部分，整體連 6 倍都不到。</li>
+</ul>
+</details>
+<p><strong>P-9.</strong> 80% 的時間可以加速。想讓整體快 3 倍，這部分要加速幾倍？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>列式</strong>：<span class="arithmatex">\(\frac1{0.2+0.8/s}=3\)</span>，所以 <span class="arithmatex">\(0.2+\frac{0.8}s=\frac13\)</span>。</li>
+<li><strong>解 <span class="arithmatex">\(s\)</span></strong>：<span class="arithmatex">\(\frac{0.8}{s}=\frac13-0.2=\frac{2}{15}\)</span>，<span class="arithmatex">\(s=0.8\times\frac{15}2=\)</span> <strong>6</strong>。</li>
+</ul>
+</details>
+<p><strong>P-10.</strong> 一半的時間可以加速，最多能快幾倍？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>上限</strong>：<span class="arithmatex">\(\frac1{1-f}=\frac1{0.5}=\)</span> <strong>2 倍</strong>，就算那一半變成 0 秒也一樣。</li>
+</ul>
+</details>
+<p><strong>P-11.</strong> 浮點運算佔 40% 的時間、加速 4 倍；記憶體存取佔 30%、加速 2 倍；其他 30% 不變。整體 speedup？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>新時間（0.55）</strong>：<span class="arithmatex">\(0.3+\frac{0.4}4+\frac{0.3}2=0.3+0.1+0.15\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(\frac1{0.55}\approx\)</span> <strong>1.82</strong>。兩部分分別縮短，再加起來。</li>
+</ul>
+</details>
+<p><strong>P-12.</strong> 60% 的時間可以加速。想讓整體快 3 倍，做得到嗎？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>先算上限</strong>：<span class="arithmatex">\(\frac1{1-0.6}=2.5\)</span>。</li>
+<li><strong>答案</strong>：<strong>做不到</strong>，3 倍超過上限 2.5 倍，加速再多倍也沒用。</li>
+</ul>
+</details>
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> 40% ALU（CPI 1）、30% load（CPI 4）、20% store（CPI 3）、10% branch（CPI 2），1 GHz，<span class="arithmatex">\(10^9\)</span> 條指令，CPU time？</p>
 <details class="quiz">
@@ -2678,6 +2781,115 @@ window.MathJax = {
         x[i][j] = 2 * x[i][j];</code></pre>
 <p>現在照記憶體的順序一個接一個存取，一個 block 搬進來，裡面的元素全部用完才換下一塊（空間區域性）。結果一樣、指令數一樣，只是 miss 少很多。</p>
 </details>
+<h3 id="u2-drill">2.10 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="tagindexoffset">題型一：位址切成 tag、index、offset</h4>
+<p><strong>做法</strong>：offset ＝ log₂(block 大小)；set 數 ＝ 容量 ÷（block × way）；index ＝ log₂(set 數)；剩下的是 tag。</p>
+<p><strong>P-1.</strong> 32 位元位址、16 KB 的 direct-mapped cache、block 大小 32 B。offset、index、tag 各幾位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>offset（5 位元）</strong>：block 32 B ＝ <span class="arithmatex">\(2^{5}\)</span>。</li>
+<li><strong>set 數（512）</strong>：<span class="arithmatex">\(\frac{16 KB}{32\text{ B}\times1}=512=2^{9}\)</span>，index <strong>9 位元</strong>。</li>
+<li><strong>tag（18 位元）</strong>：<span class="arithmatex">\(32-9-5\)</span>。</li>
+</ul>
+</details>
+<p><strong>P-2.</strong> 32 位元位址、64 KB 的 4-way set associative cache、block 大小 64 B。offset、index、tag 各幾位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>offset（6 位元）</strong>：block 64 B ＝ <span class="arithmatex">\(2^{6}\)</span>。</li>
+<li><strong>set 數（256）</strong>：<span class="arithmatex">\(\frac{64 KB}{64\text{ B}\times4}=256=2^{8}\)</span>，index <strong>8 位元</strong>。</li>
+<li><strong>tag（18 位元）</strong>：<span class="arithmatex">\(32-8-6\)</span>。</li>
+</ul>
+</details>
+<p><strong>P-3.</strong> 32 位元位址、8 KB 的 2-way set associative cache、block 大小 16 B。offset、index、tag 各幾位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>offset（4 位元）</strong>：block 16 B ＝ <span class="arithmatex">\(2^{4}\)</span>。</li>
+<li><strong>set 數（256）</strong>：<span class="arithmatex">\(\frac{8 KB}{16\text{ B}\times2}=256=2^{8}\)</span>，index <strong>8 位元</strong>。</li>
+<li><strong>tag（20 位元）</strong>：<span class="arithmatex">\(32-8-4\)</span>。</li>
+</ul>
+</details>
+<p><strong>P-4.</strong> 48 位元位址、32 KB 的 8-way set associative cache、block 大小 64 B。offset、index、tag 各幾位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>offset（6 位元）</strong>：block 64 B ＝ <span class="arithmatex">\(2^{6}\)</span>。</li>
+<li><strong>set 數（64）</strong>：<span class="arithmatex">\(\frac{32 KB}{64\text{ B}\times8}=64=2^{6}\)</span>，index <strong>6 位元</strong>。</li>
+<li><strong>tag（36 位元）</strong>：<span class="arithmatex">\(48-6-6\)</span>。</li>
+</ul>
+</details>
+<p><strong>P-5.</strong> 32 位元位址、4 KB 的 全相聯（fully associative） cache、block 大小 32 B。offset、index、tag 各幾位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>offset（5 位元）</strong>：block 32 B ＝ <span class="arithmatex">\(2^{5}\)</span>。</li>
+<li><strong>index（0 位元）</strong>：全相聯只有一個 set，任何 block 都能放任何位置（共 128 個 block）。</li>
+<li><strong>tag（27 位元）</strong>：<span class="arithmatex">\(32-0-5\)</span>。</li>
+</ul>
+</details>
+<p><strong>P-6.</strong> 64 位元位址、1 MB 的 16-way set associative cache、block 大小 128 B。offset、index、tag 各幾位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>offset（7 位元）</strong>：block 128 B ＝ <span class="arithmatex">\(2^{7}\)</span>。</li>
+<li><strong>set 數（512）</strong>：<span class="arithmatex">\(\frac{1 MB}{128\text{ B}\times16}=512=2^{9}\)</span>，index <strong>9 位元</strong>。</li>
+<li><strong>tag（48 位元）</strong>：<span class="arithmatex">\(64-9-7\)</span>。</li>
+</ul>
+</details>
+<h4 id="amat-cpi">題型二：AMAT 與 CPI</h4>
+<p><strong>做法</strong>：AMAT ＝ hit time ＋ miss rate × miss penalty；兩層時 L1 的 penalty 就是 L2 的 AMAT。</p>
+<p><strong>P-7.</strong> L1 hit 2 cycle、miss rate 4%；L2 hit 12 cycle、local miss rate 25%；主記憶體 200 cycle。AMAT？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>L1 miss 之後的平均代價（62）</strong>：<span class="arithmatex">\(12+0.25\times200=12+50\)</span>。</li>
+<li><strong>AMAT</strong>：<span class="arithmatex">\(2+0.04\times62=2+2.48=\)</span> <strong>4.48 cycle</strong>。</li>
+</ul>
+</details>
+<p><strong>P-8.</strong> 只有一層 cache：hit time 1 cycle、miss rate 3%、miss penalty 80 cycle。AMAT？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>AMAT</strong>：<span class="arithmatex">\(1+0.03\times80=1+2.4=\)</span> <strong>3.4 cycle</strong>。</li>
+</ul>
+</details>
+<p><strong>P-9.</strong> L1 hit 1 cycle、miss rate 10%；L2 hit 8 cycle、local miss rate 30%；主記憶體 120 cycle。AMAT？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>L1 miss 之後（44）</strong>：<span class="arithmatex">\(8+0.3\times120=8+36\)</span>。</li>
+<li><strong>AMAT</strong>：<span class="arithmatex">\(1+0.1\times44=\)</span> <strong>5.4 cycle</strong>。</li>
+</ul>
+</details>
+<p><strong>P-10.</strong> L1 hit 1 cycle、miss rate 5%；L2 hit 10 cycle，<strong>global</strong> miss rate 1%；主記憶體 150 cycle。AMAT？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>換成 local miss rate（20%）</strong>：global 是「所有存取裡有多少 L2 也 miss」，local ＝ <span class="arithmatex">\(\frac{0.01}{0.05}=0.2\)</span>。</li>
+<li><strong>L1 miss 之後（40）</strong>：<span class="arithmatex">\(10+0.2\times150=10+30\)</span>。</li>
+<li><strong>AMAT</strong>：<span class="arithmatex">\(1+0.05\times40=\)</span> <strong>3 cycle</strong>。</li>
+</ul>
+</details>
+<p><strong>P-11.</strong> L1 hit 1 ns、miss rate 8%，miss 時到主記憶體要 60 ns。加一層 L2（hit 5 ns、local miss rate 25%）之後，AMAT 從多少變成多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>沒有 L2（5.8 ns）</strong>：<span class="arithmatex">\(1+0.08\times60\)</span>。</li>
+<li><strong>有 L2（2.6 ns）</strong>：<span class="arithmatex">\(1+0.08\times(5+0.25\times60)=1+0.08\times20\)</span>。</li>
+<li><strong>快了</strong>：<span class="arithmatex">\(5.8\div2.6\approx\)</span> <strong>2.23 倍</strong>。</li>
+</ul>
+</details>
+<p><strong>P-12.</strong> 理想 CPI 1；每條指令平均存取記憶體 1.3 次（含抓指令），miss rate 2%，miss penalty 100 cycle。實際 CPI？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>每條指令平均多停（2.6 cycle）</strong>：<span class="arithmatex">\(1.3\times0.02\times100\)</span>。</li>
+<li><strong>CPI</strong>：<span class="arithmatex">\(1+2.6=\)</span> <strong>3.6</strong>。cache 只要 2% 的 miss，CPI 就變成 3.6 倍。</li>
+</ul>
+</details>
 <h3 id="u2-quiz">單元 2 小考</h3>
 <p><strong>2-1.</strong> 32-bit 位址、64 KB direct-mapped、16 B block、write-through：offset、index、tag 各幾位元？總位元數？</p>
 <details class="quiz">
@@ -3223,6 +3435,62 @@ window.MathJax = {
 <li><strong>要幾張內層表（3 張）</strong>：最下面 8 MB 要 2 張，最上面 1 MB 要 1 張。</li>
 <li><strong>總共（16 KB）</strong>：外層 1 張 ＋ 內層 3 張 ＝ 4 張 × 4 KB。</li>
 <li><strong>單層（4 MB）</strong>：<span class="arithmatex">\(2^{20}\)</span> 格 × 4 bytes，不管用多少都要整張。</li>
+</ul>
+</details>
+<h3 id="u3-drill">3.4 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="page-table-tlb">題型：page table 大小與 TLB 平均存取時間</h4>
+<p><strong>做法</strong>：entry 數 ＝ <span class="arithmatex">\(2^{\text{VPN 位元}}\)</span>；平均時間 ＝ hit 機率 × hit 的時間 ＋ miss 機率 × miss 的時間（<a href="#u3-1">3.1</a>）。</p>
+<p><strong>P-1.</strong> 32 位元虛擬位址、page 4 KB、每個 PTE 4 bytes。單層 page table 有幾個 entry？多大？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>offset（12 位元）</strong>：4 KB ＝ <span class="arithmatex">\(2^{12}\)</span>。</li>
+<li><strong>entry 數（<span class="arithmatex">\(2^{20}\)</span>）</strong>：<span class="arithmatex">\(2^{32-12}\)</span>。</li>
+<li><strong>大小（4 MB）</strong>：<span class="arithmatex">\(2^{20}\times4\)</span> B ＝ <span class="arithmatex">\(2^{22}\)</span> B。每個 process 一張。</li>
+</ul>
+</details>
+<p><strong>P-2.</strong> 48 位元虛擬位址、page 8 KB、PTE 8 bytes。單層 page table 多大？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>entry 數（<span class="arithmatex">\(2^{35}\)</span>）</strong>：<span class="arithmatex">\(2^{48-13}\)</span>。</li>
+<li><strong>大小（256 GB）</strong>：<span class="arithmatex">\(2^{35}\times2^3=2^{38}\)</span> B。根本放不下，所以要多層 page table。</li>
+</ul>
+</details>
+<p><strong>P-3.</strong> 32 位元虛擬位址、page 16 KB。VPN（虛擬 page 號碼）和 offset 各幾位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>offset（14 位元）</strong>：16 KB ＝ <span class="arithmatex">\(2^{14}\)</span>。</li>
+<li><strong>VPN（18 位元）</strong>：<span class="arithmatex">\(32-14\)</span>，共 <span class="arithmatex">\(2^{18}\)</span> 個虛擬 page。</li>
+</ul>
+</details>
+<p><strong>P-4.</strong> TLB 查詢 10 ns、記憶體存取 100 ns、TLB hit rate 90%、單層 page table。存取一個資料的平均時間？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>hit（110 ns）</strong>：TLB ＋ 拿資料 <span class="arithmatex">\(=10+100\)</span>。</li>
+<li><strong>miss（210 ns）</strong>：TLB ＋ 查 page table ＋ 拿資料 <span class="arithmatex">\(=10+100+100\)</span>。</li>
+<li><strong>平均</strong>：<span class="arithmatex">\(0.9\times110+0.1\times210=99+21=\)</span> <strong>120 ns</strong>。</li>
+</ul>
+</details>
+<p><strong>P-5.</strong> TLB 查詢 5 ns、記憶體 50 ns、hit rate 95%、<strong>兩層</strong> page table。平均存取時間？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>hit（55 ns）</strong>：<span class="arithmatex">\(5+50\)</span>。</li>
+<li><strong>miss（155 ns）</strong>：<span class="arithmatex">\(5+50+50+50\)</span>，兩層各讀一次，再拿資料。</li>
+<li><strong>平均</strong>：<span class="arithmatex">\(0.95\times55+0.05\times155=52.25+7.75=\)</span> <strong>60 ns</strong>。</li>
+</ul>
+</details>
+<p><strong>P-6.</strong> TLB 查詢 20 ns、記憶體 100 ns、單層 page table。要讓平均存取時間不超過 130 ns，TLB hit rate 至少多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>列式</strong>：<span class="arithmatex">\(h(20+100)+(1-h)(20+200)\le130\)</span>。</li>
+<li><strong>展開</strong>：<span class="arithmatex">\(220-100h\le130\)</span>，<span class="arithmatex">\(h\ge0.9\)</span>。</li>
+<li><strong>答案</strong>：至少 <strong>90%</strong>。</li>
 </ul>
 </details>
 <h3 id="u3-quiz">單元 3 小考</h3>
@@ -4378,6 +4646,59 @@ sw  $5, 4($1)</code></pre>
 </ul>
 <p>不是 5 倍：各級不平均（被 300 ps 那級拖住），加上每級多了 20 ps 的暫存器延遲。</p>
 </details>
+<h3 id="u4-drill">4.5 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="pipeline-cycle-speedup">題型：pipeline 的 cycle 數與 speedup</h4>
+<p><strong>做法</strong>：<span class="arithmatex">\(k\)</span> 級、<span class="arithmatex">\(n\)</span> 條：<span class="arithmatex">\(k+n-1\)</span> 個 cycle 再加 stall；週期是最慢一級（＋暫存器）。</p>
+<p><strong>P-1.</strong> 5 級 pipeline 執行 100 條指令，沒有任何 stall，要幾個 cycle？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>第一條要填滿 pipeline（5 cycle）</strong>，之後每個 cycle 完成一條。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(5+(100-1)=\)</span> <strong>104 cycle</strong>（<span class="arithmatex">\(k+n-1\)</span>）。</li>
+</ul>
+</details>
+<p><strong>P-2.</strong> 5 級延遲 200、150、250、200、150 ps（忽略 pipeline 暫存器）。執行 1000 條指令，非 pipeline 和 pipeline 各要多久？speedup？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>非 pipeline（950 ns）</strong>：每條 <span class="arithmatex">\(200+150+250+200+150=950\)</span> ps，<span class="arithmatex">\(1000\times950\)</span> ps。</li>
+<li><strong>pipeline（251 ns）</strong>：週期 ＝ 最慢一級 250 ps，<span class="arithmatex">\((5+999)\times250\)</span> ps ＝ 251000 ps。</li>
+<li><strong>speedup</strong>：<span class="arithmatex">\(950\div251\approx\)</span> <strong>3.78</strong>，不到 5 倍：各級不平均。</li>
+</ul>
+</details>
+<p><strong>P-3.</strong> 有 forwarding 的 5 級 pipeline 執行 1000 條指令，其中 20% 是 load，一半的 load 下一條就用到載入的值（其他沒有 stall）。總共幾個 cycle？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>load-use 的次數（100）</strong>：<span class="arithmatex">\(1000\times0.2\times0.5\)</span>，每次 stall 1 cycle。</li>
+<li><strong>總 cycle</strong>：<span class="arithmatex">\(1000+4+100=\)</span> <strong>1104</strong>。</li>
+</ul>
+</details>
+<p><strong>P-4.</strong> 25% 的指令是 load，其中 40% 下一條就要用（有 forwarding，其他不停）。CPI？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>每條平均多停（0.1）</strong>：<span class="arithmatex">\(0.25\times0.4\times1\)</span>。</li>
+<li><strong>CPI</strong>：<span class="arithmatex">\(1+0.1=\)</span> <strong>1.1</strong>。</li>
+</ul>
+</details>
+<p><strong>P-5.</strong> 4 級 pipeline 執行 50 條指令，沒有 stall，要幾個 cycle？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>答案</strong>：<span class="arithmatex">\(4+50-1=\)</span> <strong>53 cycle</strong>。</li>
+</ul>
+</details>
+<p><strong>P-6.</strong> 4 級各 300 ps，每級後面的 pipeline 暫存器多 20 ps。單一指令的延遲、和大量指令時的 speedup 各是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>週期（320 ps）</strong>：<span class="arithmatex">\(300+20\)</span>。</li>
+<li><strong>單一指令延遲（1280 ps）</strong>：<span class="arithmatex">\(4\times320\)</span>，比不切 pipeline 的 1200 ps 還<strong>長</strong>。</li>
+<li><strong>大量指令的 speedup</strong>：<span class="arithmatex">\(1200\div320=\)</span> <strong>3.75</strong>。</li>
+</ul>
+</details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> 各級 200、100、250、200、150 ps。single-cycle 和 pipeline 的週期？1000 條指令時 pipeline 的總時間和 speedup？</p>
 <details class="quiz">
@@ -4825,6 +5146,61 @@ sw  $5, 4($1)</code></pre>
 <li><strong>(c) 1.04</strong>：猜錯率 0.1、penalty 2。<span class="arithmatex">\(1+0.2\times0.1\times2=1.04\)</span>。</li>
 </ul>
 <p>準確率和 penalty 都會影響 CPI。(b) 不需要預測器，但 ID 要多一個比較器，還可能多出資料相依的 stall（這題先不算）。</p>
+</details>
+<h3 id="u5-drill">5.4 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="cpi">題型：分支造成的 CPI</h4>
+<p><strong>做法</strong>：CPI ＝ 1 ＋ branch 比例 × 猜錯率 × penalty；penalty ＝ 決定的那一級 − 1。</p>
+<p><strong>P-1.</strong> 20% 是 branch、預測準確率 85%、penalty 3 cycle。CPI？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>額外 CPI（0.09）</strong>：<span class="arithmatex">\(0.2\times0.15\times3\)</span>。</li>
+<li><strong>CPI</strong>：<strong>1.09</strong>。</li>
+</ul>
+</details>
+<p><strong>P-2.</strong> 25% 是 branch，其中 70% 會跳；用 always not taken、penalty 2。CPI？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>猜錯率 ＝ 會跳的比例（0.7）</strong>。</li>
+<li><strong>額外 CPI（0.35）</strong>：<span class="arithmatex">\(0.25\times0.7\times2\)</span>。</li>
+<li><strong>CPI</strong>：<strong>1.35</strong>。</li>
+</ul>
+</details>
+<p><strong>P-3.</strong> pipeline 很深，penalty 10 cycle；準確率 95%、20% 是 branch。CPI？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>額外 CPI（0.1）</strong>：<span class="arithmatex">\(0.2\times0.05\times10\)</span>。</li>
+<li><strong>CPI</strong>：<strong>1.1</strong>。penalty 大時，每 1% 準確率都很值錢。</li>
+</ul>
+</details>
+<p><strong>P-4.</strong> 15% 是 branch、penalty 4。1-bit 準確率 80%、2-bit 90%，換成 2-bit 快幾倍？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>1-bit（1.12）</strong>：<span class="arithmatex">\(1+0.15\times0.2\times4\)</span>。</li>
+<li><strong>2-bit（1.06）</strong>：<span class="arithmatex">\(1+0.15\times0.1\times4\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(1.12\div1.06\approx\)</span> <strong>1.057 倍</strong>。</li>
+</ul>
+</details>
+<p><strong>P-5.</strong> 20% 是 branch、penalty 5。要讓 CPI 不超過 1.1，準確率至少多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>列式</strong>：<span class="arithmatex">\(0.2\times(1-a)\times5\le0.1\)</span>。</li>
+<li><strong>解</strong>：<span class="arithmatex">\(1-a\le0.1\)</span>，<span class="arithmatex">\(a\ge\)</span> <strong>90%</strong>。</li>
+</ul>
+</details>
+<p><strong>P-6.</strong> branch 在第 4 級結束時決定，30% 是 branch、準確率 80%。CPI？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>penalty（3）</strong>：前 3 級的指令要丟掉。</li>
+<li><strong>額外 CPI（0.18）</strong>：<span class="arithmatex">\(0.3\times0.2\times3\)</span>。</li>
+<li><strong>CPI</strong>：<strong>1.18</strong>。</li>
+</ul>
 </details>
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> 25% branch、penalty 3、準確率 90%，CPI（理想 1）？</p>
@@ -5455,6 +5831,70 @@ BNE   x1, x2, loop</code></pre>
 </table>
 <p>SMT 要在同一個 cycle 發好幾條<strong>不同 thread</strong> 的指令，處理器本來就要能一次發多條（multiple issue），還要有動態排程、暫存器重新命名，才能把不同 thread 的指令混在一起發。單發射的處理器每個 cycle 只發一條，沒有水平浪費可以補，最多做到 fine-grained。</p>
 </details>
+<h3 id="u6-drill">6.3 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="thread">題型：需要幾個 thread</h4>
+<p><strong>做法</strong>：fixed：每組相依 <span class="arithmatex">\(N\ge\lceil L/d\rceil\)</span> 取最大；data-dependent：排出一輪的 cycle 數 <span class="arithmatex">\(P\)</span> 和指令數 <span class="arithmatex">\(I\)</span>，<span class="arithmatex">\(\lceil P/I\rceil\)</span>。</p>
+<p><strong>P-1.</strong> LD 延遲 6；迴圈是 LD r1 / ADD r2, r1 / BNE。fixed switching 和 data-dependent switching 各需要幾個 thread？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>fixed switching（6 個）</strong>：ADD 跟 LD 距離 1 條：<span class="arithmatex">\(N\ge6\)</span>。</li>
+<li><strong>單一 thread 一輪（8 cycle）</strong>：LD（0）、ADD（6）、BNE（7），下一輪的第一條在 8。</li>
+<li><strong>data-dependent（3 個）</strong>：<span class="arithmatex">\(\lceil 8/3\rceil=3\)</span>。</li>
+</ul>
+<p>我用模擬器跑過，兩個答案都對。</p>
+</details>
+<p><strong>P-2.</strong> LD 延遲 10；迴圈是 LD r1 / ADDI r3 / ADD r2, r1 / BNE。fixed switching 和 data-dependent switching 各需要幾個 thread？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>fixed switching（5 個）</strong>：ADD 跟 LD 距離 2 條：<span class="arithmatex">\(2N\ge10\)</span>，<span class="arithmatex">\(N\ge5\)</span>。</li>
+<li><strong>單一 thread 一輪（12 cycle）</strong>：LD（0）、ADDI（1）、ADD（10）、BNE（11），下一輪的第一條在 12。</li>
+<li><strong>data-dependent（3 個）</strong>：<span class="arithmatex">\(\lceil 12/4\rceil=3\)</span>。</li>
+</ul>
+<p>我用模擬器跑過，兩個答案都對。</p>
+</details>
+<p><strong>P-3.</strong> LD 延遲 8、FMUL 延遲 5；迴圈是 LD f1 / FMUL f2, f1 / FADD f3, f2 / BNE。fixed switching 和 data-dependent switching 各需要幾個 thread？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>fixed switching（8 個）</strong>：FMUL 跟 LD 距離 1：<span class="arithmatex">\(N\ge8\)</span>；FADD 跟 FMUL 距離 1：<span class="arithmatex">\(N\ge5\)</span>；取大的。</li>
+<li><strong>單一 thread 一輪（15 cycle）</strong>：LD（0）、FMUL（8）、FADD（13）、BNE（14），下一輪的第一條在 15。</li>
+<li><strong>data-dependent（4 個）</strong>：<span class="arithmatex">\(\lceil 15/4\rceil=4\)</span>。</li>
+</ul>
+<p>我用模擬器跑過，兩個答案都對。</p>
+</details>
+<p><strong>P-4.</strong> LD 延遲 20；迴圈是 LD r1 / X / Y / ADD r2, r1 / BNE（X、Y 跟 r1 無關）。fixed switching 和 data-dependent switching 各需要幾個 thread？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>fixed switching（7 個）</strong>：ADD 跟 LD 距離 3：<span class="arithmatex">\(3N\ge20\)</span>，<span class="arithmatex">\(N\ge7\)</span>。</li>
+<li><strong>單一 thread 一輪（22 cycle）</strong>：LD（0）、X（1）、Y（2）、ADD（20）、BNE（21），下一輪的第一條在 22。</li>
+<li><strong>data-dependent（5 個）</strong>：<span class="arithmatex">\(\lceil 22/5\rceil=5\)</span>。</li>
+</ul>
+<p>我用模擬器跑過，兩個答案都對。</p>
+</details>
+<p><strong>P-5.</strong> 兩個 LD 延遲都是 4；迴圈是 LD r1 / LD r2 / ADD r3, r1, r2 / BNE。fixed switching 和 data-dependent switching 各需要幾個 thread？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>fixed switching（4 個）</strong>：ADD 跟第一個 LD 距離 2：<span class="arithmatex">\(2N\ge4\)</span>；跟第二個 LD 距離 1：<span class="arithmatex">\(N\ge4\)</span>；取大的。</li>
+<li><strong>單一 thread 一輪（7 cycle）</strong>：LD（0）、LD（1）、ADD（5）、BNE（6），下一輪的第一條在 7。</li>
+<li><strong>data-dependent（2 個）</strong>：<span class="arithmatex">\(\lceil 7/4\rceil=2\)</span>。</li>
+</ul>
+<p>我用模擬器跑過，兩個答案都對。</p>
+</details>
+<p><strong>P-6.</strong> FADD 延遲 4，而且下一輪的 FADD 要用這一輪的結果；迴圈是 FADD f1, f1, f2 / ADDI / BNE。fixed switching 和 data-dependent switching 各需要幾個 thread？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>fixed switching（2 個）</strong>：下一輪的 FADD 跟這一輪距離 3 條：<span class="arithmatex">\(3N\ge4\)</span>，<span class="arithmatex">\(N\ge2\)</span>。</li>
+<li><strong>單一 thread 一輪（4 cycle）</strong>：FADD（0）、ADDI（1）、BNE（2），下一輪的第一條在 4。</li>
+<li><strong>data-dependent（2 個）</strong>：<span class="arithmatex">\(\lceil 4/3\rceil=2\)</span>。</li>
+</ul>
+<p>我用模擬器跑過，兩個答案都對。</p>
+</details>
 <h3 id="u6-quiz">單元 6 小考</h3>
 <p><strong>6-1.</strong> 迴圈只有兩條相依指令：LD（延遲 20）、緊接著用它的 ADD，再加一條 BNE。Fixed switching 需要幾個 thread？</p>
 <details class="quiz">
@@ -5857,6 +6297,57 @@ BNE   x1, x2, loop</code></pre>
 </tbody>
 </table>
 <p>y[i] 放暫存器；<strong>x 整條放進 SRAM</strong>（剛好 <span class="arithmatex">\(N\)</span> 個），x 只要從 DRAM 讀一次；M 沒有重用，只能一路串流讀進來。如果把迴圈改成 j 在外、i 在內，變成 x[j] 的 RI 是 1、y 的 RI 是 <span class="arithmatex">\(N\)</span>，就改成把 y 放進 SRAM。</p>
+</details>
+<h3 id="u7-drill">7.4 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="refresh">題型：refresh 使用率</h4>
+<p><strong>做法</strong>：這段時間 refresh 幾次 × 每次佔多久 ÷ 這段時間；數字留成 2 的次方再約分。</p>
+<p><strong>P-1.</strong> 8 個 bank × <span class="arithmatex">\(2^{15}\)</span> 列，64 ms 一輪，每次 refresh 佔 command bus 5 ns。使用率？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>次數（<span class="arithmatex">\(2^{18}\)</span>）</strong>：<span class="arithmatex">\(2^3\times2^{15}\)</span>。</li>
+<li><strong>使用率</strong>：<span class="arithmatex">\(\frac{2^{18}\times5}{2^6\times10^6}=\frac{2^{12}\times5}{10^6}=\)</span> <strong>2.048%</strong>。</li>
+</ul>
+</details>
+<p><strong>P-2.</strong> 4 個 bank × <span class="arithmatex">\(2^{16}\)</span> 列，32 ms 一輪，每次佔 bus 4 ns。使用率？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>次數（<span class="arithmatex">\(2^{18}\)</span>）</strong>：<span class="arithmatex">\(2^2\times2^{16}\)</span>。</li>
+<li><strong>使用率</strong>：<span class="arithmatex">\(\frac{2^{18}\times4}{2^5\times10^6}=\frac{2^{13}\times4}{10^6}=\)</span> <strong>3.2768%</strong>。</li>
+</ul>
+</details>
+<p><strong>P-3.</strong> 2 個 channel × 2 rank × 8 bank × <span class="arithmatex">\(2^{14}\)</span> 列，64 ms 一輪，每次佔 command bus 5 ns。一個 channel 的 bus 使用率？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一個 channel 負責的列（<span class="arithmatex">\(2^{18}\)</span>）</strong>：<span class="arithmatex">\(2\times8\times2^{14}\)</span>（每個 channel 有自己的 bus）。</li>
+<li><strong>使用率</strong>：<span class="arithmatex">\(\frac{2^{18}\times5}{2^6\times10^6}=\)</span> <strong>2.048%</strong>。</li>
+</ul>
+</details>
+<p><strong>P-4.</strong> 一個 bank 有 <span class="arithmatex">\(2^{15}\)</span> 列，64 ms 一輪，每次 refresh 佔用 bank 50 ns。這個 bank 被佔用的比例？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>使用率</strong>：<span class="arithmatex">\(\frac{2^{15}\times50}{2^6\times10^6}=\frac{2^9\times50}{10^6}=\)</span> <strong>2.56%</strong>。</li>
+</ul>
+</details>
+<p><strong>P-5.</strong> 原本每列 64 ms refresh 一次；現在 80% 的列可以改成 256 ms 一次。refresh 次數減少多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>新的次數（0.4 倍）</strong>：<span class="arithmatex">\(0.2\times1+0.8\times\frac{64}{256}=0.2+0.2\)</span>。</li>
+<li><strong>答案</strong>：減少 <strong>60%</strong>。</li>
+</ul>
+</details>
+<p><strong>P-6.</strong> 16 個 bank × <span class="arithmatex">\(2^{14}\)</span> 列，64 ms 一輪，每次佔 bus 8 ns。使用率？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>次數（<span class="arithmatex">\(2^{18}\)</span>）</strong>：<span class="arithmatex">\(2^4\times2^{14}\)</span>。</li>
+<li><strong>使用率</strong>：<span class="arithmatex">\(\frac{2^{18}\times8}{2^6\times10^6}=\frac{2^{12}\times8}{10^6}=\)</span> <strong>3.2768%</strong>。</li>
+</ul>
 </details>
 <h3 id="u7-quiz">單元 7 小考</h3>
 <p><strong>7-1.</strong> 4 banks × <span class="arithmatex">\(2^{14}\)</span> 列，refresh 間隔 32 ms，每次 refresh 佔 command bus 4 ns，使用率？</p>
@@ -7880,6 +8371,119 @@ sw  $t0,48($s3)</code></pre>
 </tr>
 </tbody>
 </table>
+</details>
+<h3 id="u9-drill">9.6 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="_55">題型一：二補數與溢位</h4>
+<p><strong>做法</strong>：取負：反相加 1；同號相加變號才溢位。</p>
+<p><strong>P-1.</strong> <span class="arithmatex">\(-37\)</span> 的 8 位元二補數是什麼（寫成二進位和十六進位）？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>37（0010 0101）</strong>：<span class="arithmatex">\(32+4+1\)</span>。</li>
+<li><strong>反相（1101 1010）</strong>，<strong>再加 1（1101 1011）</strong>。</li>
+<li><strong>答案</strong>：<strong>1101 1011</strong>，0xDB。</li>
+</ul>
+</details>
+<p><strong>P-2.</strong> 8 位元二補數 1011 0110 是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>最高位是 1</strong>：是負數。</li>
+<li><strong>取負</strong>：反相 0100 1001，加 1 得 0100 1010 ＝ 74。</li>
+<li><strong>答案</strong>：<strong>−74</strong>。也可以算 <span class="arithmatex">\(-128+32+16+4+2=-74\)</span>。</li>
+</ul>
+</details>
+<p><strong>P-3.</strong> 16 位元二補數 0xFF9C 是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>最高位是 1</strong>：是負數。</li>
+<li><strong>取負</strong>：反相 0x0063，加 1 得 0x0064 ＝ 100。</li>
+<li><strong>答案</strong>：<strong>−100</strong>。</li>
+</ul>
+</details>
+<p><strong>P-4.</strong> 8 位元有號整數算 <span class="arithmatex">\(90+60\)</span>，結果的位元和值？有沒有溢位？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>相加</strong>：0101 1010 ＋ 0011 1100 ＝ 1001 0110。</li>
+<li><strong>讀成二補數</strong>：<span class="arithmatex">\(-128+16+4+2=-106\)</span>。</li>
+<li><strong>答案</strong>：<strong>溢位</strong>：兩個正數加出負數（150 超過 127）。</li>
+</ul>
+</details>
+<p><strong>P-5.</strong> 12 位元二補數能表示的範圍？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>答案</strong>：<span class="arithmatex">\(-2^{11}\)</span> 到 <span class="arithmatex">\(2^{11}-1\)</span>，也就是 <strong>−2048 到 2047</strong>。</li>
+</ul>
+</details>
+<p><strong>P-6.</strong> 8 位元有號整數算 <span class="arithmatex">\(-128-1\)</span>，結果是多少？有沒有溢位？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>相加</strong>：1000 0000 ＋ 1111 1111 ＝ (1)0111 1111。</li>
+<li><strong>只留 8 位元</strong>：0111 1111 ＝ 127。</li>
+<li><strong>答案</strong>：<strong>溢位</strong>：兩個負數加出正數。</li>
+</ul>
+</details>
+<h4 id="ieee-754_1">題型二：IEEE 754 單精度</h4>
+<p><strong>做法</strong>：寫成 <span class="arithmatex">\(1.xxx\times2^k\)</span>，<span class="arithmatex">\(e=k+127\)</span>，切成 1／8／23 位元；反過來就照欄位還原。</p>
+<p><strong>P-7.</strong> 10.25 的單精度浮點表示（十六進位）？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>二進位（1010.01）</strong>：<span class="arithmatex">\(10=1010\)</span>、<span class="arithmatex">\(0.25=0.01\)</span>。</li>
+<li><strong>正規化</strong>：<span class="arithmatex">\(1.01001\times2^3\)</span>。</li>
+<li><strong>欄位</strong>：<span class="arithmatex">\(s=0\)</span>、<span class="arithmatex">\(e=3+127=130=1000\,0010\)</span>、<span class="arithmatex">\(f=0100\,1000\cdots\)</span>。</li>
+<li><strong>答案</strong>：0 10000010 01001000… ＝ <strong>0x41240000</strong>。</li>
+</ul>
+</details>
+<p><strong>P-8.</strong> <span class="arithmatex">\(-0.375\)</span> 的單精度浮點表示？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>二進位（0.011）</strong>：<span class="arithmatex">\(0.375=0.25+0.125\)</span>。</li>
+<li><strong>正規化</strong>：<span class="arithmatex">\(1.1\times2^{-2}\)</span>。</li>
+<li><strong>欄位</strong>：<span class="arithmatex">\(s=1\)</span>、<span class="arithmatex">\(e=-2+127=125=0111\,1101\)</span>、<span class="arithmatex">\(f=1000\cdots\)</span>。</li>
+<li><strong>答案</strong>：1 01111101 1000… ＝ <strong>0xBEC00000</strong>。</li>
+</ul>
+</details>
+<p><strong>P-9.</strong> 0x42C80000 當成單精度浮點數是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>切位元</strong>：0100 0010 1100 1000 …：<span class="arithmatex">\(s=0\)</span>、<span class="arithmatex">\(e=1000\,0101=133\)</span>、<span class="arithmatex">\(f=1001\,0\cdots\)</span>。</li>
+<li><strong>數值</strong>：<span class="arithmatex">\(1.1001_2\times2^{133-127}=1.5625\times64=\)</span> <strong>100</strong>。</li>
+</ul>
+</details>
+<p><strong>P-10.</strong> 0xC0E00000 當成單精度浮點數是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>切位元</strong>：1100 0000 1110 0000 …：<span class="arithmatex">\(s=1\)</span>、<span class="arithmatex">\(e=1000\,0001=129\)</span>、<span class="arithmatex">\(f=1100\cdots\)</span>。</li>
+<li><strong>數值</strong>：<span class="arithmatex">\(-1.11_2\times2^{2}=-1.75\times4=\)</span> <strong>−7</strong>。</li>
+</ul>
+</details>
+<p><strong>P-11.</strong> 1.0 的單精度浮點表示？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>正規化</strong>：<span class="arithmatex">\(1.0\times2^0\)</span>，<span class="arithmatex">\(f\)</span> 全是 0。</li>
+<li><strong>指數</strong>：<span class="arithmatex">\(e=0+127=127=0111\,1111\)</span>。</li>
+<li><strong>答案</strong>：0 01111111 000… ＝ <strong>0x3F800000</strong>。</li>
+</ul>
+</details>
+<p><strong>P-12.</strong> 6.5 的單精度浮點表示？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>二進位（110.1）</strong>：<span class="arithmatex">\(6=110\)</span>、<span class="arithmatex">\(0.5=0.1\)</span>。</li>
+<li><strong>正規化</strong>：<span class="arithmatex">\(1.101\times2^2\)</span>。</li>
+<li><strong>欄位</strong>：<span class="arithmatex">\(s=0\)</span>、<span class="arithmatex">\(e=129=1000\,0001\)</span>、<span class="arithmatex">\(f=1010\cdots\)</span>。</li>
+<li><strong>答案</strong>：0 10000001 1010… ＝ <strong>0x40D00000</strong>。</li>
+</ul>
 </details>
 <h3 id="u9-quiz">單元 9 小考</h3>
 <p><strong>9-1.</strong> <span class="arithmatex">\(-5\)</span> 的 8 位元二補數？<span class="arithmatex">\(100+50\)</span> 在 8 位元有號運算會怎樣？</p>
