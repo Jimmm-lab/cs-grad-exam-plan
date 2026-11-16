@@ -654,6 +654,40 @@ window.MathJax = {
 <li>平均 CPI <span class="arithmatex">\(=18\div10=1.8\)</span>，也就是 <span class="arithmatex">\(0.6\times1+0.4\times3\)</span>（<strong>比例 × 各自的 CPI</strong>，再加總）</li>
 <li>時脈 1 GHz → <span class="arithmatex">\(T=1\)</span> ns → 時間 <span class="arithmatex">\(=18\)</span> ns</li>
 </ul>
+<figure class="fig">
+<svg viewBox="0 0 360 150" role="img" aria-label="10 條指令排成時間軸：6 條 ALU 各佔 1 個 cycle，4 條 load 各佔 3 個 cycle，一共 18 個 cycle。平均每條 1.8 個 cycle。">
+<rect class="fb" x="18" y="52" width="18" height="30" rx="3"/>
+<text x="27" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fb" x="36" y="52" width="18" height="30" rx="3"/>
+<text x="45" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fb" x="54" y="52" width="18" height="30" rx="3"/>
+<text x="63" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fb" x="72" y="52" width="18" height="30" rx="3"/>
+<text x="81" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fb" x="90" y="52" width="18" height="30" rx="3"/>
+<text x="99" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fb" x="108" y="52" width="18" height="30" rx="3"/>
+<text x="117" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fa" x="126" y="52" width="54" height="30" rx="3"/>
+<text x="153" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ta">load</text>
+<rect class="fa" x="180" y="52" width="54" height="30" rx="3"/>
+<text x="207" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ta">load</text>
+<rect class="fa" x="234" y="52" width="54" height="30" rx="3"/>
+<text x="261" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ta">load</text>
+<rect class="fa" x="288" y="52" width="54" height="30" rx="3"/>
+<text x="315" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ta">load</text>
+<line class="arw" x1="18" y1="38" x2="342" y2="38"/>
+<line class="arw" x1="18" y1="33" x2="18" y2="43"/>
+<line class="arw" x1="342" y1="33" x2="342" y2="43"/>
+<rect x="120" y="29" width="120" height="18" style="fill:var(--card)"/>
+<text x="180" y="38" text-anchor="middle" dominant-baseline="central" class="sm">共 18 個 cycle</text>
+<text x="72" y="100" text-anchor="middle" dominant-baseline="central" class="sm tb">6 × 1 ＝ 6</text>
+<text x="234" y="100" text-anchor="middle" dominant-baseline="central" class="sm ta">4 × 3 ＝ 12</text>
+<text x="180" y="134" text-anchor="middle" dominant-baseline="central" class="sm mono">CPI ＝ 18 ÷ 10 ＝ 1.8</text>
+</svg>
+<figcaption>把每條指令佔的 cycle 排成一列：平均 CPI 就是「總 cycle 數 ÷ 指令數」</figcaption>
+</figure>
+
 <h4 id="_3">為什麼「時脈高」不代表比較快</h4>
 <table>
 <thead>
@@ -686,9 +720,65 @@ window.MathJax = {
 <li>可加速的部分快 4 倍：<span class="arithmatex">\(20+80/4=40\)</span> 秒，整體 speedup <span class="arithmatex">\(=100/40=2.5\)</span></li>
 <li>可加速的部分快到無限：<span class="arithmatex">\(20+0=20\)</span> 秒，整體最多 <span class="arithmatex">\(100/20=5\)</span> 倍</li>
 </ul>
+<figure class="fig">
+<svg viewBox="0 0 360 178" role="img" aria-label="程式原本 100 秒：20 秒不能加速、80 秒可以。可加速的部分快 4 倍，變成 20 加 20 共 40 秒，快 2.5 倍；快到無限，也還剩 20 秒，最多快 5 倍。">
+<text x="84" y="40" text-anchor="end" dominant-baseline="central" class="sm">原本</text>
+<rect class="ft" x="92" y="26" width="44" height="28" rx="3"/>
+<rect class="fb" x="136" y="26" width="176" height="28" rx="3"/>
+<text x="318" y="40" text-anchor="start" dominant-baseline="central" class="sm">100 秒</text>
+<text x="84" y="88" text-anchor="end" dominant-baseline="central" class="sm">快 4 倍</text>
+<rect class="ft" x="92" y="74" width="44" height="28" rx="3"/>
+<rect class="fb" x="136" y="74" width="44" height="28" rx="3"/>
+<text x="186" y="88" text-anchor="start" dominant-baseline="central" class="sm">40 秒：2.5 倍</text>
+<text x="84" y="136" text-anchor="end" dominant-baseline="central" class="sm">快到無限</text>
+<rect class="ft" x="92" y="122" width="44" height="28" rx="3"/>
+<text x="142" y="136" text-anchor="start" dominant-baseline="central" class="sm">20 秒：最多 5 倍</text>
+<text x="114" y="18" text-anchor="middle" dominant-baseline="central" class="sm"></text>
+<rect class="ft" x="92" y="156" width="12" height="12" rx="2"/>
+<text x="110" y="162" text-anchor="start" dominant-baseline="central" class="sm">不能加速</text>
+<rect class="fb" x="192" y="156" width="12" height="12" rx="2"/>
+<text x="210" y="162" text-anchor="start" dominant-baseline="central" class="sm">可以加速</text>
+</svg>
+<figcaption>可以加速的那段越縮越短，不能加速的 20 秒一直都在</figcaption>
+</figure>
+
 <p><strong>不能加速的那 20% 決定了上限。</strong> 寫成公式（<span class="arithmatex">\(f\)</span>＝可加速比例、<span class="arithmatex">\(s\)</span>＝加速倍數）：</p>
 <div class="arithmatex">\[\text{新時間}=(1-f)+\frac fs,\qquad\text{Speedup}=\frac{1}{(1-f)+\frac fs}\]</div>
 <p>這就是「make the common case fast」：佔比大的部分（<span class="arithmatex">\(f\)</span> 大）才值得加速。</p>
+<div class="admonition key">
+<p class="admonition-title">效能題要算什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU time</td>
+<td>IC × CPI × T ＝ IC × CPI ÷ 時脈</td>
+</tr>
+<tr>
+<td>平均 CPI</td>
+<td>各類指令的「比例 × CPI」加總</td>
+</tr>
+<tr>
+<td>兩台機器誰快</td>
+<td>比 CPU time（三個數字一起看）；快幾倍 ＝ 慢的時間 ÷ 快的時間</td>
+</tr>
+<tr>
+<td>加速一部分</td>
+<td>Amdahl：<span class="arithmatex">\(\frac{1}{(1-f)+f/s}\)</span>，上限 <span class="arithmatex">\(\frac1{1-f}\)</span></td>
+</tr>
+<tr>
+<td>要加速幾倍才達到目標</td>
+<td>把 Amdahl 的式子反過來解 <span class="arithmatex">\(s\)</span>；目標超過上限就不可能</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：instruction count（指令數）、CPI（每指令週期數）、clock rate／cycle time（時脈／週期）、speedup（加速比）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -1159,6 +1249,89 @@ window.MathJax = {
 <p><strong>執行時間</strong>：A <span class="arithmatex">\(=\frac{2\times10^9\times1.5}{10^9}=3\)</span> 秒；B <span class="arithmatex">\(=\frac{10^9\times2.5}{10^9}=2.5\)</span> 秒。</p>
 <p><strong>MIPS</strong>：A <span class="arithmatex">\(=\frac{2\times10^9}{3\times10^6}\approx667\)</span>；B <span class="arithmatex">\(=\frac{10^9}{2.5\times10^6}=400\)</span>。</p>
 <p><strong>B 比較快</strong>（快 <span class="arithmatex">\(\frac{3}{2.5}=1.2\)</span> 倍），雖然 A 的 MIPS 值高了快一倍。B 的指令少一半，每條比較貴，但總時間比較短。</p>
+</details>
+<h3 id="u1-concept">1.5 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。這一組綜合 1.0～1.3。</p>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 程式有 <span class="arithmatex">\(10^9\)</span> 條指令、CPI 1.5、時脈 2 GHz，CPU time 是多少？</p>
+<ol>
+<li>3 秒</li>
+<li>0.75 秒</li>
+<li>1.33 秒</li>
+<li>0.5 秒</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(\frac{10^9\times1.5}{2\times10^9}=0.75\)</span> 秒。A 是把時脈乘上去而不是除。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-2.</strong> 指令組合：ALU 50%（CPI 1）、load 30%（CPI 5）、branch 20%（CPI 2）。平均 CPI 是多少？</p>
+<ol>
+<li>2.67</li>
+<li>8</li>
+<li>1.6</li>
+<li>2.4</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。<span class="arithmatex">\(0.5\times1+0.3\times5+0.2\times2=0.5+1.5+0.4=2.4\)</span>。A 是三種 CPI 直接平均 <span class="arithmatex">\((1+5+2)/3\)</span>，沒有照比例加權。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> 同一個程式換了編譯器，指令數少了 20%，CPI 卻多了 10%。CPU time 變成原本的幾倍？</p>
+<ol>
+<li>0.88</li>
+<li>0.9</li>
+<li>1.1</li>
+<li>0.72</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。時脈不變，<span class="arithmatex">\(0.8\times1.1=0.88\)</span>，快了一點。B 是把百分比直接相減（−20% ＋ 10%），但它們是相乘的關係。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-4.</strong> 程式 60% 的時間可以加速 3 倍，整體 speedup 是多少？</p>
+<ol>
+<li>3</li>
+<li>1.8</li>
+<li>約 1.67</li>
+<li>2.5</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。<span class="arithmatex">\(\frac1{0.4+0.6/3}=\frac1{0.6}\approx1.67\)</span>。A 以為整個程式都快 3 倍。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> 想讓整體快 2 倍，佔 40% 時間的那部分要加速幾倍？</p>
+<ol>
+<li>5 倍</li>
+<li>不可能：這部分就算變成 0，整體最多快 <span class="arithmatex">\(\frac1{0.6}\approx1.67\)</span> 倍</li>
+<li>2 倍</li>
+<li>4 倍</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(\frac1{0.6+0.4/s}=2\)</span> 要 <span class="arithmatex">\(0.4/s=-0.1\)</span>，沒有正數解。先算上限 <span class="arithmatex">\(\frac1{1-f}\)</span>，目標超過上限就不用算了。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 同一個程式，在 A（2 GHz）上編譯出 <span class="arithmatex">\(10^9\)</span> 條指令、CPI 2；在 B（3 GHz）上編譯出 <span class="arithmatex">\(1.2\times10^9\)</span> 條指令、CPI 2.4。誰比較快？快幾倍？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ul>
+<li><strong>A（1 秒）</strong>：<span class="arithmatex">\(\frac{10^9\times2}{2\times10^9}=1\)</span>。</li>
+<li><strong>B（0.96 秒）</strong>：<span class="arithmatex">\(\frac{1.2\times10^9\times2.4}{3\times10^9}=0.96\)</span>。</li>
+<li><strong>B 比較快，約 1.04 倍</strong>：<span class="arithmatex">\(1\div0.96\approx1.04\)</span>。</li>
+</ul>
+<p>B 的指令比較多、CPI 也比較高，靠時脈才贏一點點：三個數字一定要一起算。</p>
+</details>
+<p><strong>W-2.</strong> 程式跑 100 秒，其中 90 秒在 CPU 計算、10 秒在等 I/O（不能加速）。想讓總時間變成 50 秒，CPU 的部分要快幾倍？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<div class="arithmatex">\[10+\frac{90}{s}=50\ \Rightarrow\ \frac{90}{s}=40\ \Rightarrow\ s=2.25\]</div>
+<p>CPU 的部分要快 <strong>2.25 倍</strong>。檢查上限：I/O 的 10 秒怎麼樣都在，最多快 <span class="arithmatex">\(100\div10=10\)</span> 倍，50 秒（2 倍）在範圍內。</p>
 </details>
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> 40% ALU（CPI 1）、30% load（CPI 4）、20% store（CPI 3）、10% branch（CPI 2），1 GHz，<span class="arithmatex">\(10^9\)</span> 條指令，CPU time？</p>
@@ -2490,10 +2663,12 @@ window.MathJax = {
 <p><strong>B</strong>。<span class="arithmatex">\(\frac{256\text{ MB}}{8\text{ B}}=\frac{2^{28}}{2^3}=2^{25}\)</span> 個 word。C 的 28 是定址到每個 byte。</p>
 </details>
 </div>
+<div>
 <p><strong>W-1.</strong> C 語言的二維陣列 <code>x[5000][100]</code> 是一列一列存的（row-major）。下面的迴圈為什麼 miss 很多？怎麼改？</p>
 <pre class="highlight"><code class="language-c">for (j = 0; j &lt; 100; j++)
     for (i = 0; i &lt; 5000; i++)
         x[i][j] = 2 * x[i][j];</code></pre>
+</div>
 <details class="quiz">
 <summary>看參考答案</summary>
 <p><strong>為什麼 miss 多</strong>：內層迴圈 i 在變，每次跳到下一列，相鄰兩次存取差了 100 個元素（400 或 800 bytes），每次都在不同的 block。一個 block 搬進來只用到一個元素，等外層 j 加 1、要用同一個 block 的下一個元素時，它早就被擠掉了。</p>
@@ -4151,11 +4326,13 @@ sub x4, x1, x5     # 但 sub 在第 4 個 cycle（EX）就要用 x1</code></pre>
 <p><strong>B</strong>。兩條指令同時要用同一個硬體是 structural hazard。分成 I-cache 和 D-cache，兩邊就可以同時存取。</p>
 </details>
 </div>
+<div>
 <p><strong>W-1.</strong> 有 forwarding 的 5 級 pipeline 執行下面 4 行，找出所有 RAW 相依，哪裡要 stall？總共幾個 cycle？</p>
 <pre class="highlight"><code class="language-text">lw  $2, 0($1)
 add $4, $2, $3
 sub $5, $4, $2
 sw  $5, 4($1)</code></pre>
+</div>
 <details class="quiz">
 <summary>看參考答案</summary>
 <table>

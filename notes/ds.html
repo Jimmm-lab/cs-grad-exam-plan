@@ -1211,9 +1211,11 @@ f(3) 回來，印 3</code></pre>
 <p><strong>B</strong>。整數除法往 0 截斷：−3.5 → −3；<code>%</code> 要滿足 <span class="arithmatex">\((a/b)\times b+a\%b=a\)</span>：<span class="arithmatex">\(-3\times2+(-1)=-7\)</span>，所以是 −1。</p>
 </details>
 </div>
+<div>
 <p><strong>W-1.</strong> 下面兩個函式都想交換 m、n。呼叫 <code>swapv(m, n)</code> 和 <code>swapp(&amp;m, &amp;n)</code> 之後（m＝1、n＝2），m、n 各是多少？為什麼？</p>
 <pre class="highlight"><code class="language-c">void swapv(int x, int y) { int t = x; x = y; y = t; }
 void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
+</div>
 <details class="quiz">
 <summary>看參考答案</summary>
 <ul>

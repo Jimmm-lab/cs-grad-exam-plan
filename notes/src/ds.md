@@ -443,12 +443,16 @@ f(2): 回來，印 2
 
 </div>
 
+<div markdown="1">
+
 **W-1.** 下面兩個函式都想交換 m、n。呼叫 `swapv(m, n)` 和 `swapp(&m, &n)` 之後（m＝1、n＝2），m、n 各是多少？為什麼？
 
 ```c
 void swapv(int x, int y) { int t = x; x = y; y = t; }
 void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }
 ```
+
+</div>
 
 ??? quiz "看參考答案"
     - **swapv(m, n) 之後（m＝1、n＝2，沒換）**：x、y 是 m、n 的**複本**，函式裡換的是複本，return 之後複本就丟掉了。

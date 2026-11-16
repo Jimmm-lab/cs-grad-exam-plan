@@ -75,6 +75,40 @@ $$\text{CPU time}=\text{IC}\times\text{CPI}\times T$$
 - 平均 CPI $=18\div10=1.8$，也就是 $0.6\times1+0.4\times3$（**比例 × 各自的 CPI**，再加總）
 - 時脈 1 GHz → $T=1$ ns → 時間 $=18$ ns
 
+<figure class="fig">
+<svg viewBox="0 0 360 150" role="img" aria-label="10 條指令排成時間軸：6 條 ALU 各佔 1 個 cycle，4 條 load 各佔 3 個 cycle，一共 18 個 cycle。平均每條 1.8 個 cycle。">
+<rect class="fb" x="18" y="52" width="18" height="30" rx="3"/>
+<text x="27" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fb" x="36" y="52" width="18" height="30" rx="3"/>
+<text x="45" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fb" x="54" y="52" width="18" height="30" rx="3"/>
+<text x="63" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fb" x="72" y="52" width="18" height="30" rx="3"/>
+<text x="81" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fb" x="90" y="52" width="18" height="30" rx="3"/>
+<text x="99" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fb" x="108" y="52" width="18" height="30" rx="3"/>
+<text x="117" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono tb">A</text>
+<rect class="fa" x="126" y="52" width="54" height="30" rx="3"/>
+<text x="153" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ta">load</text>
+<rect class="fa" x="180" y="52" width="54" height="30" rx="3"/>
+<text x="207" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ta">load</text>
+<rect class="fa" x="234" y="52" width="54" height="30" rx="3"/>
+<text x="261" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ta">load</text>
+<rect class="fa" x="288" y="52" width="54" height="30" rx="3"/>
+<text x="315" y="67" text-anchor="middle" dominant-baseline="central" class="sm mono ta">load</text>
+<line class="arw" x1="18" y1="38" x2="342" y2="38"/>
+<line class="arw" x1="18" y1="33" x2="18" y2="43"/>
+<line class="arw" x1="342" y1="33" x2="342" y2="43"/>
+<rect x="120" y="29" width="120" height="18" style="fill:var(--card)"/>
+<text x="180" y="38" text-anchor="middle" dominant-baseline="central" class="sm">共 18 個 cycle</text>
+<text x="72" y="100" text-anchor="middle" dominant-baseline="central" class="sm tb">6 × 1 ＝ 6</text>
+<text x="234" y="100" text-anchor="middle" dominant-baseline="central" class="sm ta">4 × 3 ＝ 12</text>
+<text x="180" y="134" text-anchor="middle" dominant-baseline="central" class="sm mono">CPI ＝ 18 ÷ 10 ＝ 1.8</text>
+</svg>
+<figcaption>把每條指令佔的 cycle 排成一列：平均 CPI 就是「總 cycle 數 ÷ 指令數」</figcaption>
+</figure>
+
 #### 為什麼「時脈高」不代表比較快
 
 | | 時脈 | CPI | 每條指令的時間 |
@@ -91,11 +125,44 @@ $$\text{CPU time}=\text{IC}\times\text{CPI}\times T$$
 - 可加速的部分快 4 倍：$20+80/4=40$ 秒，整體 speedup $=100/40=2.5$
 - 可加速的部分快到無限：$20+0=20$ 秒，整體最多 $100/20=5$ 倍
 
+<figure class="fig">
+<svg viewBox="0 0 360 178" role="img" aria-label="程式原本 100 秒：20 秒不能加速、80 秒可以。可加速的部分快 4 倍，變成 20 加 20 共 40 秒，快 2.5 倍；快到無限，也還剩 20 秒，最多快 5 倍。">
+<text x="84" y="40" text-anchor="end" dominant-baseline="central" class="sm">原本</text>
+<rect class="ft" x="92" y="26" width="44" height="28" rx="3"/>
+<rect class="fb" x="136" y="26" width="176" height="28" rx="3"/>
+<text x="318" y="40" text-anchor="start" dominant-baseline="central" class="sm">100 秒</text>
+<text x="84" y="88" text-anchor="end" dominant-baseline="central" class="sm">快 4 倍</text>
+<rect class="ft" x="92" y="74" width="44" height="28" rx="3"/>
+<rect class="fb" x="136" y="74" width="44" height="28" rx="3"/>
+<text x="186" y="88" text-anchor="start" dominant-baseline="central" class="sm">40 秒：2.5 倍</text>
+<text x="84" y="136" text-anchor="end" dominant-baseline="central" class="sm">快到無限</text>
+<rect class="ft" x="92" y="122" width="44" height="28" rx="3"/>
+<text x="142" y="136" text-anchor="start" dominant-baseline="central" class="sm">20 秒：最多 5 倍</text>
+<text x="114" y="18" text-anchor="middle" dominant-baseline="central" class="sm"></text>
+<rect class="ft" x="92" y="156" width="12" height="12" rx="2"/>
+<text x="110" y="162" text-anchor="start" dominant-baseline="central" class="sm">不能加速</text>
+<rect class="fb" x="192" y="156" width="12" height="12" rx="2"/>
+<text x="210" y="162" text-anchor="start" dominant-baseline="central" class="sm">可以加速</text>
+</svg>
+<figcaption>可以加速的那段越縮越短，不能加速的 20 秒一直都在</figcaption>
+</figure>
+
 **不能加速的那 20% 決定了上限。** 寫成公式（$f$＝可加速比例、$s$＝加速倍數）：
 
 $$\text{新時間}=(1-f)+\frac fs,\qquad\text{Speedup}=\frac{1}{(1-f)+\frac fs}$$
 
 這就是「make the common case fast」：佔比大的部分（$f$ 大）才值得加速。
+
+!!! key "效能題要算什麼"
+    | 題目問 | 怎麼算 |
+    |---|---|
+    | CPU time | IC × CPI × T ＝ IC × CPI ÷ 時脈 |
+    | 平均 CPI | 各類指令的「比例 × CPI」加總 |
+    | 兩台機器誰快 | 比 CPU time（三個數字一起看）；快幾倍 ＝ 慢的時間 ÷ 快的時間 |
+    | 加速一部分 | Amdahl：$\frac{1}{(1-f)+f/s}$，上限 $\frac1{1-f}$ |
+    | 要加速幾倍才達到目標 | 把 Amdahl 的式子反過來解 $s$；目標超過上限就不可能 |
+
+    名詞對照：instruction count（指令數）、CPI（每指令週期數）、clock rate／cycle time（時脈／週期）、speedup（加速比）。
 
 !!! read "還不懂？看別人怎麼講"
     - **中文筆記（資工所考生整理）**：[了解與評估計算機的效能](https://saberliou.github.io/PrepareCSEMaster/ComputerOrganization/Chapter03.html)：CPU time 三因子、用 MIPS 評估效能的謬誤、Amdahl's Law、make the common case fast，順序跟這節一樣，還多了效能平均（算數、幾何平均）的整理。
@@ -444,6 +511,96 @@ $$\frac{P_{\text{new}}}{P_{\text{old}}}=\frac{C_{\text{new}}}{C_{\text{old}}}\ti
     **MIPS**：A $=\frac{2\times10^9}{3\times10^6}\approx667$；B $=\frac{10^9}{2.5\times10^6}=400$。
 
     **B 比較快**（快 $\frac{3}{2.5}=1.2$ 倍），雖然 A 的 MIPS 值高了快一倍。B 的指令少一半，每條比較貴，但總時間比較短。
+
+### 1.5 觀念小考 {#u1-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。這一組綜合 1.0～1.3。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 程式有 $10^9$ 條指令、CPI 1.5、時脈 2 GHz，CPU time 是多少？
+
+1. 3 秒
+2. 0.75 秒
+3. 1.33 秒
+4. 0.5 秒
+
+??? quiz "看解析"
+    **B**。$\frac{10^9\times1.5}{2\times10^9}=0.75$ 秒。A 是把時脈乘上去而不是除。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-2.** 指令組合：ALU 50%（CPI 1）、load 30%（CPI 5）、branch 20%（CPI 2）。平均 CPI 是多少？
+
+1. 2.67
+2. 8
+3. 1.6
+4. 2.4
+
+??? quiz "看解析"
+    **D**。$0.5\times1+0.3\times5+0.2\times2=0.5+1.5+0.4=2.4$。A 是三種 CPI 直接平均 $(1+5+2)/3$，沒有照比例加權。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** 同一個程式換了編譯器，指令數少了 20%，CPI 卻多了 10%。CPU time 變成原本的幾倍？
+
+1. 0.88
+2. 0.9
+3. 1.1
+4. 0.72
+
+??? quiz "看解析"
+    **A**。時脈不變，$0.8\times1.1=0.88$，快了一點。B 是把百分比直接相減（−20% ＋ 10%），但它們是相乘的關係。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-4.** 程式 60% 的時間可以加速 3 倍，整體 speedup 是多少？
+
+1. 3
+2. 1.8
+3. 約 1.67
+4. 2.5
+
+??? quiz "看解析"
+    **C**。$\frac1{0.4+0.6/3}=\frac1{0.6}\approx1.67$。A 以為整個程式都快 3 倍。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 想讓整體快 2 倍，佔 40% 時間的那部分要加速幾倍？
+
+1. 5 倍
+2. 不可能：這部分就算變成 0，整體最多快 $\frac1{0.6}\approx1.67$ 倍
+3. 2 倍
+4. 4 倍
+
+??? quiz "看解析"
+    **B**。$\frac1{0.6+0.4/s}=2$ 要 $0.4/s=-0.1$，沒有正數解。先算上限 $\frac1{1-f}$，目標超過上限就不用算了。
+
+</div>
+
+**W-1.** 同一個程式，在 A（2 GHz）上編譯出 $10^9$ 條指令、CPI 2；在 B（3 GHz）上編譯出 $1.2\times10^9$ 條指令、CPI 2.4。誰比較快？快幾倍？
+
+??? quiz "看參考答案"
+    - **A（1 秒）**：$\frac{10^9\times2}{2\times10^9}=1$。
+    - **B（0.96 秒）**：$\frac{1.2\times10^9\times2.4}{3\times10^9}=0.96$。
+    - **B 比較快，約 1.04 倍**：$1\div0.96\approx1.04$。
+
+    B 的指令比較多、CPI 也比較高，靠時脈才贏一點點：三個數字一定要一起算。
+
+**W-2.** 程式跑 100 秒，其中 90 秒在 CPU 計算、10 秒在等 I/O（不能加速）。想讓總時間變成 50 秒，CPU 的部分要快幾倍？
+
+??? quiz "看參考答案"
+    $$10+\frac{90}{s}=50\ \Rightarrow\ \frac{90}{s}=40\ \Rightarrow\ s=2.25$$
+
+    CPU 的部分要快 **2.25 倍**。檢查上限：I/O 的 10 秒怎麼樣都在，最多快 $100\div10=10$ 倍，50 秒（2 倍）在範圍內。
 
 ### 單元 1 小考 {#u1-quiz}
 
@@ -1267,6 +1424,8 @@ $$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
 
 </div>
 
+<div markdown="1">
+
 **W-1.** C 語言的二維陣列 `x[5000][100]` 是一列一列存的（row-major）。下面的迴圈為什麼 miss 很多？怎麼改？
 
 ```c
@@ -1274,6 +1433,8 @@ for (j = 0; j < 100; j++)
     for (i = 0; i < 5000; i++)
         x[i][j] = 2 * x[i][j];
 ```
+
+</div>
 
 ??? quiz "看參考答案"
     **為什麼 miss 多**：內層迴圈 i 在變，每次跳到下一列，相鄰兩次存取差了 100 個元素（400 或 800 bytes），每次都在不同的 block。一個 block 搬進來只用到一個元素，等外層 j 加 1、要用同一個 block 的下一個元素時，它早就被擠掉了。
@@ -2252,6 +2413,8 @@ lw 用到最多元件，所以最慢。算 PC＋4 和 branch 目標的 adder 跟
 
 </div>
 
+<div markdown="1">
+
 **W-1.** 有 forwarding 的 5 級 pipeline 執行下面 4 行，找出所有 RAW 相依，哪裡要 stall？總共幾個 cycle？
 
 ```text
@@ -2260,6 +2423,8 @@ add $4, $2, $3
 sub $5, $4, $2
 sw  $5, 4($1)
 ```
+
+</div>
 
 ??? quiz "看參考答案"
     | 相依 | 暫存器 | 處理 |
