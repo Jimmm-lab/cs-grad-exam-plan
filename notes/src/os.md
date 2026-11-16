@@ -38,6 +38,29 @@
 
 **建議讀的順序**：單元 1 行程與排程 → 2 同步 → 3 死結 → 4 記憶體 → 5 儲存與檔案 → 6 保護、安全與其他 → 7 名詞總表。
 
+#### 觀念題用英文作答 {#u0-en}
+
+觀念題用中文寫也可以，但**名詞一定要用英文原文**。能用英文寫的話，照下面的方法最快，也最接近課本條列、閱卷給分的方式。
+
+!!! key "英文作答四個原則"
+    1. **第一句直接回答**：問 What is X，就寫 "X is ..."；問 How does X work，就寫 "X works as follows:" 再條列。
+    2. **條列，不寫長段落**：題目要幾點就寫幾點，用 1. 2. 3. 編號，每點一兩句。
+    3. **關鍵名詞照課本**：例如 a program in execution、mutual exclusion、safe sequence。換成別的說法，閱卷老師可能認不出是同一個觀念。
+    4. **短句、現在式**：主詞 ＋ 動詞 ＋ 受詞就夠了，不需要複雜的文法。
+
+| 要表達 | 常用句型 |
+|---|---|
+| 定義 | X is a ... that ... ／ X refers to ... |
+| 什麼時候發生 | X occurs when ... ／ X happens if ... |
+| 原因 | ..., because ... ／ X is caused by ... |
+| 目的 | X is used to ... ／ The goal of X is to ... |
+| 步驟 | First, ... Then, ... Finally, ... |
+| 比較 | X ..., whereas Y ... ／ Unlike X, Y ... |
+| 優缺點 | The advantage is ...; the drawback is ... |
+| 舉例 | For example, ... |
+
+單元 1～6 的最後都有「英文作答範例」：考古題和恐龍書的經典觀念題，各附一份英文參考答案。
+
 ## 單元 1：行程、執行緒與 CPU 排程 {#u1}
 
 !!! key "一句話重點"
@@ -807,6 +830,138 @@ printf("%d\n", v);
     用動畫對答案：把 `P1 0 10, P2 0 4, P3 0 6` 貼進 [1.2 的動畫](#u1-2)，演算法選 Round Robin、quantum 填 4。
 
 
+### 1.6 英文作答範例 {#u1-en}
+
+考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把**粗體的關鍵字**記起來。寫法見 [0. 中山 OS 怎麼考](#u0-en)。
+
+<div markdown="1">
+
+**E-1.** What is the difference between a program and a process? What does a process contain in memory?
+
+（中文：程式和行程差在哪？行程在記憶體裡有哪些部分？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    A **program** is a **passive entity**, such as an executable file stored on disk. A **process** is **a program in execution**, an **active entity**. A program becomes a process when its executable file is loaded into memory.
+
+    A process in memory contains:
+
+    1. **Text section**: the executable code.
+    2. **Data section**: global variables.
+    3. **Heap**: memory that is dynamically allocated during run time.
+    4. **Stack**: temporary data such as function parameters, return addresses and local variables.
+
+    It also includes the current activity, represented by the **program counter** and the contents of the **registers**.
+
+    寫法提示：關鍵句是 a program in execution，再對比 passive／active。四個區段的英文名稱要會寫（[1.0](#u1-0)）。
+
+<div markdown="1">
+
+**E-2.** Describe the actions taken by the kernel to context-switch between processes.
+
+（中文：context switch 時 kernel 做了哪些事？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. An interrupt or a system call causes the kernel to take control.
+    2. The kernel **saves the state** of the running process (program counter, CPU registers and memory-management information) **in its PCB**.
+    3. The process is moved to the appropriate queue (the ready queue or a wait queue), and its state is updated.
+    4. The CPU scheduler selects the next process.
+    5. The kernel **restores the state** of the new process **from its PCB** and resumes it.
+
+    Context-switch time is **overhead**, because the system does no useful work while switching.
+
+    寫法提示：一定要寫到 save 和 restore、PCB、overhead 三個詞（[1.0](#u1-0)）。
+
+<div markdown="1">
+
+**E-3.** Under what circumstances does a process give up the CPU? Which queue is it placed in afterwards?
+
+（中文：115 Q2a：process 什麼時候交出 CPU？之後放到哪個 queue？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. The process **issues an I/O request**; it is then placed in an **I/O wait queue**.
+    2. The process **creates a child process and waits for its termination** (or waits for another event); it is placed in a **wait queue**.
+    3. The process is **removed forcibly from the CPU**, because of an **interrupt** or because its **time slice expires**; it is put back in the **ready queue**.
+
+    寫法提示：三種情況各配一個 queue，一個情況寫一點（[1.1](#u1-1)）。
+
+<div markdown="1">
+
+**E-4.** Explain processor affinity. Why is a warm cache important?
+
+（中文：115 Q2b：什麼是 processor affinity？為什麼 warm cache 很重要？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    After a process runs on a processor, the data it accessed recently fills that processor's cache; we say the cache is **warm**. If the process **migrates** to another processor, the contents of the first cache must be **invalidated** and the second cache must be **repopulated**, which is expensive.
+
+    Therefore most SMP systems try to **keep a process running on the same processor**. This is called **processor affinity**:
+
+    - **Soft affinity**: the OS tries to keep the process on the same processor but does not guarantee it.
+    - **Hard affinity**: the process can specify the set of processors on which it may run.
+
+    寫法提示：因果順序寫清楚：cache 是熱的 → 換處理器要 invalidate、repopulate，代價大 → 所以盡量不換（[1.1](#u1-1)）。
+
+<div markdown="1">
+
+**E-5.** Compare the two fundamental models of interprocess communication.
+
+（中文：114 Q6b：兩種 IPC 模型的比較。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    - **Shared memory**: the cooperating processes establish a **region of memory that they share** and exchange information by reading and writing it. It is **faster**, because system calls are needed only to set up the region; after that, no kernel assistance is required. However, the processes themselves must **synchronize** their accesses.
+    - **Message passing**: the processes exchange **messages** through the kernel with **send()** and **receive()**. It is **easier to implement**, there are no conflicts to avoid, and it is well suited to **distributed systems**. However, it is **slower**, because every message requires a system call.
+
+    寫法提示：兩種各寫「怎麼做」和「優點、缺點」，用 whereas 或 however 對比（[1.1](#u1-1)）。
+
+<div markdown="1">
+
+**E-6.** What are the benefits of multithreaded programming? What do threads of the same process share?
+
+（中文：多執行緒有什麼好處？同一個 process 的 thread 共用哪些東西？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    Four benefits:
+
+    1. **Responsiveness**: the program can keep running even if part of it is blocked or performing a lengthy operation.
+    2. **Resource sharing**: threads share the memory and the resources of the process to which they belong.
+    3. **Economy**: creating threads and switching between them is much cheaper than for processes.
+    4. **Scalability**: threads can run **in parallel** on multiple processing cores.
+
+    Threads of the same process **share** the code section, the data section and OS resources such as open files. Each thread has **its own** thread ID, program counter, register set and stack.
+
+    寫法提示：四個好處的英文名稱是固定的，背 responsiveness、resource sharing、economy、scalability（[1.0](#u1-0)）。
+
+<div markdown="1">
+
+**E-7.** Distinguish between preemptive and nonpreemptive scheduling.
+
+（中文：搶先式和非搶先式排程的差別。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    CPU-scheduling decisions take place when a process:
+
+    1. switches from running to waiting (for example, an I/O request);
+    2. switches from running to ready (for example, an interrupt);
+    3. switches from waiting to ready (for example, I/O completion);
+    4. terminates.
+
+    Under **nonpreemptive** (cooperative) scheduling, scheduling happens **only in cases 1 and 4**: once a process gets the CPU, it keeps it until it **terminates or switches to the waiting state**. Under **preemptive** scheduling, the OS can also **take the CPU away** from a running process (cases 2 and 3), for example when a higher-priority process becomes ready. Preemptive scheduling gives better response time, but it can cause **race conditions** when processes share data.
+
+    寫法提示：先列出四個排程時機，再說非搶先只在 1、4 發生，這是課本的寫法（[1.2](#u1-2)）。
+
 ### 單元 1 小考 {#u1-quiz}
 
 **1-1.** 三個 process 在時間 0 依序到達，burst 6、3、1，FCFS 和 SJF 的平均等待時間？
@@ -1210,6 +1365,102 @@ signal(empty);
     - j 通過 while，表示當時 `turn == j`。
 
     turn 只有一個值，兩個人最後都寫了 turn（i 寫 j、j 寫 i），**後寫的那個**把 turn 設成對方，自己就會卡在 while。所以不可能兩個都通過，矛盾。∎
+
+### 2.4 英文作答範例 {#u2-en}
+
+考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把**粗體的關鍵字**記起來。寫法見 [0. 中山 OS 怎麼考](#u0-en)。
+
+<div markdown="1">
+
+**E-1.** What is a race condition? Give an example.
+
+（中文：什麼是 race condition？舉一個例子。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    A **race condition** occurs when several processes or threads **access and manipulate the same data concurrently**, and the **outcome depends on the particular order** in which the accesses take place.
+
+    For example, two threads both execute `counter++`. Each increment is three machine instructions (load, add, store). If the instructions interleave, both threads may load the same old value, and **one update is lost**.
+
+    To guard against race conditions, only one process at a time may manipulate the shared data, so the processes must be **synchronized**.
+
+    寫法提示：定義裡的 concurrently 和 outcome depends on the order 是給分重點；例子用 counter++ 最好寫（[2.0](#u2-0)）。
+
+<div markdown="1">
+
+**E-2.** What three requirements must a solution to the critical-section problem satisfy?
+
+（中文：critical-section 問題的解法要滿足哪三個條件？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. **Mutual exclusion**: if a process is executing in its critical section, **no other process** can be executing in its critical section.
+    2. **Progress**: if no process is in its critical section and some processes wish to enter, only the processes that are not in their remainder sections can take part in deciding which one enters next, and this selection **cannot be postponed indefinitely**.
+    3. **Bounded waiting**: after a process has made a request to enter its critical section, there is a **limit** on the number of times other processes are allowed to enter their critical sections before that request is granted.
+
+    寫法提示：三個名稱一定要寫英文；progress 和 bounded waiting 最常寫反：progress 是「不能一直不決定」，bounded waiting 是「不能一直被插隊」（[2.0](#u2-0)）。
+
+<div markdown="1">
+
+**E-3.** Describe three hardware supports for solving the critical-section problem.
+
+（中文：114 Q6a：解決 critical-section 問題的三種硬體支援。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. **Memory barriers (memory fences)**: instructions that force all earlier memory operations to complete and become **visible to all other processors** before any later operation is performed.
+    2. **Hardware instructions** such as **test_and_set()** and **compare_and_swap()**: they test and modify a memory word **atomically**, as one uninterruptible unit, and can be used to build locks.
+    3. **Atomic variables**: they provide **atomic operations** on basic data types such as integers and booleans, for example an atomic increment.
+
+    寫法提示：三個名稱照課本寫，每個補一句「它做什麼」（[2.1](#u2-1)）。
+
+<div markdown="1">
+
+**E-4.** Explain the uses of mutex locks, semaphores and condition variables.
+
+（中文：112 Q5b：mutex、semaphore、condition variable 各用在哪裡？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    - **Mutex lock**: protects a critical section. A process must **acquire()** the lock before entering the critical section and **release()** it when it exits, so only one process holds the lock at a time.
+    - **Semaphore**: an integer variable that is accessed only through two atomic operations, **wait()** (decrement, and block if no resource is available) and **signal()** (increment). A **binary semaphore** behaves like a mutex lock; a **counting semaphore** controls access to a resource with a finite number of instances, and it can also enforce an **execution order** between processes.
+    - **Condition variable**: used inside a **monitor** (or together with a mutex). A thread calls **wait()** to suspend until some **condition** becomes true, and another thread calls **signal()** to resume one waiting thread.
+
+    寫法提示：三個都要寫「操作的名稱」：acquire／release、wait／signal、wait／signal（[2.1](#u2-1)）。
+
+<div markdown="1">
+
+**E-5.** What is busy waiting? When is a spinlock preferable to a lock that blocks?
+
+（中文：什麼是 busy waiting？什麼時候 spinlock 比會睡覺的 lock 好？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    **Busy waiting** means that a process trying to enter its critical section **loops continuously** in the entry code, wasting CPU cycles that other processes could use. A lock that busy-waits is called a **spinlock**.
+
+    A spinlock is preferable on **multicore systems** when the lock is **held for a short time**: the waiting process needs **no context switch**, and a context switch could take longer than the wait itself. On a single-processor system, spinning is wasteful, because the lock holder cannot run while another process spins.
+
+    寫法提示：答「什麼時候比較好」要同時寫兩個條件：multicore、held for a short time（[2.0](#u2-0)）。
+
+<div markdown="1">
+
+**E-6.** What is priority inversion? How can it be solved?
+
+（中文：105、107：什麼是 priority inversion？怎麼解決？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    **Priority inversion** occurs when a **high-priority process** needs a resource (such as a lock) held by a **low-priority process**, and the low-priority process is **preempted by a medium-priority process**. As a result, a process with a lower priority (the medium one) indirectly makes the high-priority process wait longer.
+
+    It can be solved with the **priority-inheritance protocol**: a process that holds a resource needed by a higher-priority process **temporarily inherits the higher priority** until it releases the resource. Then the medium-priority process cannot preempt it, and its priority **reverts to the original value** after it releases the resource.
+
+    寫法提示：一定要有三個角色（high、medium、low），只寫兩個不算 priority inversion（[2.2](#u2-more)）。
 
 ### 單元 2 小考 {#u2-quiz}
 
@@ -1763,6 +2014,95 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
     我用程式跑過 safety 演算法，結果一樣。
 
+
+### 3.5 英文作答範例 {#u3-en}
+
+考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把**粗體的關鍵字**記起來。寫法見 [0. 中山 OS 怎麼考](#u0-en)。
+
+<div markdown="1">
+
+**E-1.** What are the four necessary conditions for a deadlock?
+
+（中文：死結的四個必要條件。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    A deadlock can arise only if **all four** conditions hold **simultaneously**:
+
+    1. **Mutual exclusion**: at least one resource is held in a **nonsharable** mode.
+    2. **Hold and wait**: a process is **holding** at least one resource and **waiting** to acquire additional resources held by other processes.
+    3. **No preemption**: a resource can be released **only voluntarily** by the process holding it.
+    4. **Circular wait**: there is a set $\{P_0,P_1,\dots,P_n\}$ of waiting processes such that $P_0$ waits for a resource held by $P_1$, $P_1$ waits for $P_2$, …, and $P_n$ waits for $P_0$.
+
+    寫法提示：開頭那句 all four … simultaneously 是重點：少一個就不會死結，這就是 prevention 的根據（[3.0](#u3-0)）。
+
+<div markdown="1">
+
+**E-2.** What are the three methods for handling deadlocks?
+
+（中文：115 Q3a：處理死結的三種方法。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. Use a protocol to **prevent or avoid** deadlocks, ensuring that the system will **never enter a deadlocked state**.
+    2. Allow the system to enter a deadlocked state, **detect** it, and **recover**.
+    3. **Ignore** the problem and pretend that deadlocks never occur in the system. This approach is used by most operating systems, including **Linux and Windows**; it is then up to kernel and application developers to handle deadlocks.
+
+    寫法提示：第三種常被漏掉；寫出「大多數 OS 用這種」會加分（[3.1](#u3-1)）。
+
+<div markdown="1">
+
+**E-3.** How does deadlock prevention work?
+
+（中文：112 Q8a：deadlock prevention 怎麼運作？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    Deadlock prevention ensures that **at least one of the four necessary conditions cannot hold**:
+
+    - **Mutual exclusion**: make resources sharable when possible (for example, read-only files). Some resources are intrinsically nonsharable, so this condition usually cannot be denied.
+    - **Hold and wait**: require each process to request and be allocated **all its resources before it begins execution**, or to request resources **only when it holds none**. The drawbacks are low resource utilization and possible starvation.
+    - **No preemption**: if a process that is holding resources requests another resource that cannot be allocated immediately, **all the resources it currently holds are preempted** (released).
+    - **Circular wait**: impose a **total ordering** of all resource types, and require each process to request resources **in increasing order** of enumeration.
+
+    寫法提示：對四個條件各寫一個破解方法；circular wait 的「資源編號、遞增申請」最常考（[3.1](#u3-1)）。
+
+<div markdown="1">
+
+**E-4.** What is a safe state? Is every unsafe state a deadlock?
+
+（中文：什麼是 safe state？unsafe 一定會死結嗎？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    A state is **safe** if the system can allocate resources to each process, up to its maximum, **in some order** and still avoid a deadlock. In other words, there exists a **safe sequence** $\langle P_1,P_2,\dots,P_n\rangle$ such that the remaining needs of each $P_i$ can be satisfied by the currently available resources plus the resources held by all $P_j$ with $j<i$.
+
+    A safe state is not a deadlocked state. An **unsafe state may lead to a deadlock**, but **not every unsafe state is a deadlock**: whether a deadlock actually occurs depends on the future requests of the processes. **Deadlock avoidance** (for example, the **banker's algorithm**) grants a request only if the system remains in a safe state.
+
+    寫法提示：safe sequence 的定義要寫完整（現有的 ＋ 前面的人還回來的）；第二問答 not necessarily（[3.0](#u3-0)）。
+
+<div markdown="1">
+
+**E-5.** How can a system recover from a deadlock?
+
+（中文：偵測到死結之後怎麼復原？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    There are two approaches:
+
+    1. **Process termination**: **abort all deadlocked processes**, which is costly because their partial computations are lost; or **abort one process at a time** until the deadlock cycle is eliminated, which has the overhead of running the detection algorithm after each abort.
+    2. **Resource preemption**: take resources away from some processes and give them to others. Three issues must be addressed:
+        - **Selecting a victim**: choose the process whose preemption costs the least.
+        - **Rollback**: return the victim to some safe state and restart it from that state (the simplest way is a total rollback).
+        - **Starvation**: make sure the same process is not always chosen as the victim, for example by including the number of rollbacks in the cost factor.
+
+    寫法提示：resource preemption 的三個問題（victim、rollback、starvation）是課本條列，三個都要寫（[3.0](#u3-0)）。
 
 ### 單元 3 小考 {#u3-quiz}
 
@@ -2648,6 +2988,110 @@ kernel 自己要記憶體時常用 buddy system：
     - **慢了約 11 倍**：每一萬次才 fault 一次，平均時間還是被它主宰。
 
 
+### 4.8 英文作答範例 {#u4-en}
+
+考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把**粗體的關鍵字**記起來。寫法見 [0. 中山 OS 怎麼考](#u0-en)。
+
+<div markdown="1">
+
+**E-1.** Explain address binding at compile time, load time and execution time.
+
+（中文：112 Q6a：compile time、load time、execution time 的位址繫結。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    - **Compile time**: if it is known at compile time where the process will reside in memory, **absolute code** can be generated. If the starting location changes later, the code must be **recompiled**.
+    - **Load time**: if the location is not known at compile time, the compiler generates **relocatable code**, and the final binding is delayed until load time. If the starting address changes, the program only needs to be **reloaded**.
+    - **Execution time**: if the process can be **moved during its execution** from one memory segment to another, binding must be delayed until run time. This requires **special hardware (the MMU)**, and most operating systems use this method.
+
+    寫法提示：每一種都寫「產生什麼碼」和「位置改了要怎樣」：recompile、reload、可以在執行中搬動（[4.1](#u4-1)）。
+
+<div markdown="1">
+
+**E-2.** What is the difference between a logical address and a physical address?
+
+（中文：邏輯位址和實體位址的差別。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    An address generated by the **CPU** is a **logical address** (also called a virtual address). An address seen by the **memory unit**, the one loaded into the memory-address register, is a **physical address**.
+
+    With compile-time and load-time binding the two are identical; with **execution-time binding** they differ. The run-time mapping from logical to physical addresses is done by a hardware device called the **memory-management unit (MMU)**, for example by adding the value in a **relocation register** to every logical address. The user program deals only with logical addresses and never sees the real physical addresses.
+
+    寫法提示：誰產生（CPU）、誰看到（memory unit）、誰轉換（MMU）三件事寫清楚（[4.1](#u4-1)）。
+
+<div markdown="1">
+
+**E-3.** Distinguish internal fragmentation from external fragmentation. Which one does paging have?
+
+（中文：內部碎片和外部碎片的差別；paging 有哪一種？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    - **External fragmentation**: there is enough **total free memory** to satisfy a request, but it is **not contiguous**; it is broken into many small holes. It occurs with contiguous allocation (first fit, best fit) and with segmentation. It can be reduced by **compaction**, or avoided by allowing noncontiguous allocation such as **paging**.
+    - **Internal fragmentation**: the memory allocated to a process is **slightly larger than the requested memory**, and the unused part is **inside the allocated partition**.
+
+    **Paging has no external fragmentation**, because any free frame can be allocated to any process, but it has **internal fragmentation** in the **last page** of a process (on average half a page).
+
+    寫法提示：外部碎片的關鍵詞是 not contiguous，內部碎片是 inside the partition；paging 的答案兩部分都要寫（[4.5](#u4-alloc)）。
+
+<div markdown="1">
+
+**E-4.** Describe how a TLB is used in address translation.
+
+（中文：114 Q7：TLB 怎麼用在位址轉換（步驟）。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. The CPU generates a logical address, and its **page number** is extracted.
+    2. The page number is presented to the **TLB**, which compares it with all its keys **simultaneously**.
+    3. **TLB hit**: the frame number is available immediately and is used to access memory.
+    4. **TLB miss**: a memory reference to the **page table** is made to obtain the frame number.
+    5. The page number and frame number are **added to the TLB**, replacing an existing entry (for example, by LRU) if the TLB is full, so that the next reference to this page will be found quickly.
+
+    Some TLBs store an **address-space identifier (ASID)** in each entry, so entries of several processes can coexist; otherwise the TLB must be **flushed** on every context switch.
+
+    寫法提示：五個步驟照順序寫，hit 和 miss 分開；最後補 ASID 或 flush 會更完整（[4.1](#u4-1)）。
+
+<div markdown="1">
+
+**E-5.** What is thrashing? What causes it, and how does the working-set model prevent it?
+
+（中文：112 Q6b：什麼是 thrashing？原因？working-set model 怎麼處理？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    A process is **thrashing** if it is spending **more time paging than executing**.
+
+    **Cause**: if processes do not have enough frames to hold the pages they are actively using (their **locality**), they page-fault continuously. CPU utilization drops, so the OS increases the degree of multiprogramming, which takes even more frames away and makes the problem worse.
+
+    **Working-set model**: choose a working-set window $\Delta$; the **working set** of a process is the set of pages referenced in its most recent $\Delta$ references. Let $D=\sum WSS_i$ be the total demand for frames. If $D$ is **greater than the number of available frames** $m$, the OS **suspends (swaps out) a process** and gives its frames to other processes. This prevents thrashing while keeping the degree of multiprogramming as high as possible.
+
+    寫法提示：原因要寫出惡性循環（CPU 使用率下降 → OS 加更多 process → 更糟）；working set 要寫 D 和 m 的比較（[4.3](#u4-3)）。
+
+<div markdown="1">
+
+**E-6.** Describe the steps for handling a page fault.
+
+（中文：page fault 發生時的處理步驟。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. The reference to a page marked **invalid** in the page table causes a **trap** to the operating system.
+    2. The OS checks an internal table: if the reference was an **invalid memory access**, the process is terminated; if it was valid but the page is **not yet in memory**, the page must be brought in.
+    3. Find a **free frame** (if there is none, select a victim frame with a **page-replacement algorithm**).
+    4. Schedule a **disk operation** to read the desired page into the frame.
+    5. When the read is complete, **update the page table** to indicate that the page is now in memory.
+    6. **Restart the instruction** that was interrupted by the trap.
+
+    寫法提示：最後一步 restart the instruction 常被漏掉；沒有空 frame 時才需要置換（[4.0](#u4-0)）。
+
 ### 單元 4 小考 {#u4-quiz}
 
 **4-1.** 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？
@@ -3501,6 +3945,132 @@ i-node 像一本書的**目錄頁**：前面幾格直接寫「第 1 章在第幾
     - **最大檔案**：$2113674\times512$ B，約 1.01 GB。
 
 
+### 5.8 英文作答範例 {#u5-en}
+
+考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把**粗體的關鍵字**記起來。寫法見 [0. 中山 OS 怎麼考](#u0-en)。
+
+<div markdown="1">
+
+**E-1.** Besides its name, list the attributes of a file.
+
+（中文：114 Q5a：除了名字，檔案還有哪些屬性？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. **Identifier**: a unique tag, usually a number, that identifies the file within the file system.
+    2. **Type**: needed for systems that support different types of files.
+    3. **Location**: a pointer to a device and to the location of the file on that device.
+    4. **Size**: the current size of the file (and possibly the maximum allowed size).
+    5. **Protection**: access-control information that determines who can read, write and execute the file.
+    6. **Timestamps and user identification**: the time of creation, last modification and last use, and the owner; useful for protection, security and usage monitoring.
+
+    寫法提示：六個屬性的英文名稱照課本寫，每個補半句說明（[5.1](#u5-1)）。
+
+<div markdown="1">
+
+**E-2.** (a) Describe three file access methods. (b) What are consistency semantics?
+
+（中文：112 Q7：(a) 三種存取方式 (b) consistency semantics。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    (a)
+
+    - **Sequential access**: information in the file is processed **in order**, one record after another (read next, write next). It is based on a tape model.
+    - **Direct access**: the file is viewed as a numbered sequence of fixed-length blocks, and a program can read or write **any block in any order**. It suits databases.
+    - **Indexed access**: an **index** containing pointers to the blocks is built. To find a record, we first search the index and then use the pointer to access the record directly.
+
+    (b) **Consistency semantics** specify **when modifications** of data by one user **become observable** to other users who are accessing the same file simultaneously. Examples:
+
+    - **UNIX semantics**: writes become visible **immediately** to other users who have the file open.
+    - **Session semantics** (used by AFS): writes become visible only to sessions that start **after the file is closed**.
+    - **Immutable-shared-files semantics**: a shared file **cannot be modified**.
+
+    寫法提示：(b) 的定義句 when modifications become observable 一定要寫，再舉 UNIX、session 兩種（[5.1](#u5-1)）。
+
+<div markdown="1">
+
+**E-3.** What are the components of disk access time? How can it be reduced?
+
+（中文：磁碟存取時間由哪些部分組成？怎麼縮短？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    For a hard disk, the **random-access time** consists of:
+
+    1. **Seek time**: the time to move the disk arm to the desired cylinder.
+    2. **Rotational latency**: the time for the desired sector to rotate under the disk head.
+
+    Transferring the data then adds the **transfer time**. Seek time, usually the largest part, can be reduced by **disk scheduling** (for example SSTF, SCAN or C-SCAN) and by placing the blocks of a file close together (**clustering**). Rotational latency depends on the rotation speed of the disk.
+
+    寫法提示：兩個主要部分 seek time、rotational latency 一定要寫；縮短方法寫 disk scheduling（[5.0](#u5-0)）。
+
+<div markdown="1">
+
+**E-4.** Compare polling, interrupt-driven I/O and DMA.
+
+（中文：polling、中斷驅動 I/O、DMA 的比較。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    - **Polling (busy waiting)**: the host **repeatedly reads the busy bit** in the device controller's status register until the device is ready. It is efficient if the device is fast, but it **wastes CPU cycles** if the host must wait a long time.
+    - **Interrupt-driven I/O**: the CPU starts the I/O operation and goes on with other work. When the device finishes, the controller **raises an interrupt**, and the CPU runs the **interrupt handler**.
+    - **DMA (direct memory access)**: for large transfers, the CPU writes a command block to a **DMA controller**, which transfers the whole block **directly between the device and main memory** without the CPU. The DMA controller **interrupts the CPU once**, when the entire transfer is complete.
+
+    寫法提示：三種的差別在「CPU 參與多少」：一直問、等通知、整塊交給 DMA 只通知一次（[5.0](#u5-0)）。
+
+<div markdown="1">
+
+**E-5.** How does interrupt chaining work?
+
+（中文：114 Q5b：interrupt chaining 怎麼運作？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    In interrupt chaining, each element of the **interrupt vector** points to the **head of a list of interrupt handlers**. When an interrupt is raised, the handlers on the corresponding list are **called one by one** until one is found that can service the request.
+
+    It is a **compromise** between the overhead of a **huge interrupt table** (one entry for every device) and the inefficiency of dispatching every interrupt to a **single interrupt handler**.
+
+    寫法提示：一定要寫出 compromise：兩個極端各是什麼缺點（[5.3](#u5-3)）。
+
+<div markdown="1">
+
+**E-6.** Describe the steps of sector sparing when a bad sector is found.
+
+（中文：115 Q4：sector sparing 的步驟。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. The OS tries to read **logical block 87**.
+    2. The controller calculates the **ECC** and finds that the sector is **bad**.
+    3. The controller reports this to the OS as an **I/O error**.
+    4. The device controller **replaces the bad sector with a spare sector**.
+    5. After that, whenever the system requests logical block 87, the controller **translates the request into the address of the spare sector**.
+
+    寫法提示：重點是最後一步：之後的請求由 controller 自動轉到 spare，OS 不用知道（[5.2](#u5-2)）。
+
+<div markdown="1">
+
+**E-7.** Compare RAID levels 0, 1, 5 and 6.
+
+（中文：RAID 0、1、5、6 的比較。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    - **RAID 0**: **block-level striping** without redundancy. It gives high performance, but the failure of any disk loses data.
+    - **RAID 1**: **disk mirroring**; every disk has a copy. It survives a disk failure, but only half of the capacity is usable.
+    - **RAID 5**: **block-interleaved distributed parity**. Data and parity are **spread across all the disks**, so one disk failure can be tolerated, and no single parity disk becomes a bottleneck.
+    - **RAID 6**: stores **extra redundant information (P + Q redundancy)**, so it can tolerate **two disk failures** at the same time.
+
+    寫法提示：每一級寫「怎麼存」和「能壞幾顆」；RAID 5 的 distributed parity 是和 RAID 4 的差別（[5.0](#u5-0)）。
+
 ### 單元 5 小考 {#u5-quiz}
 
 **5-1.** i-node 有 12 個直接區塊和 single、double indirect，區塊 4 KB、指標 4 B，最大檔案幾個資料區塊？
@@ -4049,6 +4619,127 @@ A → B 和 B → A **都不成立**的兩個事件叫**同時發生**（concurr
     - **file1 的 ACL**：Alice：read、write；Bob：read。
     - **Bob 的 capability list**：file1：read；file2：read、write。
     - **撤銷 file2：ACL 比較方便**。所有權限都記在 file2 自己的名單上，清掉這一份就好；用 capability 的話，要找出每個使用者（或已經發出去的 capability）裡有 file2 的那一項，一個一個刪。
+
+### 6.5 英文作答範例 {#u6-en}
+
+考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把**粗體的關鍵字**記起來。寫法見 [0. 中山 OS 怎麼考](#u0-en)。
+
+<div markdown="1">
+
+**E-1.** Distinguish between protection and security.
+
+（中文：protection 和 security 的差別。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    **Protection** is an **internal** problem: it is the mechanism for **controlling the access** of processes or users to the resources defined by a computer system.
+
+    **Security** deals with **external** threats: it ensures the integrity of the system and its data by defending against **unauthorized access, malicious destruction or alteration**, and the accidental introduction of inconsistency.
+
+    Protection mechanisms work only if users are correctly identified, so security needs both protection and an adequate **authentication** system.
+
+    寫法提示：internal／external 是最短的分法，再各補一句「做什麼」（[6.0](#u6-0)）。
+
+<div markdown="1">
+
+**E-2.** Explain the principle of least privilege and the need-to-know principle.
+
+（中文：102 Q5、115 Q1i：最小權限原則和 need-to-know 原則。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    - **Principle of least privilege**: programs, users and even systems are given **just enough privileges to perform their tasks**. If a component fails or is compromised, the damage it can do is limited.
+    - **Need-to-know principle**: at any time, a process should be able to access **only those resources that it currently requires** to complete its task.
+
+    The two ideas are similar: least privilege limits the **privileges** that are granted, whereas need-to-know limits **which resources** a process can access, and only for the moment it needs them.
+
+    寫法提示：least privilege 講「權限」，need-to-know 講「目前需要的資源」，是非題會考差別（[6.2](#u6-more)）。
+
+<div markdown="1">
+
+**E-3.** Compare access lists and capability lists as implementations of the access matrix.
+
+（中文：access list 和 capability list 的比較。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    The **access matrix** has a row for each **domain** and a column for each **object**; entry access(i, j) is the set of operations that a process in domain $D_i$ may invoke on object $O_j$.
+
+    - **Access list**: each **column** is stored with its **object**, as a list of pairs (domain, rights). It matches what users need (the owner of an object decides who may access it), and **revocation is easy**. However, finding all the rights of a domain is hard.
+    - **Capability list**: each **row** is stored with its **domain**, as a list of objects and the operations allowed on them; holding a capability means the access is allowed. Checking a process's access is efficient, but **revocation is difficult**, because capabilities are spread throughout the system.
+
+    寫法提示：一個是存 column（跟著物件），一個是存 row（跟著 domain）；比較時一定要寫 revocation（[6.0](#u6-0)）。
+
+<div markdown="1">
+
+**E-4.** Explain the differences among a Trojan horse, a virus and a worm.
+
+（中文：101、105、107：Trojan horse、virus、worm 的差別。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    - **Trojan horse**: a program that **appears to be legitimate** but secretly performs a malicious action when a user runs it; for example, a fake login program that steals passwords.
+    - **Virus**: a fragment of code **embedded in a legitimate program**. It is **self-replicating** and spreads by infecting other programs, so it needs a host program.
+    - **Worm**: a **standalone** program that **copies itself across a network** without user intervention, using up system and network resources.
+
+    Related terms: a **trap door** is a hole left by a designer to bypass normal security checks; a **logic bomb** is code that starts a security incident only when certain conditions occur.
+
+    寫法提示：分辨重點：Trojan 靠「偽裝」、virus 要「寄生」在程式裡、worm「自己就能」透過網路複製（[6.0](#u6-0)）。
+
+<div markdown="1">
+
+**E-5.** How does a digital signature work, and what does it provide?
+
+（中文：數位簽章怎麼運作？提供哪些保證？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. The sender computes a **hash (message digest)** of the message.
+    2. The sender **encrypts the digest with its private key**; the result is the **signature**, which is sent with the message.
+    3. The receiver **decrypts the signature with the sender's public key** and compares the result with the hash it computes from the received message.
+
+    If the two values match, the message is **authentic** (it came from the owner of the private key) and **has not been modified** (integrity). Because only the sender has the private key, the sender **cannot deny** having signed it (**non-repudiation**).
+
+    寫法提示：最常寫錯的是金鑰：簽章用寄件人的 private key，驗證用寄件人的 public key（[6.2](#u6-more)）。
+
+<div markdown="1">
+
+**E-6.** Compare symmetric and asymmetric encryption.
+
+（中文：對稱式和非對稱式加密的比較。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    - **Symmetric encryption**: the **same key** is used to encrypt and to decrypt (for example, **AES**). It is **fast**, but the key must be **distributed secretly** to every pair of communicating parties.
+    - **Asymmetric (public-key) encryption**: each user has a **public key**, which anyone can use to encrypt messages to that user, and a **private key**, which only the owner uses to decrypt them (for example, **RSA**). Key distribution is easy, but it is **much slower**.
+
+    In practice, asymmetric encryption is used to **exchange a symmetric session key**, and the bulk of the data is then encrypted with the symmetric key.
+
+    寫法提示：比較三件事：幾把鑰匙、速度、金鑰怎麼發；最後一句「兩種一起用」會加分（[6.2](#u6-more)）。
+
+<div markdown="1">
+
+**E-7.** In a real-time system, what is event latency? Name the two types of latency that affect it.
+
+（中文：112 Q8b：即時系統的 event latency 和影響它的兩種延遲。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    **Event latency** is the amount of time that elapses from when an **event occurs** to when it is **serviced**. Two types of latency affect it:
+
+    1. **Interrupt latency**: the time from the **arrival of an interrupt** at the CPU to the **start of the interrupt service routine (ISR)**.
+    2. **Dispatch latency**: the time required for the scheduling dispatcher to **stop one process and start another**.
+
+    To keep dispatch latency low, real-time operating systems provide **preemptive kernels**.
+
+    寫法提示：兩種延遲的起點和終點都要寫清楚（[6.1](#u6-1)）。
 
 ## 單元 7：名詞填空總表 {#u7}
 
