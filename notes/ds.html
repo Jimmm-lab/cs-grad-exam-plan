@@ -1265,6 +1265,274 @@ void swapp(int *x, int *y) { int t = *x; *x = *y; *y = t; }</code></pre>
 </table>
 <p>由下往上算回去：<strong>10</strong>，就是各位數字的和。</p>
 </details>
+<h3 id="u1-drill">1.6 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="_7">題型一：位元運算的值</h4>
+<p><strong>做法</strong>：先照優先順序加括號（<a href="#u1-1">1.1</a>），再把每一步寫成二進位算。<code>~</code>、<code>-x</code> 用二補數。</p>
+<p><strong>P-1.</strong> <code>int x = 10, y = 22;</code>，求 <code>x ^ y &amp; ~x | y &lt;&lt; 1</code> 的值。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>加括號</strong>：<code>(x ^ (y &amp; ~x)) | (y &lt;&lt; 1)</code>。順序是 <code>~</code> → <code>&lt;&lt;</code> → <code>&amp;</code> → <code>^</code> → <code>|</code>。</li>
+<li><strong><code>y &lt;&lt; 1</code>（44）</strong>：<code>10110</code> 左移一位變 <code>101100</code>。</li>
+<li><strong><code>y &amp; ~x</code>（20）</strong>：<code>~x</code> 的低 5 位是 <code>10101</code>，<code>10110 &amp; 10101</code> ＝ <code>10100</code>。</li>
+<li><strong><code>x ^ 20</code>（30）</strong>：<code>01010 ^ 10100</code> ＝ <code>11110</code>。</li>
+<li><strong><code>30 | 44</code>（62）</strong>：<code>011110 | 101100</code> ＝ <code>111110</code>。</li>
+<li><strong>答案</strong>：<strong>62</strong></li>
+</ul>
+</details>
+<p><strong>P-2.</strong> <code>int a = 45, b = 27;</code>，求 <code>(a &amp; ~b) | (~a &amp; b)</code> 的值。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>看出來它是 XOR</strong>：「a 有 b 沒有」或「b 有 a 沒有」的位元，就是 <code>a ^ b</code>。</li>
+<li><strong><code>a &amp; ~b</code>（36）</strong>：<code>~b</code> 的低 6 位是 <code>100100</code>，<code>101101 &amp; 100100</code> ＝ <code>100100</code>。</li>
+<li><strong><code>~a &amp; b</code>（18）</strong>：<code>~a</code> 的低 6 位是 <code>010010</code>，<code>010010 &amp; 011011</code> ＝ <code>010010</code>。</li>
+<li><strong>合起來（54）</strong>：<code>100100 | 010010</code> ＝ <code>110110</code>，跟 <code>101101 ^ 011011</code> 一樣。</li>
+<li><strong>答案</strong>：<strong>54</strong></li>
+</ul>
+</details>
+<p><strong>P-3.</strong> <code>int x = 13;</code>，求 <code>x &lt;&lt; 2 + 1</code> 的值。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>陷阱：<code>+</code> 比 <code>&lt;&lt;</code> 高</strong>，所以是 <code>x &lt;&lt; (2 + 1)</code>，不是 <code>(x &lt;&lt; 2) + 1</code>。</li>
+<li><strong><code>13 &lt;&lt; 3</code>（104）</strong>：左移 3 位 ＝ 乘以 <span class="arithmatex">\(2^3\)</span>，<span class="arithmatex">\(13\times8=104\)</span>。</li>
+<li><strong>看錯的話</strong>：<code>(x &lt;&lt; 2) + 1</code> ＝ 53。</li>
+<li><strong>答案</strong>：<strong>104</strong></li>
+</ul>
+</details>
+<p><strong>P-4.</strong> <code>int x = 6, y = 3;</code>，求 <code>x &amp; y == 2</code> 的值。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>陷阱：<code>==</code> 比 <code>&amp;</code> 高</strong>，所以是 <code>x &amp; (y == 2)</code>。</li>
+<li><strong><code>y == 2</code>（0）</strong>：3 不等於 2，比較的結果是 0。</li>
+<li><strong><code>6 &amp; 0</code>（0）</strong>：任何數 <code>&amp;</code> 0 都是 0。</li>
+<li><strong>看錯的話</strong>：<code>(x &amp; y) == 2</code> 是 <code>2 == 2</code>，會得到 1。</li>
+<li><strong>答案</strong>：<strong>0</strong></li>
+</ul>
+</details>
+<p><strong>P-5.</strong> <code>int d = 40;</code>，求 <code>(d &amp; -d) + (d &amp; (d - 1))</code> 的值。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong><code>-d</code></strong>：二補數 <code>-d</code> ＝ <code>~d + 1</code>。8 位元寫：<span class="arithmatex">\(40\)</span> ＝ <code>00101000</code>，<span class="arithmatex">\(-40\)</span> ＝ <code>11011000</code>。</li>
+<li><strong><code>d &amp; -d</code>（8）</strong>：<code>00101000 &amp; 11011000</code> ＝ <code>00001000</code>，取出最低位的 1。</li>
+<li><strong><code>d &amp; (d - 1)</code>（32）</strong>：<code>00101000 &amp; 00100111</code> ＝ <code>00100000</code>，把最低位的 1 清掉。</li>
+<li><strong>相加（40）</strong>：一個是最低位的 1、一個是其他的 1，加起來剛好是 d。</li>
+<li><strong>答案</strong>：<strong>40</strong></li>
+</ul>
+</details>
+<p><strong>P-6.</strong> <code>int x = 0x5A;</code>，求 <code>x &gt;&gt; 4 | x &lt;&lt; 4 &amp; 0xFF</code> 的值。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>加括號</strong>：<code>(x &gt;&gt; 4) | ((x &lt;&lt; 4) &amp; 0xFF)</code>。位移最高，再來 <code>&amp;</code>，最後 <code>|</code>。</li>
+<li><strong><code>x &gt;&gt; 4</code>（5）</strong>：<code>0101 1010</code> 右移 4 位 ＝ <code>0000 0101</code>。</li>
+<li><strong><code>x &lt;&lt; 4 &amp; 0xFF</code>（160）</strong>：<code>0101 1010 0000</code> 只留低 8 位 ＝ <code>1010 0000</code>。</li>
+<li><strong><code>5 | 160</code>（165）</strong>：<code>1010 0101</code> ＝ 0xA5，前後 4 位元互換了。</li>
+<li><strong>答案</strong>：<strong>165</strong></li>
+</ul>
+</details>
+<h4 id="_8">題型二：遞迴印出什麼、回傳什麼</h4>
+<p><strong>做法</strong>：畫出呼叫的順序；遞迴呼叫「之前」的動作照往下的順序做，「之後」的動作照往回的順序做。<code>static</code> 變數所有呼叫共用一份。</p>
+<div>
+<p><strong>P-7.</strong> 下面的函式，<code>f(6)</code> 回傳多少？總共呼叫了幾次 f（含 f(6) 自己）？</p>
+<pre class="highlight"><code class="language-c">int f(int n) {
+  if (n &lt;= 1) return n;
+  return f(n-1) + f(n-2);
+}</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>由小算到大</strong>：f(0)～f(6) 是 0、1、1、2、3、5、8。</li>
+<li><strong>呼叫次數 <span class="arithmatex">\(c(n)=c(n-1)+c(n-2)+1\)</span></strong>：自己一次，加上兩個子呼叫；<span class="arithmatex">\(c(0)=c(1)=1\)</span>，所以 <span class="arithmatex">\(c(0)\)</span>～<span class="arithmatex">\(c(6)\)</span> 是 1、1、3、5、9、15、25。</li>
+<li><strong>答案</strong>：f(6) ＝ <strong>8</strong>，呼叫 <strong>25</strong> 次。同一個 f(k) 被重算很多次，這就是為什麼要用 DP 記起來（<a href="#u6-0">6.0</a>）。</li>
+</ul>
+</details>
+<div>
+<p><strong>P-8.</strong> 下面的函式，呼叫 <code>p(3)</code> 會印出什麼？</p>
+<pre class="highlight"><code class="language-c">void p(int n) {
+  if (n == 0) return;
+  printf("%d ", n);
+  p(n - 1);
+  printf("%d ", n);
+}</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>進去的時候印一次</strong>：p(3) → p(2) → p(1) 依序印 3、2、1，p(0) 直接返回。</li>
+<li><strong>回來的時候再印一次</strong>：p(1) 先回來印 1，再 p(2) 印 2、p(3) 印 3。</li>
+<li><strong>答案</strong>：<code>3 2 1 1 2 3</code>。遞迴呼叫前印的是「往下」的順序，呼叫後印的是「往回」的順序（倒過來）。</li>
+</ul>
+</details>
+<div>
+<p><strong>P-9.</strong> 下面的函式，呼叫 <code>b(22)</code> 會印出什麼？</p>
+<pre class="highlight"><code class="language-c">void b(int n) {
+  if (n &gt; 1) b(n / 2);
+  printf("%d", n % 2);
+}</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>先一路呼叫下去</strong>：b(22) → b(11) → b(5) → b(2) → b(1)，到 1 停。</li>
+<li><strong>回來時才印</strong>：最深的先印。b(1) 印 1、b(2) 印 0、b(5) 印 1、b(11) 印 1、b(22) 印 0。</li>
+<li><strong>答案</strong>：<code>10110</code>，就是 22 的二進位（先算出來的餘數最後印）。</li>
+</ul>
+</details>
+<div>
+<p><strong>P-10.</strong> 下面的函式，<code>m(98)</code> 回傳多少？總共呼叫了幾次 m？</p>
+<pre class="highlight"><code class="language-c">int m(int n) {
+  if (n &gt; 100) return n - 10;
+  return m(m(n + 11));
+}</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一層一層展開</strong>：m(98) ＝ m(m(109))，m(109) ＝ 99 → m(99) ＝ m(m(110))，m(110) ＝ 100 → m(100) ＝ m(m(111))，m(111) ＝ 101 → m(101) ＝ 91。</li>
+<li><strong>呼叫的順序</strong>：m(98)、m(109)、m(99)、m(110)、m(100)、m(111)、m(101)，共 7 次。</li>
+<li><strong>答案</strong>：回傳 <strong>91</strong>，呼叫 <strong>7</strong> 次。這是 McCarthy 91 函數：n ≤ 100 時答案都是 91。</li>
+</ul>
+</details>
+<div>
+<p><strong>P-11.</strong> 下面的程式印出什麼？</p>
+<pre class="highlight"><code class="language-c">int g(int n) {
+  static int c = 0;
+  c++;
+  if (n &lt;= 1) return c;
+  return g(n - 1) + n;
+}
+/* main: */
+printf("%d ", g(3));
+printf("%d", g(3));</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong><code>static</code> 只初始化一次</strong>：c 在所有呼叫之間共用，第二次呼叫 g(3) 時 c 不會歸零。</li>
+<li><strong>第一次 g(3)</strong>：g(3)、g(2)、g(1) 讓 c 變 1、2、3；g(1) 回傳 3，g(2) ＝ 3 ＋ 2 ＝ 5，g(3) ＝ 5 ＋ 3 ＝ 8。</li>
+<li><strong>第二次 g(3)</strong>：c 接著變 4、5、6；g(1) 回傳 6，g(2) ＝ 8，g(3) ＝ 11。</li>
+<li><strong>答案</strong>：<code>8 11</code>。</li>
+</ul>
+</details>
+<div>
+<p><strong>P-12.</strong> 下面的函式，<code>c(5, 2)</code> 回傳多少？總共呼叫了幾次 c？</p>
+<pre class="highlight"><code class="language-c">int c(int n, int k) {
+  if (k == 0 || k == n)
+    return 1;
+  return c(n-1, k-1)
+       + c(n-1, k);
+}</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>它在算組合數</strong>：這就是巴斯卡公式 <span class="arithmatex">\(\binom nk=\binom{n-1}{k-1}+\binom{n-1}{k}\)</span>，所以 c(5, 2) ＝ <span class="arithmatex">\(\binom52=10\)</span>。</li>
+<li><strong>呼叫次數（19）</strong>：呼叫樹的每片葉子都回傳 1，加起來是 10，所以有 10 片葉子；每個內部呼叫剛好有 2 個孩子，內部有 <span class="arithmatex">\(10-1=9\)</span> 個。共 <span class="arithmatex">\(10+9=19\)</span> 次。</li>
+<li><strong>答案</strong>：回傳 <strong>10</strong>，呼叫 <strong>19</strong> 次。</li>
+</ul>
+</details>
+<h4 id="_9">題型三：指標與陣列</h4>
+<p><strong>做法</strong>：把每個指標換成「指向原陣列第幾格」，<code>p[k]</code> 就是那一格往後 k 格（<a href="#u1-2">1.2</a>）。</p>
+<div>
+<p><strong>P-13.</strong> 呼叫 <code>f(a + 2, &amp;a[4])</code> 會印出什麼？</p>
+<pre class="highlight"><code class="language-c">int a[] = {10, 11, 12, 13, 14,
+           15, 16, 17, 18, 19};
+void f(int *p, int *q) {
+  q[1] += 5;
+  printf("%d %d %d\n",
+         p[1], *(q + 1), q[-2]);
+}</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>先換成第幾格</strong>：p 指向 a[2]，所以 <code>p[k]</code> 是 a[2+k]；q 指向 a[4]，<code>q[k]</code> 是 a[4+k]（k 可以是負的）。</li>
+<li><strong><code>q[1] += 5</code></strong>：a[5] 從 15 變 20。</li>
+<li><strong><code>p[1]</code>、<code>*(q + 1)</code>、<code>q[-2]</code></strong>：a[3] ＝ 13、a[5] ＝ 20、a[2] ＝ 12。</li>
+<li><strong>答案</strong>：<code>13 20 12</code></li>
+</ul>
+</details>
+<div>
+<p><strong>P-14.</strong> 下面的程式印出什麼？</p>
+<pre class="highlight"><code class="language-c">int a[] = {5, 8, 3, 9, 4};
+int *p = a;
+int x = *p++;
+int y = (*p)++;
+int z = *++p;
+printf("%d %d %d %d",
+       x, y, z, a[1]);</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong><code>*p++</code></strong>：後置 <code>++</code> 比 <code>*</code> 高，但後置是「先用再加」：取 a[0] ＝ 5，然後 p 移到 a[1]。x ＝ 5。</li>
+<li><strong><code>(*p)++</code></strong>：加的是 p 指到的值：先取 a[1] ＝ 8 給 y，a[1] 再變 9；p 不動。</li>
+<li><strong><code>*++p</code></strong>：p 先移到 a[2]，再取值，z ＝ 3。</li>
+<li><strong>答案</strong>：<code>5 8 3 9</code>（a[1] 已經被改成 9）。</li>
+</ul>
+</details>
+<div>
+<p><strong>P-15.</strong> 下面的程式印出什麼？</p>
+<pre class="highlight"><code class="language-c">int m[3][4] = {
+  {1, 2, 3, 4},
+  {5, 6, 7, 8},
+  {9, 10, 11, 12}};
+int *p = &amp;m[0][0];
+printf("%d %d %d",
+  *(*(m+1)+2), p[9], *(m[2]-1));</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong><code>*(*(m+1)+2)</code></strong>：<code>m+1</code> 是第 1 列，<code>*(m+1)+2</code> 是那一列的第 2 個，就是 m[1][2] ＝ 7。</li>
+<li><strong><code>p[9]</code></strong>：二維陣列在記憶體裡是一列接一列攤平的，第 9 格（從 0 算）＝ 第 <span class="arithmatex">\(9\div4=2\)</span> 列第 <span class="arithmatex">\(9\bmod4=1\)</span> 個 ＝ m[2][1] ＝ 10。</li>
+<li><strong><code>*(m[2]-1)</code></strong>：m[2] 指向 m[2][0]，往前一格是上一列的最後一個 m[1][3] ＝ 8。</li>
+<li><strong>答案</strong>：<code>7 10 8</code></li>
+</ul>
+</details>
+<div>
+<p><strong>P-16.</strong> 執行完下面三次呼叫，a 的內容是什麼？</p>
+<pre class="highlight"><code class="language-c">void s(int *x, int *y) {
+  int t = *x; *x = *y; *y = t;
+}
+int a[] = {1, 2, 3, 4, 5};
+s(a, a + 4);
+s(&amp;a[1], a + 3);
+s(a + 2, &amp;a[2]);</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong><code>s(a, a + 4)</code></strong>：交換 a[0] 和 a[4] → 5, 2, 3, 4, 1。</li>
+<li><strong><code>s(&amp;a[1], a + 3)</code></strong>：交換 a[1] 和 a[3] → 5, 4, 3, 2, 1。</li>
+<li><strong><code>s(a + 2, &amp;a[2])</code></strong>：兩個指標都指向 a[2]，自己跟自己交換，不變。</li>
+<li><strong>答案</strong>：<code>5 4 3 2 1</code></li>
+</ul>
+</details>
+<div>
+<p><strong>P-17.</strong> 下面的程式印出什麼？</p>
+<pre class="highlight"><code class="language-c">char s[] = "program";
+char *p = s + 3;
+*(p + 1) = 'o';
+printf("%c %c %s",
+       *p, p[2], p - 1);</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>先標 index</strong>：p0 r1 o2 g3 r4 a5 m6，p 指向 s[3]（g）。</li>
+<li><strong><code>*(p + 1) = 'o'</code></strong>：s[4] 從 r 改成 o，字串變成 progoam。</li>
+<li><strong><code>*p</code>、<code>p[2]</code></strong>：s[3] ＝ g、s[5] ＝ a。</li>
+<li><strong><code>p - 1</code></strong>：指向 s[2]，用 <code>%s</code> 從那裡印到結尾：ogoam。</li>
+<li><strong>答案</strong>：<code>g a ogoam</code></li>
+</ul>
+</details>
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> <code>printf("%d", 5 &amp; 3 | 4 ^ 6);</code></p>
 <details class="quiz">
@@ -1689,10 +1957,10 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>動畫上面是樹、下面是同一個陣列，交換時兩邊會一起動。「做到哪裡」改成「繼續做 heap sort」可以看完整排序：</p>
 <div class="viz" data-viz="heap" data-nums="5,3,8,1,9,6"></div>
 
-<h4 id="_7">穩定性為什麼重要</h4>
+<h4 id="_10">穩定性為什麼重要</h4>
 <p><strong>穩定（stable）</strong>：值相同的元素，排序後保持原本的先後順序。</p>
 <p>例如先依姓名排好，再依成績排序。如果用穩定的排序，同分的人還會維持姓名順序；不穩定的排序可能把同分的人打亂。radix sort 從個位數排到最高位，每一輪都<strong>必須穩定</strong>，前一輪排好的順序才不會被破壞。</p>
-<h4 id="_8">哪些排序不穩定？用同一組資料試試</h4>
+<h4 id="_11">哪些排序不穩定？用同一組資料試試</h4>
 <p>把兩個 2 標成 <span class="arithmatex">\(2_a\)</span>、<span class="arithmatex">\(2_b\)</span>（<span class="arithmatex">\(2_a\)</span> 在前面），排 <span class="arithmatex">\(2_a, 2_b, 1\)</span>：</p>
 <table>
 <thead>
@@ -1779,7 +2047,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/zh/sorting">VisuAlgo 排序（中文）</a>：選一種排序、輸入考古題的數字，一步一步看每次比較和交換。insertion、quick、merge、radix 都有。</li>
 </ul>
 </div>
-<h4 id="_9">換你試試</h4>
+<h4 id="_12">換你試試</h4>
 <p><strong>T-1.</strong> 2, 4, 1, 3 用 insertion sort 要 swap 幾次？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2045,7 +2313,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>把 U 代進 L：<span class="arithmatex">\(L(n)=2\big[L(n/2-1)+\Theta(n/2)\big]+\Theta(n)=2L(n/2-1)+\Theta(n)\)</span>，跟最好情況的遞迴式差不多，<strong>結果還是 <span class="arithmatex">\(\Theta(n\lg n)\)</span></strong>。</p>
 <p><strong>直覺</strong>：切得差的那一層只多花 <span class="arithmatex">\(\Theta(n)\)</span>，下一層切得好時就把它吸收掉了，只是常數變大（大約多一倍的層數），不會變成 <span class="arithmatex">\(n^2\)</span>。</p>
 </div>
-<h4 id="_10">觀念小考</h4>
+<h4 id="_13">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> 用比較排序排 4 個數，最壞情況至少要幾次比較？</p>
 <ol>
@@ -2305,6 +2573,574 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>共 <strong>4 次</strong>，結果 <code>7, 5, 6, 4, 2, 1, 3</code>。</p>
 <p><strong>結果不一樣</strong>，但兩個都是合法的 max heap。遞增的輸入對「一個一個插入」最不利：每個新的數都是目前最大的，要一路換到根，總共 <span class="arithmatex">\(O(n\log n)\)</span>；bottom-up 一定是 <span class="arithmatex">\(O(n)\)</span>（<a href="#u2-3">2.3</a>）。題目說「heap sort 的建 heap」就用 bottom-up。</p>
 </details>
+<h3 id="u2-drill">2.7 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="insertion-sort-swap">題型一：insertion sort 的每一輪與 swap 次數</h4>
+<p><strong>做法</strong>：拿起 a[i] 往前換到定位；總 swap 次數 ＝ 逆序對數，可以先數逆序對驗算（<a href="#u2-2">2.2</a>）。</p>
+<p><strong>P-1.</strong> 用 insertion sort 由小排到大：4, 7, 2, 9, 1, 6。寫出每一輪結束後的陣列，總共 swap 幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>數逆序對（8）</strong>：每個數後面有幾個比它小的。4：2、1 → 2；7：2、1、6 → 3；2：1 → 1；9：1、6 → 2。</p>
+<table>
+<thead>
+<tr>
+<th>拿起</th>
+<th>往前換幾次</th>
+<th>這一輪結束後</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>4, 7, 2, 9, 1, 6</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>2, 4, 7, 9, 1, 6</td>
+</tr>
+<tr>
+<td>9</td>
+<td>0</td>
+<td>2, 4, 7, 9, 1, 6</td>
+</tr>
+<tr>
+<td>1</td>
+<td>4</td>
+<td>1, 2, 4, 7, 9, 6</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+<td>1, 2, 4, 6, 7, 9</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：swap 共 <strong>8 次</strong>，等於逆序對數。</p>
+<p>用動畫對答案：把 <code>4,7,2,9,1,6</code> 貼進 <a href="#u2-2">2.2 的動畫</a>。</p>
+</details>
+<p><strong>P-2.</strong> 用 insertion sort 由小排到大：8, 3, 5, 1, 7, 2。寫出每一輪結束後的陣列，總共 swap 幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>數逆序對（10）</strong>：每個數後面有幾個比它小的。8：3、5、1、7、2 → 5；3：1、2 → 2；5：1、2 → 2；7：2 → 1。</p>
+<table>
+<thead>
+<tr>
+<th>拿起</th>
+<th>往前換幾次</th>
+<th>這一輪結束後</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>3, 8, 5, 1, 7, 2</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+<td>3, 5, 8, 1, 7, 2</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3</td>
+<td>1, 3, 5, 8, 7, 2</td>
+</tr>
+<tr>
+<td>7</td>
+<td>1</td>
+<td>1, 3, 5, 7, 8, 2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>4</td>
+<td>1, 2, 3, 5, 7, 8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：swap 共 <strong>10 次</strong>，等於逆序對數。</p>
+<p>用動畫對答案：把 <code>8,3,5,1,7,2</code> 貼進 <a href="#u2-2">2.2 的動畫</a>。</p>
+</details>
+<p><strong>P-3.</strong> 用 insertion sort 由小排到大：2, 6, 1, 8, 5, 3, 7。寫出每一輪結束後的陣列，總共 swap 幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>數逆序對（8）</strong>：每個數後面有幾個比它小的。2：1 → 1；6：1、5、3 → 3；8：5、3、7 → 3；5：3 → 1。</p>
+<table>
+<thead>
+<tr>
+<th>拿起</th>
+<th>往前換幾次</th>
+<th>這一輪結束後</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6</td>
+<td>0</td>
+<td>2, 6, 1, 8, 5, 3, 7</td>
+</tr>
+<tr>
+<td>1</td>
+<td>2</td>
+<td>1, 2, 6, 8, 5, 3, 7</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0</td>
+<td>1, 2, 6, 8, 5, 3, 7</td>
+</tr>
+<tr>
+<td>5</td>
+<td>2</td>
+<td>1, 2, 5, 6, 8, 3, 7</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>1, 2, 3, 5, 6, 8, 7</td>
+</tr>
+<tr>
+<td>7</td>
+<td>1</td>
+<td>1, 2, 3, 5, 6, 7, 8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：swap 共 <strong>8 次</strong>，等於逆序對數。</p>
+<p>用動畫對答案：把 <code>2,6,1,8,5,3,7</code> 貼進 <a href="#u2-2">2.2 的動畫</a>。</p>
+</details>
+<p><strong>P-4.</strong> 用 insertion sort 由小排到大：9, 8, 7, 1, 2, 3。寫出每一輪結束後的陣列，總共 swap 幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>數逆序對（12）</strong>：每個數後面有幾個比它小的。9：8、7、1、2、3 → 5；8：7、1、2、3 → 4；7：1、2、3 → 3。</p>
+<table>
+<thead>
+<tr>
+<th>拿起</th>
+<th>往前換幾次</th>
+<th>這一輪結束後</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8</td>
+<td>1</td>
+<td>8, 9, 7, 1, 2, 3</td>
+</tr>
+<tr>
+<td>7</td>
+<td>2</td>
+<td>7, 8, 9, 1, 2, 3</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3</td>
+<td>1, 7, 8, 9, 2, 3</td>
+</tr>
+<tr>
+<td>2</td>
+<td>3</td>
+<td>1, 2, 7, 8, 9, 3</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>1, 2, 3, 7, 8, 9</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：swap 共 <strong>12 次</strong>，等於逆序對數。</p>
+<p>用動畫對答案：把 <code>9,8,7,1,2,3</code> 貼進 <a href="#u2-2">2.2 的動畫</a>。</p>
+</details>
+<p><strong>P-5.</strong> 用 insertion sort 由小排到大：5, 1, 4, 2, 8, 6, 3。寫出每一輪結束後的陣列，總共 swap 幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>數逆序對（9）</strong>：每個數後面有幾個比它小的。5：1、4、2、3 → 4；4：2、3 → 2；8：6、3 → 2；6：3 → 1。</p>
+<table>
+<thead>
+<tr>
+<th>拿起</th>
+<th>往前換幾次</th>
+<th>這一輪結束後</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1, 5, 4, 2, 8, 6, 3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>1</td>
+<td>1, 4, 5, 2, 8, 6, 3</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>1, 2, 4, 5, 8, 6, 3</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0</td>
+<td>1, 2, 4, 5, 8, 6, 3</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+<td>1, 2, 4, 5, 6, 8, 3</td>
+</tr>
+<tr>
+<td>3</td>
+<td>4</td>
+<td>1, 2, 3, 4, 5, 6, 8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：swap 共 <strong>9 次</strong>，等於逆序對數。</p>
+<p>用動畫對答案：把 <code>5,1,4,2,8,6,3</code> 貼進 <a href="#u2-2">2.2 的動畫</a>。</p>
+</details>
+<p><strong>P-6.</strong> 用 insertion sort 由小排到大：3, 1, 2, 7, 6, 4, 5, 8。寫出每一輪結束後的陣列，總共 swap 幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>數逆序對（7）</strong>：每個數後面有幾個比它小的。3：1、2 → 2；7：6、4、5 → 3；6：4、5 → 2。</p>
+<table>
+<thead>
+<tr>
+<th>拿起</th>
+<th>往前換幾次</th>
+<th>這一輪結束後</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1, 3, 2, 7, 6, 4, 5, 8</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>1, 2, 3, 7, 6, 4, 5, 8</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>1, 2, 3, 7, 6, 4, 5, 8</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+<td>1, 2, 3, 6, 7, 4, 5, 8</td>
+</tr>
+<tr>
+<td>4</td>
+<td>2</td>
+<td>1, 2, 3, 4, 6, 7, 5, 8</td>
+</tr>
+<tr>
+<td>5</td>
+<td>2</td>
+<td>1, 2, 3, 4, 5, 6, 7, 8</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0</td>
+<td>1, 2, 3, 4, 5, 6, 7, 8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：swap 共 <strong>7 次</strong>，等於逆序對數。</p>
+<p>用動畫對答案：把 <code>3,1,2,7,6,4,5,8</code> 貼進 <a href="#u2-2">2.2 的動畫</a>。</p>
+</details>
+<h4 id="max-heap-heap-sort">題型二：建 max heap 與 heap sort</h4>
+<p><strong>做法</strong>：從 index <span class="arithmatex">\(\lfloor n/2\rfloor-1\)</span> 往前，每個做 sift-down（和比較大的子節點交換，一路往下）；輸出時根和最後一個交換，再對根 sift-down（<a href="#u2-3">2.3</a>）。</p>
+<p><strong>P-7.</strong> 用 bottom-up 的方法把 3, 9, 2, 1, 4, 5 建成 max heap（陣列 index 從 0 開始），寫出每一步和結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>最後一個非葉節點</strong>：<span class="arithmatex">\(n=6\)</span>，index <span class="arithmatex">\(\lfloor 6/2\rfloor-1=2\)</span>。從它往前，每個做 sift-down：</p>
+<table>
+<thead>
+<tr>
+<th>處理</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index 2（2）</td>
+<td>子節點 5，和 5 交換；2 到 index 5，沒有子節點，停</td>
+<td>3, 9, 5, 1, 4, 2</td>
+</tr>
+<tr>
+<td>index 1（9）</td>
+<td>子節點 1、4，9 較大，不動</td>
+<td>3, 9, 5, 1, 4, 2</td>
+</tr>
+<tr>
+<td>index 0（3）</td>
+<td>子節點 9、5，和 9 交換；3 到 index 1，子節點 1、4，再和 4 交換；3 到 index 4，沒有子節點，停</td>
+<td>9, 4, 5, 1, 3, 2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>max heap</strong>：<code>9, 4, 5, 1, 3, 2</code></p>
+<p>用動畫對答案：把 <code>3,9,2,1,4,5</code> 貼進 <a href="#u2-3">2.3 的動畫</a>，建 heap 選 bottom-up、只建 heap。</p>
+</details>
+<p><strong>P-8.</strong> 用 bottom-up 的方法把 5, 12, 8, 20, 15, 3, 9 建成 max heap（陣列 index 從 0 開始），寫出每一步和結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>最後一個非葉節點</strong>：<span class="arithmatex">\(n=7\)</span>，index <span class="arithmatex">\(\lfloor 7/2\rfloor-1=2\)</span>。從它往前，每個做 sift-down：</p>
+<table>
+<thead>
+<tr>
+<th>處理</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index 2（8）</td>
+<td>子節點 3、9，和 9 交換；8 到 index 6，沒有子節點，停</td>
+<td>5, 12, 9, 20, 15, 3, 8</td>
+</tr>
+<tr>
+<td>index 1（12）</td>
+<td>子節點 20、15，和 20 交換；12 到 index 3，沒有子節點，停</td>
+<td>5, 20, 9, 12, 15, 3, 8</td>
+</tr>
+<tr>
+<td>index 0（5）</td>
+<td>子節點 20、9，和 20 交換；5 到 index 1，子節點 12、15，再和 15 交換；5 到 index 4，沒有子節點，停</td>
+<td>20, 15, 9, 12, 5, 3, 8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>max heap</strong>：<code>20, 15, 9, 12, 5, 3, 8</code></p>
+<p>用動畫對答案：把 <code>5,12,8,20,15,3,9</code> 貼進 <a href="#u2-3">2.3 的動畫</a>，建 heap 選 bottom-up、只建 heap。</p>
+</details>
+<p><strong>P-9.</strong> 用 bottom-up 的方法把 1, 2, 3, 4, 5, 6, 7, 8 建成 max heap（陣列 index 從 0 開始），寫出每一步和結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>最後一個非葉節點</strong>：<span class="arithmatex">\(n=8\)</span>，index <span class="arithmatex">\(\lfloor 8/2\rfloor-1=3\)</span>。從它往前，每個做 sift-down：</p>
+<table>
+<thead>
+<tr>
+<th>處理</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index 3（4）</td>
+<td>子節點 8，和 8 交換；4 到 index 7，沒有子節點，停</td>
+<td>1, 2, 3, 8, 5, 6, 7, 4</td>
+</tr>
+<tr>
+<td>index 2（3）</td>
+<td>子節點 6、7，和 7 交換；3 到 index 6，沒有子節點，停</td>
+<td>1, 2, 7, 8, 5, 6, 3, 4</td>
+</tr>
+<tr>
+<td>index 1（2）</td>
+<td>子節點 8、5，和 8 交換；2 到 index 3，子節點 4，再和 4 交換；2 到 index 7，沒有子節點，停</td>
+<td>1, 8, 7, 4, 5, 6, 3, 2</td>
+</tr>
+<tr>
+<td>index 0（1）</td>
+<td>子節點 8、7，和 8 交換；1 到 index 1，子節點 4、5，再和 5 交換；1 到 index 4，沒有子節點，停</td>
+<td>8, 5, 7, 4, 1, 6, 3, 2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>max heap</strong>：<code>8, 5, 7, 4, 1, 6, 3, 2</code></p>
+<p>用動畫對答案：把 <code>1,2,3,4,5,6,7,8</code> 貼進 <a href="#u2-3">2.3 的動畫</a>，建 heap 選 bottom-up、只建 heap。</p>
+</details>
+<p><strong>P-10.</strong> 用 bottom-up 的方法把 10, 4, 16, 7, 23, 1, 12, 9, 30 建成 max heap（陣列 index 從 0 開始），寫出每一步和結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>最後一個非葉節點</strong>：<span class="arithmatex">\(n=9\)</span>，index <span class="arithmatex">\(\lfloor 9/2\rfloor-1=3\)</span>。從它往前，每個做 sift-down：</p>
+<table>
+<thead>
+<tr>
+<th>處理</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index 3（7）</td>
+<td>子節點 9、30，和 30 交換；7 到 index 8，沒有子節點，停</td>
+<td>10, 4, 16, 30, 23, 1, 12, 9, 7</td>
+</tr>
+<tr>
+<td>index 2（16）</td>
+<td>子節點 1、12，16 較大，不動</td>
+<td>10, 4, 16, 30, 23, 1, 12, 9, 7</td>
+</tr>
+<tr>
+<td>index 1（4）</td>
+<td>子節點 30、23，和 30 交換；4 到 index 3，子節點 9、7，再和 9 交換；4 到 index 7，沒有子節點，停</td>
+<td>10, 30, 16, 9, 23, 1, 12, 4, 7</td>
+</tr>
+<tr>
+<td>index 0（10）</td>
+<td>子節點 30、16，和 30 交換；10 到 index 1，子節點 9、23，再和 23 交換；10 到 index 4，沒有子節點，停</td>
+<td>30, 23, 16, 9, 10, 1, 12, 4, 7</td>
+</tr>
+</tbody>
+</table>
+<p><strong>max heap</strong>：<code>30, 23, 16, 9, 10, 1, 12, 4, 7</code></p>
+<p>用動畫對答案：把 <code>10,4,16,7,23,1,12,9,30</code> 貼進 <a href="#u2-3">2.3 的動畫</a>，建 heap 選 bottom-up、只建 heap。</p>
+</details>
+<p><strong>P-11.</strong> 把 6, 17, 3, 22, 9, 14, 27, 5, 11, 2 做 heap sort（由小到大）：先用 bottom-up 建 max heap，再寫出前 2 次「輸出最大值」後的陣列。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>最後一個非葉節點</strong>：<span class="arithmatex">\(n=10\)</span>，index <span class="arithmatex">\(\lfloor 10/2\rfloor-1=4\)</span>。從它往前，每個做 sift-down：</p>
+<table>
+<thead>
+<tr>
+<th>處理</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index 4（9）</td>
+<td>子節點 2，9 較大，不動</td>
+<td>6, 17, 3, 22, 9, 14, 27, 5, 11, 2</td>
+</tr>
+<tr>
+<td>index 3（22）</td>
+<td>子節點 5、11，22 較大，不動</td>
+<td>6, 17, 3, 22, 9, 14, 27, 5, 11, 2</td>
+</tr>
+<tr>
+<td>index 2（3）</td>
+<td>子節點 14、27，和 27 交換；3 到 index 6，沒有子節點，停</td>
+<td>6, 17, 27, 22, 9, 14, 3, 5, 11, 2</td>
+</tr>
+<tr>
+<td>index 1（17）</td>
+<td>子節點 22、9，和 22 交換；17 到 index 3，子節點 5、11，停</td>
+<td>6, 22, 27, 17, 9, 14, 3, 5, 11, 2</td>
+</tr>
+<tr>
+<td>index 0（6）</td>
+<td>子節點 22、27，和 27 交換；6 到 index 2，子節點 14、3，再和 14 交換；6 到 index 5，沒有子節點，停</td>
+<td>27, 22, 14, 17, 9, 6, 3, 5, 11, 2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>max heap</strong>：<code>27, 22, 14, 17, 9, 6, 3, 5, 11, 2</code></p>
+<p><strong>輸出 27</strong>：和最後的 2 交換，heap 剩 9 個，對根的 2 做 sift-down（子節點 22、14，和 22 交換；2 到 index 1，子節點 17、9，再和 17 交換；2 到 index 3，子節點 5、11，再和 11 交換；2 到 index 8，沒有子節點，停）：<code>22, 17, 14, 11, 9, 6, 3, 5, 2</code>（後面的 27 已經排好）</p>
+<p><strong>輸出 22</strong>：和最後的 2 交換，heap 剩 8 個，對根的 2 做 sift-down（子節點 17、14，和 17 交換；2 到 index 1，子節點 11、9，再和 11 交換；2 到 index 3，子節點 5，再和 5 交換；2 到 index 7，沒有子節點，停）：<code>17, 11, 14, 5, 9, 6, 3, 2</code>（後面的 22, 27 已經排好）</p>
+<p>用動畫對答案：把 <code>6,17,3,22,9,14,27,5,11,2</code> 貼進 <a href="#u2-3">2.3 的動畫</a>，建 heap 選 bottom-up，做到「heap sort」。</p>
+</details>
+<p><strong>P-12.</strong> 把 42, 18, 30, 7, 25, 12, 35, 3 做 heap sort（由小到大）：先用 bottom-up 建 max heap，再寫出前 2 次「輸出最大值」後的陣列。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>最後一個非葉節點</strong>：<span class="arithmatex">\(n=8\)</span>，index <span class="arithmatex">\(\lfloor 8/2\rfloor-1=3\)</span>。從它往前，每個做 sift-down：</p>
+<table>
+<thead>
+<tr>
+<th>處理</th>
+<th>動作</th>
+<th>陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index 3（7）</td>
+<td>子節點 3，7 較大，不動</td>
+<td>42, 18, 30, 7, 25, 12, 35, 3</td>
+</tr>
+<tr>
+<td>index 2（30）</td>
+<td>子節點 12、35，和 35 交換；30 到 index 6，沒有子節點，停</td>
+<td>42, 18, 35, 7, 25, 12, 30, 3</td>
+</tr>
+<tr>
+<td>index 1（18）</td>
+<td>子節點 7、25，和 25 交換；18 到 index 4，沒有子節點，停</td>
+<td>42, 25, 35, 7, 18, 12, 30, 3</td>
+</tr>
+<tr>
+<td>index 0（42）</td>
+<td>子節點 25、35，42 較大，不動</td>
+<td>42, 25, 35, 7, 18, 12, 30, 3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>max heap</strong>：<code>42, 25, 35, 7, 18, 12, 30, 3</code></p>
+<p><strong>輸出 42</strong>：和最後的 3 交換，heap 剩 7 個，對根的 3 做 sift-down（子節點 25、35，和 35 交換；3 到 index 2，子節點 12、30，再和 30 交換；3 到 index 6，沒有子節點，停）：<code>35, 25, 30, 7, 18, 12, 3</code>（後面的 42 已經排好）</p>
+<p><strong>輸出 35</strong>：和最後的 3 交換，heap 剩 6 個，對根的 3 做 sift-down（子節點 25、30，和 30 交換；3 到 index 2，子節點 12，再和 12 交換；3 到 index 5，沒有子節點，停）：<code>30, 25, 12, 7, 18, 3</code>（後面的 35, 42 已經排好）</p>
+<p>用動畫對答案：把 <code>42,18,30,7,25,12,35,3</code> 貼進 <a href="#u2-3">2.3 的動畫</a>，建 heap 選 bottom-up，做到「heap sort」。</p>
+</details>
+<h4 id="radix-sort">題型三：radix sort 每一輪</h4>
+<p><strong>做法</strong>：從個位數開始，依那一位放進 0–9 號桶，同一桶保持原順序，再依序收回（<a href="#u2-4">2.4</a>）。</p>
+<p><strong>P-13.</strong> 用 LSD radix sort（基數 10）排序 170, 45, 75, 90, 802, 24, 2, 66，寫出每一輪的結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>第 1 輪（個位數）</strong>：0 → 170、90；2 → 802、2；4 → 24；5 → 45、75；6 → 66 → <code>170, 90, 802, 2, 24, 45, 75, 66</code></li>
+<li><strong>第 2 輪（十位數）</strong>：0 → 802、2；2 → 24；4 → 45；6 → 66；7 → 170、75；9 → 90 → <code>802, 2, 24, 45, 66, 170, 75, 90</code></li>
+<li><strong>第 3 輪（百位數）</strong>：0 → 2、24、45、66、75、90；1 → 170；8 → 802 → <code>2, 24, 45, 66, 75, 90, 170, 802</code></li>
+<li><strong>為什麼對</strong>：每一輪都穩定，同一個桶子裡保持上一輪的順序；最後一輪排好最高位，前面幾輪已經把低位排好了。</li>
+</ul>
+<p>用動畫對答案：把 <code>170,45,75,90,802,24,2,66</code> 貼進 <a href="#u2-4">2.4 的動畫</a>。</p>
+</details>
+<p><strong>P-14.</strong> 用 LSD radix sort（基數 10）排序 329, 457, 657, 839, 436, 720, 355，寫出每一輪的結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>第 1 輪（個位數）</strong>：0 → 720；5 → 355；6 → 436；7 → 457、657；9 → 329、839 → <code>720, 355, 436, 457, 657, 329, 839</code></li>
+<li><strong>第 2 輪（十位數）</strong>：2 → 720、329；3 → 436、839；5 → 355、457、657 → <code>720, 329, 436, 839, 355, 457, 657</code></li>
+<li><strong>第 3 輪（百位數）</strong>：3 → 329、355；4 → 436、457；6 → 657；7 → 720；8 → 839 → <code>329, 355, 436, 457, 657, 720, 839</code></li>
+<li><strong>為什麼對</strong>：每一輪都穩定，同一個桶子裡保持上一輪的順序；最後一輪排好最高位，前面幾輪已經把低位排好了。</li>
+</ul>
+<p>用動畫對答案：把 <code>329,457,657,839,436,720,355</code> 貼進 <a href="#u2-4">2.4 的動畫</a>。</p>
+</details>
+<p><strong>P-15.</strong> 用 LSD radix sort（基數 10）排序 53, 89, 150, 36, 633, 233，寫出每一輪的結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>第 1 輪（個位數）</strong>：0 → 150；3 → 53、633、233；6 → 36；9 → 89 → <code>150, 53, 633, 233, 36, 89</code></li>
+<li><strong>第 2 輪（十位數）</strong>：3 → 633、233、36；5 → 150、53；8 → 89 → <code>633, 233, 36, 150, 53, 89</code></li>
+<li><strong>第 3 輪（百位數）</strong>：0 → 36、53、89；1 → 150；2 → 233；6 → 633 → <code>36, 53, 89, 150, 233, 633</code></li>
+<li><strong>為什麼對</strong>：每一輪都穩定，同一個桶子裡保持上一輪的順序；最後一輪排好最高位，前面幾輪已經把低位排好了。</li>
+</ul>
+<p>用動畫對答案：把 <code>53,89,150,36,633,233</code> 貼進 <a href="#u2-4">2.4 的動畫</a>。</p>
+</details>
+<p><strong>P-16.</strong> 用 LSD radix sort（基數 10）排序 25, 7, 31, 112, 98, 4, 61，寫出每一輪的結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>第 1 輪（個位數）</strong>：1 → 31、61；2 → 112；4 → 4；5 → 25；7 → 7；8 → 98 → <code>31, 61, 112, 4, 25, 7, 98</code></li>
+<li><strong>第 2 輪（十位數）</strong>：0 → 4、7；1 → 112；2 → 25；3 → 31；6 → 61；9 → 98 → <code>4, 7, 112, 25, 31, 61, 98</code></li>
+<li><strong>第 3 輪（百位數）</strong>：0 → 4、7、25、31、61、98；1 → 112 → <code>4, 7, 25, 31, 61, 98, 112</code></li>
+<li><strong>為什麼對</strong>：每一輪都穩定，同一個桶子裡保持上一輪的順序；最後一輪排好最高位，前面幾輪已經把低位排好了。</li>
+</ul>
+<p>用動畫對答案：把 <code>25,7,31,112,98,4,61</code> 貼進 <a href="#u2-4">2.4 的動畫</a>。</p>
+</details>
+<p><strong>P-17.</strong> 用 LSD radix sort（基數 10）排序 504, 81, 9, 470, 65, 18, 300，寫出每一輪的結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>第 1 輪（個位數）</strong>：0 → 470、300；1 → 81；4 → 504；5 → 65；8 → 18；9 → 9 → <code>470, 300, 81, 504, 65, 18, 9</code></li>
+<li><strong>第 2 輪（十位數）</strong>：0 → 300、504、9；1 → 18；6 → 65；7 → 470；8 → 81 → <code>300, 504, 9, 18, 65, 470, 81</code></li>
+<li><strong>第 3 輪（百位數）</strong>：0 → 9、18、65、81；3 → 300；4 → 470；5 → 504 → <code>9, 18, 65, 81, 300, 470, 504</code></li>
+<li><strong>為什麼對</strong>：每一輪都穩定，同一個桶子裡保持上一輪的順序；最後一輪排好最高位，前面幾輪已經把低位排好了。</li>
+</ul>
+<p>用動畫對答案：把 <code>504,81,9,470,65,18,300</code> 貼進 <a href="#u2-4">2.4 的動畫</a>。</p>
+</details>
 <h3 id="u2-quiz">單元 2 小考</h3>
 <p><strong>2-1.</strong> 5, 1, 4, 2, 3 用 insertion sort 要 swap 幾次？</p>
 <details class="quiz">
@@ -2386,7 +3222,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <section class="unit" data-unit="u3">
 <h2 id="u3">單元 3：樹</h2>
 <h3 id="u3-0">3.0 觀念課：三種走訪只差「根」放在哪裡</h3>
-<h4 id="_11">三種走訪</h4>
+<h4 id="_14">三種走訪</h4>
 <p>最小的樹：根 A，左子 B，右子 C。</p>
 <table>
 <thead>
@@ -2418,14 +3254,14 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>動畫裡藍色是「現在在哪個節點」，虛線圈是「還沒走完、等著回來的祖先」，綠色是已經輸出的。換一種走訪比較看看，樹也可以自己改（一層一層從左到右寫，<code>#</code> 表示那個位置是空的）：</p>
 <div class="viz" data-viz="traverse" data-tree="A,B,C,D,E,#,F"></div>
 
-<h4 id="_12">為什麼可以由走訪結果重建樹</h4>
+<h4 id="_15">為什麼可以由走訪結果重建樹</h4>
 <ul>
 <li>preorder 的<strong>第一個</strong>、postorder 的<strong>最後一個</strong>一定是根。</li>
 <li>在 inorder 中找到根，<strong>左邊全是左子樹、右邊全是右子樹</strong>。</li>
 <li>知道左子樹有幾個節點，就能把 preorder／postorder 也切開，對左右子樹遞迴。</li>
 </ul>
 <p>只有 preorder ＋ postorder 時，沒辦法知道「只有一個子節點時是左還是右」，所以不能唯一決定。最小的例子：A 的<strong>左</strong>子節點是 B，和 A 的<strong>右</strong>子節點是 B，兩棵樹的 preorder 都是 AB、postorder 都是 BA；只有 inorder（BA 和 AB）分得出來。</p>
-<h4 id="_13">二元樹的數量關係（常考填空）</h4>
+<h4 id="_16">二元樹的數量關係（常考填空）</h4>
 <ul>
 <li>第 <span class="arithmatex">\(i\)</span> 層最多 <span class="arithmatex">\(2^{i-1}\)</span> 個節點（根是第 1 層）；高度 <span class="arithmatex">\(h\)</span> 的二元樹最多 <span class="arithmatex">\(2^h-1\)</span> 個節點。</li>
 <li><span class="arithmatex">\(n\)</span> 個節點的二元樹，高度最少 <span class="arithmatex">\(\lceil\lg(n+1)\rceil\)</span>、最多 <span class="arithmatex">\(n\)</span>（一條斜線）。</li>
@@ -2537,7 +3373,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/@erictsai1224tw/AVL_tree">AVL Tree library</a>〉分別寫出 LL、RR、LR、RL 四種情況的旋轉程式碼。</li>
 </ul>
 </div>
-<h4 id="_14">換你試試</h4>
+<h4 id="_17">換你試試</h4>
 <p><strong>T-1.</strong> 樹：A 的左子 B、右子 C；B 的左子 D、右子 E。寫出 preorder、inorder、postorder。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -2772,7 +3608,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </div>
 <h3 id="u3-expr">3.5 運算式樹：前序、中序、後序式</h3>
 <p>100、102、103、104、106、107 年都考過（六年），題型只有三種：由運算式樹寫出三種式子、中序式轉前序／後序、用 stack 算出後序式（或前序式）的值。</p>
-<h4 id="_15">運算式就是一棵樹</h4>
+<h4 id="_18">運算式就是一棵樹</h4>
 <p>運算子（＋ − × ÷）是內部節點，運算元（數字、變數）是葉子。<span class="arithmatex">\((A+B)\times C\)</span> 的樹：根是 ×，左子樹是 A＋B，右子樹是 C。</p>
 <p>對這棵樹做 <a href="#u3-0">3.0</a> 的三種走訪，就得到三種寫法：</p>
 <table>
@@ -2807,7 +3643,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>小例子 <code>2 3 4 × +</code>：push 2、3、4；讀到 ×，pop 出 4、3，算 3 × 4 ＝ 12，push；讀到 ＋，pop 出 12、2，算 2 ＋ 12 ＝ 14。</p>
 <p><strong>前序式反過來</strong>：由<strong>右往左</strong>讀，規則一樣，但<strong>先 pop 出來的是左邊的運算元</strong>。</p>
 <p>減法和除法要特別注意左右：後序式 <code>8 5 −</code> 是 8 − 5 ＝ 3，不是 5 − 8。</p>
-<h4 id="_16">中序式轉前序、後序：加括號法最快</h4>
+<h4 id="_19">中序式轉前序、後序：加括號法最快</h4>
 <ol>
 <li>照優先順序（先乘除、後加減；<strong>同優先順序由左往右</strong>）把每一個運算都加上括號。</li>
 <li>後序式：把每個運算子搬到<strong>它那組括號的右括號位置</strong>；前序式：搬到<strong>左括號位置</strong>。</li>
@@ -2942,7 +3778,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </ul>
 <p>答案 <strong>A、B、D</strong>。</p>
 </div>
-<h4 id="_17">觀念小考</h4>
+<h4 id="_20">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> 後序式 <code>5 1 2 + 4 × + 3 −</code> 的值是多少？</p>
 <ol>
@@ -3016,7 +3852,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </details>
 <h3 id="u3-huff">3.6 Huffman 編碼</h3>
 <p>101、102 年各考一題 10%：給每個符號出現的次數，畫出 Huffman 樹、寫出編碼。</p>
-<h4 id="_18">觀念：常用的字給短的編碼</h4>
+<h4 id="_21">觀念：常用的字給短的編碼</h4>
 <ul>
 <li><strong>固定長度</strong>：6 個符號要 3 位元（<span class="arithmatex">\(2^2=4&lt;6\le8=2^3\)</span>），每個字都用 3 位元。</li>
 <li><strong>變動長度</strong>：常出現的字用短編碼、少見的用長編碼，總長度就變短。摩斯電碼就是這樣：最常用的 E 只有一點。</li>
@@ -3032,7 +3868,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>用 min-heap（priority queue）挑最小的兩個，n 個符號要 <span class="arithmatex">\(O(n\log n)\)</span>。</p>
 <p><strong>為什麼先合併最小的</strong>：合併一次，等於這兩棵樹底下所有符號的編碼都<strong>多一位</strong>，多出來的總位元數就是新根的頻率。先合併最小的兩個，每次多付的代價最小。</p>
 <p><strong>驗算捷徑</strong>：總位元數 ＝ Σ（頻率 × 編碼長度）＝ <strong>每次合併產生的新頻率全部加起來</strong>。</p>
-<h4 id="_19">考試要注意的規則</h4>
+<h4 id="_22">考試要注意的規則</h4>
 <ul>
 <li>頻率相同時挑哪一個、誰放左邊，會改變<strong>樹的樣子和個別編碼</strong>，但<strong>不會改變總位元數</strong>。</li>
 <li>題目有給規則就照規則（102 Q4）；沒給就寫出自己的規則，例如「頻率小的放左邊，相同時字母小的放左邊」。</li>
@@ -3162,7 +3998,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </div>
 <div class="viz" data-viz="huffman" data-freq="A 8, B 15, C 1, D 6, E 15, F 3, G 7" data-left="lex" data-title="102 Q4：照題目的規則合併"></div>
 
-<h4 id="_20">觀念小考</h4>
+<h4 id="_23">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 下面哪一組<strong>不是</strong>前綴碼？</p>
 <ol>
@@ -3326,6 +4162,719 @@ swap(A[i + 1], A[r]);</code></pre>
         45</code></pre>
 <p>檢查：inorder 是 20 35 40 45 50 60 70 80，由小到大 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </details>
+<h3 id="u3-drill">3.8 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="_24">題型一：由兩種走訪重建二元樹</h4>
+<p><strong>做法</strong>：postorder 的最後一個（或 preorder 的第一個）是根，在 inorder 裡切成左右兩半，對每一半重複（<a href="#u3-1">3.1</a>）。</p>
+<p><strong>P-1.</strong> inorder 是 A B C D E F G H I、postorder 是 A B D C F I H G E，畫出這棵二元樹，寫出 preorder。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>根 E</strong>：這段 postorder 的最後一個是 E；inorder ABCDEFGHI 切成左 ABCD、右 FGHI。</li>
+<li><strong>根 C</strong>：這段 postorder 的最後一個是 C；inorder ABCD 切成左 AB、右 D。</li>
+<li><strong>根 B</strong>：這段 postorder 的最後一個是 B；inorder AB 切成左 A、右（空）。</li>
+<li><strong>根 G</strong>：這段 postorder 的最後一個是 G；inorder FGHI 切成左 F、右 HI。</li>
+<li><strong>根 H</strong>：這段 postorder 的最後一個是 H；inorder HI 切成左（空）、右 I。</li>
+</ul>
+<pre class="highlight"><code class="language-text">E
++-- L: C
+|   +-- L: B
+|   |   `-- L: A
+|   `-- R: D
+`-- R: G
+    +-- L: F
+    `-- R: H
+        `-- R: I</code></pre>
+<p><strong>答案</strong>：preorder 是 <strong>E C B A D G F H I</strong>。</p>
+<p>用動畫對答案：在 <a href="#u3-1">3.1 的動畫</a> 填 inorder <code>ABCDEFGHI</code>、另一個走訪 <code>ABDCFIHGE</code>，選 postorder。</p>
+</details>
+<p><strong>P-2.</strong> inorder 是 A B C D E F G H I、preorder 是 D B A C F E H G I，畫出這棵二元樹，寫出 postorder。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>根 D</strong>：這段 preorder 的第一個是 D；inorder ABCDEFGHI 切成左 ABC、右 EFGHI。</li>
+<li><strong>根 B</strong>：這段 preorder 的第一個是 B；inorder ABC 切成左 A、右 C。</li>
+<li><strong>根 F</strong>：這段 preorder 的第一個是 F；inorder EFGHI 切成左 E、右 GHI。</li>
+<li><strong>根 H</strong>：這段 preorder 的第一個是 H；inorder GHI 切成左 G、右 I。</li>
+</ul>
+<pre class="highlight"><code class="language-text">D
++-- L: B
+|   +-- L: A
+|   `-- R: C
+`-- R: F
+    +-- L: E
+    `-- R: H
+        +-- L: G
+        `-- R: I</code></pre>
+<p><strong>答案</strong>：postorder 是 <strong>A C B E G I H F D</strong>。</p>
+<p>用動畫對答案：在 <a href="#u3-1">3.1 的動畫</a> 填 inorder <code>ABCDEFGHI</code>、另一個走訪 <code>DBACFEHGI</code>，選 preorder。</p>
+</details>
+<p><strong>P-3.</strong> inorder 是 K Q P M R T W、postorder 是 Q P K R W T M，畫出這棵二元樹，寫出 preorder。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>根 M</strong>：這段 postorder 的最後一個是 M；inorder KQPMRTW 切成左 KQP、右 RTW。</li>
+<li><strong>根 K</strong>：這段 postorder 的最後一個是 K；inorder KQP 切成左（空）、右 QP。</li>
+<li><strong>根 P</strong>：這段 postorder 的最後一個是 P；inorder QP 切成左 Q、右（空）。</li>
+<li><strong>根 T</strong>：這段 postorder 的最後一個是 T；inorder RTW 切成左 R、右 W。</li>
+</ul>
+<pre class="highlight"><code class="language-text">M
++-- L: K
+|   `-- R: P
+|       `-- L: Q
+`-- R: T
+    +-- L: R
+    `-- R: W</code></pre>
+<p><strong>答案</strong>：preorder 是 <strong>M K P Q T R W</strong>。</p>
+<p>用動畫對答案：在 <a href="#u3-1">3.1 的動畫</a> 填 inorder <code>KQPMRTW</code>、另一個走訪 <code>QPKRWTM</code>，選 postorder。</p>
+</details>
+<p><strong>P-4.</strong> inorder 是 N A D S O R Y Z、preorder 是 S A N D Y R O Z，畫出這棵二元樹，寫出 postorder。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>根 S</strong>：這段 preorder 的第一個是 S；inorder NADSORYZ 切成左 NAD、右 ORYZ。</li>
+<li><strong>根 A</strong>：這段 preorder 的第一個是 A；inorder NAD 切成左 N、右 D。</li>
+<li><strong>根 Y</strong>：這段 preorder 的第一個是 Y；inorder ORYZ 切成左 OR、右 Z。</li>
+<li><strong>根 R</strong>：這段 preorder 的第一個是 R；inorder OR 切成左 O、右（空）。</li>
+</ul>
+<pre class="highlight"><code class="language-text">S
++-- L: A
+|   +-- L: N
+|   `-- R: D
+`-- R: Y
+    +-- L: R
+    |   `-- L: O
+    `-- R: Z</code></pre>
+<p><strong>答案</strong>：postorder 是 <strong>N D A O R Z Y S</strong>。</p>
+<p>用動畫對答案：在 <a href="#u3-1">3.1 的動畫</a> 填 inorder <code>NADSORYZ</code>、另一個走訪 <code>SANDYROZ</code>，選 preorder。</p>
+</details>
+<p><strong>P-5.</strong> inorder 是 H D B E A C F G、postorder 是 H D E B G F C A，畫出這棵二元樹，寫出 preorder。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>根 A</strong>：這段 postorder 的最後一個是 A；inorder HDBEACFG 切成左 HDBE、右 CFG。</li>
+<li><strong>根 B</strong>：這段 postorder 的最後一個是 B；inorder HDBE 切成左 HD、右 E。</li>
+<li><strong>根 D</strong>：這段 postorder 的最後一個是 D；inorder HD 切成左 H、右（空）。</li>
+<li><strong>根 C</strong>：這段 postorder 的最後一個是 C；inorder CFG 切成左（空）、右 FG。</li>
+<li><strong>根 F</strong>：這段 postorder 的最後一個是 F；inorder FG 切成左（空）、右 G。</li>
+</ul>
+<pre class="highlight"><code class="language-text">A
++-- L: B
+|   +-- L: D
+|   |   `-- L: H
+|   `-- R: E
+`-- R: C
+    `-- R: F
+        `-- R: G</code></pre>
+<p><strong>答案</strong>：preorder 是 <strong>A B D H E C F G</strong>。</p>
+<p>用動畫對答案：在 <a href="#u3-1">3.1 的動畫</a> 填 inorder <code>HDBEACFG</code>、另一個走訪 <code>HDEBGFCA</code>，選 postorder。</p>
+</details>
+<p><strong>P-6.</strong> inorder 是 A B C D E F G H I、preorder 是 F B A D C E G I H，畫出這棵二元樹，寫出 postorder。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>根 F</strong>：這段 preorder 的第一個是 F；inorder ABCDEFGHI 切成左 ABCDE、右 GHI。</li>
+<li><strong>根 B</strong>：這段 preorder 的第一個是 B；inorder ABCDE 切成左 A、右 CDE。</li>
+<li><strong>根 D</strong>：這段 preorder 的第一個是 D；inorder CDE 切成左 C、右 E。</li>
+<li><strong>根 G</strong>：這段 preorder 的第一個是 G；inorder GHI 切成左（空）、右 HI。</li>
+<li><strong>根 I</strong>：這段 preorder 的第一個是 I；inorder HI 切成左 H、右（空）。</li>
+</ul>
+<pre class="highlight"><code class="language-text">F
++-- L: B
+|   +-- L: A
+|   `-- R: D
+|       +-- L: C
+|       `-- R: E
+`-- R: G
+    `-- R: I
+        `-- L: H</code></pre>
+<p><strong>答案</strong>：postorder 是 <strong>A C E D B H I G F</strong>。</p>
+<p>用動畫對答案：在 <a href="#u3-1">3.1 的動畫</a> 填 inorder <code>ABCDEFGHI</code>、另一個走訪 <code>FBADCEGIH</code>，選 preorder。</p>
+</details>
+<h4 id="avl-tree">題型二：AVL tree 依序插入</h4>
+<p><strong>做法</strong>：每插入一個，從新節點往上找第一個 |bf| ≥ 2 的點，看新節點在它的哪一側決定 LL、RR、LR、RL（<a href="#u3-3">3.3</a>）。</p>
+<p><strong>P-7.</strong> 依序把 10, 20, 30, 40, 50, 25 插入空的 AVL tree。哪幾次要旋轉、是哪一種？畫出最後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>不用轉的</strong>：插入 10、20、40 時，路徑上每個節點的 |bf| 都 ≤ 1。</li>
+<li><strong>插入 30（RR）</strong>：從 30 往上找，第一個不平衡的是 10；對 10 左旋，20 升上來。</li>
+<li><strong>插入 50（RR）</strong>：從 50 往上找，第一個不平衡的是 30；對 30 左旋，40 升上來。</li>
+<li><strong>插入 25（RL）</strong>：從 25 往上找，第一個不平衡的是 20；先對右子節點右旋、再對 20 左旋，30 升上來。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">30
++-- L: 20
+|   +-- L: 10
+|   `-- R: 25
+`-- R: 40
+    `-- R: 50</code></pre>
+<p><strong>答案</strong>：preorder 是 30 20 10 25 40 50，共轉了 3 次（RR、RR、RL）。</p>
+<p>用動畫對答案：在 <a href="#u3-3">3.3 的動畫</a> 把「先建好的樹」清空，「要一步一步插入的數」填 <code>10,20,30,40,50,25</code>。</p>
+</details>
+<p><strong>P-8.</strong> 依序把 50, 40, 30, 20, 10, 5 插入空的 AVL tree。哪幾次要旋轉、是哪一種？畫出最後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>不用轉的</strong>：插入 50、40、20 時，路徑上每個節點的 |bf| 都 ≤ 1。</li>
+<li><strong>插入 30（LL）</strong>：從 30 往上找，第一個不平衡的是 50；對 50 右旋，40 升上來。</li>
+<li><strong>插入 10（LL）</strong>：從 10 往上找，第一個不平衡的是 30；對 30 右旋，20 升上來。</li>
+<li><strong>插入 5（LL）</strong>：從 5 往上找，第一個不平衡的是 40；對 40 右旋，20 升上來。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">20
++-- L: 10
+|   `-- L: 5
+`-- R: 40
+    +-- L: 30
+    `-- R: 50</code></pre>
+<p><strong>答案</strong>：preorder 是 20 10 5 40 30 50，共轉了 3 次（LL、LL、LL）。</p>
+<p>用動畫對答案：在 <a href="#u3-3">3.3 的動畫</a> 把「先建好的樹」清空，「要一步一步插入的數」填 <code>50,40,30,20,10,5</code>。</p>
+</details>
+<p><strong>P-9.</strong> 依序把 30, 10, 20, 40, 50, 45 插入空的 AVL tree。哪幾次要旋轉、是哪一種？畫出最後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>不用轉的</strong>：插入 30、10、40 時，路徑上每個節點的 |bf| 都 ≤ 1。</li>
+<li><strong>插入 20（LR）</strong>：從 20 往上找，第一個不平衡的是 30；先對左子節點左旋、再對 30 右旋，20 升上來。</li>
+<li><strong>插入 50（RR）</strong>：從 50 往上找，第一個不平衡的是 30；對 30 左旋，40 升上來。</li>
+<li><strong>插入 45（RR）</strong>：從 45 往上找，第一個不平衡的是 20；對 20 左旋，40 升上來。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">40
++-- L: 20
+|   +-- L: 10
+|   `-- R: 30
+`-- R: 50
+    `-- L: 45</code></pre>
+<p><strong>答案</strong>：preorder 是 40 20 10 30 50 45，共轉了 3 次（LR、RR、RR）。</p>
+<p>用動畫對答案：在 <a href="#u3-3">3.3 的動畫</a> 把「先建好的樹」清空，「要一步一步插入的數」填 <code>30,10,20,40,50,45</code>。</p>
+</details>
+<p><strong>P-10.</strong> 依序把 15, 20, 24, 10, 13, 7, 30, 36, 25 插入空的 AVL tree。哪幾次要旋轉、是哪一種？畫出最後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>不用轉的</strong>：插入 15、20、10、30 時，路徑上每個節點的 |bf| 都 ≤ 1。</li>
+<li><strong>插入 24（RR）</strong>：從 24 往上找，第一個不平衡的是 15；對 15 左旋，20 升上來。</li>
+<li><strong>插入 13（LR）</strong>：從 13 往上找，第一個不平衡的是 15；先對左子節點左旋、再對 15 右旋，13 升上來。</li>
+<li><strong>插入 7（LL）</strong>：從 7 往上找，第一個不平衡的是 20；對 20 右旋，13 升上來。</li>
+<li><strong>插入 36（RR）</strong>：從 36 往上找，第一個不平衡的是 24；對 24 左旋，30 升上來。</li>
+<li><strong>插入 25（RL）</strong>：從 25 往上找，第一個不平衡的是 20；先對右子節點右旋、再對 20 左旋，24 升上來。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">13
++-- L: 10
+|   `-- L: 7
+`-- R: 24
+    +-- L: 20
+    |   `-- L: 15
+    `-- R: 30
+        +-- L: 25
+        `-- R: 36</code></pre>
+<p><strong>答案</strong>：preorder 是 13 10 7 24 20 15 30 25 36，共轉了 5 次（RR、LR、LL、RR、RL）。</p>
+<p>用動畫對答案：在 <a href="#u3-3">3.3 的動畫</a> 把「先建好的樹」清空，「要一步一步插入的數」填 <code>15,20,24,10,13,7,30,36,25</code>。</p>
+</details>
+<p><strong>P-11.</strong> 依序把 8, 4, 12, 2, 6, 5 插入空的 AVL tree。哪幾次要旋轉、是哪一種？畫出最後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>不用轉的</strong>：插入 8、4、12、2、6 時，路徑上每個節點的 |bf| 都 ≤ 1。</li>
+<li><strong>插入 5（LR）</strong>：從 5 往上找，第一個不平衡的是 8；先對左子節點左旋、再對 8 右旋，6 升上來。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">6
++-- L: 4
+|   +-- L: 2
+|   `-- R: 5
+`-- R: 8
+    `-- R: 12</code></pre>
+<p><strong>答案</strong>：preorder 是 6 4 2 5 8 12，共轉了 1 次（LR）。</p>
+<p>用動畫對答案：在 <a href="#u3-3">3.3 的動畫</a> 把「先建好的樹」清空，「要一步一步插入的數」填 <code>8,4,12,2,6,5</code>。</p>
+</details>
+<p><strong>P-12.</strong> 依序把 1, 2, 3, 4, 5, 6, 7 插入空的 AVL tree。哪幾次要旋轉、是哪一種？畫出最後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>不用轉的</strong>：插入 1、2、4 時，路徑上每個節點的 |bf| 都 ≤ 1。</li>
+<li><strong>插入 3（RR）</strong>：從 3 往上找，第一個不平衡的是 1；對 1 左旋，2 升上來。</li>
+<li><strong>插入 5（RR）</strong>：從 5 往上找，第一個不平衡的是 3；對 3 左旋，4 升上來。</li>
+<li><strong>插入 6（RR）</strong>：從 6 往上找，第一個不平衡的是 2；對 2 左旋，4 升上來。</li>
+<li><strong>插入 7（RR）</strong>：從 7 往上找，第一個不平衡的是 5；對 5 左旋，6 升上來。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">4
++-- L: 2
+|   +-- L: 1
+|   `-- R: 3
+`-- R: 6
+    +-- L: 5
+    `-- R: 7</code></pre>
+<p><strong>答案</strong>：preorder 是 4 2 1 3 6 5 7，共轉了 4 次（RR、RR、RR、RR）。</p>
+<p>用動畫對答案：在 <a href="#u3-3">3.3 的動畫</a> 把「先建好的樹」清空，「要一步一步插入的數」填 <code>1,2,3,4,5,6,7</code>。</p>
+</details>
+<h4 id="_25">題型三：中序、前序、後序互換與求值</h4>
+<p><strong>做法</strong>：轉換用加括號法；求值用 stack，後序由左往右、前序由右往左（<a href="#u3-expr">3.5</a>）。</p>
+<p><strong>P-13.</strong> 把中序式 A ＋ B × (C − D) ÷ E 轉成後序式和前序式。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>全部加括號</strong>：(A ＋ ((B × (C − D)) ÷ E))（先乘除後加減，同級由左往右）。</li>
+<li><strong>後序式</strong>：每個運算子搬到它那組括號的右括號 → <strong>A B C D − × E ÷ ＋</strong>。</li>
+<li><strong>前序式</strong>：搬到左括號 → <strong>＋ A ÷ × B − C D E</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>A+B*(C-D)/E</code> 貼進 <a href="#u3-expr">3.5 的動畫</a>，選「中序式轉後序式」。</p>
+</details>
+<p><strong>P-14.</strong> 把中序式 (A ＋ B) × C − (D − E) × (F ＋ G) 轉成後序式和前序式。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>全部加括號</strong>：(((A ＋ B) × C) − ((D − E) × (F ＋ G)))（先乘除後加減，同級由左往右）。</li>
+<li><strong>後序式</strong>：每個運算子搬到它那組括號的右括號 → <strong>A B ＋ C × D E − F G ＋ × −</strong>。</li>
+<li><strong>前序式</strong>：搬到左括號 → <strong>− × ＋ A B C × − D E ＋ F G</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>(A+B)*C-(D-E)*(F+G)</code> 貼進 <a href="#u3-expr">3.5 的動畫</a>，選「中序式轉後序式」。</p>
+</details>
+<p><strong>P-15.</strong> 把中序式 A − B ＋ C × D ÷ E − F 轉成後序式和前序式。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>全部加括號</strong>：(((A − B) ＋ ((C × D) ÷ E)) − F)（先乘除後加減，同級由左往右）。</li>
+<li><strong>後序式</strong>：每個運算子搬到它那組括號的右括號 → <strong>A B − C D × E ÷ ＋ F −</strong>。</li>
+<li><strong>前序式</strong>：搬到左括號 → <strong>− ＋ − A B ÷ × C D E F</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-B+C*D/E-F</code> 貼進 <a href="#u3-expr">3.5 的動畫</a>，選「中序式轉後序式」。</p>
+</details>
+<p><strong>P-16.</strong> 用 stack 算後序式 5 1 2 ＋ 4 × ＋ 3 − 的值，寫出每一步 stack 的內容。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>由左往右讀，數字 push；運算子 pop 兩個，<strong>先 pop 出來的是右邊</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>讀到</th>
+<th>動作</th>
+<th>stack（右邊是 top）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5</td>
+<td>push</td>
+<td>5</td>
+</tr>
+<tr>
+<td>1</td>
+<td>push</td>
+<td>5 1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>push</td>
+<td>5 1 2</td>
+</tr>
+<tr>
+<td>＋</td>
+<td>pop 出 2、1，算 1 ＋ 2 ＝ 3</td>
+<td>5 3</td>
+</tr>
+<tr>
+<td>4</td>
+<td>push</td>
+<td>5 3 4</td>
+</tr>
+<tr>
+<td>×</td>
+<td>pop 出 4、3，算 3 × 4 ＝ 12</td>
+<td>5 12</td>
+</tr>
+<tr>
+<td>＋</td>
+<td>pop 出 12、5，算 5 ＋ 12 ＝ 17</td>
+<td>17</td>
+</tr>
+<tr>
+<td>3</td>
+<td>push</td>
+<td>17 3</td>
+</tr>
+<tr>
+<td>−</td>
+<td>pop 出 3、17，算 17 − 3 ＝ 14</td>
+<td>14</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：<strong>14</strong></p>
+<p>用動畫對答案：把 <code>5 1 2 + 4 * + 3 -</code> 貼進 <a href="#u3-expr">3.5 的動畫</a>，選「後序式求值」。</p>
+</details>
+<p><strong>P-17.</strong> 用 stack 算後序式 8 2 3 × − 4 2 ÷ ＋ 5 × 的值，寫出每一步 stack 的內容。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>由左往右讀，數字 push；運算子 pop 兩個，<strong>先 pop 出來的是右邊</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>讀到</th>
+<th>動作</th>
+<th>stack（右邊是 top）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8</td>
+<td>push</td>
+<td>8</td>
+</tr>
+<tr>
+<td>2</td>
+<td>push</td>
+<td>8 2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>push</td>
+<td>8 2 3</td>
+</tr>
+<tr>
+<td>×</td>
+<td>pop 出 3、2，算 2 × 3 ＝ 6</td>
+<td>8 6</td>
+</tr>
+<tr>
+<td>−</td>
+<td>pop 出 6、8，算 8 − 6 ＝ 2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>4</td>
+<td>push</td>
+<td>2 4</td>
+</tr>
+<tr>
+<td>2</td>
+<td>push</td>
+<td>2 4 2</td>
+</tr>
+<tr>
+<td>÷</td>
+<td>pop 出 2、4，算 4 ÷ 2 ＝ 2</td>
+<td>2 2</td>
+</tr>
+<tr>
+<td>＋</td>
+<td>pop 出 2、2，算 2 ＋ 2 ＝ 4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>5</td>
+<td>push</td>
+<td>4 5</td>
+</tr>
+<tr>
+<td>×</td>
+<td>pop 出 5、4，算 4 × 5 ＝ 20</td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：<strong>20</strong></p>
+<p>用動畫對答案：把 <code>8 2 3 * - 4 2 / + 5 *</code> 貼進 <a href="#u3-expr">3.5 的動畫</a>，選「後序式求值」。</p>
+</details>
+<p><strong>P-18.</strong> 用 stack 算前序式 − × ＋ 2 3 4 ÷ 8 2 的值。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>由<strong>右往左</strong>讀，數字 push；運算子 pop 兩個，<strong>先 pop 出來的是左邊</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>讀到</th>
+<th>動作</th>
+<th>stack（右邊是 top）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>push</td>
+<td>2</td>
+</tr>
+<tr>
+<td>8</td>
+<td>push</td>
+<td>2 8</td>
+</tr>
+<tr>
+<td>÷</td>
+<td>pop 出 8、2，算 8 ÷ 2 ＝ 4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4</td>
+<td>push</td>
+<td>4 4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>push</td>
+<td>4 4 3</td>
+</tr>
+<tr>
+<td>2</td>
+<td>push</td>
+<td>4 4 3 2</td>
+</tr>
+<tr>
+<td>＋</td>
+<td>pop 出 2、3，算 2 ＋ 3 ＝ 5</td>
+<td>4 4 5</td>
+</tr>
+<tr>
+<td>×</td>
+<td>pop 出 5、4，算 5 × 4 ＝ 20</td>
+<td>4 20</td>
+</tr>
+<tr>
+<td>−</td>
+<td>pop 出 20、4，算 20 − 4 ＝ 16</td>
+<td>16</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：<strong>16</strong>，就是 <span class="arithmatex">\((2+3)\times4-8\div2\)</span>。</p>
+<p>用動畫對答案：把 <code>- * + 2 3 4 / 8 2</code> 貼進 <a href="#u3-expr">3.5 的動畫</a>，選「前序式求值」。</p>
+</details>
+<h4 id="huffman_1">題型四：Huffman 編碼</h4>
+<p><strong>做法</strong>：每次拿最小的兩個合併；總位元數 ＝ 每次合併的新頻率加起來（<a href="#u3-huff">3.6</a>）。</p>
+<p><strong>P-19.</strong> 符號和出現次數是 A 5、B 9、C 12、D 13、E 16、F 45。用 Huffman 編碼（頻率小的放左邊），每個符號的編碼是什麼？總共幾個位元？固定長度編碼要幾個位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>最小的兩個</th>
+<th>合併成</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A 5、B 9</td>
+<td>14</td>
+</tr>
+<tr>
+<td>2</td>
+<td>C 12、D 13</td>
+<td>25</td>
+</tr>
+<tr>
+<td>3</td>
+<td>AB 14、E 16</td>
+<td>30</td>
+</tr>
+<tr>
+<td>4</td>
+<td>CD 25、ABE 30</td>
+<td>55</td>
+</tr>
+<tr>
+<td>5</td>
+<td>F 45、CDABE 55</td>
+<td>100</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>編碼（頻率小的放左邊，左 0 右 1）</strong>：A＝1100、B＝1101、C＝100、D＝101、E＝111、F＝0。</li>
+<li><strong>總位元數（224）</strong>：Σ 頻率 × 編碼長度；用捷徑驗算，每次合併的新頻率加起來 14 ＋ 25 ＋ 30 ＋ 55 ＋ 100 ＝ 224 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+<li><strong>固定長度要 300</strong>：6 個符號要 3 位元，<span class="arithmatex">\(100\times3=300\)</span>，Huffman 省了 76。</li>
+</ul>
+<p>用動畫對答案：把 <code>A 5, B 9, C 12, D 13, E 16, F 45</code> 貼進 <a href="#u3-huff">3.6 的動畫</a>，選「頻率小的放左邊」。</p>
+</details>
+<p><strong>P-20.</strong> 符號和出現次數是 A 2、B 3、C 7、D 10、E 4、F 19。用 Huffman 編碼（頻率小的放左邊），每個符號的編碼是什麼？總共幾個位元？固定長度編碼要幾個位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>最小的兩個</th>
+<th>合併成</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A 2、B 3</td>
+<td>5</td>
+</tr>
+<tr>
+<td>2</td>
+<td>E 4、AB 5</td>
+<td>9</td>
+</tr>
+<tr>
+<td>3</td>
+<td>C 7、EAB 9</td>
+<td>16</td>
+</tr>
+<tr>
+<td>4</td>
+<td>D 10、CEAB 16</td>
+<td>26</td>
+</tr>
+<tr>
+<td>5</td>
+<td>F 19、DCEAB 26</td>
+<td>45</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>編碼（頻率小的放左邊，左 0 右 1）</strong>：A＝11110、B＝11111、C＝110、D＝10、E＝1110、F＝0。</li>
+<li><strong>總位元數（101）</strong>：Σ 頻率 × 編碼長度；用捷徑驗算，每次合併的新頻率加起來 5 ＋ 9 ＋ 16 ＋ 26 ＋ 45 ＝ 101 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+<li><strong>固定長度要 135</strong>：6 個符號要 3 位元，<span class="arithmatex">\(45\times3=135\)</span>，Huffman 省了 34。</li>
+</ul>
+<p>用動畫對答案：把 <code>A 2, B 3, C 7, D 10, E 4, F 19</code> 貼進 <a href="#u3-huff">3.6 的動畫</a>，選「頻率小的放左邊」。</p>
+</details>
+<p><strong>P-21.</strong> 符號和出現次數是 P 22、Q 6、R 11、S 3、T 17。用 Huffman 編碼（頻率小的放左邊），每個符號的編碼是什麼？總共幾個位元？固定長度編碼要幾個位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>最小的兩個</th>
+<th>合併成</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>S 3、Q 6</td>
+<td>9</td>
+</tr>
+<tr>
+<td>2</td>
+<td>SQ 9、R 11</td>
+<td>20</td>
+</tr>
+<tr>
+<td>3</td>
+<td>T 17、SQR 20</td>
+<td>37</td>
+</tr>
+<tr>
+<td>4</td>
+<td>P 22、TSQR 37</td>
+<td>59</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>編碼（頻率小的放左邊，左 0 右 1）</strong>：P＝0、Q＝1101、R＝111、S＝1100、T＝10。</li>
+<li><strong>總位元數（125）</strong>：Σ 頻率 × 編碼長度；用捷徑驗算，每次合併的新頻率加起來 9 ＋ 20 ＋ 37 ＋ 59 ＝ 125 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+<li><strong>固定長度要 177</strong>：5 個符號要 3 位元，<span class="arithmatex">\(59\times3=177\)</span>，Huffman 省了 52。</li>
+</ul>
+<p>用動畫對答案：把 <code>P 22, Q 6, R 11, S 3, T 17</code> 貼進 <a href="#u3-huff">3.6 的動畫</a>，選「頻率小的放左邊」。</p>
+</details>
+<p><strong>P-22.</strong> 符號和出現次數是 A 30、B 8、C 12、D 5、E 21、F 2、G 14。用 Huffman 編碼（頻率小的放左邊），每個符號的編碼是什麼？總共幾個位元？固定長度編碼要幾個位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>最小的兩個</th>
+<th>合併成</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>F 2、D 5</td>
+<td>7</td>
+</tr>
+<tr>
+<td>2</td>
+<td>FD 7、B 8</td>
+<td>15</td>
+</tr>
+<tr>
+<td>3</td>
+<td>C 12、G 14</td>
+<td>26</td>
+</tr>
+<tr>
+<td>4</td>
+<td>FDB 15、E 21</td>
+<td>36</td>
+</tr>
+<tr>
+<td>5</td>
+<td>CG 26、A 30</td>
+<td>56</td>
+</tr>
+<tr>
+<td>6</td>
+<td>FDBE 36、CGA 56</td>
+<td>92</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>編碼（頻率小的放左邊，左 0 右 1）</strong>：A＝11、B＝001、C＝100、D＝0001、E＝01、F＝0000、G＝101。</li>
+<li><strong>總位元數（232）</strong>：Σ 頻率 × 編碼長度；用捷徑驗算，每次合併的新頻率加起來 7 ＋ 15 ＋ 26 ＋ 36 ＋ 56 ＋ 92 ＝ 232 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+<li><strong>固定長度要 276</strong>：7 個符號要 3 位元，<span class="arithmatex">\(92\times3=276\)</span>，Huffman 省了 44。</li>
+</ul>
+<p>用動畫對答案：把 <code>A 30, B 8, C 12, D 5, E 21, F 2, G 14</code> 貼進 <a href="#u3-huff">3.6 的動畫</a>，選「頻率小的放左邊」。</p>
+</details>
+<p><strong>P-23.</strong> 符號和出現次數是 W 40、X 25、Y 9、Z 13、V 4、U 6。用 Huffman 編碼（頻率小的放左邊），每個符號的編碼是什麼？總共幾個位元？固定長度編碼要幾個位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>最小的兩個</th>
+<th>合併成</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>V 4、U 6</td>
+<td>10</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Y 9、VU 10</td>
+<td>19</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Z 13、YVU 19</td>
+<td>32</td>
+</tr>
+<tr>
+<td>4</td>
+<td>X 25、ZYVU 32</td>
+<td>57</td>
+</tr>
+<tr>
+<td>5</td>
+<td>W 40、XZYVU 57</td>
+<td>97</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>編碼（頻率小的放左邊，左 0 右 1）</strong>：U＝11111、V＝11110、W＝0、X＝10、Y＝1110、Z＝110。</li>
+<li><strong>總位元數（215）</strong>：Σ 頻率 × 編碼長度；用捷徑驗算，每次合併的新頻率加起來 10 ＋ 19 ＋ 32 ＋ 57 ＋ 97 ＝ 215 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+<li><strong>固定長度要 291</strong>：6 個符號要 3 位元，<span class="arithmatex">\(97\times3=291\)</span>，Huffman 省了 76。</li>
+</ul>
+<p>用動畫對答案：把 <code>W 40, X 25, Y 9, Z 13, V 4, U 6</code> 貼進 <a href="#u3-huff">3.6 的動畫</a>，選「頻率小的放左邊」。</p>
+</details>
 <h3 id="u3-quiz">單元 3 小考</h3>
 <p><strong>3-1.</strong> preorder ABDECF、inorder DBEAFC，postorder 是什麼？</p>
 <details class="quiz">
@@ -3356,7 +4905,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <section class="unit" data-unit="u4">
 <h2 id="u4">單元 4：雜湊</h2>
 <h3 id="u4-0">4.0 觀念課：依學號尾數分配置物櫃</h3>
-<h4 id="_21">雜湊的想法</h4>
+<h4 id="_26">雜湊的想法</h4>
 <p>有 5 個置物櫃（編號 0–4），每個學號放到「學號 mod 5」那一格。要找人時直接算出櫃子號碼，不用一個個翻，平均 <span class="arithmatex">\(O(1)\)</span>。</p>
 <p><strong>碰撞（collision）</strong>：兩個學號算出同一格，例如 7 和 12 都是 mod 5 ＝ 2。</p>
 <h4 id="linear-probing">linear probing：被佔了就往下一格</h4>
@@ -3398,7 +4947,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>碰撞時不是固定走 1 格，而是走 <span class="arithmatex">\(h_2(k)\)</span> 格：第 <span class="arithmatex">\(i\)</span> 次探測位置是 <span class="arithmatex">\((h_1(k)+i\cdot h_2(k))\bmod M\)</span>。不同的 key 就算第一次撞在同一格，之後走的路線也不同，不會擠成一團。</p>
 <p><span class="arithmatex">\(h_2\)</span> 不能是 0（不然永遠原地踏步），而且最好和 <span class="arithmatex">\(M\)</span> 互質，<span class="arithmatex">\(M\)</span> 取質數最簡單。</p>
 <p><strong>load factor</strong> <span class="arithmatex">\(\alpha=\frac{\text{放了幾個}}{M}\)</span>。<span class="arithmatex">\(\alpha\)</span> 越接近 1，碰撞越多、越慢。</p>
-<h4 id="_22">刪除：為什麼不能直接清空？</h4>
+<h4 id="_27">刪除：為什麼不能直接清空？</h4>
 <p>open addressing 搜尋時，是沿著探測路線一直走，<strong>走到空格就停</strong>（空格代表「這個 key 從來沒放進來過」）。刪除時如果直接把格子清空，路線就被切斷了：</p>
 <figure class="fig">
 <svg viewBox="0 0 360 224" role="img" aria-label="M＝5、linear probing，7、12、2 都算到第 2 格，放在 2、3、4。刪除 12 時如果直接清空第 3 格，找 2 會在第 3 格遇到空格就停下來，以為 2 不存在。改成把第 3 格標成「已刪除」，搜尋會跳過它繼續找，在第 4 格找到 2。">
@@ -3484,7 +5033,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/en/hashtable">VisuAlgo Hash Table</a>：linear probing、quadratic probing、double hashing 都能自己輸入 key 看探測路線，可以直接拿 115 Q7 的數字試。</li>
 </ul>
 </div>
-<h4 id="_23">換你試試</h4>
+<h4 id="_28">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h(k)=k\bmod7\)</span>，依序插入 14、21、7，各放在哪裡？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -3625,7 +5174,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </tbody>
 </table>
 <p>linear probing 擠成 0–3 一整塊；quadratic 跳開了，但四個 key 走的是<strong>同一條路線</strong> 0 → 1 → 4 → 9（secondary clustering）。另外，quadratic probing 不一定走得遍每一格：<span class="arithmatex">\(M\)</span> 取質數、而且 <span class="arithmatex">\(\alpha\le\frac12\)</span> 時，才保證找得到空格。</p>
-<h4 id="_24">雜湊函數怎麼設計</h4>
+<h4 id="_29">雜湊函數怎麼設計</h4>
 <ul>
 <li><strong>除法（division）</strong>：<span class="arithmatex">\(h(k)=k\bmod M\)</span>，<span class="arithmatex">\(M\)</span> 選<strong>不靠近 2 的次方的質數</strong>。<span class="arithmatex">\(M=2^p\)</span> 時只看得到 <span class="arithmatex">\(k\)</span> 的最低 <span class="arithmatex">\(p\)</span> 個位元，其他位元完全沒用到；<span class="arithmatex">\(M=100\)</span> 也只看最後兩位數。</li>
 <li><strong>乘法（multiplication）</strong>：<span class="arithmatex">\(h(k)=\lfloor M\cdot(kA\bmod1)\rfloor\)</span>，<span class="arithmatex">\(0&lt;A&lt;1\)</span>（常用 <span class="arithmatex">\(A\approx\frac{\sqrt5-1}2\approx0.618\)</span>）。<span class="arithmatex">\(M\)</span> 不挑，常取 2 的次方。</li>
@@ -3718,7 +5267,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>第二層：第 j 格有 <span class="arithmatex">\(n_j\)</span> 個 key，就給它一個大小 <span class="arithmatex">\(n_j^2\)</span> 的小表，再挑一個雜湊函數讓這 <span class="arithmatex">\(n_j\)</span> 個 key <strong>完全不碰撞</strong>（下面 105 Q5 證明隨機挑成功的機率至少一半，試幾次就成功）。</li>
 </ol>
 <p>總空間期望值仍然是 <span class="arithmatex">\(O(n)\)</span>，每次搜尋只算兩次雜湊。</p>
-<h4 id="_25">用在認證的雜湊函數</h4>
+<h4 id="_30">用在認證的雜湊函數</h4>
 <p>密碼學用的雜湊函數（例如 SHA-256）把任意長的訊息壓成固定長度的摘要，還要滿足：</p>
 <ul>
 <li><strong>單向（one-way）</strong>：知道 <span class="arithmatex">\(h(m)\)</span>，很難找出 m。</li>
@@ -3775,7 +5324,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </tbody>
 </table>
 <p><strong>失敗的直覺</strong>：每探測一格，有 <span class="arithmatex">\(\alpha\)</span> 的機率是佔用的、要繼續。第 1 次一定要探測，要探測第 2 次的機率是 <span class="arithmatex">\(\alpha\)</span>、第 3 次是 <span class="arithmatex">\(\alpha^2\)</span>……加起來 <span class="arithmatex">\(1+\alpha+\alpha^2+\cdots=\frac1{1-\alpha}\)</span>。<span class="arithmatex">\(\alpha\)</span> 接近 1 時急速變大，所以 open addressing 的表不能放太滿。</p>
-<h4 id="_26">觀念小考</h4>
+<h4 id="_31">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 用 chaining，m ＝ 100 格放 n ＝ 300 個 key，在 simple uniform hashing 下，失敗的搜尋平均要走多長的串列？</p>
 <ol>
@@ -3906,6 +5455,368 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>失敗（平均 <span class="arithmatex">\(\frac65=1.2\)</span> 次）</strong>：落在第 0、1、2、3、4 格，要把整條串列比完：1、0、0、3、2 次，平均 1.2，剛好等於 <span class="arithmatex">\(\alpha=\frac65\)</span>，跟 <a href="#u4-theory">4.2</a> 的 <span class="arithmatex">\(\Theta(1+\alpha)\)</span> 一致。</li>
 </ul>
 </details>
+<h3 id="u4-drill">4.4 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="_32">題型：開放定址的插入</h4>
+<p><strong>做法</strong>：先算 <span class="arithmatex">\(h(k)\)</span>；被佔用就照公式算第 1、2、3… 次探測，直到空格。每遇到一個佔用的格子算一次碰撞（<a href="#u4-1">4.1</a>）。</p>
+<p><strong>P-1.</strong> 表大小 <span class="arithmatex">\(M=10\)</span>、<span class="arithmatex">\(h(k)=k\bmod 10\)</span>，用 linear probing 依序插入 89, 18, 49, 58, 69。最後的表是什麼？總共碰撞幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>第 <span class="arithmatex">\(i\)</span> 次探測的位置是 <span class="arithmatex">\((h(k)+i)\bmod 10\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th><span class="arithmatex">\(h(k)\)</span></th>
+<th>探測</th>
+<th>放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>89</td>
+<td>9</td>
+<td>9</td>
+<td>9</td>
+</tr>
+<tr>
+<td>18</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+</tr>
+<tr>
+<td>49</td>
+<td>9</td>
+<td>9 佔用 → 0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>58</td>
+<td>8</td>
+<td>8 佔用 → 9 佔用 → 0 佔用 → 1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>69</td>
+<td>9</td>
+<td>9 佔用 → 0 佔用 → 1 佔用 → 2</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：[0]=49、[1]=58、[2]=69、[8]=18、[9]=89，其他是空的；共碰撞 <strong>7</strong> 次。</p>
+<p>用動畫對答案：在 <a href="#u4-1">4.1 的動畫</a> 填 key <code>89,18,49,58,69</code>、M ＝ 10，碰撞時選 linear probing。</p>
+</details>
+<p><strong>P-2.</strong> 表大小 <span class="arithmatex">\(M=11\)</span>、<span class="arithmatex">\(h(k)=k\bmod 11\)</span>，用 linear probing 依序插入 26, 42, 5, 44, 92, 59, 40, 36, 12。最後的表是什麼？總共碰撞幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>第 <span class="arithmatex">\(i\)</span> 次探測的位置是 <span class="arithmatex">\((h(k)+i)\bmod 11\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th><span class="arithmatex">\(h(k)\)</span></th>
+<th>探測</th>
+<th>放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>26</td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>42</td>
+<td>9</td>
+<td>9</td>
+<td>9</td>
+</tr>
+<tr>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td>44</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>92</td>
+<td>4</td>
+<td>4 佔用 → 5 佔用 → 6</td>
+<td>6</td>
+</tr>
+<tr>
+<td>59</td>
+<td>4</td>
+<td>4 佔用 → 5 佔用 → 6 佔用 → 7</td>
+<td>7</td>
+</tr>
+<tr>
+<td>40</td>
+<td>7</td>
+<td>7 佔用 → 8</td>
+<td>8</td>
+</tr>
+<tr>
+<td>36</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>12</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：[0]=44、[1]=12、[3]=36、[4]=26、[5]=5、[6]=92、[7]=59、[8]=40、[9]=42，其他是空的；共碰撞 <strong>6</strong> 次。</p>
+<p>用動畫對答案：在 <a href="#u4-1">4.1 的動畫</a> 填 key <code>26,42,5,44,92,59,40,36,12</code>、M ＝ 11，碰撞時選 linear probing。</p>
+</details>
+<p><strong>P-3.</strong> 表大小 <span class="arithmatex">\(M=10\)</span>、<span class="arithmatex">\(h(k)=k\bmod 10\)</span>，用 quadratic probing 依序插入 89, 18, 49, 58, 69。最後的表是什麼？總共碰撞幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>第 <span class="arithmatex">\(i\)</span> 次探測的位置是 <span class="arithmatex">\((h(k)+i^2)\bmod 10\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th><span class="arithmatex">\(h(k)\)</span></th>
+<th>探測</th>
+<th>放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>89</td>
+<td>9</td>
+<td>9</td>
+<td>9</td>
+</tr>
+<tr>
+<td>18</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+</tr>
+<tr>
+<td>49</td>
+<td>9</td>
+<td>9 佔用 → 0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>58</td>
+<td>8</td>
+<td>8 佔用 → 9 佔用 → 2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>69</td>
+<td>9</td>
+<td>9 佔用 → 0 佔用 → 3</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：[0]=49、[2]=58、[3]=69、[8]=18、[9]=89，其他是空的；共碰撞 <strong>5</strong> 次。</p>
+<p>58 和 69 跳 1、4 格就跳開了，不像 linear probing 一格一格往下擠。</p>
+<p>用動畫對答案：在 <a href="#u4-1">4.1 的動畫</a> 填 key <code>89,18,49,58,69</code>、M ＝ 10，碰撞時選 quadratic probing。</p>
+</details>
+<p><strong>P-4.</strong> 表大小 <span class="arithmatex">\(M=11\)</span>、<span class="arithmatex">\(h(k)=k\bmod 11\)</span>，用 quadratic probing 依序插入 14, 25, 3, 36, 47, 9。最後的表是什麼？總共碰撞幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>第 <span class="arithmatex">\(i\)</span> 次探測的位置是 <span class="arithmatex">\((h(k)+i^2)\bmod 11\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th><span class="arithmatex">\(h(k)\)</span></th>
+<th>探測</th>
+<th>放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>14</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>25</td>
+<td>3</td>
+<td>3 佔用 → 4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>3 佔用 → 4 佔用 → 7</td>
+<td>7</td>
+</tr>
+<tr>
+<td>36</td>
+<td>3</td>
+<td>3 佔用 → 4 佔用 → 7 佔用 → 1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>47</td>
+<td>3</td>
+<td>3 佔用 → 4 佔用 → 7 佔用 → 1 佔用 → 8</td>
+<td>8</td>
+</tr>
+<tr>
+<td>9</td>
+<td>9</td>
+<td>9</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：[1]=36、[3]=14、[4]=25、[7]=3、[8]=47、[9]=9，其他是空的；共碰撞 <strong>10</strong> 次。</p>
+<p>用動畫對答案：在 <a href="#u4-1">4.1 的動畫</a> 填 key <code>14,25,3,36,47,9</code>、M ＝ 11，碰撞時選 quadratic probing。</p>
+</details>
+<p><strong>P-5.</strong> 表大小 <span class="arithmatex">\(M=10\)</span>、<span class="arithmatex">\(h_1(k)=k\bmod 10\)</span>，用 double hashing（<span class="arithmatex">\(h_2(k)=7-(k\bmod 7)\)</span>）依序插入 89, 18, 49, 58, 69。最後的表是什麼？總共碰撞幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>第 <span class="arithmatex">\(i\)</span> 次探測的位置是 <span class="arithmatex">\((h_1(k)+i\cdot h_2(k))\bmod 10\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th><span class="arithmatex">\(h_1(k)\)</span></th>
+<th><span class="arithmatex">\(h_2(k)\)</span></th>
+<th>探測</th>
+<th>放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>89</td>
+<td>9</td>
+<td>2</td>
+<td>9</td>
+<td>9</td>
+</tr>
+<tr>
+<td>18</td>
+<td>8</td>
+<td>3</td>
+<td>8</td>
+<td>8</td>
+</tr>
+<tr>
+<td>49</td>
+<td>9</td>
+<td>7</td>
+<td>9 佔用 → 6</td>
+<td>6</td>
+</tr>
+<tr>
+<td>58</td>
+<td>8</td>
+<td>5</td>
+<td>8 佔用 → 3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>69</td>
+<td>9</td>
+<td>1</td>
+<td>9 佔用 → 0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：[0]=69、[3]=58、[6]=49、[8]=18、[9]=89，其他是空的；共碰撞 <strong>3</strong> 次。</p>
+<p>用動畫對答案：在 <a href="#u4-1">4.1 的動畫</a> 填 key <code>89,18,49,58,69</code>、M ＝ 10，碰撞時選 double hashing、R ＝ 7。</p>
+</details>
+<p><strong>P-6.</strong> 表大小 <span class="arithmatex">\(M=13\)</span>、<span class="arithmatex">\(h_1(k)=k\bmod 13\)</span>，用 double hashing（<span class="arithmatex">\(h_2(k)=7-(k\bmod 7)\)</span>）依序插入 18, 41, 22, 44, 59, 32, 31, 73。最後的表是什麼？總共碰撞幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>第 <span class="arithmatex">\(i\)</span> 次探測的位置是 <span class="arithmatex">\((h_1(k)+i\cdot h_2(k))\bmod 13\)</span>。</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th><span class="arithmatex">\(h_1(k)\)</span></th>
+<th><span class="arithmatex">\(h_2(k)\)</span></th>
+<th>探測</th>
+<th>放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>18</td>
+<td>5</td>
+<td>3</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td>41</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>22</td>
+<td>9</td>
+<td>6</td>
+<td>9</td>
+<td>9</td>
+</tr>
+<tr>
+<td>44</td>
+<td>5</td>
+<td>5</td>
+<td>5 佔用 → 10</td>
+<td>10</td>
+</tr>
+<tr>
+<td>59</td>
+<td>7</td>
+<td>4</td>
+<td>7</td>
+<td>7</td>
+</tr>
+<tr>
+<td>32</td>
+<td>6</td>
+<td>3</td>
+<td>6</td>
+<td>6</td>
+</tr>
+<tr>
+<td>31</td>
+<td>5</td>
+<td>4</td>
+<td>5 佔用 → 9 佔用 → 0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>73</td>
+<td>8</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：[0]=31、[2]=41、[5]=18、[6]=32、[7]=59、[8]=73、[9]=22、[10]=44，其他是空的；共碰撞 <strong>3</strong> 次。</p>
+<p>用動畫對答案：在 <a href="#u4-1">4.1 的動畫</a> 填 key <code>18,41,22,44,59,32,31,73</code>、M ＝ 13，碰撞時選 double hashing、R ＝ 7。</p>
+</details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h=k\bmod7\)</span>，插入 10, 3, 17, 24 的結果？</p>
 <details class="quiz">
@@ -4007,7 +5918,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <section class="unit" data-unit="u5">
 <h2 id="u5">單元 5：圖</h2>
 <h3 id="u5-0">5.0 觀念課：用最少的電線連起所有城市</h3>
-<h4 id="_27">圖怎麼存</h4>
+<h4 id="_33">圖怎麼存</h4>
 <p>三個點 A、B、C，邊 A–B（權重 1）、B–C（權重 2）、A–C（權重 3）：</p>
 <p><strong>鄰接矩陣</strong>（<span class="arithmatex">\(V\times V\)</span> 的表，適合邊很多的圖）：</p>
 <table>
@@ -4171,7 +6082,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>動畫</strong>：<a href="https://visualgo.net/zh/mst">VisuAlgo 最小生成樹（中文）</a>：Kruskal 和 Prim 一步一步加邊，還有 Kruskal 為什麼正確的說明；<a href="https://visualgo.net/en/sssp">VisuAlgo 最短路徑</a>：Dijkstra 的過程。</li>
 </ul>
 </div>
-<h4 id="_28">換你試試</h4>
+<h4 id="_34">換你試試</h4>
 <p>圖：A–B 4、A–C 1、B–C 2、B–D 5、C–D 8。</p>
 <p><strong>T-1.</strong> 從 A 開始用 Prim，依序加入哪些邊？總權重？</p>
 <details class="quiz">
@@ -4356,7 +6267,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>DFS（depth-first search，深度優先）</strong>：一直往下走，走到沒有路才退回上一個岔路換別條，像走迷宮。用 <strong>stack</strong>（或遞迴）。</li>
 </ul>
 <p>BFS 一層一層往外，所以第幾層就是「離起點幾條邊」，<strong>無權重的圖可以用 BFS 找最短路徑</strong>。DFS 走的路不一定是最短的。</p>
-<h4 id="_29">手算規則（照字母順序）</h4>
+<h4 id="_35">手算規則（照字母順序）</h4>
 <p><strong>BFS</strong>：</p>
 <ol>
 <li>起點標成「發現了」，放進 queue。</li>
@@ -4628,7 +6539,7 @@ swap(A[i + 1], A[r]);</code></pre>
    b   g      n      a</code></pre>
 <p>驗算：一層一層讀是 i｜c e o｜d l m f h j｜b g n a <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>；preorder 是 i c d b g l e m n o f h a j <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。用程式試過所有可能的樹，只有這一棵兩個序列都對得上。</p>
 </div>
-<h4 id="_30">觀念小考</h4>
+<h4 id="_36">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> BFS 用哪一種資料結構，記住接下來要拜訪的點？</p>
 <ol>
@@ -4909,6 +6820,501 @@ swap(A[i + 1], A[r]);</code></pre>
 </table>
 <p>Dijkstra 算出 <strong>d(C) ＝ 4</strong>；真正最短的是 S→B→C，<span class="arithmatex">\(5+(-4)=\)</span> <strong>1</strong>。C 在步驟 3 就被確定，因為那時 4 比 B 的 5 小；Dijkstra 假設「後面的路只會更長」，負邊破壞了這個假設。用 Bellman–Ford 才會得到 1。</p>
 </details>
+<h3 id="u5-drill">5.5 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="primkruskal">題型一：最小生成樹（Prim、Kruskal）</h4>
+<p><strong>做法</strong>：Prim 每次挑「一端在樹內」最小的邊；Kruskal 把邊由小到大排，會成環就跳過（<a href="#u5-0">5.0</a>）。權重都不同時，兩種方法得到同一棵樹。</p>
+<p><strong>P-1.</strong> 無向圖的邊和權重是 A–B 16、A–C 1、A–E 3、A–F 15、B–C 9、B–E 7、B–F 20、C–D 2、D–E 12。用 Prim 從 A 開始找最小生成樹，寫出加入邊的順序和總權重。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>從 A 開始</strong>：每次挑「一端在樹內、一端在樹外」最小的邊。</li>
+<li><strong>加入 A–C 1</strong>：樹內變成 {A, C}。</li>
+<li><strong>加入 C–D 2</strong>：樹內變成 {A, C, D}。</li>
+<li><strong>加入 A–E 3</strong>：樹內變成 {A, C, D, E}。</li>
+<li><strong>加入 B–E 7</strong>：樹內變成 {A, C, D, E, B}。</li>
+<li><strong>加入 A–F 15</strong>：樹內變成 {A, C, D, E, B, F}。</li>
+<li><strong>答案</strong>：總權重 <strong>28</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-B 16, A-C 1, A-E 3, A-F 15, B-C 9, B-E 7, B-F 20, C-D 2, D-E 12</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Prim、起點 A。</p>
+</details>
+<p><strong>P-2.</strong> 無向圖的邊和權重是 A–B 7、A–C 2、A–D 12、A–F 6、B–C 20、B–D 18、B–F 17、C–D 10、D–E 14、E–F 13。用 Kruskal 找最小生成樹，寫出加入邊的順序和總權重。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>邊由小到大</strong>：2、6、7、10、12、13、14、17、18、20。</li>
+<li><strong>2（A–C）</strong>：兩端還沒連通，加入。</li>
+<li><strong>6（A–F）</strong>：兩端還沒連通，加入。</li>
+<li><strong>7（A–B）</strong>：兩端還沒連通，加入。</li>
+<li><strong>10（C–D）</strong>：兩端還沒連通，加入。</li>
+<li><strong>12（A–D）</strong>：兩端已經連通，加了會成環，跳過。</li>
+<li><strong>13（E–F）</strong>：兩端還沒連通，加入。</li>
+<li><strong>停</strong>：已經有 <span class="arithmatex">\(V-1=5\)</span> 條邊。</li>
+<li><strong>答案</strong>：總權重 <strong>38</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-B 7, A-C 2, A-D 12, A-F 6, B-C 20, B-D 18, B-F 17, C-D 10, D-E 14, E-F 13</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Kruskal。</p>
+</details>
+<p><strong>P-3.</strong> 無向圖的邊和權重是 A–B 14、A–D 19、A–E 12、A–G 2、B–D 7、C–D 9、C–F 16、C–G 17、D–F 1、D–G 18、F–G 15。用 Prim 從 A 開始找最小生成樹，寫出加入邊的順序和總權重。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>從 A 開始</strong>：每次挑「一端在樹內、一端在樹外」最小的邊。</li>
+<li><strong>加入 A–G 2</strong>：樹內變成 {A, G}。</li>
+<li><strong>加入 A–E 12</strong>：樹內變成 {A, G, E}。</li>
+<li><strong>加入 A–B 14</strong>：樹內變成 {A, G, E, B}。</li>
+<li><strong>加入 B–D 7</strong>：樹內變成 {A, G, E, B, D}。</li>
+<li><strong>加入 D–F 1</strong>：樹內變成 {A, G, E, B, D, F}。</li>
+<li><strong>加入 C–D 9</strong>：樹內變成 {A, G, E, B, D, F, C}。</li>
+<li><strong>答案</strong>：總權重 <strong>45</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-B 14, A-D 19, A-E 12, A-G 2, B-D 7, C-D 9, C-F 16, C-G 17, D-F 1, D-G 18, F-G 15</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Prim、起點 A。</p>
+</details>
+<p><strong>P-4.</strong> 無向圖的邊和權重是 A–B 9、A–F 19、A–G 2、B–C 4、B–D 18、B–F 7、C–D 14、C–F 5、E–G 12、F–G 17。用 Kruskal 找最小生成樹，寫出加入邊的順序和總權重。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>邊由小到大</strong>：2、4、5、7、9、12、14、17、18、19。</li>
+<li><strong>2（A–G）</strong>：兩端還沒連通，加入。</li>
+<li><strong>4（B–C）</strong>：兩端還沒連通，加入。</li>
+<li><strong>5（C–F）</strong>：兩端還沒連通，加入。</li>
+<li><strong>7（B–F）</strong>：兩端已經連通，加了會成環，跳過。</li>
+<li><strong>9（A–B）</strong>：兩端還沒連通，加入。</li>
+<li><strong>12（E–G）</strong>：兩端還沒連通，加入。</li>
+<li><strong>14（C–D）</strong>：兩端還沒連通，加入。</li>
+<li><strong>停</strong>：已經有 <span class="arithmatex">\(V-1=6\)</span> 條邊。</li>
+<li><strong>答案</strong>：總權重 <strong>46</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-B 9, A-F 19, A-G 2, B-C 4, B-D 18, B-F 7, C-D 14, C-F 5, E-G 12, F-G 17</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Kruskal。</p>
+</details>
+<p><strong>P-5.</strong> 無向圖的邊和權重是 A–B 8、A–C 5、A–E 19、A–F 12、B–C 11、B–D 9、B–F 16、C–D 7、C–F 1。用 Prim 從 A 開始找最小生成樹，寫出加入邊的順序和總權重。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>從 A 開始</strong>：每次挑「一端在樹內、一端在樹外」最小的邊。</li>
+<li><strong>加入 A–C 5</strong>：樹內變成 {A, C}。</li>
+<li><strong>加入 C–F 1</strong>：樹內變成 {A, C, F}。</li>
+<li><strong>加入 C–D 7</strong>：樹內變成 {A, C, F, D}。</li>
+<li><strong>加入 A–B 8</strong>：樹內變成 {A, C, F, D, B}。</li>
+<li><strong>加入 A–E 19</strong>：樹內變成 {A, C, F, D, B, E}。</li>
+<li><strong>答案</strong>：總權重 <strong>40</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-B 8, A-C 5, A-E 19, A-F 12, B-C 11, B-D 9, B-F 16, C-D 7, C-F 1</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Prim、起點 A。</p>
+</details>
+<p><strong>P-6.</strong> 無向圖的邊和權重是 A–B 6、A–D 5、A–E 12、A–F 17、A–G 1、B–C 18、B–D 8、B–E 13、C–F 15、C–G 4、D–F 7、E–F 16。用 Kruskal 找最小生成樹，寫出加入邊的順序和總權重。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>邊由小到大</strong>：1、4、5、6、7、8、12、13、15、16、17、18。</li>
+<li><strong>1（A–G）</strong>：兩端還沒連通，加入。</li>
+<li><strong>4（C–G）</strong>：兩端還沒連通，加入。</li>
+<li><strong>5（A–D）</strong>：兩端還沒連通，加入。</li>
+<li><strong>6（A–B）</strong>：兩端還沒連通，加入。</li>
+<li><strong>7（D–F）</strong>：兩端還沒連通，加入。</li>
+<li><strong>8（B–D）</strong>：兩端已經連通，加了會成環，跳過。</li>
+<li><strong>12（A–E）</strong>：兩端還沒連通，加入。</li>
+<li><strong>停</strong>：已經有 <span class="arithmatex">\(V-1=6\)</span> 條邊。</li>
+<li><strong>答案</strong>：總權重 <strong>35</strong>。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-B 6, A-D 5, A-E 12, A-F 17, A-G 1, B-C 18, B-D 8, B-E 13, C-F 15, C-G 4, D-F 7, E-F 16</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Kruskal。</p>
+</details>
+<h4 id="dijkstra_1">題型二：Dijkstra 最短路徑</h4>
+<p><strong>做法</strong>：每次確定「目前距離最小、還沒確定」的點，用它更新鄰居：新距離 ＝ 它的距離 ＋ 邊權重，比較小才換（<a href="#u5-0">5.0</a>）。</p>
+<p><strong>P-7.</strong> 無向圖的邊和權重是 A–B 11、A–C 6、A–F 10、B–C 14、B–E 2、C–D 8、C–F 15、D–F 9、E–F 4。用 Dijkstra 從 A 出發，寫出每個點被確定的順序、最短距離和路徑。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一開始</strong>：A 是 0，其他是 ∞。</li>
+<li><strong>確定 A（0）</strong>：更新 B 變 11、C 變 6、F 變 10。</li>
+<li><strong>確定 C（6）</strong>：更新 D 變 14。</li>
+<li><strong>確定 F（10）</strong>：更新 E 變 14。</li>
+<li><strong>確定 B（11）</strong>：更新 E 變 13。</li>
+<li><strong>確定 E（13）</strong>：沒有可以更新的。</li>
+<li><strong>確定 D（14）</strong>：沒有可以更新的。</li>
+<li><strong>答案</strong>：B：11（A→B）；C：6（A→C）；D：14（A→C→D）；E：13（A→B→E）；F：10（A→F）。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-B 11, A-C 6, A-F 10, B-C 14, B-E 2, C-D 8, C-F 15, D-F 9, E-F 4</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Dijkstra、起點 A。</p>
+</details>
+<p><strong>P-8.</strong> 無向圖的邊和權重是 A–B 14、A–C 9、B–C 7、B–D 18、B–E 1、C–D 16、C–E 8、C–F 3、D–E 15、D–F 10。用 Dijkstra 從 A 出發，寫出每個點被確定的順序、最短距離和路徑。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一開始</strong>：A 是 0，其他是 ∞。</li>
+<li><strong>確定 A（0）</strong>：更新 B 變 14、C 變 9。</li>
+<li><strong>確定 C（9）</strong>：更新 D 變 25、E 變 17、F 變 12。</li>
+<li><strong>確定 F（12）</strong>：更新 D 變 22。</li>
+<li><strong>確定 B（14）</strong>：更新 E 變 15。</li>
+<li><strong>確定 E（15）</strong>：沒有可以更新的。</li>
+<li><strong>確定 D（22）</strong>：沒有可以更新的。</li>
+<li><strong>答案</strong>：B：14（A→B）；C：9（A→C）；D：22（A→C→F→D）；E：15（A→B→E）；F：12（A→C→F）。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-B 14, A-C 9, B-C 7, B-D 18, B-E 1, C-D 16, C-E 8, C-F 3, D-E 15, D-F 10</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Dijkstra、起點 A。</p>
+</details>
+<p><strong>P-9.</strong> 無向圖的邊和權重是 A–B 9、A–C 3、A–D 14、B–D 2、B–E 8、B–F 10、B–G 19、C–D 17、C–G 4、D–E 16、D–F 1。用 Dijkstra 從 A 出發，寫出每個點被確定的順序、最短距離和路徑。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一開始</strong>：A 是 0，其他是 ∞。</li>
+<li><strong>確定 A（0）</strong>：更新 B 變 9、C 變 3、D 變 14。</li>
+<li><strong>確定 C（3）</strong>：更新 G 變 7。</li>
+<li><strong>確定 G（7）</strong>：沒有可以更新的。</li>
+<li><strong>確定 B（9）</strong>：更新 D 變 11、E 變 17、F 變 19。</li>
+<li><strong>確定 D（11）</strong>：更新 F 變 12。</li>
+<li><strong>確定 F（12）</strong>：沒有可以更新的。</li>
+<li><strong>確定 E（17）</strong>：沒有可以更新的。</li>
+<li><strong>答案</strong>：B：9（A→B）；C：3（A→C）；D：11（A→B→D）；E：17（A→B→E）；F：12（A→B→D→F）；G：7（A→C→G）。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-B 9, A-C 3, A-D 14, B-D 2, B-E 8, B-F 10, B-G 19, C-D 17, C-G 4, D-E 16, D-F 1</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Dijkstra、起點 A。</p>
+</details>
+<p><strong>P-10.</strong> 無向圖的邊和權重是 A–C 17、A–G 13、B–C 10、B–D 18、B–F 11、C–F 20、C–G 1、D–E 2、D–F 7、E–F 4、E–G 16、F–G 3。用 Dijkstra 從 A 出發，寫出每個點被確定的順序、最短距離和路徑。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一開始</strong>：A 是 0，其他是 ∞。</li>
+<li><strong>確定 A（0）</strong>：更新 C 變 17、G 變 13。</li>
+<li><strong>確定 G（13）</strong>：更新 C 變 14、E 變 29、F 變 16。</li>
+<li><strong>確定 C（14）</strong>：更新 B 變 24。</li>
+<li><strong>確定 F（16）</strong>：更新 D 變 23、E 變 20。</li>
+<li><strong>確定 E（20）</strong>：更新 D 變 22。</li>
+<li><strong>確定 D（22）</strong>：沒有可以更新的。</li>
+<li><strong>確定 B（24）</strong>：沒有可以更新的。</li>
+<li><strong>答案</strong>：B：24（A→G→C→B）；C：14（A→G→C）；D：22（A→G→F→E→D）；E：20（A→G→F→E）；F：16（A→G→F）；G：13（A→G）。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-C 17, A-G 13, B-C 10, B-D 18, B-F 11, C-F 20, C-G 1, D-E 2, D-F 7, E-F 4, E-G 16, F-G 3</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Dijkstra、起點 A。</p>
+</details>
+<p><strong>P-11.</strong> 無向圖的邊和權重是 A–C 18、A–D 4、A–E 5、B–C 20、B–D 10、B–F 14、C–E 3、C–F 12、D–F 15。用 Dijkstra 從 A 出發，寫出每個點被確定的順序、最短距離和路徑。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一開始</strong>：A 是 0，其他是 ∞。</li>
+<li><strong>確定 A（0）</strong>：更新 C 變 18、D 變 4、E 變 5。</li>
+<li><strong>確定 D（4）</strong>：更新 B 變 14、F 變 19。</li>
+<li><strong>確定 E（5）</strong>：更新 C 變 8。</li>
+<li><strong>確定 C（8）</strong>：沒有可以更新的。</li>
+<li><strong>確定 B（14）</strong>：沒有可以更新的。</li>
+<li><strong>確定 F（19）</strong>：沒有可以更新的。</li>
+<li><strong>答案</strong>：B：14（A→D→B）；C：8（A→E→C）；D：4（A→D）；E：5（A→E）；F：19（A→D→F）。</li>
+</ul>
+<p>用動畫對答案：把 <code>A-C 18, A-D 4, A-E 5, B-C 20, B-D 10, B-F 14, C-E 3, C-F 12, D-F 15</code> 貼進 <a href="#u5-0">5.0 的動畫</a>，演算法選 Dijkstra、起點 A。</p>
+</details>
+<h4 id="bfs-dfs_2">題型三：BFS 與 DFS 的順序</h4>
+<p><strong>做法</strong>：BFS 用 queue 一層一層往外；DFS 遇到第一個沒拜訪的鄰居就走過去，走不下去才退回（<a href="#u5-bfs">5.2</a>）。</p>
+<p><strong>P-12.</strong> 無向圖的邊是 A–D、B–E、B–F、B–G、C–G、D–E、D–F、D–G、E–G。從 A 出發，鄰居照字母順序，寫出 BFS 和 DFS 的拜訪順序。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>BFS（A, D, E, F, G, B, C）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>拿出</th>
+<th>鄰居（字母順序）</th>
+<th>放進 queue</th>
+<th>queue（左邊先出）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>D</td>
+<td>D</td>
+<td>D</td>
+</tr>
+<tr>
+<td>D</td>
+<td>A, E, F, G</td>
+<td>E, F, G</td>
+<td>E F G</td>
+</tr>
+<tr>
+<td>E</td>
+<td>B, D, G</td>
+<td>B</td>
+<td>F G B</td>
+</tr>
+<tr>
+<td>F</td>
+<td>B, D</td>
+<td>—</td>
+<td>G B</td>
+</tr>
+<tr>
+<td>G</td>
+<td>B, C, D, E</td>
+<td>C</td>
+<td>B C</td>
+</tr>
+<tr>
+<td>B</td>
+<td>E, F, G</td>
+<td>—</td>
+<td>C</td>
+</tr>
+<tr>
+<td>C</td>
+<td>G</td>
+<td>—</td>
+<td>（空）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>DFS（A, D, E, B, F, G, C）</strong>：每次走到第一個還沒拜訪的鄰居，走不下去才退回。往下走的邊依序是 A→D、D→E、E→B、B→F、B→G、G→C。</p>
+<p>用動畫對答案：把 <code>A-D, B-E, B-F, B-G, C-G, D-E, D-F, D-G, E-G</code> 貼進 <a href="#u5-bfs">5.2 的動畫</a>，起點 A，演算法選 BFS、DFS 各跑一次。</p>
+</details>
+<p><strong>P-13.</strong> 無向圖的邊是 A–B、A–G、B–C、B–D、B–F、B–G、C–E、D–F、E–F、F–G。從 C 出發，鄰居照字母順序，寫出 BFS 和 DFS 的拜訪順序。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>BFS（C, B, E, A, D, F, G）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>拿出</th>
+<th>鄰居（字母順序）</th>
+<th>放進 queue</th>
+<th>queue（左邊先出）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C</td>
+<td>B, E</td>
+<td>B, E</td>
+<td>B E</td>
+</tr>
+<tr>
+<td>B</td>
+<td>A, C, D, F, G</td>
+<td>A, D, F, G</td>
+<td>E A D F G</td>
+</tr>
+<tr>
+<td>E</td>
+<td>C, F</td>
+<td>—</td>
+<td>A D F G</td>
+</tr>
+<tr>
+<td>A</td>
+<td>B, G</td>
+<td>—</td>
+<td>D F G</td>
+</tr>
+<tr>
+<td>D</td>
+<td>B, F</td>
+<td>—</td>
+<td>F G</td>
+</tr>
+<tr>
+<td>F</td>
+<td>B, D, E, G</td>
+<td>—</td>
+<td>G</td>
+</tr>
+<tr>
+<td>G</td>
+<td>A, B, F</td>
+<td>—</td>
+<td>（空）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>DFS（C, B, A, G, F, D, E）</strong>：每次走到第一個還沒拜訪的鄰居，走不下去才退回。往下走的邊依序是 C→B、B→A、A→G、G→F、F→D、F→E。</p>
+<p>用動畫對答案：把 <code>A-B, A-G, B-C, B-D, B-F, B-G, C-E, D-F, E-F, F-G</code> 貼進 <a href="#u5-bfs">5.2 的動畫</a>，起點 C，演算法選 BFS、DFS 各跑一次。</p>
+</details>
+<p><strong>P-14.</strong> 無向圖的邊是 A–E、A–G、B–E、B–G、C–E、C–F、C–G、D–E、D–G、F–G、G–H。從 A 出發，鄰居照字母順序，寫出 BFS 和 DFS 的拜訪順序。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>BFS（A, E, G, B, C, D, F, H）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>拿出</th>
+<th>鄰居（字母順序）</th>
+<th>放進 queue</th>
+<th>queue（左邊先出）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>E, G</td>
+<td>E, G</td>
+<td>E G</td>
+</tr>
+<tr>
+<td>E</td>
+<td>A, B, C, D</td>
+<td>B, C, D</td>
+<td>G B C D</td>
+</tr>
+<tr>
+<td>G</td>
+<td>A, B, C, D, F, H</td>
+<td>F, H</td>
+<td>B C D F H</td>
+</tr>
+<tr>
+<td>B</td>
+<td>E, G</td>
+<td>—</td>
+<td>C D F H</td>
+</tr>
+<tr>
+<td>C</td>
+<td>E, F, G</td>
+<td>—</td>
+<td>D F H</td>
+</tr>
+<tr>
+<td>D</td>
+<td>E, G</td>
+<td>—</td>
+<td>F H</td>
+</tr>
+<tr>
+<td>F</td>
+<td>C, G</td>
+<td>—</td>
+<td>H</td>
+</tr>
+<tr>
+<td>H</td>
+<td>G</td>
+<td>—</td>
+<td>（空）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>DFS（A, E, B, G, C, F, D, H）</strong>：每次走到第一個還沒拜訪的鄰居，走不下去才退回。往下走的邊依序是 A→E、E→B、B→G、G→C、C→F、G→D、G→H。</p>
+<p>用動畫對答案：把 <code>A-E, A-G, B-E, B-G, C-E, C-F, C-G, D-E, D-G, F-G, G-H</code> 貼進 <a href="#u5-bfs">5.2 的動畫</a>，起點 A，演算法選 BFS、DFS 各跑一次。</p>
+</details>
+<p><strong>P-15.</strong> 無向圖的邊是 A–B、A–D、A–E、B–D、B–F、C–E、C–F、D–E、D–H、F–G。從 D 出發，鄰居照字母順序，寫出 BFS 和 DFS 的拜訪順序。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>BFS（D, A, B, E, H, F, C, G）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>拿出</th>
+<th>鄰居（字母順序）</th>
+<th>放進 queue</th>
+<th>queue（左邊先出）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D</td>
+<td>A, B, E, H</td>
+<td>A, B, E, H</td>
+<td>A B E H</td>
+</tr>
+<tr>
+<td>A</td>
+<td>B, D, E</td>
+<td>—</td>
+<td>B E H</td>
+</tr>
+<tr>
+<td>B</td>
+<td>A, D, F</td>
+<td>F</td>
+<td>E H F</td>
+</tr>
+<tr>
+<td>E</td>
+<td>A, C, D</td>
+<td>C</td>
+<td>H F C</td>
+</tr>
+<tr>
+<td>H</td>
+<td>D</td>
+<td>—</td>
+<td>F C</td>
+</tr>
+<tr>
+<td>F</td>
+<td>B, C, G</td>
+<td>G</td>
+<td>C G</td>
+</tr>
+<tr>
+<td>C</td>
+<td>E, F</td>
+<td>—</td>
+<td>G</td>
+</tr>
+<tr>
+<td>G</td>
+<td>F</td>
+<td>—</td>
+<td>（空）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>DFS（D, A, B, F, C, E, G, H）</strong>：每次走到第一個還沒拜訪的鄰居，走不下去才退回。往下走的邊依序是 D→A、A→B、B→F、F→C、C→E、F→G、D→H。</p>
+<p>用動畫對答案：把 <code>A-B, A-D, A-E, B-D, B-F, C-E, C-F, D-E, D-H, F-G</code> 貼進 <a href="#u5-bfs">5.2 的動畫</a>，起點 D，演算法選 BFS、DFS 各跑一次。</p>
+</details>
+<p><strong>P-16.</strong> 無向圖的邊是 A–B、A–C、A–E、A–G、B–C、B–G、C–F、D–F、D–G、E–F、F–G。從 B 出發，鄰居照字母順序，寫出 BFS 和 DFS 的拜訪順序。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><strong>BFS（B, A, C, G, E, F, D）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>拿出</th>
+<th>鄰居（字母順序）</th>
+<th>放進 queue</th>
+<th>queue（左邊先出）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B</td>
+<td>A, C, G</td>
+<td>A, C, G</td>
+<td>A C G</td>
+</tr>
+<tr>
+<td>A</td>
+<td>B, C, E, G</td>
+<td>E</td>
+<td>C G E</td>
+</tr>
+<tr>
+<td>C</td>
+<td>A, B, F</td>
+<td>F</td>
+<td>G E F</td>
+</tr>
+<tr>
+<td>G</td>
+<td>A, B, D, F</td>
+<td>D</td>
+<td>E F D</td>
+</tr>
+<tr>
+<td>E</td>
+<td>A, F</td>
+<td>—</td>
+<td>F D</td>
+</tr>
+<tr>
+<td>F</td>
+<td>C, D, E, G</td>
+<td>—</td>
+<td>D</td>
+</tr>
+<tr>
+<td>D</td>
+<td>F, G</td>
+<td>—</td>
+<td>（空）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>DFS（B, A, C, F, D, G, E）</strong>：每次走到第一個還沒拜訪的鄰居，走不下去才退回。往下走的邊依序是 B→A、A→C、C→F、F→D、D→G、F→E。</p>
+<p>用動畫對答案：把 <code>A-B, A-C, A-E, A-G, B-C, B-G, C-F, D-F, D-G, E-F, F-G</code> 貼進 <a href="#u5-bfs">5.2 的動畫</a>，起點 B，演算法選 BFS、DFS 各跑一次。</p>
+</details>
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> 同一張圖用 Kruskal，加邊的順序？</p>
 <details class="quiz">
@@ -4982,7 +7388,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p>先看直接遞迴的呼叫樹（橘色是「之前算過、又重算一次」的），再把寫法切換成「算過就記在表裡」比較：</p>
 <div class="viz" data-viz="calltree" data-n="5"></div>
 
-<h4 id="_31">寫遞迴式的四步</h4>
+<h4 id="_37">寫遞迴式的四步</h4>
 <ol>
 <li><strong>定義狀態</strong>：用一句話說清楚 <span class="arithmatex">\(g(i,j)\)</span> 是什麼，例如「只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊出 <span class="arithmatex">\(j\)</span> 元的方法數」。</li>
 <li><strong>看最後一步（或第一步）分類</strong>：「有沒有用到第 <span class="arithmatex">\(i\)</span> 種硬幣」。</li>
@@ -5068,7 +7474,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong>中文文章</strong>：iThome 鐵人賽<a href="https://ithelp.ithome.com.tw/articles/10221988">談硬幣問題的文章</a>（面額 1、2、5 湊 11 元）。注意它算的是「最少幾枚硬幣」，這節和 112 Q4 算的是「有幾種組合」，遞迴式不一樣，可以兩個對照著看。</li>
 </ul>
 </div>
-<h4 id="_32">換你試試</h4>
+<h4 id="_38">換你試試</h4>
 <p><strong>T-1.</strong> 用 1、2、3 元湊 4 元（不計順序），有幾種？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -5536,6 +7942,832 @@ swap(A[i + 1], A[r]);</code></pre>
 </table>
 <p>長度 <strong>3</strong>。往回走時遇到上、左一樣大的格子，兩邊都能走，所以 LCS 不只一個：<strong>ACD</strong> 和 <strong>ABD</strong>。考試寫出一個就好，但要知道 LCS 可能不唯一。</p>
 </details>
+<h3 id="u6-drill">6.5 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="catalan_1">題型一：認出 Catalan 數</h4>
+<p><strong>做法</strong>：先找出「切成左右兩塊、兩塊各自是更小的同一個問題」的結構，或對應到合法括號；答案是 <span class="arithmatex">\(C_n=\frac{1}{n+1}\binom{2n}{n}\)</span>：1, 1, 2, 5, 14, 42, 132（<a href="#u6-1">6.1</a>）。</p>
+<p><strong>P-1.</strong> 4 個節點的二元樹，有幾種不同的形狀？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>對應</strong>：根的左子樹 <span class="arithmatex">\(k\)</span> 個點、右子樹 <span class="arithmatex">\(n-1-k\)</span> 個點，<span class="arithmatex">\(T(n)=\sum_{k=0}^{n-1}T(k)T(n-1-k)\)</span>，就是 Catalan 的遞迴。</li>
+<li><strong>公式</strong>：<span class="arithmatex">\(C_{4}=\frac{1}{5}\binom{8}{4}=\frac{70}{5}=14\)</span>。</li>
+<li><strong>答案</strong>：<strong>14</strong>。我用程式全部列出來數過，也是 14。</li>
+</ul>
+</details>
+<p><strong>P-2.</strong> 1, 2, 3, 4, 5 依序 push 進 stack（中間隨時可以 pop），可能的輸出順序有幾種？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>對應</strong>：push 看成左括號、pop 看成右括號，合法的操作序列就是 5 對合法括號。</li>
+<li><strong>公式</strong>：<span class="arithmatex">\(C_{5}=\frac{1}{6}\binom{10}{5}=\frac{252}{6}=42\)</span>。</li>
+<li><strong>答案</strong>：<strong>42</strong>。我用程式全部列出來數過，也是 42。</li>
+</ul>
+</details>
+<p><strong>P-3.</strong> key 是 1～6 的 BST 有幾棵不同的？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>對應</strong>：BST 的形狀決定了 key 放哪裡（inorder 一定是 1～6），所以 ＝ 6 個節點的二元樹形狀數。</li>
+<li><strong>公式</strong>：<span class="arithmatex">\(C_{6}=\frac{1}{7}\binom{12}{6}=\frac{924}{7}=132\)</span>。</li>
+<li><strong>答案</strong>：<strong>132</strong>。我用程式全部列出來數過，也是 132。</li>
+</ul>
+</details>
+<p><strong>P-4.</strong> 凸六邊形用不相交的對角線切成三角形，有幾種切法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>對應</strong>：凸 <span class="arithmatex">\(n+2\)</span> 邊形的三角剖分數是 <span class="arithmatex">\(C_n\)</span>；六邊形 <span class="arithmatex">\(n=4\)</span>。固定一條邊，看它和哪個頂點組成三角形，剩下兩邊是較小的多邊形。</li>
+<li><strong>公式</strong>：<span class="arithmatex">\(C_{4}=\frac{1}{5}\binom{8}{4}=\frac{70}{5}=14\)</span>。</li>
+<li><strong>答案</strong>：<strong>14</strong>。我用程式全部列出來數過，也是 14。</li>
+</ul>
+</details>
+<p><strong>P-5.</strong> 矩陣連乘 <span class="arithmatex">\(A_1A_2A_3A_4A_5A_6\)</span> 有幾種加括號的方式？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>對應</strong>：<span class="arithmatex">\(k\)</span> 個矩陣的加括號數是 <span class="arithmatex">\(C_{k-1}\)</span>：最後一次乘法把它切成前 <span class="arithmatex">\(i\)</span> 個和後 <span class="arithmatex">\(k-i\)</span> 個。6 個矩陣是 <span class="arithmatex">\(C_5\)</span>。</li>
+<li><strong>公式</strong>：<span class="arithmatex">\(C_{5}=\frac{1}{6}\binom{10}{5}=\frac{252}{6}=42\)</span>。</li>
+<li><strong>答案</strong>：<strong>42</strong>。我用程式全部列出來數過，也是 42。</li>
+</ul>
+</details>
+<p><strong>P-6.</strong> 從 <span class="arithmatex">\((0,0)\)</span> 走到 <span class="arithmatex">\((3,3)\)</span>，每步往右或往上一格，而且不能走到對角線 <span class="arithmatex">\(y=x\)</span> 的上方，有幾條路？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>對應</strong>：往右是左括號、往上是右括號，「不超過對角線」就是任何時候右括號不比左括號多。</li>
+<li><strong>公式</strong>：<span class="arithmatex">\(C_{3}=\frac{1}{4}\binom{6}{3}=\frac{20}{4}=5\)</span>。</li>
+<li><strong>答案</strong>：<strong>5</strong>。我用程式全部列出來數過，也是 5。</li>
+</ul>
+</details>
+<h4 id="_39">題型二：寫遞迴式再往上算</h4>
+<p><strong>做法</strong>：問自己「最後一步（或最右邊）有哪幾種可能」，每一種剩下的都是更小的同一個問題（<a href="#u6-2">6.2</a>）。</p>
+<p><strong>P-7.</strong> 用 1、2、5 元的硬幣（每種數量不限、不管順序）湊出 10 元，有幾種方法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><span class="arithmatex">\(g(i,j)\)</span> ＝ 只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊 <span class="arithmatex">\(j\)</span> 元的方法數。<span class="arithmatex">\(g(i,j)=g(i-1,j)+g(i,j-c_i)\)</span>：不用第 <span class="arithmatex">\(i\)</span> 種，或至少用一個。下表每一欄由上往下填：左邊那一欄的同一列，加上同一欄裡金額少 <span class="arithmatex">\(c_i\)</span> 的那一列。</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(j\)</span></th>
+<th>用 1</th>
+<th>用 1、2</th>
+<th>用 1、2、5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>4</td>
+<td>1</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+<td>3</td>
+<td>4</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+<td>4</td>
+<td>5</td>
+</tr>
+<tr>
+<td>7</td>
+<td>1</td>
+<td>4</td>
+<td>6</td>
+</tr>
+<tr>
+<td>8</td>
+<td>1</td>
+<td>5</td>
+<td>7</td>
+</tr>
+<tr>
+<td>9</td>
+<td>1</td>
+<td>5</td>
+<td>8</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+<td>6</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：<strong>10</strong> 種。我用程式把所有組合列出來數過，也是 10。</p>
+</details>
+<p><strong>P-8.</strong> 用 1、5、10 元的硬幣（每種數量不限、不管順序）湊出 25 元，有幾種方法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><span class="arithmatex">\(g(i,j)\)</span> ＝ 只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊 <span class="arithmatex">\(j\)</span> 元的方法數。<span class="arithmatex">\(g(i,j)=g(i-1,j)+g(i,j-c_i)\)</span>：不用第 <span class="arithmatex">\(i\)</span> 種，或至少用一個。下表每一欄由上往下填：左邊那一欄的同一列，加上同一欄裡金額少 <span class="arithmatex">\(c_i\)</span> 的那一列。</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(j\)</span></th>
+<th>用 1</th>
+<th>用 1、5</th>
+<th>用 1、5、10</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+<td>3</td>
+<td>4</td>
+</tr>
+<tr>
+<td>15</td>
+<td>1</td>
+<td>4</td>
+<td>6</td>
+</tr>
+<tr>
+<td>20</td>
+<td>1</td>
+<td>5</td>
+<td>9</td>
+</tr>
+<tr>
+<td>25</td>
+<td>1</td>
+<td>6</td>
+<td>12</td>
+</tr>
+</tbody>
+</table>
+<p>金額不是 5 的倍數時，零頭只能用 1 元補，方法數跟往下最近的 5 的倍數一樣，所以表只列 5 的倍數。</p>
+<p><strong>答案</strong>：<strong>12</strong> 種。我用程式把所有組合列出來數過，也是 12。</p>
+</details>
+<p><strong>P-9.</strong> 用 2、3、5 元的硬幣（每種數量不限、不管順序）湊出 12 元，有幾種方法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p><span class="arithmatex">\(g(i,j)\)</span> ＝ 只用前 <span class="arithmatex">\(i\)</span> 種硬幣湊 <span class="arithmatex">\(j\)</span> 元的方法數。<span class="arithmatex">\(g(i,j)=g(i-1,j)+g(i,j-c_i)\)</span>：不用第 <span class="arithmatex">\(i\)</span> 種，或至少用一個。下表每一欄由上往下填：左邊那一欄的同一列，加上同一欄裡金額少 <span class="arithmatex">\(c_i\)</span> 的那一列。</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(j\)</span></th>
+<th>用 2</th>
+<th>用 2、3</th>
+<th>用 2、3、5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>8</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>9</td>
+<td>0</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>10</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+</tr>
+<tr>
+<td>11</td>
+<td>0</td>
+<td>2</td>
+<td>4</td>
+</tr>
+<tr>
+<td>12</td>
+<td>1</td>
+<td>3</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<p><strong>答案</strong>：<strong>5</strong> 種。我用程式把所有組合列出來數過，也是 5。</p>
+</details>
+<p><strong>P-10.</strong> <span class="arithmatex">\(2\times8\)</span> 的長方形用 <span class="arithmatex">\(1\times2\)</span> 的骨牌鋪滿（可以直放或橫放），有幾種鋪法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>看最右邊</strong>：最右一行是一張直放的 → 剩 <span class="arithmatex">\(2\times(n-1)\)</span>；最右兩行是兩張疊起來橫放的 → 剩 <span class="arithmatex">\(2\times(n-2)\)</span>。</li>
+<li><strong>遞迴</strong>：<span class="arithmatex">\(T(n)=T(n-1)+T(n-2)\)</span>，<span class="arithmatex">\(T(1)=1\)</span>、<span class="arithmatex">\(T(2)=2\)</span>，就是費氏數列。</li>
+<li><strong>往上算</strong>：<span class="arithmatex">\(T(1)\)</span>～<span class="arithmatex">\(T(8)\)</span> ＝ 1、2、3、5、8、13、21、34。</li>
+<li><strong>答案</strong>：<strong>34</strong>。我用程式把所有鋪法列出來數過，也是 34。</li>
+</ul>
+</details>
+<p><strong>P-11.</strong> <span class="arithmatex">\(2\times6\)</span> 的長方形用 <span class="arithmatex">\(1\times2\)</span> 骨牌和 <span class="arithmatex">\(2\times2\)</span> 方塊鋪滿，有幾種鋪法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>看最右邊</strong>：一張直放的骨牌 → <span class="arithmatex">\(T(n-1)\)</span>；最右兩行是兩張橫放的骨牌，或一個 <span class="arithmatex">\(2\times2\)</span> 方塊 → 兩種，各剩 <span class="arithmatex">\(T(n-2)\)</span>。</li>
+<li><strong>遞迴</strong>：<span class="arithmatex">\(T(n)=T(n-1)+2T(n-2)\)</span>，<span class="arithmatex">\(T(0)=1\)</span>、<span class="arithmatex">\(T(1)=1\)</span>。</li>
+<li><strong>往上算</strong>：<span class="arithmatex">\(T(0)\)</span>～<span class="arithmatex">\(T(6)\)</span> ＝ 1、1、3、5、11、21、43。</li>
+<li><strong>答案</strong>：<strong>43</strong>。我用程式把所有鋪法列出來數過，也是 43。</li>
+</ul>
+</details>
+<p><strong>P-12.</strong> 爬 10 階樓梯，每一步可以走 1、2 或 3 階（順序不同算不同走法），有幾種走法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>看最後一步</strong>：最後一步走 1、2 或 3 階，前面分別是爬 <span class="arithmatex">\(n-1\)</span>、<span class="arithmatex">\(n-2\)</span>、<span class="arithmatex">\(n-3\)</span> 階。</li>
+<li><strong>遞迴</strong>：<span class="arithmatex">\(S(n)=S(n-1)+S(n-2)+S(n-3)\)</span>，<span class="arithmatex">\(S(0)=1\)</span>、<span class="arithmatex">\(S(1)=1\)</span>、<span class="arithmatex">\(S(2)=2\)</span>。</li>
+<li><strong>往上算</strong>：<span class="arithmatex">\(S(0)\)</span>～<span class="arithmatex">\(S(10)\)</span> ＝ 1、1、2、4、7、13、24、44、81、149、274。</li>
+<li><strong>答案</strong>：<strong>274</strong>。跟硬幣題不同，這裡<strong>順序不同算不同</strong>，所以是看「最後一步」，不是看「用了哪種」。</li>
+</ul>
+</details>
+<h4 id="lcs-01">題型三：LCS 與 0/1 背包填表</h4>
+<p><strong>做法</strong>：照遞迴式一列一列填二維表，答案在右下角；再往回走找出是哪些字、哪些物品（<a href="#u6-classic">6.3</a>）。</p>
+<p><strong>P-13.</strong> 求 <span class="arithmatex">\(X\)</span> ＝ ABCBDA 和 <span class="arithmatex">\(Y\)</span> ＝ BDCAB 的最長共同子序列（LCS）長度，並寫出一個 LCS。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>B</th>
+<th>D</th>
+<th>C</th>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>A</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>B</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>C</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>B</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>D</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>A</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>填法</strong>：兩個字一樣 → 左上 ＋1；不一樣 → 取上面和左邊比較大的。</li>
+<li><strong>往回找</strong>：從右下角開始，一樣就收下、往左上走；不一樣就往值比較大的那邊走。收到的倒過來是 <strong>BCB</strong>。</li>
+<li><strong>答案</strong>：LCS 長度 <strong>3</strong>，例如 BCB。</li>
+</ul>
+</details>
+<p><strong>P-14.</strong> 求 <span class="arithmatex">\(X\)</span> ＝ STONE 和 <span class="arithmatex">\(Y\)</span> ＝ LONGEST 的最長共同子序列（LCS）長度，並寫出一個 LCS。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>L</th>
+<th>O</th>
+<th>N</th>
+<th>G</th>
+<th>E</th>
+<th>S</th>
+<th>T</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>S</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>T</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>O</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>N</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>E</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>填法</strong>：兩個字一樣 → 左上 ＋1；不一樣 → 取上面和左邊比較大的。</li>
+<li><strong>往回找</strong>：從右下角開始，一樣就收下、往左上走；不一樣就往值比較大的那邊走。收到的倒過來是 <strong>ONE</strong>。</li>
+<li><strong>答案</strong>：LCS 長度 <strong>3</strong>，例如 ONE。</li>
+</ul>
+</details>
+<p><strong>P-15.</strong> 求 <span class="arithmatex">\(X\)</span> ＝ AGGTAB 和 <span class="arithmatex">\(Y\)</span> ＝ GXTXAB 的最長共同子序列（LCS）長度，並寫出一個 LCS。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th>G</th>
+<th>X</th>
+<th>T</th>
+<th>X</th>
+<th>A</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>A</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>G</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>G</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>T</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>B</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>填法</strong>：兩個字一樣 → 左上 ＋1；不一樣 → 取上面和左邊比較大的。</li>
+<li><strong>往回找</strong>：從右下角開始，一樣就收下、往左上走；不一樣就往值比較大的那邊走。收到的倒過來是 <strong>GTAB</strong>。</li>
+<li><strong>答案</strong>：LCS 長度 <strong>4</strong>，例如 GTAB。</li>
+</ul>
+</details>
+<p><strong>P-16.</strong> 0/1 背包：容量 7，物品（重量, 價值）是 (1, 1)、(3, 4)、(4, 5)、(5, 7)。最大價值是多少？拿哪些？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th>物品＼容量</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>沒有物品</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>＋(1, 1)</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>＋(3, 4)</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td>＋(4, 5)</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>5</td>
+<td>6</td>
+<td>6</td>
+<td>9</td>
+</tr>
+<tr>
+<td>＋(5, 7)</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>5</td>
+<td>7</td>
+<td>8</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>填法</strong>：<span class="arithmatex">\(K[i][w]\)</span> 取兩個裡面大的：不拿第 <span class="arithmatex">\(i\)</span> 個是 <span class="arithmatex">\(K[i-1][w]\)</span>；拿（<span class="arithmatex">\(w_i\le w\)</span> 才可以）是 <span class="arithmatex">\(K[i-1][w-w_i]+v_i\)</span>。</li>
+<li><strong>答案</strong>：最大價值 <strong>9</strong>，拿 (3, 4)、(4, 5)。</li>
+</ul>
+<p>我用程式把所有拿法都試過，最大也是 9。</p>
+</details>
+<p><strong>P-17.</strong> 0/1 背包：容量 6，物品（重量, 價值）是 (2, 3)、(3, 4)、(4, 6)、(5, 8)。最大價值是多少？拿哪些？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th>物品＼容量</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>沒有物品</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>＋(2, 3)</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr>
+<td>＋(3, 4)</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>4</td>
+<td>4</td>
+<td>7</td>
+<td>7</td>
+</tr>
+<tr>
+<td>＋(4, 6)</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>4</td>
+<td>6</td>
+<td>7</td>
+<td>9</td>
+</tr>
+<tr>
+<td>＋(5, 8)</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>4</td>
+<td>6</td>
+<td>8</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>填法</strong>：<span class="arithmatex">\(K[i][w]\)</span> 取兩個裡面大的：不拿第 <span class="arithmatex">\(i\)</span> 個是 <span class="arithmatex">\(K[i-1][w]\)</span>；拿（<span class="arithmatex">\(w_i\le w\)</span> 才可以）是 <span class="arithmatex">\(K[i-1][w-w_i]+v_i\)</span>。</li>
+<li><strong>答案</strong>：最大價值 <strong>9</strong>，拿 (2, 3)、(4, 6)。</li>
+</ul>
+<p>我用程式把所有拿法都試過，最大也是 9。</p>
+</details>
+<p><strong>P-18.</strong> 0/1 背包：容量 5，物品（重量, 價值）是 (3, 5)、(2, 3)、(4, 7)、(1, 2)。最大價值是多少？拿哪些？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<table>
+<thead>
+<tr>
+<th>物品＼容量</th>
+<th>0</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>沒有物品</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>＋(3, 5)</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td>＋(2, 3)</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>5</td>
+<td>5</td>
+<td>8</td>
+</tr>
+<tr>
+<td>＋(4, 7)</td>
+<td>0</td>
+<td>0</td>
+<td>3</td>
+<td>5</td>
+<td>7</td>
+<td>8</td>
+</tr>
+<tr>
+<td>＋(1, 2)</td>
+<td>0</td>
+<td>2</td>
+<td>3</td>
+<td>5</td>
+<td>7</td>
+<td>9</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>填法</strong>：<span class="arithmatex">\(K[i][w]\)</span> 取兩個裡面大的：不拿第 <span class="arithmatex">\(i\)</span> 個是 <span class="arithmatex">\(K[i-1][w]\)</span>；拿（<span class="arithmatex">\(w_i\le w\)</span> 才可以）是 <span class="arithmatex">\(K[i-1][w-w_i]+v_i\)</span>。</li>
+<li><strong>答案</strong>：最大價值 <strong>9</strong>，拿 (4, 7)、(1, 2)。</li>
+</ul>
+<p>我用程式把所有拿法都試過，最大也是 9。</p>
+</details>
 <h3 id="u6-quiz">單元 6 小考</h3>
 <p><strong>6-1.</strong> 1, 2, 3, 4, 5 依序 push，可能的輸出有幾種？</p>
 <details class="quiz">
@@ -5777,7 +9009,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>節點裡的 key 由小到大排好，孩子夾在 key 之間（左邊的都比較小、右邊的都比較大）。</li>
 <li><strong>所有葉子在同一層</strong>。</li>
 </ul>
-<h4 id="_33">插入：滿了就從中間切開</h4>
+<h4 id="_40">插入：滿了就從中間切開</h4>
 <p>CLRS 的做法是<strong>往下走的時候，遇到滿的節點（<span class="arithmatex">\(2t-1\)</span> 個 key）就先切開</strong>：中間那個 key 往上搬到父親，左右各剩 <span class="arithmatex">\(t-1\)</span> 個。這樣插到葉子時一定有空位，也不用再往回調整。根滿了切開時，樹就長高一層。</p>
 <figure class="fig">
 <svg viewBox="0 0 360 236" role="img" aria-label="t＝3 的 B-tree，往下走時遇到滿的節點 R S T U V 先切開：中間的 T 搬到父親，父親從 G M P X 變成 G M P T X，原本的節點切成 R S 和 U V 兩個，各剩 2 個 key。">
@@ -5869,7 +9101,7 @@ swap(A[i + 1], A[r]);</code></pre>
     `-- [Y Z]</code></pre>
 <p>用程式照 CLRS 的插入演算法跑過一遍，四步的結果都一樣。</p>
 </div>
-<h4 id="_34">高度上界</h4>
+<h4 id="_41">高度上界</h4>
 <div class="admonition example">
 <p class="admonition-title">107 Q6(1)（8%）：n 個 key、minimum degree t 的 B-tree，高度最多多少？證明</p>
 <p><strong>答案</strong>：<span class="arithmatex">\(h\le\log_t\frac{n+1}2\)</span>。</p>
@@ -5881,7 +9113,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p class="admonition-title">104 Q4(3)（5%）：B-tree 為什麼能減少讀磁碟的成本？</p>
 <p>讀磁碟的時間主要花在 seek 和 rotational latency（<a href="os.html#u5-0">OS 5.0</a>），一次讀一整個區塊（page），讀幾個 byte 和讀一整頁差不多慢。B-tree 的一個節點就是一頁，放很多 key，所以<strong>分支數很大、樹很矮</strong>（<span class="arithmatex">\(\log_tn\)</span>），找一個 key 只要讀很少頁。讀進記憶體之後，在節點裡找 key 很快。</p>
 </div>
-<h4 id="_35">三種變形</h4>
+<h4 id="_42">三種變形</h4>
 <div class="admonition example">
 <p class="admonition-title">105 Q7(3)（3%）、107 Q6(2)（2%）：B⁺-tree、B*-tree、2-3-4 tree</p>
 <ul>
@@ -6167,7 +9399,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>一直轉到父親的 priority 比它小，或它變成根。</li>
 </ol>
 <p><strong>旋轉不會破壞 BST 的順序</strong>：右旋時，x 是 y 的左孩子，x 轉上去、y 變成 x 的右孩子，原本 x 的右子樹（比 x 大、比 y 小）改掛到 y 的左邊。中序走訪的順序完全不變。</p>
-<h4 id="_36">刪除：把它轉到下面再拿掉</h4>
+<h4 id="_43">刪除：把它轉到下面再拿掉</h4>
 <p>要刪的節點有兩個孩子時，跟 <strong>priority 比較小的那個孩子</strong>旋轉（讓那個孩子上來當父親，heap 規則才會對），一直轉到它只剩一個孩子或沒有孩子，再直接拿掉。</p>
 <div class="admonition example">
 <p class="admonition-title">103 Q8（10%）：(1) 在下面的 treap 插入 (D:9) (2) 接著插入 (F:2)</p>
@@ -6254,7 +9486,7 @@ swap(A[i + 1], A[r]);</code></pre>
             `-- L I:73</code></pre>
 <p><strong>檢查</strong>：中序走訪 A、B、C、D、E、F、G、H、I、K 是照字母順序（BST）；每個節點的 priority 都比孩子小（heap）。我用程式照同樣的步驟插入，也用很多種不同的插入順序建同一組節點，得到的都是這棵樹（形狀唯一）。</p>
 </div>
-<h4 id="_37">觀念小考</h4>
+<h4 id="_44">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 用 min-heap 規則的 treap，根是哪一個節點？</p>
 <ol>
@@ -6402,6 +9634,147 @@ swap(A[i + 1], A[r]);</code></pre>
 <li><strong><span class="arithmatex">\(B_2\)</span></strong>：原本的 <span class="arithmatex">\(B_2\)</span> ＋ 進位的 <span class="arithmatex">\(B_2\)</span>，連成 <span class="arithmatex">\(B_3\)</span>。</li>
 </ul>
 <p>結果只有一棵 <strong><span class="arithmatex">\(B_3\)</span></strong>，跟 <span class="arithmatex">\(011+101=1000_2\)</span>（8）一樣。</p>
+</details>
+<h3 id="u7-drill">7.7 換數字練習</h3>
+<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
+<h4 id="b-tree">題型一：B-tree 依序插入</h4>
+<p><strong>做法</strong>：滿的節點有 <span class="arithmatex">\(2t-1\)</span> 個 key；往下走時遇到就先切開，中間的 key 搬到父親，根被切開時樹長高一層（<a href="#u7-2">7.2</a>）。</p>
+<p><strong>P-1.</strong> minimum degree <span class="arithmatex">\(t=2\)</span> 的 B-tree，從空樹開始依序插入 1, 2, 3, 4, 5, 6, 7, 8, 9, 10（照 CLRS：往下走時遇到滿的節點就先切開）。畫出最後的樹，過程中切開了幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>每個節點最多 3 個 key</strong>：<span class="arithmatex">\(2t-1=3\)</span>；往下走時遇到滿的節點就先切開，中間的 key 往上搬。</li>
+<li><strong>插入 4 時切開 1 次</strong>：往上搬的是 2。</li>
+<li><strong>插入 6 時切開 1 次</strong>：往上搬的是 4。</li>
+<li><strong>插入 8 時切開 1 次</strong>：往上搬的是 6。</li>
+<li><strong>插入 9 時切開 1 次</strong>：往上搬的是 4。</li>
+<li><strong>插入 10 時切開 1 次</strong>：往上搬的是 8。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">[4]
++-- [2]
+|   +-- [1]
+|   `-- [3]
+`-- [6 8]
+    +-- [5]
+    +-- [7]
+    `-- [9 10]</code></pre>
+<p><strong>答案</strong>：共切開 <strong>5</strong> 次，樹高 2（根在第 0 層）。我用程式照 CLRS 的插入演算法跑過，也檢查了每個節點的 key 數和葉子都在同一層。</p>
+</details>
+<p><strong>P-2.</strong> minimum degree <span class="arithmatex">\(t=2\)</span> 的 B-tree，從空樹開始依序插入 F, S, Q, K, C, L, H, T, V, W, M, R（照 CLRS：往下走時遇到滿的節點就先切開）。畫出最後的樹，過程中切開了幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>每個節點最多 3 個 key</strong>：<span class="arithmatex">\(2t-1=3\)</span>；往下走時遇到滿的節點就先切開，中間的 key 往上搬。</li>
+<li><strong>插入 K 時切開 1 次</strong>：往上搬的是 Q。</li>
+<li><strong>插入 L 時切開 1 次</strong>：往上搬的是 F。</li>
+<li><strong>插入 W 時切開 1 次</strong>：往上搬的是 T。</li>
+<li><strong>插入 M 時切開 2 次</strong>：往上搬的依序是 Q、K。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">[Q]
++-- [F K]
+|   +-- [C]
+|   +-- [H]
+|   `-- [L M]
+`-- [T]
+    +-- [R S]
+    `-- [V W]</code></pre>
+<p><strong>答案</strong>：共切開 <strong>5</strong> 次，樹高 2（根在第 0 層）。我用程式照 CLRS 的插入演算法跑過，也檢查了每個節點的 key 數和葉子都在同一層。</p>
+</details>
+<p><strong>P-3.</strong> minimum degree <span class="arithmatex">\(t=3\)</span> 的 B-tree，從空樹開始依序插入 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120（照 CLRS：往下走時遇到滿的節點就先切開）。畫出最後的樹，過程中切開了幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>每個節點最多 5 個 key</strong>：<span class="arithmatex">\(2t-1=5\)</span>；往下走時遇到滿的節點就先切開，中間的 key 往上搬。</li>
+<li><strong>插入 60 時切開 1 次</strong>：往上搬的是 30。</li>
+<li><strong>插入 90 時切開 1 次</strong>：往上搬的是 60。</li>
+<li><strong>插入 120 時切開 1 次</strong>：往上搬的是 90。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">[30 60 90]
++-- [10 20]
++-- [40 50]
++-- [70 80]
+`-- [100 110 120]</code></pre>
+<p><strong>答案</strong>：共切開 <strong>3</strong> 次，樹高 1（根在第 0 層）。我用程式照 CLRS 的插入演算法跑過，也檢查了每個節點的 key 數和葉子都在同一層。</p>
+</details>
+<p><strong>P-4.</strong> minimum degree <span class="arithmatex">\(t=3\)</span> 的 B-tree，從空樹開始依序插入 C, N, G, A, H, E, K, Q, M, F, W, L, T（照 CLRS：往下走時遇到滿的節點就先切開）。畫出最後的樹，過程中切開了幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>每個節點最多 5 個 key</strong>：<span class="arithmatex">\(2t-1=5\)</span>；往下走時遇到滿的節點就先切開，中間的 key 往上搬。</li>
+<li><strong>插入 E 時切開 1 次</strong>：往上搬的是 G。</li>
+<li><strong>插入 W 時切開 1 次</strong>：往上搬的是 M。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">[G M]
++-- [A C E F]
++-- [H K L]
+`-- [N Q T W]</code></pre>
+<p><strong>答案</strong>：共切開 <strong>2</strong> 次，樹高 1（根在第 0 層）。我用程式照 CLRS 的插入演算法跑過，也檢查了每個節點的 key 數和葉子都在同一層。</p>
+</details>
+<p><strong>P-5.</strong> minimum degree <span class="arithmatex">\(t=2\)</span> 的 B-tree，從空樹開始依序插入 50, 20, 70, 10, 30, 60, 80, 25, 35, 5（照 CLRS：往下走時遇到滿的節點就先切開）。畫出最後的樹，過程中切開了幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>每個節點最多 3 個 key</strong>：<span class="arithmatex">\(2t-1=3\)</span>；往下走時遇到滿的節點就先切開，中間的 key 往上搬。</li>
+<li><strong>插入 10 時切開 1 次</strong>：往上搬的是 50。</li>
+<li><strong>插入 25 時切開 1 次</strong>：往上搬的是 20。</li>
+</ul>
+<p>最後的樹：</p>
+<pre class="highlight"><code class="language-text">[20 50]
++-- [5 10]
++-- [25 30 35]
+`-- [60 70 80]</code></pre>
+<p><strong>答案</strong>：共切開 <strong>2</strong> 次，樹高 1（根在第 0 層）。我用程式照 CLRS 的插入演算法跑過，也檢查了每個節點的 key 數和葉子都在同一層。</p>
+</details>
+<h4 id="binomial-heap_1">題型二：binomial heap 的形狀</h4>
+<p><strong>做法</strong>：n 個節點的 heap 有哪些樹看 n 的二進位；union 就是二進位加法，每次進位連一次（<a href="#u7-3">7.3</a>）。</p>
+<p><strong>P-6.</strong> 13 個節點的 binomial heap 由哪幾棵 binomial tree 組成？共幾棵？最高的那棵高度多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>看二進位</strong>：13 ＝ 1101₂。</li>
+<li><strong>組成</strong>：<span class="arithmatex">\(B_3\)</span>、<span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_0\)</span>，大小 8 ＋ 4 ＋ 1，加起來 13 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+<li><strong>答案</strong>：共 <strong>3</strong> 棵（二進位裡 1 的個數）；最高的是 <span class="arithmatex">\(B_3\)</span>，高度 <strong>3</strong>。</li>
+</ul>
+</details>
+<p><strong>P-7.</strong> 22 個節點的 binomial heap 由哪幾棵 binomial tree 組成？共幾棵？最高的那棵高度多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>看二進位</strong>：22 ＝ 10110₂。</li>
+<li><strong>組成</strong>：<span class="arithmatex">\(B_4\)</span>、<span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_1\)</span>，大小 16 ＋ 4 ＋ 2，加起來 22 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+<li><strong>答案</strong>：共 <strong>3</strong> 棵（二進位裡 1 的個數）；最高的是 <span class="arithmatex">\(B_4\)</span>，高度 <strong>4</strong>。</li>
+</ul>
+</details>
+<p><strong>P-8.</strong> 31 個節點的 binomial heap 由哪幾棵 binomial tree 組成？共幾棵？最高的那棵高度多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>看二進位</strong>：31 ＝ 11111₂。</li>
+<li><strong>組成</strong>：<span class="arithmatex">\(B_4\)</span>、<span class="arithmatex">\(B_3\)</span>、<span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_1\)</span>、<span class="arithmatex">\(B_0\)</span>，大小 16 ＋ 8 ＋ 4 ＋ 2 ＋ 1，加起來 31 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+<li><strong>答案</strong>：共 <strong>5</strong> 棵（二進位裡 1 的個數）；最高的是 <span class="arithmatex">\(B_4\)</span>，高度 <strong>4</strong>。</li>
+</ul>
+</details>
+<p><strong>P-9.</strong> 把 13 個節點和 7 個節點的兩個 binomial heap 合併（union）。結果由哪幾棵樹組成？過程中做了幾次「兩棵一樣大的樹連成一棵」？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>像二進位加法</strong>：1101₂ ＋ 111₂ ＝ 10100₂，每次進位就是把兩棵 <span class="arithmatex">\(B_k\)</span> 連成一棵 <span class="arithmatex">\(B_{k+1}\)</span>。</li>
+<li><strong>結果</strong>：<span class="arithmatex">\(B_4\)</span>、<span class="arithmatex">\(B_2\)</span>。</li>
+<li><strong>答案</strong>：連了 <strong>4</strong> 次（進位的次數）。</li>
+</ul>
+</details>
+<p><strong>P-10.</strong> 把 15 個節點和 1 個節點的兩個 binomial heap 合併（union）。結果由哪幾棵樹組成？過程中做了幾次「兩棵一樣大的樹連成一棵」？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>像二進位加法</strong>：1111₂ ＋ 1₂ ＝ 10000₂，每次進位就是把兩棵 <span class="arithmatex">\(B_k\)</span> 連成一棵 <span class="arithmatex">\(B_{k+1}\)</span>。</li>
+<li><strong>結果</strong>：<span class="arithmatex">\(B_4\)</span>。</li>
+<li><strong>答案</strong>：連了 <strong>4</strong> 次（進位的次數）。</li>
+</ul>
 </details>
 <h3 id="u7-quiz">單元 7 小考</h3>
 <div class="mcq" data-ans="2">
