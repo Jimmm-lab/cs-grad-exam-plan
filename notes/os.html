@@ -5241,6 +5241,20 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p>小檔案只用 direct pointer，讀取很快；大檔案才用到間接區塊。</p>
+<h4 id="_33">最大檔案還有第二個上限：指標寫得下幾個區塊</h4>
+<p>指標存的是<strong>區塊編號</strong>。<span class="arithmatex">\(p\)</span> bytes 的指標只有 <span class="arithmatex">\(8p\)</span> 個 bit，最多寫得出 <span class="arithmatex">\(2^{8p}\)</span> 種編號，也就是磁碟最多只能有 <span class="arithmatex">\(2^{8p}\)</span> 個區塊。一個檔案不可能用到比這還多的區塊，所以</p>
+<p>最大檔案 ＝ min（i-node 結構算出的資料區塊數，<span class="arithmatex">\(2^{8p}\)</span>）× 區塊大小。</p>
+<p><strong>例子</strong>：區塊 8 KB、指標 4 bytes，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。</p>
+<ul>
+<li><strong>i-node 結構的上限（約 64 TB）</strong>：一塊放 <span class="arithmatex">\(8192\div4=2^{11}\)</span> 個指標，資料區塊 <span class="arithmatex">\(12+2^{11}+2^{22}+2^{33}\approx2^{33}\)</span> 個，乘 8 KB ＝ <span class="arithmatex">\(2^{46}\)</span> B。</li>
+<li><strong>指標的上限（32 TB）</strong>：4 bytes ＝ 32 bit，最多 <span class="arithmatex">\(2^{32}\)</span> 個區塊，乘 8 KB ＝ <span class="arithmatex">\(2^{45}\)</span> B。</li>
+<li><strong>答案（約 32 TB）</strong>：兩個取小的。</li>
+</ul>
+<p>指標 8 bytes 時，<span class="arithmatex">\(2^{64}\)</span> 遠大於結構算出的區塊數，這一條就不會卡住（111 Q5 就是這種情況）。</p>
+<div class="admonition trap">
+<p class="admonition-title">作答時兩個都寫</p>
+<p>很多解答只算 i-node 結構。最保險的寫法：先算結構的上限，再補一句「指標只有 32 bit，最多 <span class="arithmatex">\(2^{32}\)</span> 個區塊，所以實際最大是 <span class="arithmatex">\(2^{32}\times\)</span> 區塊大小」，兩個取小的。練習見 <a href="#u5-drill">5.7 的 P-13、P-14</a>。</p>
+</div>
 <h4 id="raid">RAID：用多顆硬碟換速度或安全</h4>
 <ul>
 <li><strong>RAID 0</strong>（striping）：資料分散在多顆，同時讀寫比較快，但任何一顆壞掉資料就毀了。</li>
@@ -5330,7 +5344,7 @@ signal(empty);</code></pre>
 </tr>
 <tr>
 <td>i-node 最大檔案</td>
-<td>一塊放幾個指標 <span class="arithmatex">\(k\)</span> ＝ 區塊大小 ÷ 指標大小；資料區塊數 ＝ direct 個數 ＋ <span class="arithmatex">\(k\)</span> ＋ <span class="arithmatex">\(k^2\)</span> ＋ <span class="arithmatex">\(k^3\)</span></td>
+<td>一塊放幾個指標 <span class="arithmatex">\(k\)</span> ＝ 區塊大小 ÷ 指標大小；資料區塊數 ＝ direct 個數 ＋ <span class="arithmatex">\(k\)</span> ＋ <span class="arithmatex">\(k^2\)</span> ＋ <span class="arithmatex">\(k^3\)</span>；再和指標寫得下的 <span class="arithmatex">\(2^{8p}\)</span> 塊取小的</td>
 </tr>
 <tr>
 <td>三種配置方式比較</td>
@@ -5356,7 +5370,7 @@ signal(empty);</code></pre>
 <li><strong>練習（英文）</strong>：恐龍書官網的 <a href="https://www.os-book.com/OS10/regular-exercises/PDF-regular-exer-dir/11.pdf">Mass-Storage 習題</a>。</li>
 </ul>
 </div>
-<h4 id="_33">換你試試</h4>
+<h4 id="_34">換你試試</h4>
 <p><strong>T-1.</strong> 10000 RPM 的硬碟，平均 rotational latency？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -5434,7 +5448,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u5-sched">5.4 磁碟排程：讀寫頭怎麼移動</h3>
 <p>101、102、104、107、110 年都考過（每次 6–10%）：給一串要求的磁柱（cylinder）編號，照某種演算法排出服務順序、算讀寫頭總共移動多遠。規則固定、只要加減法，是最容易拿的分數。</p>
-<h4 id="_34">觀念：讀寫頭像電梯</h4>
+<h4 id="_35">觀念：讀寫頭像電梯</h4>
 <p>很多要求在等，讀寫頭一次只能停在一個位置。移動越遠，seek time 越長（見 <a href="#u5-0">5.0</a>），所以目標是<strong>總移動距離越短越好</strong>，又不能讓某些要求等太久。</p>
 <table>
 <thead>
@@ -5485,13 +5499,13 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p><strong>為什麼 C-SCAN 比較公平</strong>：SCAN 回頭時，剛掃過的一端要等來回一趟；中間的位置來回各被掃一次。C-SCAN 永遠同一個方向掃，每個位置等的時間差不多。</p>
-<h4 id="_35">題目沒講清楚的，要自己寫假設</h4>
+<h4 id="_36">題目沒講清楚的，要自己寫假設</h4>
 <ol>
 <li><strong>方向</strong>：「前一個要求在 125、現在在 175」代表正往<strong>編號大的</strong>方向走。只給現在位置時，寫「假設往編號大的方向移動」。</li>
 <li><strong>盡頭在哪</strong>：SCAN、C-SCAN 走到磁柱編號的最大值（0–999 就是 999）或 0。</li>
 <li><strong>C-SCAN、C-LOOK 跳回去那一段算不算距離</strong>：回程不服務要求，但手臂確實有移動，各本書算法不同。<strong>兩個都寫最保險</strong>，例如「含跳回 1925，不含 925」。</li>
 </ol>
-<h4 id="_36">算距離的捷徑</h4>
+<h4 id="_37">算距離的捷徑</h4>
 <p>電梯類（SCAN、LOOK）只要算<strong>轉折點</strong>：例如 LOOK 往上走到最大的要求再回頭到最小的要求，距離 ＝（最大 − 起點）＋（最大 − 最小），不用一段一段加。</p>
 <div class="viz" data-viz="disk" data-reqs="98,183,37,122,14,124,65,67" data-head="53" data-dir="down" data-max="199" data-algo="sstf" data-title="102 Q7 的資料：切換演算法和方向，比較總距離"></div>
 
@@ -5651,7 +5665,7 @@ signal(empty);</code></pre>
 <p><strong>服務順序：F, D, A, H, G, E, B, J, I, C</strong>。</p>
 <p>如果不分批，截止時間又都不一樣，SCAN-EDF 就等於單純的 EDF：F, D, H, A, G, B, J, E, I, C。考試寫出你用的分批方法。</p>
 </div>
-<h4 id="_37">觀念小考</h4>
+<h4 id="_38">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 哪一種演算法可能讓某些要求等非常久（starvation）？</p>
 <ol>
@@ -5729,7 +5743,7 @@ signal(empty);</code></pre>
 </details>
 <h3 id="u5-more">5.5 檔案系統與 I/O 的考古題補充：目錄、mount、開檔表、I/O 方式</h3>
 <p>104、105、107 年的「File System and I/O」小題，每題 2–4%，加起來將近 25%：目錄有哪幾種結構、mount point 是什麼、開檔時 UNIX 記住哪些資訊、CPU 怎麼知道 I/O 做完了、memory-mapped I/O。都是恐龍書的名詞，<strong>會講「為什麼要這樣做」</strong>就能拿分。</p>
-<h4 id="_38">目錄結構：檔案越來越多，怎麼放？</h4>
+<h4 id="_39">目錄結構：檔案越來越多，怎麼放？</h4>
 <table>
 <thead>
 <tr>
@@ -5867,7 +5881,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q7(4)（3%）：什麼是 memory-mapped I/O？為什麼需要它？</p>
 <p>把裝置的控制暫存器（和緩衝區）對應到記憶體位址空間，CPU 用一般的 load／store 指令讀寫裝置。<strong>需要的原因</strong>：不用額外的 I/O 指令，程式和硬體都比較簡單；大量資料（例如畫面）可以直接寫到對應的記憶體，速度快。</p>
 </div>
-<h4 id="_39">觀念小考</h4>
+<h4 id="_40">觀念小考</h4>
 <div class="mcq" data-ans="3">
 <p><strong>C-1.</strong> acyclic-graph 目錄讓同一個檔案出現在好幾個目錄。刪除檔案時最需要處理的問題是？</p>
 <ol>
@@ -6000,7 +6014,7 @@ signal(empty);</code></pre>
 </details>
 <h3 id="u5-drill">5.7 換數字練習</h3>
 <p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
-<h4 id="_40">題型一：磁碟排程的移動距離</h4>
+<h4 id="_41">題型一：磁碟排程的移動距離</h4>
 <p><strong>做法</strong>：照演算法排出服務順序，相鄰相減加總；C-SCAN、C-LOOK 把含跳回和不含的都寫出來（<a href="#u5-sched">5.4</a>）。</p>
 <p><strong>P-1.</strong> 磁柱 0～199，讀寫頭在 53、正往編號大的方向移動。要求依序是 98, 183, 37, 122, 14, 124, 65, 67。用 FCFS，服務順序和總移動距離？</p>
 <details class="quiz">
@@ -6061,13 +6075,14 @@ signal(empty);</code></pre>
 <p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>45,21,67,90,4,55,89,52,61,87</code>、讀寫頭 50、方向往大、最大 199，演算法選 C-LOOK；跳回那段選「算進」會得到 167、選「不算」會得到 81。</p>
 </details>
 <h4 id="i-node_1">題型二：i-node 最大檔案</h4>
-<p><strong>做法</strong>：一塊放 <span class="arithmatex">\(k\)</span> ＝ 區塊 ÷ 指標 個指標；資料區塊數 ＝ direct ＋ <span class="arithmatex">\(k\)</span> ＋ <span class="arithmatex">\(k^2\)</span> ＋ <span class="arithmatex">\(k^3\)</span>。</p>
+<p><strong>做法</strong>：一塊放 <span class="arithmatex">\(k\)</span> ＝ 區塊 ÷ 指標 個指標；資料區塊數 ＝ direct ＋ <span class="arithmatex">\(k\)</span> ＋ <span class="arithmatex">\(k^2\)</span> ＋ <span class="arithmatex">\(k^3\)</span>。最後檢查指標夠不夠大：<span class="arithmatex">\(p\)</span> bytes 的指標最多指到 <span class="arithmatex">\(2^{8p}\)</span> 個區塊，兩個上限取小的（<a href="#u5-0">5.0</a>）。</p>
 <p><strong>P-7.</strong> 區塊 4096 B、指標 4 B，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
 <li><strong>一個區塊放幾個指標（1024）</strong>：<span class="arithmatex">\(4096\div4\)</span>。</li>
-<li><strong>資料區塊數（1074791436）</strong>：12（direct） <span class="arithmatex">\(+\)</span> 1024（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^3\)</span>。</li>
+<li><strong>i-node 結構的上限（1074791436 塊）</strong>：12（direct） <span class="arithmatex">\(+\)</span> 1024（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^3\)</span>。</li>
+<li><strong>指標夠不夠大</strong>：4 B ＝ 32 bit，最多能寫 <span class="arithmatex">\(2^{32}\)</span> 個區塊編號，比 1074791436 多，不受限。</li>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(1074791436\times4096\)</span> B，約 4 TB。</li>
 </ul>
 </details>
@@ -6076,7 +6091,8 @@ signal(empty);</code></pre>
 <summary>看完整解答</summary>
 <ul>
 <li><strong>一個區塊放幾個指標（256）</strong>：<span class="arithmatex">\(1024\div4\)</span>。</li>
-<li><strong>資料區塊數（65802）</strong>：10（direct） <span class="arithmatex">\(+\)</span> 256（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(256^2\)</span>。</li>
+<li><strong>i-node 結構的上限（65802 塊）</strong>：10（direct） <span class="arithmatex">\(+\)</span> 256（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(256^2\)</span>。</li>
+<li><strong>指標夠不夠大</strong>：4 B ＝ 32 bit，最多能寫 <span class="arithmatex">\(2^{32}\)</span> 個區塊編號，比 65802 多，不受限。</li>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(65802\times1024\)</span> B，約 64.3 MB。</li>
 </ul>
 </details>
@@ -6085,7 +6101,8 @@ signal(empty);</code></pre>
 <summary>看完整解答</summary>
 <ul>
 <li><strong>一個區塊放幾個指標（1024）</strong>：<span class="arithmatex">\(8192\div8\)</span>。</li>
-<li><strong>資料區塊數（1074791436）</strong>：12（direct） <span class="arithmatex">\(+\)</span> 1024（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^3\)</span>。</li>
+<li><strong>i-node 結構的上限（1074791436 塊）</strong>：12（direct） <span class="arithmatex">\(+\)</span> 1024（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(1024^3\)</span>。</li>
+<li><strong>指標夠不夠大</strong>：8 B ＝ 64 bit，最多能寫 <span class="arithmatex">\(2^{64}\)</span> 個區塊編號，比 1074791436 多，不受限。</li>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(1074791436\times8192\)</span> B，約 8.01 TB。</li>
 </ul>
 </details>
@@ -6094,7 +6111,8 @@ signal(empty);</code></pre>
 <summary>看完整解答</summary>
 <ul>
 <li><strong>一個區塊放幾個指標（512）</strong>：<span class="arithmatex">\(2048\div4\)</span>。</li>
-<li><strong>資料區塊數（522）</strong>：10（direct） <span class="arithmatex">\(+\)</span> 512（single）。</li>
+<li><strong>i-node 結構的上限（522 塊）</strong>：10（direct） <span class="arithmatex">\(+\)</span> 512（single）。</li>
+<li><strong>指標夠不夠大</strong>：4 B ＝ 32 bit，最多能寫 <span class="arithmatex">\(2^{32}\)</span> 個區塊編號，比 522 多，不受限。</li>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(522\times2048\)</span> B，約 1.02 MB。</li>
 </ul>
 </details>
@@ -6103,7 +6121,8 @@ signal(empty);</code></pre>
 <summary>看完整解答</summary>
 <ul>
 <li><strong>一個區塊放幾個指標（512）</strong>：<span class="arithmatex">\(4096\div8\)</span>。</li>
-<li><strong>資料區塊數（262668）</strong>：12（direct） <span class="arithmatex">\(+\)</span> 512（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(512^2\)</span>。</li>
+<li><strong>i-node 結構的上限（262668 塊）</strong>：12（direct） <span class="arithmatex">\(+\)</span> 512（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(512^2\)</span>。</li>
+<li><strong>指標夠不夠大</strong>：8 B ＝ 64 bit，最多能寫 <span class="arithmatex">\(2^{64}\)</span> 個區塊編號，比 262668 多，不受限。</li>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(262668\times4096\)</span> B，約 1 GB。</li>
 </ul>
 </details>
@@ -6112,8 +6131,29 @@ signal(empty);</code></pre>
 <summary>看完整解答</summary>
 <ul>
 <li><strong>一個區塊放幾個指標（128）</strong>：<span class="arithmatex">\(512\div4\)</span>。</li>
-<li><strong>資料區塊數（2113674）</strong>：10（direct） <span class="arithmatex">\(+\)</span> 128（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(128^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(128^3\)</span>。</li>
+<li><strong>i-node 結構的上限（2113674 塊）</strong>：10（direct） <span class="arithmatex">\(+\)</span> 128（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(128^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(128^3\)</span>。</li>
+<li><strong>指標夠不夠大</strong>：4 B ＝ 32 bit，最多能寫 <span class="arithmatex">\(2^{32}\)</span> 個區塊編號，比 2113674 多，不受限。</li>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(2113674\times512\)</span> B，約 1.01 GB。</li>
+</ul>
+</details>
+<p><strong>P-13.</strong> 區塊 8192 B、指標 4 B，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一個區塊放幾個指標（2048）</strong>：<span class="arithmatex">\(8192\div4\)</span>。</li>
+<li><strong>i-node 結構的上限（8594130956 塊）</strong>：12（direct） <span class="arithmatex">\(+\)</span> 2048（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(2048^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(2048^3\)</span>。</li>
+<li><strong>指標夠不夠大（不夠）</strong>：4 B ＝ 32 bit，最多只能寫 <span class="arithmatex">\(2^{32}=4294967296\)</span> 個區塊編號，整顆磁碟也只有這麼多塊，比結構的上限少。</li>
+<li><strong>最大檔案</strong>：兩個上限取小的，最多 <span class="arithmatex">\(2^{32}\)</span> 個資料區塊，<span class="arithmatex">\(2^{32}\times8192\)</span> B，約 32 TB。只看結構會算出 64 TB，但指標指不到那麼多區塊；作答時兩個都寫，說明取小的。</li>
+</ul>
+</details>
+<p><strong>P-14.</strong> 區塊 1024 B、指標 2 B，i-node 有 8 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>一個區塊放幾個指標（512）</strong>：<span class="arithmatex">\(1024\div2\)</span>。</li>
+<li><strong>i-node 結構的上限（134480392 塊）</strong>：8（direct） <span class="arithmatex">\(+\)</span> 512（single） <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(512^2\)</span> <span class="arithmatex">\(+\)</span> <span class="arithmatex">\(512^3\)</span>。</li>
+<li><strong>指標夠不夠大（不夠）</strong>：2 B ＝ 16 bit，最多只能寫 <span class="arithmatex">\(2^{16}=65536\)</span> 個區塊編號，整顆磁碟也只有這麼多塊，比結構的上限少。</li>
+<li><strong>最大檔案</strong>：兩個上限取小的，最多 <span class="arithmatex">\(2^{16}\)</span> 個資料區塊，<span class="arithmatex">\(2^{16}\times1024\)</span> B，約 64 MB。只看結構會算出 128 GB，但指標指不到那麼多區塊；作答時兩個都寫，說明取小的。</li>
 </ul>
 </details>
 <h3 id="u5-en">5.8 英文作答範例</h3>
@@ -6269,9 +6309,9 @@ signal(empty);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_41">最小權限</h4>
+<h4 id="_42">最小權限</h4>
 <p><strong>principle of least privilege</strong>（最小權限）和 <strong>need-to-know</strong> 是同一類想法：每個行程、每個使用者只拿到<strong>完成目前工作需要</strong>的權限和資源。出事時，損害才會被限制在小範圍。兩者在恐龍書裡的說法有一點差別，是非題考過，見 <a href="#u6-more">6.2</a>。</p>
-<h4 id="_42">存取矩陣：誰能對什麼做什麼</h4>
+<h4 id="_43">存取矩陣：誰能對什麼做什麼</h4>
 <p>把權限畫成一張表：列是使用者（domain），欄是檔案（object），格子裡是權限。</p>
 <table>
 <thead>
@@ -6337,7 +6377,7 @@ signal(empty);</code></pre>
 </figure>
 
 <p><strong>哪一種比較方便</strong>：要知道「這個檔案誰能用」，或要撤銷某個檔案的所有權限，ACL 一次看完；要知道「這個人能用哪些東西」，capability list 一次看完。實際的系統常常兩個混著用。</p>
-<h4 id="_43">惡意程式的名詞</h4>
+<h4 id="_44">惡意程式的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -6413,7 +6453,7 @@ signal(empty);</code></pre>
 <li><strong>中文筆記</strong>：〈<a href="https://hackmd.io/izkd4JwXRwub_ZmhSMTlNw">OS 筆記 Chapter 14: Protection</a>〉：保護的原則、存取矩陣、ACL 與 capability 的實作、權限撤銷，就是這節表格的完整版。</li>
 </ul>
 </div>
-<h4 id="_44">換你試試</h4>
+<h4 id="_45">換你試試</h4>
 <p><strong>T-1.</strong> 有人偷改了資料庫裡的成績，破壞的是 CIA 的哪一項？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -6540,7 +6580,7 @@ signal(empty);</code></pre>
 </table>
 <p><span class="arithmatex">\(H(m)\)</span> 是 <a href="ds.html#u4-theory">資結 4.2</a> 的密碼學雜湊函數，先把訊息壓短再簽。</p>
 <p><strong>公鑰怎麼發</strong>（105 Q4(4)）：公鑰可以公開，問題是怎麼確定這把公鑰真的是對方的（不然中間人可以換成自己的）。做法是<strong>數位憑證</strong>（digital certificate）：可信任的憑證機構（CA）用它的私鑰簽署「這把公鑰屬於某某人」，CA 的公鑰事先內建在瀏覽器或作業系統裡。</p>
-<h4 id="_45">攻擊手法的名詞</h4>
+<h4 id="_46">攻擊手法的名詞</h4>
 <table>
 <thead>
 <tr>
@@ -6621,7 +6661,7 @@ signal(empty);</code></pre>
 <li>「location transparency 能在不同時間把同一個檔名對應到不同位置，所以比 location independence 強」：<strong>錯</strong>，說反了。能動態改變對應位置的是 <strong>location independence</strong>，它比 location transparency 強。</li>
 </ol>
 </div>
-<h4 id="_46">觀念小考</h4>
+<h4 id="_47">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> 哪一種方法能提供 nonrepudiation（送的人事後不能否認）？</p>
 <ol>
@@ -6663,7 +6703,7 @@ signal(empty);</code></pre>
 </div>
 <h3 id="u6-dist">6.3 分散式系統與網路：CSMA/CD、token passing、事件的先後</h3>
 <p>101 年（區域網路怎麼避免碰撞，10%）、102 年（分散式系統的事件順序，10%）、104 年（分散式檔案系統的名詞，1%）考過。另外 102 年的分散式檔案系統命名在 <a href="#u6-more">6.2</a>，atomic transaction、two-phase locking 在 <a href="#u2-more">2.2</a>，分散式檔案系統的 cache 在 <a href="#u6-1">6.1</a>。</p>
-<h4 id="_47">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
+<h4 id="_48">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
 <p>同一條線上的電腦同時送資料，訊號會疊在一起變成雜訊，叫<strong>碰撞</strong>（collision）。兩種做法：</p>
 <p><strong>CSMA/CD</strong>（carrier sense multiple access with collision detection，乙太網路用的）：</p>
 <ol>
@@ -6708,7 +6748,7 @@ signal(empty);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_48">分散式系統裡，為什麼很難知道誰先發生？</h4>
+<h4 id="_49">分散式系統裡，為什麼很難知道誰先發生？</h4>
 <p>分散式系統的電腦<strong>沒有共用的時鐘、也沒有共用的記憶體</strong>，只能傳訊息。每台電腦的時鐘快慢不一樣（會漂移），訊息在網路上要花多久也不固定。所以 A 機器記錄 10:00:01、B 機器記錄 10:00:02，<strong>不能保證 A 的事件真的比較早</strong>。</p>
 <h4 id="happened-before">happened-before（→）：只用能確定的事排順序</h4>
 <p>Lamport 定義的 happened-before 關係，A → B 讀作「A 在 B 之前發生」：</p>
@@ -6836,7 +6876,7 @@ signal(empty);</code></pre>
 <p class="admonition-title">104 Q6(3)（1%）：分散式檔案系統的 component unit 是什麼？</p>
 <p><strong>可以放在同一台機器上、跟其他 unit 互不相關的最小一組檔案</strong>。同一個 component unit 裡的檔案一定放在同一個地方，命名和搬移都以它為單位。</p>
 </div>
-<h4 id="_49">觀念小考</h4>
+<h4 id="_50">觀念小考</h4>
 <div class="mcq" data-ans="2">
 <p><strong>C-1.</strong> CSMA/CD 偵測到碰撞之後，為什麼要等一段<strong>隨機</strong>的時間再重傳？</p>
 <ol>
