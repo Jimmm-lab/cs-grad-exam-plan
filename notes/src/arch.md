@@ -3482,6 +3482,47 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
 
 處理器加倍，speedup 卻越加越少，因為那 10% 不能平行的部分變成主要的時間。再加上處理器之間要溝通，實際上更低。
 
+**公式（Amdahl's law）**：把原本的執行時間當成 1，可以平行的比例是 $f$。用 $N$ 個處理器時，不能平行的 $1-f$ 不變，可平行的 $f$ 變成 $f/N$：
+
+$$\text{speedup}=\frac{1}{(1-f)+\frac fN}\ \xrightarrow{N\to\infty}\ \frac1{1-f}$$
+
+<figure class="fig">
+<svg viewBox="0 0 360 210" role="img" aria-label="Amdahl 定律：橫軸是處理器數 1 到 64（每格加倍），縱軸是 speedup。90% 可平行的曲線越來越平，最多到 10；95% 可平行的最多到 20。處理器再多，也超不過 1 除以不能平行的比例。">
+<line class="ln" x1="46" y1="178" x2="308" y2="178"/>
+<line class="ln" x1="46" y1="178" x2="46" y2="12"/>
+<line class="ln" x1="46" y1="178" x2="46" y2="182"/>
+<text x="46" y="192" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<line class="ln" x1="88.3333" y1="178" x2="88.3333" y2="182"/>
+<text x="88.3333" y="192" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<line class="ln" x1="130.667" y1="178" x2="130.667" y2="182"/>
+<text x="130.667" y="192" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<line class="ln" x1="173" y1="178" x2="173" y2="182"/>
+<text x="173" y="192" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<line class="ln" x1="215.333" y1="178" x2="215.333" y2="182"/>
+<text x="215.333" y="192" text-anchor="middle" dominant-baseline="central" class="sm mono">16</text>
+<line class="ln" x1="257.667" y1="178" x2="257.667" y2="182"/>
+<text x="257.667" y="192" text-anchor="middle" dominant-baseline="central" class="sm mono">32</text>
+<line class="ln" x1="300" y1="178" x2="300" y2="182"/>
+<text x="300" y="192" text-anchor="middle" dominant-baseline="central" class="sm mono">64</text>
+<text x="40" y="178" text-anchor="end" dominant-baseline="central" class="sm mono">0</text>
+<text x="40" y="138" text-anchor="end" dominant-baseline="central" class="sm mono">5</text>
+<text x="40" y="98" text-anchor="end" dominant-baseline="central" class="sm mono">10</text>
+<text x="40" y="58" text-anchor="end" dominant-baseline="central" class="sm mono">15</text>
+<text x="40" y="18" text-anchor="end" dominant-baseline="central" class="sm mono">20</text>
+<text x="312" y="176" text-anchor="start" dominant-baseline="central" class="sm mono">N</text>
+<text x="50" y="8" text-anchor="start" dominant-baseline="central" class="sm mono">speedup</text>
+<polyline class="arw-a" points="46.0,170.0 50.2,169.5 54.5,168.9 58.7,168.4 62.9,167.8 67.2,167.1 71.4,166.5 75.6,165.8 79.9,165.0 84.1,164.3 88.3,163.5 92.6,162.6 96.8,161.7 101.0,160.8 105.3,159.9 109.5,158.9 113.7,157.8 118.0,156.8 122.2,155.7 126.4,154.5 130.7,153.4 134.9,152.2 139.1,151.0 143.4,149.7 147.6,148.4 151.8,147.1 156.1,145.8 160.3,144.5 164.5,143.1 168.8,141.7 173.0,140.4 177.2,139.0 181.5,137.6 185.7,136.2 189.9,134.8 194.2,133.4 198.4,132.1 202.6,130.7 206.9,129.4 211.1,128.1 215.3,126.8 219.6,125.5 223.8,124.3 228.0,123.1 232.3,121.9 236.5,120.8 240.7,119.7 245.0,118.6 249.2,117.5 253.4,116.5 257.7,115.6 261.9,114.6 266.1,113.7 270.4,112.9 274.6,112.1 278.8,111.3 283.1,110.5 287.3,109.8 291.5,109.1 295.8,108.5 300.0,107.9"/>
+<line class="dash" x1="46" y1="98" x2="300" y2="98"/>
+<text x="306" y="107.863" text-anchor="start" dominant-baseline="central" class="sm ta">90%</text>
+<polyline class="arw" points="46.0,170.0 50.2,169.5 54.5,168.9 58.7,168.3 62.9,167.6 67.2,166.9 71.4,166.2 75.6,165.4 79.9,164.6 84.1,163.7 88.3,162.8 92.6,161.8 96.8,160.7 101.0,159.6 105.3,158.5 109.5,157.3 113.7,156.0 118.0,154.6 122.2,153.2 126.4,151.7 130.7,150.2 134.9,148.5 139.1,146.8 143.4,145.1 147.6,143.2 151.8,141.3 156.1,139.3 160.3,137.2 164.5,135.1 168.8,132.9 173.0,130.6 177.2,128.2 181.5,125.8 185.7,123.4 189.9,120.9 194.2,118.3 198.4,115.7 202.6,113.0 206.9,110.3 211.1,107.6 215.3,104.9 219.6,102.1 223.8,99.3 228.0,96.6 232.3,93.8 236.5,91.0 240.7,88.3 245.0,85.6 249.2,82.9 253.4,80.2 257.7,77.6 261.9,75.0 266.1,72.5 270.4,70.1 274.6,67.7 278.8,65.3 283.1,63.0 287.3,60.8 291.5,58.7 295.8,56.6 300.0,54.6"/>
+<line class="dash" x1="46" y1="18" x2="300" y2="18"/>
+<text x="306" y="54.6265" text-anchor="start" dominant-baseline="central" class="sm ">95%</text>
+<text x="296" y="89" text-anchor="end" dominant-baseline="central" class="sm ta">上限 10</text>
+<text x="296" y="29" text-anchor="end" dominant-baseline="central" class="sm">上限 20</text>
+</svg>
+<figcaption>處理器每多一倍，speedup 加得越來越少；上限只由不能平行的那部分決定</figcaption>
+</figure>
+
 #### 三種平行
 
 | 種類 | 做法 | 比喻 |
@@ -3491,6 +3532,13 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
 | **array processor（SIMD）** | 一個指令，所有運算單元**做同一個動作**在不同資料上 | 教練喊一個口令，所有隊員做同一個動作 |
 
 從比喻就能回答 114 Q6：VLIW 比 superscalar 簡單（硬體不用排程）、superscalar 可能更快（現場能應變 cache miss）、VLIW 比 array 彈性（每個槽可以做不同事）、array 最簡單（只要一份指令和控制）。
+
+**Flynn 分類**：看同時有幾道指令流、幾道資料流。
+
+| | 一道資料流 | 多道資料流 |
+|---|---|---|
+| **一道指令流** | SISD：傳統的單核心 | SIMD：array／vector processor、GPU 的 SIMD 單元 |
+| **多道指令流** | MISD：幾乎沒有實際的機器 | MIMD：多核心、多處理器 |
 
 #### 記憶體一致性：把指令洗成一疊牌
 
@@ -3510,6 +3558,62 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
 #### 頻寬撐不撐得住
 
 運算再快，資料送不進來也沒用。需要的頻寬 ＝ 每秒運算次數 × 每次運算要從記憶體讀幾個 byte。這個值超過記憶體頻寬，運算單元就會空等。
+
+**roofline 模型**：程式的**運算強度** $I$ ＝ 每從記憶體讀 1 byte 做幾個運算（flop/byte）。能達到的效能是
+
+$$\text{效能}=\min(\text{峰值},\ \text{頻寬}\times I)$$
+
+<figure class="fig">
+<svg viewBox="0 0 360 214" role="img" aria-label="roofline 圖：橫軸是運算強度（每讀 1 byte 做幾個運算），縱軸是能達到的 GFLOPS，兩軸都是對數。左邊斜線是頻寬 600 GB/s 乘上運算強度，右邊平線是峰值 512 GFLOPS，兩線在運算強度約 0.85 交會。每個運算讀 4 bytes 時運算強度 0.25，最多 150 GFLOPS，在斜線上，是被頻寬限制。">
+<line class="ln" x1="50" y1="180" x2="336" y2="180"/>
+<line class="ln" x1="50" y1="180" x2="50" y2="14"/>
+<line class="ln" x1="50" y1="180" x2="50" y2="184"/>
+<text x="50" y="194" text-anchor="middle" dominant-baseline="central" class="sm mono">1/8</text>
+<line class="ln" x1="96.6667" y1="180" x2="96.6667" y2="184"/>
+<text x="96.6667" y="194" text-anchor="middle" dominant-baseline="central" class="sm mono">1/4</text>
+<line class="ln" x1="143.333" y1="180" x2="143.333" y2="184"/>
+<text x="143.333" y="194" text-anchor="middle" dominant-baseline="central" class="sm mono">1/2</text>
+<line class="ln" x1="190" y1="180" x2="190" y2="184"/>
+<text x="190" y="194" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<line class="ln" x1="236.667" y1="180" x2="236.667" y2="184"/>
+<text x="236.667" y="194" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<line class="ln" x1="283.333" y1="180" x2="283.333" y2="184"/>
+<text x="283.333" y="194" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<line class="ln" x1="330" y1="180" x2="330" y2="184"/>
+<text x="330" y="194" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<text x="44" y="180" text-anchor="end" dominant-baseline="central" class="sm mono">32</text>
+<text x="44" y="148" text-anchor="end" dominant-baseline="central" class="sm mono">64</text>
+<text x="44" y="116" text-anchor="end" dominant-baseline="central" class="sm mono">128</text>
+<text x="44" y="84" text-anchor="end" dominant-baseline="central" class="sm mono">256</text>
+<text x="44" y="52" text-anchor="end" dominant-baseline="central" class="sm mono">512</text>
+<text x="44" y="20" text-anchor="end" dominant-baseline="central" class="sm mono">1024</text>
+<line class="arw-a" x1="50" y1="140.678" x2="179.322" y2="52"/>
+<line class="ln" x1="179.322" y1="52" x2="330" y2="52"/>
+<line class="dash" x1="179.322" y1="52" x2="179.322" y2="180"/>
+<circle class="ah" cx="96.6667" cy="108.678" r="4.5"/>
+<text x="104.667" y="120.678" text-anchor="start" dominant-baseline="central" class="sm mono">0.25 → 150</text>
+<text x="254.331" y="40" text-anchor="middle" dominant-baseline="central" class="sm">峰值 512</text>
+<text x="56" y="64" text-anchor="start" dominant-baseline="central" class="sm ta">頻寬 × 強度</text>
+<text x="183.322" y="170" text-anchor="start" dominant-baseline="central" class="sm mono">≈0.85</text>
+<text x="334" y="168" text-anchor="end" dominant-baseline="central" class="sm mono">flop/byte</text>
+<text x="54" y="10" text-anchor="start" dominant-baseline="central" class="sm mono">GFLOPS</text>
+</svg>
+<figcaption>113 Q2 的 GPU：峰值 512 GFLOPS、頻寬 600 GB/s；斜線那一段被頻寬限制，平線那一段被運算單元限制</figcaption>
+</figure>
+
+$I$ 在交會點左邊是 **memory-bound**：加運算單元沒有用，要提高頻寬或讓資料多重用幾次；右邊是 **compute-bound**。113 Q2 的交會點在 $512\div600\approx0.85$ flop/byte；每個運算都讀一個 4 bytes 的運算元時 $I=0.25$，最多只有 $600\times0.25=150$ GFLOPS。
+
+!!! key "平行題要算什麼"
+    | 題目問 | 怎麼算 |
+    |---|---|
+    | 用 $N$ 個處理器的 speedup | $\frac{1}{(1-f)+f/N}$，$f$ 是可以平行的比例 |
+    | speedup 上限 | $\frac1{1-f}$ |
+    | 要達到某個 speedup，$f$ 至少多少 | 把上面的式子反過來解 $f$ |
+    | 峰值 FLOPS | 時脈 × 運算單元數 × 每個單元每 cycle 幾個 flop |
+    | 頻寬夠不夠 | 需要的頻寬 ＝ FLOPS × 每個 flop 讀幾個 byte；或用 roofline：$\min(\text{峰值},\text{頻寬}\times I)$ |
+    | SC 下某個結果可不可能 | 把「讀到舊值」換成「讀在寫之前」，加上程式順序，看會不會繞成一個圈（[8.3](#u8-3)） |
+
+    名詞對照：Amdahl's law（Amdahl 定律）、operational intensity（運算強度）、memory-bound／compute-bound（被頻寬限制／被運算限制）、sequential consistency（循序一致性）。
 
 !!! read "還不懂？看別人怎麼講"
     - **英文影片與講義**：[ETH Digital Design & Computer Architecture 2025](https://safari.ethz.ch/ddca/spring2025/doku.php?id=start) 的 VLIW、SIMD（vector／array processor）兩講，114 Q6 的比較題就出自這裡。
@@ -3858,6 +3962,94 @@ for (i = 0; i < 100; i += 4) {       /* 攤開 4 次 */
     **好處**：(1) 迴圈控制的指令（i++、比較、branch）變少；(2) 迴圈本體變大，有更多互相獨立的指令，可以重新排程來填滿 pipeline 的空檔、讓多發的處理器一次發好幾條。
 
     **代價**：程式碼變大，可能讓 instruction cache 裝不下；需要更多暫存器存中間結果（暫存器不夠就要存回記憶體）。
+
+### 8.6 觀念小考 {#u8-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 80% 可以平行，用 4 個處理器，speedup 是多少？
+
+1. 4
+2. 2.5
+3. 3.2
+4. 5
+
+??? quiz "看解析"
+    **B**。$\frac1{0.2+0.8/4}=\frac1{0.2+0.2}=2.5$。A 是以為全部都能平行。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-2.** 80% 可以平行，處理器無限多，speedup 最多是？
+
+1. 無限大
+2. 8
+3. 4
+4. 5
+
+??? quiz "看解析"
+    **D**。$\frac1{1-0.8}=5$：可平行的部分時間趨近 0，剩下的 20% 怎麼樣都省不掉。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** 峰值 100 GFLOPS、記憶體頻寬 50 GB/s 的機器，跑運算強度 0.5 flop/byte 的程式，最多多快？
+
+1. 25 GFLOPS
+2. 50 GFLOPS
+3. 100 GFLOPS
+4. 200 GFLOPS
+
+??? quiz "看解析"
+    **A**。$\min(100,\ 50\times0.5)=25$。這個程式在交會點（$100\div50=2$ flop/byte）的左邊，是 memory-bound。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-4.** 依 Flynn 分類，GPU 的 SIMD 單元、多核心 CPU 分別屬於？
+
+1. MIMD、SIMD
+2. SISD、MIMD
+3. SIMD、MIMD
+4. MISD、SIMD
+
+??? quiz "看解析"
+    **C**。SIMD 是一道指令同時作用在很多筆資料；多核心各跑各的程式、各拿各的資料，是 MIMD。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** P1：`x=1; r1=y`，P2：`y=1; r2=x`（x、y 一開始是 0）。sequential consistency 下，哪一個結果不可能出現？
+
+1. r1＝0、r2＝1
+2. r1＝0、r2＝0
+3. r1＝1、r2＝1
+4. r1＝1、r2＝0
+
+??? quiz "看解析"
+    **B**。r1＝0 表示 P1 讀 y 在 P2 寫 y 之前，r2＝0 表示 P2 讀 x 在 P1 寫 x 之前；再加上兩邊都是先寫再讀，四件事繞成一個圈，不可能排成一列。
+
+</div>
+
+**W-1.** 用 16 個處理器想得到 8 倍的 speedup，程式至少要有多少比例可以平行？
+
+??? quiz "看參考答案"
+    $$\frac{1}{(1-f)+\frac f{16}}=8\ \Rightarrow\ 1-f+\frac f{16}=\frac18\ \Rightarrow\ \frac{15}{16}f=\frac78\ \Rightarrow\ f=\frac{14}{15}\approx93.3\%$$
+
+    只用了一半的處理器效率（8 ÷ 16），就需要 93% 以上能平行。驗算：$\frac1{1/15+14/240}=\frac1{0.125}=8$ ✓。
+
+**W-2.** 單精度的 `y[i] = a*x[i] + y[i]`：每個元素做 2 個 flop，讀 x、y 各 4 bytes，寫回 y 4 bytes。在 113 Q2 的 GPU（512 GFLOPS、600 GB/s）上最多跑多快？是 compute-bound 還是 memory-bound？
+
+??? quiz "看參考答案"
+    - **運算強度（$\frac16$ flop/byte）**：每個元素 2 個 flop、搬 12 bytes。
+    - **能達到的效能（100 GFLOPS）**：$\min(512,\ 600\times\frac16)=\min(512,100)$。
+    - **memory-bound**：$\frac16$ 遠小於交會點 0.85，峰值的 512 GFLOPS 用不到五分之一。要快只能提高頻寬，或改寫成每個資料多用幾次的演算法。
 
 ### 單元 8 小考 {#u8-quiz}
 
