@@ -101,6 +101,50 @@ $$\binom{n+r-1}{r}$$
 
 **這跟「相同的球放進不同的箱子」是同一件事**：球是星星，箱子之間的牆是隔板。113 Q1 的「9 顆相同的球放進 3 個桶子」就是 9 顆星、2 根隔板，沒有限制時有 $\binom{11}{2}=55$ 種。
 
+<figure class="fig">
+<svg viewBox="0 0 360 196" role="img" aria-label="上面：9 顆相同的球放進 3 個桶子，桶子裡分別是 3、2、4 顆。下面：同一種放法寫成一列，3 顆星、隔板、2 顆星、隔板、4 顆星。9 顆星和 2 根隔板共 11 個位置，選 2 個放隔板，所以有 C(11, 2) = 55 種。">
+<path class="ln" d="M30,24 L30,84 L110,84 L110,24"/>
+<circle class="fa" cx="46" cy="72" r="9"/>
+<circle class="fa" cx="70" cy="72" r="9"/>
+<circle class="fa" cx="94" cy="72" r="9"/>
+<text x="70" y="100" text-anchor="middle" dominant-baseline="central" class="sm">桶 1：3 顆</text>
+<path class="ln" d="M140,24 L140,84 L220,84 L220,24"/>
+<circle class="fa" cx="156" cy="72" r="9"/>
+<circle class="fa" cx="180" cy="72" r="9"/>
+<text x="180" y="100" text-anchor="middle" dominant-baseline="central" class="sm">桶 2：2 顆</text>
+<path class="ln" d="M250,24 L250,84 L330,84 L330,24"/>
+<circle class="fa" cx="266" cy="72" r="9"/>
+<circle class="fa" cx="290" cy="72" r="9"/>
+<circle class="fa" cx="314" cy="72" r="9"/>
+<circle class="fa" cx="266" cy="50" r="9"/>
+<text x="290" y="100" text-anchor="middle" dominant-baseline="central" class="sm">桶 3：4 顆</text>
+<circle class="fa" cx="50" cy="146" r="9"/>
+<text x="50" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<circle class="fa" cx="76" cy="146" r="9"/>
+<text x="76" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<circle class="fa" cx="102" cy="146" r="9"/>
+<text x="102" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<line class="arw-a" x1="128" y1="130" x2="128" y2="162"/>
+<text x="128" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<circle class="fa" cx="154" cy="146" r="9"/>
+<text x="154" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<circle class="fa" cx="180" cy="146" r="9"/>
+<text x="180" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<line class="arw-a" x1="206" y1="130" x2="206" y2="162"/>
+<text x="206" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">7</text>
+<circle class="fa" cx="232" cy="146" r="9"/>
+<text x="232" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<circle class="fa" cx="258" cy="146" r="9"/>
+<text x="258" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<circle class="fa" cx="284" cy="146" r="9"/>
+<text x="284" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<circle class="fa" cx="310" cy="146" r="9"/>
+<text x="310" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">11</text>
+<text x="8" y="146" text-anchor="start" dominant-baseline="central" class="sm">一列</text>
+</svg>
+<figcaption>把桶子的牆拿掉、排成一列：每一種放法剛好對應一種「星星和隔板」的排法</figcaption>
+</figure>
+
 #### 球放箱子：用 2 顆球、2 個箱子全部列出來
 
 | 情況 | 全部列出 | 個數 | 用公式驗證 |
@@ -629,6 +673,43 @@ $$\text{從 }A\text{ 到 }B\text{、碰到 x 軸的路徑數}=\text{從 }A'=(0,-
 
 例：UDDU 第一次碰到 x 軸是第 3 步。把前 3 步 UDD 翻成 DUU，得到 DUUU：從 −1 出發，高度 −1→−2→−1→0→1，終點一樣是 1。
 
+<figure class="fig">
+<svg viewBox="0 0 360 214" role="img" aria-label="格線上，原本的路徑 U D D U 從高度 1 出發，第 3 步碰到 x 軸，最後回到高度 1。把碰到 x 軸之前的那一段上下翻轉，變成從高度 −1 出發的 D U U，後面一樣。翻轉後的路徑從 (0,−1) 走到 (4,1)。">
+<line class="dash" x1="50" y1="180" x2="310" y2="180"/>
+<text x="42" y="180" text-anchor="end" dominant-baseline="central" class="sm mono">-2</text>
+<line class="dash" x1="50" y1="146" x2="310" y2="146"/>
+<text x="42" y="146" text-anchor="end" dominant-baseline="central" class="sm mono">-1</text>
+<line class="ln" x1="50" y1="112" x2="310" y2="112"/>
+<text x="42" y="112" text-anchor="end" dominant-baseline="central" class="sm mono">0</text>
+<line class="dash" x1="50" y1="78" x2="310" y2="78"/>
+<text x="42" y="78" text-anchor="end" dominant-baseline="central" class="sm mono">1</text>
+<line class="dash" x1="50" y1="44" x2="310" y2="44"/>
+<text x="42" y="44" text-anchor="end" dominant-baseline="central" class="sm mono">2</text>
+<line class="dash" x1="50" y1="10" x2="310" y2="10"/>
+<text x="42" y="10" text-anchor="end" dominant-baseline="central" class="sm mono">3</text>
+<text x="60" y="198" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<text x="120" y="198" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="180" y="198" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="240" y="198" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="300" y="198" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<polyline class="arw" style="stroke-dasharray:6 4" points="60,146 120,180 180,146 240,112"/>
+<polyline class="arw-a" points="60,78 120,44 180,78 240,112 300,78"/>
+<circle class="ah-a" cx="60" cy="78" r="4.5"/>
+<circle class="ah-a" cx="120" cy="44" r="4.5"/>
+<circle class="ah-a" cx="180" cy="78" r="4.5"/>
+<circle class="ah-a" cx="240" cy="112" r="4.5"/>
+<circle class="ah-a" cx="300" cy="78" r="4.5"/>
+<circle class="ah" cx="60" cy="146" r="4.5"/>
+<circle class="ah" cx="120" cy="180" r="4.5"/>
+<circle class="ah" cx="180" cy="146" r="4.5"/>
+<circle class="ft" cx="240" cy="112" r="7"/>
+<text x="250" y="128" text-anchor="start" dominant-baseline="central" class="sm tt">第一次碰到 x 軸</text>
+<text x="246" y="27" text-anchor="start" dominant-baseline="central" class="sm ta">原本：U D D U</text>
+<text x="246" y="163" text-anchor="start" dominant-baseline="central" class="sm">翻轉：D U U</text>
+</svg>
+<figcaption>實線是原本的路徑，虛線是翻過去的那一段：兩條在第一次碰到 x 軸的地方會合，之後完全一樣</figcaption>
+</figure>
+
 **為什麼一一對應**：
 
 - 翻過去：每條碰到 x 軸的路徑，都變成一條從 $A'$ 到 B 的路徑。
@@ -756,6 +837,97 @@ $$C_n=\binom{2n}{n}-\binom{2n}{n+1}=\frac{1}{n+1}\binom{2n}{n}$$
     - 一直領先：$35-21=$ **14**。
 
     公式版（ballot theorem）：$\frac{a-b}{a+b}\binom{a+b}{a}=\frac28\times56=14$ ✓。我用程式列出 $\binom83=56$ 種開票順序，甲一直領先的剛好 14 種。
+
+### 1.8 觀念小考 {#u1-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。這一組綜合 1.0～1.5 的基本模型。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** 10 個人選出 3 人當正、副會長和秘書（職位不同），以及選出 3 人小組（沒有職位），各有幾種？
+
+1. 120、720
+2. 720、120
+3. 1000、120
+4. 720、1000
+
+??? quiz "看解析"
+    **B**。有職位是排列 $P(10,3)=10\times9\times8=720$；沒職位是組合 $\binom{10}3=720\div3!=120$。C 的 1000 是可以重複選同一個人（$10^3$）。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-2.** $x_1+x_2+x_3+x_4=10$ 的非負整數解有幾組？
+
+1. $\binom{10}{3}=120$
+2. $\binom{14}{4}=1001$
+3. $\binom{13}{3}=286$
+4. $4^{10}$
+
+??? quiz "看解析"
+    **C**。10 顆星、3 根隔板（4 個變數之間要 3 根），13 個位置選 3 個放隔板。我用程式把所有解數過，是 286。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** $x_1+x_2+x_3=10$，每個 $x_i\ge2$ 的整數解有幾組？
+
+1. 15
+2. 66
+3. 28
+4. 36
+
+??? quiz "看解析"
+    **A**。先每個變數發 2 個：令 $y_i=x_i-2\ge0$，$y_1+y_2+y_3=4$，$\binom{4+2}{2}=15$。B 是沒有下限時的 $\binom{12}2$。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-4.** MISSISSIPPI 這 11 個字母有幾種排法？
+
+1. $11!$
+2. $\frac{11!}{4!\,4!}$
+3. $4^{11}$
+4. 34650
+
+??? quiz "看解析"
+    **D**。M 1 個、I 4 個、S 4 個、P 2 個：$\frac{11!}{1!\,4!\,4!\,2!}=34650$。B 忘了除 P 的 $2!$。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 6 個不同的球放進 3 個**相同**的箱子，每箱至少一個，有幾種？
+
+1. 540
+2. 90
+3. 729
+4. 10
+
+??? quiz "看解析"
+    **B**。箱子相同就是分組：$S(6,3)=90$。A 是箱子不同（onto）的 $3!\times90=540$；C 是箱子不同、可以空的 $3^6$；D 是球也相同的 $\binom52$。
+
+</div>
+
+**W-1.** 5 個男生、3 個女生排成一列，女生不能相鄰，有幾種排法？
+
+??? quiz "看參考答案"
+    - **先排男生（$5!=120$）**：男生排好後，中間和兩端共有 6 個空位：`_ 男 _ 男 _ 男 _ 男 _ 男 _`。
+    - **女生插進空位（$P(6,3)=120$）**：從 6 個空位選 3 個、女生是不同的人要排順序，一個空位最多放一個，就不會相鄰。
+    - **相乘（14400）**：$120\times120=14400$。
+
+    我用程式把 $8!$ 種排法全部檢查過，女生都不相鄰的剛好 14400 種。
+
+**W-2.** 從 (0, 0) 走到 (4, 3)，每步往右或往上一格。經過 (2, 1) 的路徑有幾條？全部有幾條？
+
+??? quiz "看參考答案"
+    - **(0,0) → (2,1)（3 條）**：3 步裡選 1 步往上，$\binom31$。
+    - **(2,1) → (4,3)（6 條）**：4 步裡選 2 步往上，$\binom42$。
+    - **經過 (2,1)（18 條）**：前後兩段各自選，相乘 $3\times6$。
+    - **全部（35 條）**：7 步裡選 3 步往上，$\binom73$。
 
 ### 單元 1 小考 {#u1-quiz}
 
