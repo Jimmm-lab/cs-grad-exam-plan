@@ -4349,6 +4349,99 @@ Grimaldi 的 FSM 是 Mealy 型：每條邊標「輸入／輸出」，輸出 1 �
 - 好的情況：(1,6)、(2,5)、(3,4)、(4,3)、(5,2)、(6,1)，共 6 種。
 - 機率 $\frac{6}{36}=\frac16$。
 
+<figure class="fig">
+<svg viewBox="0 0 360 252" role="img" aria-label="兩顆骰子的 36 種結果排成 6 乘 6 的表，列是第一顆、欄是第二顆。總和是 7 的 6 格排成一條斜線，機率 6/36。">
+<text x="124" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="100" y="66" text-anchor="end" dominant-baseline="central" class="sm mono">1</text>
+<text x="152" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="100" y="94" text-anchor="end" dominant-baseline="central" class="sm mono">2</text>
+<text x="180" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="100" y="122" text-anchor="end" dominant-baseline="central" class="sm mono">3</text>
+<text x="208" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<text x="100" y="150" text-anchor="end" dominant-baseline="central" class="sm mono">4</text>
+<text x="236" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<text x="100" y="178" text-anchor="end" dominant-baseline="central" class="sm mono">5</text>
+<text x="264" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<text x="100" y="206" text-anchor="end" dominant-baseline="central" class="sm mono">6</text>
+<rect class="box" x="110" y="52" width="28" height="28"/>
+<text x="124" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<rect class="box" x="138" y="52" width="28" height="28"/>
+<text x="152" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<rect class="box" x="166" y="52" width="28" height="28"/>
+<text x="180" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<rect class="box" x="194" y="52" width="28" height="28"/>
+<text x="208" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<rect class="box" x="222" y="52" width="28" height="28"/>
+<text x="236" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<rect class="fa" x="250" y="52" width="28" height="28"/>
+<text x="264" y="66" text-anchor="middle" dominant-baseline="central" class="sm mono ta">7</text>
+<rect class="box" x="110" y="80" width="28" height="28"/>
+<text x="124" y="94" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<rect class="box" x="138" y="80" width="28" height="28"/>
+<text x="152" y="94" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<rect class="box" x="166" y="80" width="28" height="28"/>
+<text x="180" y="94" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<rect class="box" x="194" y="80" width="28" height="28"/>
+<text x="208" y="94" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<rect class="fa" x="222" y="80" width="28" height="28"/>
+<text x="236" y="94" text-anchor="middle" dominant-baseline="central" class="sm mono ta">7</text>
+<rect class="box" x="250" y="80" width="28" height="28"/>
+<text x="264" y="94" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<rect class="box" x="110" y="108" width="28" height="28"/>
+<text x="124" y="122" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<rect class="box" x="138" y="108" width="28" height="28"/>
+<text x="152" y="122" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<rect class="box" x="166" y="108" width="28" height="28"/>
+<text x="180" y="122" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<rect class="fa" x="194" y="108" width="28" height="28"/>
+<text x="208" y="122" text-anchor="middle" dominant-baseline="central" class="sm mono ta">7</text>
+<rect class="box" x="222" y="108" width="28" height="28"/>
+<text x="236" y="122" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<rect class="box" x="250" y="108" width="28" height="28"/>
+<text x="264" y="122" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<rect class="box" x="110" y="136" width="28" height="28"/>
+<text x="124" y="150" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<rect class="box" x="138" y="136" width="28" height="28"/>
+<text x="152" y="150" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<rect class="fa" x="166" y="136" width="28" height="28"/>
+<text x="180" y="150" text-anchor="middle" dominant-baseline="central" class="sm mono ta">7</text>
+<rect class="box" x="194" y="136" width="28" height="28"/>
+<text x="208" y="150" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<rect class="box" x="222" y="136" width="28" height="28"/>
+<text x="236" y="150" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<rect class="box" x="250" y="136" width="28" height="28"/>
+<text x="264" y="150" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<rect class="box" x="110" y="164" width="28" height="28"/>
+<text x="124" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">6</text>
+<rect class="fa" x="138" y="164" width="28" height="28"/>
+<text x="152" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono ta">7</text>
+<rect class="box" x="166" y="164" width="28" height="28"/>
+<text x="180" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<rect class="box" x="194" y="164" width="28" height="28"/>
+<text x="208" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<rect class="box" x="222" y="164" width="28" height="28"/>
+<text x="236" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<rect class="box" x="250" y="164" width="28" height="28"/>
+<text x="264" y="178" text-anchor="middle" dominant-baseline="central" class="sm mono">11</text>
+<rect class="fa" x="110" y="192" width="28" height="28"/>
+<text x="124" y="206" text-anchor="middle" dominant-baseline="central" class="sm mono ta">7</text>
+<rect class="box" x="138" y="192" width="28" height="28"/>
+<text x="152" y="206" text-anchor="middle" dominant-baseline="central" class="sm mono">8</text>
+<rect class="box" x="166" y="192" width="28" height="28"/>
+<text x="180" y="206" text-anchor="middle" dominant-baseline="central" class="sm mono">9</text>
+<rect class="box" x="194" y="192" width="28" height="28"/>
+<text x="208" y="206" text-anchor="middle" dominant-baseline="central" class="sm mono">10</text>
+<rect class="box" x="222" y="192" width="28" height="28"/>
+<text x="236" y="206" text-anchor="middle" dominant-baseline="central" class="sm mono">11</text>
+<rect class="box" x="250" y="192" width="28" height="28"/>
+<text x="264" y="206" text-anchor="middle" dominant-baseline="central" class="sm mono">12</text>
+<text x="194" y="14" text-anchor="middle" dominant-baseline="central" class="sm">第二顆</text>
+<text x="76" y="136" text-anchor="end" dominant-baseline="central" class="sm">第一顆</text>
+<text x="194" y="240" text-anchor="middle" dominant-baseline="central" class="sm ta">總和 7：6 格 ÷ 36 格 ＝ 1/6</text>
+</svg>
+<figcaption>36 格每格一樣可能；格子裡寫的是總和，總和 7 的剛好是一條斜線</figcaption>
+</figure>
+
 **為什麼兩顆骰子長得一樣，還要分「第一顆」「第二顆」？** 因為 (3,4) 和 (4,3) 是兩種不同的結果，各有 $\frac1{36}$ 的機率。如果把它們當成同一種，各種情況就不再一樣可能，機率會算錯。所以機率題的分母，通常用「有順序、東西都不同」的方式數。
 
 #### 期望值：加權平均
@@ -4356,6 +4449,21 @@ Grimaldi 的 FSM 是 Mealy 型：每條邊標「輸入／輸出」，輸出 1 �
 擲一顆骰子的期望值 $=\frac{1+2+3+4+5+6}{6}=3.5$。
 
 **線性**：$E[X+Y]=E[X]+E[Y]$，就算 $X$、$Y$ 不獨立也成立。擲兩顆骰子總和的期望值直接是 $3.5+3.5=7$。
+
+#### 條件機率：已知某件事發生了
+
+$$P(A\mid B)=\frac{P(A\cap B)}{P(B)}$$
+
+意思是：知道 $B$ 發生了，就只在 $B$ 的那些情況裡面數。例：已知兩顆骰子總和是 8（5 種），其中第一顆是 3 的只有 (3,5)，所以機率是 $\frac15$，不是 $\frac16$。
+
+- **獨立**：$P(A\cap B)=P(A)\,P(B)$，也就是「知道 $B$ 發生，不會改變 $A$ 的機率」。
+- **Bayes**：反過來算 $P(B\mid A)=\dfrac{P(A\mid B)\,P(B)}{P(A)}$，分母把情況分開加：$P(A)=P(A\mid B)P(B)+P(A\mid\overline B)P(\overline B)$。
+
+#### 指示變數：期望值的捷徑
+
+想算「平均有幾個○○」，就替每一個可能的○○設一個**指示變數** $I_j$（發生是 1、沒發生是 0），$E[I_j]$ 就是它發生的機率。再用線性全部加起來，**不用管它們獨不獨立**。
+
+例：$n$ 封信隨機放進 $n$ 個信封，平均幾封放對？第 $j$ 封放對的機率是 $\frac1n$，共 $n$ 封：$n\times\frac1n=1$。不管 $n$ 多大，平均都是 1 封。
 
 #### 賭徒破產：用遞迴算期望值
 
@@ -4371,11 +4479,59 @@ $$E_k=1+\frac12E_{k-1}+\frac12E_{k+1},\quad E_0=E_N=0$$
 
 一般解是 $E_k=k(N-k)$，也就是**兩人錢數相乘**。
 
+<figure class="fig">
+<svg viewBox="0 0 360 150" role="img" aria-label="賭徒破產畫成一條線上的隨機漫步：位置是你的錢 0 到 5，每局往左或往右一步，機率各一半，碰到 0 或 5 就停。每個位置下面寫的是還要玩幾局的期望值：0、4、6、6、4、0，等於 k 乘以 5 減 k。">
+<line class="ln" x1="53" y1="60" x2="83" y2="60"/>
+<line class="ln" x1="109" y1="60" x2="139" y2="60"/>
+<line class="ln" x1="165" y1="60" x2="195" y2="60"/>
+<line class="ln" x1="221" y1="60" x2="251" y2="60"/>
+<line class="ln" x1="277" y1="60" x2="307" y2="60"/>
+<circle class="ft" cx="40" cy="60" r="13"/>
+<text x="40" y="60" text-anchor="middle" dominant-baseline="central" class="sm mono">0</text>
+<text x="40" y="94" text-anchor="middle" dominant-baseline="central" class="mono tt">0</text>
+<circle class="box" cx="96" cy="60" r="13"/>
+<text x="96" y="60" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
+<text x="96" y="94" text-anchor="middle" dominant-baseline="central" class="mono ta">4</text>
+<circle class="box" cx="152" cy="60" r="13"/>
+<text x="152" y="60" text-anchor="middle" dominant-baseline="central" class="sm mono">2</text>
+<text x="152" y="94" text-anchor="middle" dominant-baseline="central" class="mono ta">6</text>
+<circle class="box" cx="208" cy="60" r="13"/>
+<text x="208" y="60" text-anchor="middle" dominant-baseline="central" class="sm mono">3</text>
+<text x="208" y="94" text-anchor="middle" dominant-baseline="central" class="mono ta">6</text>
+<circle class="box" cx="264" cy="60" r="13"/>
+<text x="264" y="60" text-anchor="middle" dominant-baseline="central" class="sm mono">4</text>
+<text x="264" y="94" text-anchor="middle" dominant-baseline="central" class="mono ta">4</text>
+<circle class="ft" cx="320" cy="60" r="13"/>
+<text x="320" y="60" text-anchor="middle" dominant-baseline="central" class="sm mono">5</text>
+<text x="320" y="94" text-anchor="middle" dominant-baseline="central" class="mono tt">0</text>
+<path class="arw" d="M148,45 Q124,20 104.8,40.0"/>
+<polygon class="ah" points="100.0,45.0 102.0,37.2 107.7,42.7"/>
+<path class="arw" d="M156,45 Q180,20 199.2,40.0"/>
+<polygon class="ah" points="204.0,45.0 196.3,42.7 202.0,37.2"/>
+<text x="124" y="18" text-anchor="middle" dominant-baseline="central" class="sm">½</text>
+<text x="180" y="18" text-anchor="middle" dominant-baseline="central" class="sm">½</text>
+<text x="14" y="94" text-anchor="start" dominant-baseline="central" class="sm mono ta">E</text>
+<text x="180" y="134" text-anchor="middle" dominant-baseline="central" class="sm">碰到 0 或 5 就停；E = k(5 − k)</text>
+</svg>
+<figcaption>N＝5：位置是你的錢，每局往左或往右一步；中間最久（6 局），越靠近兩端越快結束</figcaption>
+</figure>
+
 **怎麼得到的**：把遞迴改寫成 $E_{k+1}-E_k=(E_k-E_{k-1})-2$：相鄰兩項的差每次少 2，所以 $E_k$ 是 $k$ 的二次式。又 $E_0=E_N=0$，二次式的兩個根是 0 和 $N$，所以 $E_k=c\,k(N-k)$。代回遞迴：
 
 $$1+\tfrac12c(k-1)(N-k+1)+\tfrac12c(k+1)(N-k-1)=1+c\,k(N-k)-c$$
 
 要等於 $c\,k(N-k)$，所以 $c=1$。
+
+!!! key "機率題要做什麼"
+    | 題目問 | 怎麼做 |
+    |---|---|
+    | 某件事的機率 | 好的個數 ÷ 全部個數；分母用「有順序、東西都不同」的方式數，每種才一樣可能 |
+    | 骰子總和、有上限的分配 | 變成整數解，用排容扣掉超過上限的（115 B1） |
+    | 已知某件事發生了 | 條件機率：只在已知的那些情況裡數 |
+    | 平均有幾個 | 指示變數 ＋ 期望值的線性 |
+    | 賭到一方輸光的期望局數 | $E_k=1+\frac12E_{k-1}+\frac12E_{k+1}$，答案是兩人錢數相乘 |
+
+    名詞對照：sample space（樣本空間）、conditional probability（條件機率）、independent（獨立）、expected value（期望值）、indicator variable（指示變數）、linearity of expectation（期望值的線性）。
 
 !!! read "還不懂？看別人怎麼講"
     - **中文文章**：中研院數學媒體[談賭徒輸光問題的文章](https://www.math.sinica.edu.tw/mathmedia/journals/4363)，把它看成有兩道吸收牆的隨機漫步；科學教育月刊〈[跌跌撞撞的機率](https://www.sec.ntnu.edu.tw/uploads/asset/data/6256414d381784d09345be0d/42%E8%B7%8C%E8%B7%8C%E6%92%9E%E6%92%9E%E7%9A%84%E6%A9%9F%E7%8E%87.pdf)〉用「下一步走到哪」建立遞迴，跟這節推 $E_k$ 的方法一樣。
@@ -4421,6 +4577,100 @@ $$1+\tfrac12c(k-1)(N-k+1)+\tfrac12c(k+1)(N-k-1)=1+c\,k(N-k)-c$$
     **答案**：$5\times5=25$。
 
     推導：令 $E_k$ 為一方有 $k$ 元時的期望局數，$E_k=1+\frac12E_{k-1}+\frac12E_{k+1}$，$E_0=E_{10}=0$，解得 $E_k=k(10-k)$，$E_5=25$。
+
+### 9.2 觀念小考 {#u9-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-1.** 擲兩顆骰子，至少一顆是 6 的機率？
+
+1. $\frac16$
+2. $\frac13$
+3. $\frac{11}{36}$
+4. $\frac{12}{36}$
+
+??? quiz "看解析"
+    **C**。反過來算：兩顆都不是 6 有 $5\times5=25$ 種，$1-\frac{25}{36}=\frac{11}{36}$。D 把 (6,6) 算了兩次（第一顆是 6 的 6 種 ＋ 第二顆是 6 的 6 種）。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-2.** 已知兩顆骰子的總和是 8，第一顆是 3 的機率？
+
+1. $\frac15$
+2. $\frac16$
+3. $\frac1{36}$
+4. $\frac5{36}$
+
+??? quiz "看解析"
+    **A**。總和是 8 的只有 5 種：(2,6)、(3,5)、(4,4)、(5,3)、(6,2)，其中第一顆是 3 的 1 種。已知條件把分母從 36 縮成 5。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-3.** 10 封信隨機放進 10 個信封，平均有幾封放對？
+
+1. 0
+2. 0.1
+3. 10
+4. 1
+
+??? quiz "看解析"
+    **D**。每一封放對的機率 $\frac1{10}$，10 封加起來 $10\times\frac1{10}=1$。我用程式把 4、5、6 封的所有放法都列出來平均過，都是 1。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-4.** 擲一顆公平的骰子，直到出現 6 為止，平均要擲幾次？
+
+1. 3.5
+2. 6
+3. 5
+4. 36
+
+??? quiz "看解析"
+    **B**。每次成功的機率 $p=\frac16$，平均要 $\frac1p=6$ 次。用遞迴想：$E=1+\frac56E$（擲一次，沒成功就重來），解得 $E=6$。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-5.** 兩人分別有 4 元和 6 元，每局公平地賭 1 元，直到一人輸光，期望局數是？
+
+1. 10
+2. 20
+3. 24
+4. 25
+
+??? quiz "看解析"
+    **C**。兩人錢數相乘：$4\times6=24$。D 是兩人各 5 元的答案。
+
+</div>
+
+**W-1.** 某種病的盛行率是 1%。檢驗時，有病的人 99% 會驗出陽性，沒病的人也有 5% 會驗出陽性。一個人驗出陽性，他真的有病的機率是多少？
+
+??? quiz "看參考答案"
+    令 $D$ ＝ 有病、$+$ ＝ 陽性。
+
+    - **陽性裡有病的（0.0099）**：$P(+\mid D)P(D)=0.99\times0.01$。
+    - **陽性裡沒病的（0.0495）**：$P(+\mid\overline D)P(\overline D)=0.05\times0.99$。
+    - **Bayes（$\frac16$）**：$P(D\mid+)=\dfrac{0.0099}{0.0099+0.0495}=\dfrac{0.0099}{0.0594}=\dfrac16\approx16.7\%$。
+
+    檢驗看起來很準，但病很少見，陽性的人大多是「沒病卻驗出陽性」的那 5%。
+
+**W-2.** 擲一枚公平的硬幣 10 次，平均會出現幾次「連續兩次正面」（相鄰的兩次都是正面，算一次；HHH 算兩次）？
+
+??? quiz "看參考答案"
+    相鄰的位置有 9 對：(1,2)、(2,3)、…、(9,10)。令 $I_j$ ＝ 第 $j$ 對都是正面，$E[I_j]=\frac14$。
+
+    $$E\Big[\sum_{j=1}^9I_j\Big]=9\times\frac14=\frac94=2.25$$
+
+    相鄰的兩對會共用一次（例如 (1,2) 和 (2,3)），所以它們不獨立，但期望值的線性不需要獨立。我用程式把 $2^{10}$ 種結果全部數過，平均剛好是 $\frac94$。
 
 ### 單元 9 小考 {#u9-quiz}
 
