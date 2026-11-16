@@ -4068,6 +4068,38 @@ $(\mathcal P(\{a,b,c\}),\subseteq)$：8 個子集合，A 被 B 蓋住 ⇔ B 比 
 | $s_0$ | → $s_1$ / 0 | → $s_0$ / 0 |
 | $s_1$ | → $s_1$ / 0 | → $s_0$ / **1**（剛好讀到 01） |
 
+畫成狀態圖，每條邊標「輸入／輸出」：
+
+<figure class="fig">
+<svg viewBox="0 0 360 196" role="img" aria-label="辨識「以 01 結尾」的機器：s0 讀 1 留在 s0、輸出 0；s0 讀 0 到 s1、輸出 0；s1 讀 0 留在 s1、輸出 0；s1 讀 1 回到 s0、輸出 1。">
+<circle class="box" cx="110" cy="110" r="20"/>
+<text x="110" y="110" text-anchor="middle" dominant-baseline="central" class="mono">s0</text>
+<line class="arw" x1="60" y1="110" x2="81.0" y2="110.0"/>
+<polygon class="ah" points="89.0,110.0 81.0,114.5 81.0,105.5"/>
+<circle class="box" cx="250" cy="110" r="20"/>
+<text x="250" y="110" text-anchor="middle" dominant-baseline="central" class="mono">s1</text>
+<path class="arw" d="M101,92 Q110,40 117.8,85.1"/>
+<polygon class="ah" points="119.0,92.0 113.9,85.8 121.7,84.4"/>
+<rect x="94" y="51.5" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="110" y="60" text-anchor="middle" dominant-baseline="central" class="sm mono">1/0</text>
+<path class="arw" d="M241,92 Q250,40 257.8,85.1"/>
+<polygon class="ah" points="259.0,92.0 253.9,85.8 261.7,84.4"/>
+<rect x="234" y="51.5" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="250" y="60" text-anchor="middle" dominant-baseline="central" class="sm mono">0/0</text>
+<path class="arw" d="M128.89,100.825 Q180,76 223.9,97.3"/>
+<polygon class="ah" points="231.1,100.8 221.9,101.4 225.9,93.3"/>
+<rect x="164" y="79.9125" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="180" y="88.4125" text-anchor="middle" dominant-baseline="central" class="sm mono">0/0</text>
+<path class="arw-a" d="M231.11,119.175 Q180,144 136.1,122.7"/>
+<polygon class="ah-a" points="128.9,119.2 138.1,118.6 134.1,126.7"/>
+<rect x="164" y="123.087" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="180" y="131.587" text-anchor="middle" dominant-baseline="central" class="sm mono ta">1/1</text>
+<text x="110" y="166" text-anchor="middle" dominant-baseline="central" class="sm">上一個不是 0</text>
+<text x="250" y="166" text-anchor="middle" dominant-baseline="central" class="sm">上一個是 0</text>
+</svg>
+<figcaption>只有 s1 讀到 1 的那條邊輸出 1：上一個是 0、這一個是 1，剛好是 01</figcaption>
+</figure>
+
 **第四步：用字串驗證。** 讀 1001：
 
 | 讀入 | 1 | 0 | 0 | 1 |
@@ -4080,6 +4112,61 @@ $(\mathcal P(\{a,b,c\}),\subseteq)$：8 個子集合，A 被 B 蓋住 ⇔ B 比 
 !!! trap "常卡住的地方"
     - 狀態數不是越多越好。先問「需要記住什麼」，記憶相同的情況就是同一個狀態。
     - 題目的語言先**用中文翻譯一遍**（例如「結尾是 11 或 01」＝「長度至少 2 且最後是 1」），常常會發現比看起來簡單。
+
+#### 字串有重疊時：讀完要退回哪裡？
+
+辨識「以 101 結尾」，狀態是「末尾吻合了 101 的前幾個字」。關鍵在**讀完 101 之後**：最後那個 1 剛好又是下一個 101 的開頭，所以不是回到 $s_0$，而是回到 $s_1$。
+
+<figure class="fig">
+<svg viewBox="0 0 360 204" role="img" aria-label="辨識「以 101 結尾」的機器，狀態是末尾吻合了 101 的前幾個字。s0 沒有吻合、s1 吻合 1、s2 吻合 10。s2 讀 1 輸出 1，而且剛讀到的 1 又是下一個 101 的開頭，所以回到 s1；s2 讀 0 回到 s0。">
+<circle class="box" cx="60" cy="104" r="20"/>
+<text x="60" y="104" text-anchor="middle" dominant-baseline="central" class="mono">s0</text>
+<circle class="box" cx="180" cy="104" r="20"/>
+<text x="180" y="104" text-anchor="middle" dominant-baseline="central" class="mono">s1</text>
+<circle class="box" cx="300" cy="104" r="20"/>
+<text x="300" y="104" text-anchor="middle" dominant-baseline="central" class="mono">s2</text>
+<line class="arw" x1="60" y1="154" x2="60.0" y2="133.0"/>
+<polygon class="ah" points="60.0,125.0 64.5,133.0 55.5,133.0"/>
+<path class="arw" d="M51,86 Q60,34 67.8,79.1"/>
+<polygon class="ah" points="69.0,86.0 63.9,79.8 71.7,78.4"/>
+<rect x="44" y="45.5" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="60" y="54" text-anchor="middle" dominant-baseline="central" class="sm mono">0/0</text>
+<path class="arw" d="M171,86 Q180,34 187.8,79.1"/>
+<polygon class="ah" points="189.0,86.0 183.9,79.8 191.7,78.4"/>
+<rect x="164" y="45.5" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="180" y="54" text-anchor="middle" dominant-baseline="central" class="sm mono">1/0</text>
+<path class="arw" d="M79.7164,96.7707 Q120,82 152.8,94.0"/>
+<polygon class="ah" points="160.3,96.8 151.2,98.2 154.3,89.8"/>
+<rect x="104" y="80.8853" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="120" y="89.3853" text-anchor="middle" dominant-baseline="central" class="sm mono">1/0</text>
+<path class="arw" d="M199.716,96.7707 Q240,82 272.8,94.0"/>
+<polygon class="ah" points="280.3,96.8 271.2,98.2 274.3,89.8"/>
+<rect x="224" y="80.8853" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="240" y="89.3853" text-anchor="middle" dominant-baseline="central" class="sm mono">0/0</text>
+<path class="arw-a" d="M280.284,111.229 Q240,126 207.2,114.0"/>
+<polygon class="ah-a" points="199.7,111.2 208.8,109.8 205.7,118.2"/>
+<rect x="224" y="110.115" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="240" y="118.615" text-anchor="middle" dominant-baseline="central" class="sm mono ta">1/1</text>
+<path class="arw" d="M281.861,114.581 Q180,174 85.0,118.6"/>
+<polygon class="ah" points="78.1,114.6 87.3,114.7 82.8,122.5"/>
+<rect x="164" y="135.791" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="180" y="144.291" text-anchor="middle" dominant-baseline="central" class="sm mono">0/0</text>
+<text x="180" y="192" text-anchor="middle" dominant-baseline="central" class="sm">末尾吻合：s0 沒有　s1「1」　s2「10」</text>
+</svg>
+<figcaption>s2 讀到 1 時輸出 1，但不回到起點：剛讀的 1 已經是下一個 101 的第一個字</figcaption>
+</figure>
+
+**退回規則**：吻合失敗（或剛好吻合完）時，看「目前讀到的末尾」，找出**最長的、同時也是 101 開頭**的那一段，退回那個狀態。例如在 $s_2$（末尾 10）讀 0，末尾變成 100，沒有任何一段是 101 的開頭 → $s_0$。
+
+讀 10101：$s_0\to s_1\to s_2\to s_1$（輸出 1）$\to s_2\to s_1$（輸出 1），輸出 **00101**：第 3 個字和第 5 個字都剛好讀完一個 101。我用程式把長度 10 以內的所有字串都跑過，輸出全部正確。
+
+!!! key "FSM 題怎麼做"
+    1. **先翻譯語言**：把集合的寫法翻成一句話（例如「結尾是 11 或 01」＝「長度至少 2、最後是 1」）。
+    2. **決定要記什麼**：每一種「需要記住的情況」是一個狀態；「以某字串結尾」就記「末尾吻合了前幾個字」。
+    3. **每個狀態、每個輸入都要有一條邊**，寫上「輸入／輸出」。吻合失敗時，退回「末尾裡最長、又是開頭的那一段」。
+    4. **拿幾個字串驗證**：包含會重疊的（例如 10101）和很短的（一個字）。
+
+    名詞對照：finite state machine（有限狀態機）、transition（轉移）、Mealy／Moore machine、accepting state（接受狀態）。
 
 !!! read "還不懂？看別人怎麼講"
     - **中文投影片**：中山資工編譯器課程的 [FSM 投影片](https://db.cse.nsysu.edu.tw/~changyi/slides/compiler-en/teacher/FSM.pdf)。它用「接受狀態」（雙圈）表示字串被接受，Grimaldi 和中山考題則用「輸出 1」表示，寫法不同，但**狀態要記住什麼**的設計方法完全一樣。
@@ -4101,6 +4188,14 @@ $(\mathcal P(\{a,b,c\}),\subseteq)$：8 個子集合，A 被 B 蓋住 ⇔ B 比 
 ### 8.1 考古題與重點整理 {#u8-1}
 
 Grimaldi 的 FSM 是 Mealy 型：每條邊標「輸入／輸出」，輸出 1 代表**讀完這個字元時，到目前為止的字串屬於該語言**。
+
+| | Mealy | Moore |
+|---|---|---|
+| 輸出跟著什麼 | 轉移（目前狀態 ＋ 這次的輸入），寫在邊上 | 狀態，寫在圓圈裡 |
+| 辨識字串時 | 讀最後一個字的那條邊輸出 1 | 停在接受狀態（雙圈）就算接受 |
+| 狀態數 | 通常比較少 | 可能多一些（輸出不同的狀態要分開） |
+
+中山考題（Grimaldi 的寫法）用 Mealy；編譯器、自動機課本常用接受狀態（DFA）。兩種設計狀態的方法一樣。
 
 !!! example "111 Q2（10%）：$I=O=\{0,1\}$，辨識 $\{0,1\}^*\{11\}\cup\{0,1\}^*\{01\}$"
     **先化簡語言**：結尾是 11 或 01 ＝ 長度至少 2 且最後一位是 1。
@@ -4130,6 +4225,106 @@ Grimaldi 的 FSM 是 Mealy 型：每條邊標「輸入／輸出」，輸出 1 �
     | $s_D$ | $s_E$/1 | $s_F$/0 |
     | $s_E$ | $s_E$/1 | $s_F$/0 |
     | $s_F$ | $s_D$/0 | $s_F$/0 |
+
+### 8.2 觀念小考 {#u8-concept}
+
+選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-1.** Mealy 型的機器辨識「以 0110 結尾」（輸出 1 表示到目前為止以 0110 結尾），最少要幾個狀態？
+
+1. 3
+2. 4
+3. 5
+4. 8
+
+??? quiz "看解析"
+    **B**。記住末尾吻合了 0110 的前 0、1、2、3 個字，共 4 個狀態。吻合完第 4 個字的那一刻，輸出寫在邊上，不用另一個狀態；而且讀完 0110 之後，末尾的 0 又是開頭，退回「吻合 1 個字」的狀態。
+
+</div>
+
+<div class="mcq" data-ans="4" markdown="1">
+
+**C-2.** Mealy 機器和 Moore 機器最主要的差別是？
+
+1. Mealy 沒有起始狀態
+2. Moore 不能有自己指向自己的邊
+3. 兩個完全一樣
+4. Mealy 的輸出跟著轉移（狀態 ＋ 輸入），Moore 的輸出只看狀態
+
+??? quiz "看解析"
+    **D**。Mealy 把輸出寫在邊上，Moore 寫在狀態裡。同一個語言，Moore 通常要多一些狀態。
+
+</div>
+
+<div class="mcq" data-ans="1" markdown="1">
+
+**C-3.** 用上面「以 101 結尾」的機器讀 10101，輸出是？
+
+1. 00101
+2. 00100
+3. 00111
+4. 10101
+
+??? quiz "看解析"
+    **A**。第 3 個字讀完 101 輸出 1，回到 $s_1$；再讀 0、1，第 5 個字又讀完一個 101。B 是讀完一次就回到 $s_0$ 的錯誤做法，漏掉了重疊。
+
+</div>
+
+<div class="mcq" data-ans="3" markdown="1">
+
+**C-4.** 辨識「1 的個數是偶數」的字串，最少要幾個狀態？
+
+1. 1
+2. 3
+3. 2
+4. 無限多個
+
+??? quiz "看解析"
+    **C**。只要記住「目前 1 的個數是奇數還是偶數」：兩個狀態，讀 1 就互換，讀 0 不動。
+
+</div>
+
+<div class="mcq" data-ans="2" markdown="1">
+
+**C-5.** 為什麼有限狀態機辨識不了「0 的個數等於 1 的個數」？
+
+1. 輸入的字串太長
+2. 要記住兩者差多少，差距可以任意大，有限個狀態記不住
+3. 只要兩個狀態就能辨識
+4. 因為輸出只有 0 和 1
+
+??? quiz "看解析"
+    **B**。差距 $0,1,2,\dots$ 每一種都要不同的狀態，狀態數會無限多。只要記得住「有限多種情況」的語言，才做得出有限狀態機。
+
+</div>
+
+**W-1.** 設計辨識「以 011 結尾」的 Mealy 機器，寫出轉移表，再讀 0011011，寫出輸出。
+
+??? quiz "看參考答案"
+    狀態：$s_0$ 沒有吻合、$s_1$ 末尾吻合「0」、$s_2$ 末尾吻合「01」。
+
+    | 狀態 | 讀 0 | 讀 1 |
+    |---|---|---|
+    | $s_0$ | → $s_1$ / 0 | → $s_0$ / 0 |
+    | $s_1$ | → $s_1$ / 0（00 的末尾還是 0） | → $s_2$ / 0 |
+    | $s_2$ | → $s_1$ / 0（010 的末尾是 0） | → $s_0$ / **1**（011 的末尾沒有 0 開頭的段） |
+
+    讀 0011011：$s_0\to s_1\to s_1\to s_2\to s_0$（1）$\to s_1\to s_2\to s_0$（1），輸出 **0001001**。我用程式跑過，結果一樣。
+
+**W-2.** 飲料 15 元，販賣機收 5 元和 10 元硬幣，投滿 15 元以上就出貨（多投的不找零，回到 0 元）。用狀態「目前投了多少錢」設計這台機器。
+
+??? quiz "看參考答案"
+    狀態 0、5、10 元三個（投滿就出貨歸零，不需要 15 這個狀態）：
+
+    | 狀態 | 投 5 元 | 投 10 元 |
+    |---|---|---|
+    | 0 元 | → 5 元 / 不出貨 | → 10 元 / 不出貨 |
+    | 5 元 | → 10 元 / 不出貨 | → 0 元 / **出貨** |
+    | 10 元 | → 0 元 / **出貨** | → 0 元 / **出貨**（多投 5 元不找） |
+
+    這就是 Mealy 機器：輸出（出不出貨）跟著「目前狀態 ＋ 這次投的硬幣」。
 
 ### 單元 8 小考 {#u8-quiz}
 

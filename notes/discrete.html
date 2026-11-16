@@ -5875,6 +5875,36 @@ window.MathJax = {
 </tr>
 </tbody>
 </table>
+<p>畫成狀態圖，每條邊標「輸入／輸出」：</p>
+<figure class="fig">
+<svg viewBox="0 0 360 196" role="img" aria-label="辨識「以 01 結尾」的機器：s0 讀 1 留在 s0、輸出 0；s0 讀 0 到 s1、輸出 0；s1 讀 0 留在 s1、輸出 0；s1 讀 1 回到 s0、輸出 1。">
+<circle class="box" cx="110" cy="110" r="20"/>
+<text x="110" y="110" text-anchor="middle" dominant-baseline="central" class="mono">s0</text>
+<line class="arw" x1="60" y1="110" x2="81.0" y2="110.0"/>
+<polygon class="ah" points="89.0,110.0 81.0,114.5 81.0,105.5"/>
+<circle class="box" cx="250" cy="110" r="20"/>
+<text x="250" y="110" text-anchor="middle" dominant-baseline="central" class="mono">s1</text>
+<path class="arw" d="M101,92 Q110,40 117.8,85.1"/>
+<polygon class="ah" points="119.0,92.0 113.9,85.8 121.7,84.4"/>
+<rect x="94" y="51.5" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="110" y="60" text-anchor="middle" dominant-baseline="central" class="sm mono">1/0</text>
+<path class="arw" d="M241,92 Q250,40 257.8,85.1"/>
+<polygon class="ah" points="259.0,92.0 253.9,85.8 261.7,84.4"/>
+<rect x="234" y="51.5" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="250" y="60" text-anchor="middle" dominant-baseline="central" class="sm mono">0/0</text>
+<path class="arw" d="M128.89,100.825 Q180,76 223.9,97.3"/>
+<polygon class="ah" points="231.1,100.8 221.9,101.4 225.9,93.3"/>
+<rect x="164" y="79.9125" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="180" y="88.4125" text-anchor="middle" dominant-baseline="central" class="sm mono">0/0</text>
+<path class="arw-a" d="M231.11,119.175 Q180,144 136.1,122.7"/>
+<polygon class="ah-a" points="128.9,119.2 138.1,118.6 134.1,126.7"/>
+<rect x="164" y="123.087" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="180" y="131.587" text-anchor="middle" dominant-baseline="central" class="sm mono ta">1/1</text>
+<text x="110" y="166" text-anchor="middle" dominant-baseline="central" class="sm">上一個不是 0</text>
+<text x="250" y="166" text-anchor="middle" dominant-baseline="central" class="sm">上一個是 0</text>
+</svg>
+<figcaption>只有 s1 讀到 1 的那條邊輸出 1：上一個是 0、這一個是 1，剛好是 01</figcaption>
+</figure>
 <p><strong>第四步：用字串驗證。</strong> 讀 1001：</p>
 <table>
 <thead>
@@ -5911,6 +5941,58 @@ window.MathJax = {
 <li>題目的語言先<strong>用中文翻譯一遍</strong>（例如「結尾是 11 或 01」＝「長度至少 2 且最後是 1」），常常會發現比看起來簡單。</li>
 </ul>
 </div>
+<h4 id="_68">字串有重疊時：讀完要退回哪裡？</h4>
+<p>辨識「以 101 結尾」，狀態是「末尾吻合了 101 的前幾個字」。關鍵在<strong>讀完 101 之後</strong>：最後那個 1 剛好又是下一個 101 的開頭，所以不是回到 <span class="arithmatex">\(s_0\)</span>，而是回到 <span class="arithmatex">\(s_1\)</span>。</p>
+<figure class="fig">
+<svg viewBox="0 0 360 204" role="img" aria-label="辨識「以 101 結尾」的機器，狀態是末尾吻合了 101 的前幾個字。s0 沒有吻合、s1 吻合 1、s2 吻合 10。s2 讀 1 輸出 1，而且剛讀到的 1 又是下一個 101 的開頭，所以回到 s1；s2 讀 0 回到 s0。">
+<circle class="box" cx="60" cy="104" r="20"/>
+<text x="60" y="104" text-anchor="middle" dominant-baseline="central" class="mono">s0</text>
+<circle class="box" cx="180" cy="104" r="20"/>
+<text x="180" y="104" text-anchor="middle" dominant-baseline="central" class="mono">s1</text>
+<circle class="box" cx="300" cy="104" r="20"/>
+<text x="300" y="104" text-anchor="middle" dominant-baseline="central" class="mono">s2</text>
+<line class="arw" x1="60" y1="154" x2="60.0" y2="133.0"/>
+<polygon class="ah" points="60.0,125.0 64.5,133.0 55.5,133.0"/>
+<path class="arw" d="M51,86 Q60,34 67.8,79.1"/>
+<polygon class="ah" points="69.0,86.0 63.9,79.8 71.7,78.4"/>
+<rect x="44" y="45.5" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="60" y="54" text-anchor="middle" dominant-baseline="central" class="sm mono">0/0</text>
+<path class="arw" d="M171,86 Q180,34 187.8,79.1"/>
+<polygon class="ah" points="189.0,86.0 183.9,79.8 191.7,78.4"/>
+<rect x="164" y="45.5" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="180" y="54" text-anchor="middle" dominant-baseline="central" class="sm mono">1/0</text>
+<path class="arw" d="M79.7164,96.7707 Q120,82 152.8,94.0"/>
+<polygon class="ah" points="160.3,96.8 151.2,98.2 154.3,89.8"/>
+<rect x="104" y="80.8853" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="120" y="89.3853" text-anchor="middle" dominant-baseline="central" class="sm mono">1/0</text>
+<path class="arw" d="M199.716,96.7707 Q240,82 272.8,94.0"/>
+<polygon class="ah" points="280.3,96.8 271.2,98.2 274.3,89.8"/>
+<rect x="224" y="80.8853" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="240" y="89.3853" text-anchor="middle" dominant-baseline="central" class="sm mono">0/0</text>
+<path class="arw-a" d="M280.284,111.229 Q240,126 207.2,114.0"/>
+<polygon class="ah-a" points="199.7,111.2 208.8,109.8 205.7,118.2"/>
+<rect x="224" y="110.115" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="240" y="118.615" text-anchor="middle" dominant-baseline="central" class="sm mono ta">1/1</text>
+<path class="arw" d="M281.861,114.581 Q180,174 85.0,118.6"/>
+<polygon class="ah" points="78.1,114.6 87.3,114.7 82.8,122.5"/>
+<rect x="164" y="135.791" width="32" height="17" rx="3" style="fill:var(--card)"/>
+<text x="180" y="144.291" text-anchor="middle" dominant-baseline="central" class="sm mono">0/0</text>
+<text x="180" y="192" text-anchor="middle" dominant-baseline="central" class="sm">末尾吻合：s0 沒有　s1「1」　s2「10」</text>
+</svg>
+<figcaption>s2 讀到 1 時輸出 1，但不回到起點：剛讀的 1 已經是下一個 101 的第一個字</figcaption>
+</figure>
+<p><strong>退回規則</strong>：吻合失敗（或剛好吻合完）時，看「目前讀到的末尾」，找出<strong>最長的、同時也是 101 開頭</strong>的那一段，退回那個狀態。例如在 <span class="arithmatex">\(s_2\)</span>（末尾 10）讀 0，末尾變成 100，沒有任何一段是 101 的開頭 → <span class="arithmatex">\(s_0\)</span>。</p>
+<p>讀 10101：<span class="arithmatex">\(s_0\to s_1\to s_2\to s_1\)</span>（輸出 1）<span class="arithmatex">\(\to s_2\to s_1\)</span>（輸出 1），輸出 <strong>00101</strong>：第 3 個字和第 5 個字都剛好讀完一個 101。我用程式把長度 10 以內的所有字串都跑過，輸出全部正確。</p>
+<div class="admonition key">
+<p class="admonition-title">FSM 題怎麼做</p>
+<ol>
+<li><strong>先翻譯語言</strong>：把集合的寫法翻成一句話（例如「結尾是 11 或 01」＝「長度至少 2、最後是 1」）。</li>
+<li><strong>決定要記什麼</strong>：每一種「需要記住的情況」是一個狀態；「以某字串結尾」就記「末尾吻合了前幾個字」。</li>
+<li><strong>每個狀態、每個輸入都要有一條邊</strong>，寫上「輸入／輸出」。吻合失敗時，退回「末尾裡最長、又是開頭的那一段」。</li>
+<li><strong>拿幾個字串驗證</strong>：包含會重疊的（例如 10101）和很短的（一個字）。</li>
+</ol>
+<p>名詞對照：finite state machine（有限狀態機）、transition（轉移）、Mealy／Moore machine、accepting state（接受狀態）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -5918,7 +6000,7 @@ window.MathJax = {
 <li><strong>中文筆記</strong>：〈<a href="https://shihlonchen.gitbooks.io/automata/content/dfa.html">DFA 確定有限自動機</a>〉：轉移表的寫法。</li>
 </ul>
 </div>
-<h4 id="_68">換你試試</h4>
+<h4 id="_69">換你試試</h4>
 <p><strong>T-1.</strong> 畫出辨識「以 11 結尾」的 FSM（輸入、輸出都是 {0,1}）。</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -5932,6 +6014,33 @@ window.MathJax = {
 </details>
 <h3 id="u8-1">8.1 考古題與重點整理</h3>
 <p>Grimaldi 的 FSM 是 Mealy 型：每條邊標「輸入／輸出」，輸出 1 代表<strong>讀完這個字元時，到目前為止的字串屬於該語言</strong>。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Mealy</th>
+<th>Moore</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>輸出跟著什麼</td>
+<td>轉移（目前狀態 ＋ 這次的輸入），寫在邊上</td>
+<td>狀態，寫在圓圈裡</td>
+</tr>
+<tr>
+<td>辨識字串時</td>
+<td>讀最後一個字的那條邊輸出 1</td>
+<td>停在接受狀態（雙圈）就算接受</td>
+</tr>
+<tr>
+<td>狀態數</td>
+<td>通常比較少</td>
+<td>可能多一些（輸出不同的狀態要分開）</td>
+</tr>
+</tbody>
+</table>
+<p>中山考題（Grimaldi 的寫法）用 Mealy；編譯器、自動機課本常用接受狀態（DFA）。兩種設計狀態的方法一樣。</p>
 <div class="admonition example">
 <p class="admonition-title">111 Q2（10%）：<span class="arithmatex">\(I=O=\{0,1\}\)</span>，辨識 <span class="arithmatex">\(\{0,1\}^*\{11\}\cup\{0,1\}^*\{01\}\)</span></p>
 <p><strong>先化簡語言</strong>：結尾是 11 或 01 ＝ 長度至少 2 且最後一位是 1。</p>
@@ -6014,6 +6123,137 @@ window.MathJax = {
 </tbody>
 </table>
 </div>
+<h3 id="u8-concept">8.2 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> Mealy 型的機器辨識「以 0110 結尾」（輸出 1 表示到目前為止以 0110 結尾），最少要幾個狀態？</p>
+<ol>
+<li>3</li>
+<li>4</li>
+<li>5</li>
+<li>8</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。記住末尾吻合了 0110 的前 0、1、2、3 個字，共 4 個狀態。吻合完第 4 個字的那一刻，輸出寫在邊上，不用另一個狀態；而且讀完 0110 之後，末尾的 0 又是開頭，退回「吻合 1 個字」的狀態。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-2.</strong> Mealy 機器和 Moore 機器最主要的差別是？</p>
+<ol>
+<li>Mealy 沒有起始狀態</li>
+<li>Moore 不能有自己指向自己的邊</li>
+<li>兩個完全一樣</li>
+<li>Mealy 的輸出跟著轉移（狀態 ＋ 輸入），Moore 的輸出只看狀態</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。Mealy 把輸出寫在邊上，Moore 寫在狀態裡。同一個語言，Moore 通常要多一些狀態。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> 用上面「以 101 結尾」的機器讀 10101，輸出是？</p>
+<ol>
+<li>00101</li>
+<li>00100</li>
+<li>00111</li>
+<li>10101</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。第 3 個字讀完 101 輸出 1，回到 <span class="arithmatex">\(s_1\)</span>；再讀 0、1，第 5 個字又讀完一個 101。B 是讀完一次就回到 <span class="arithmatex">\(s_0\)</span> 的錯誤做法，漏掉了重疊。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-4.</strong> 辨識「1 的個數是偶數」的字串，最少要幾個狀態？</p>
+<ol>
+<li>1</li>
+<li>3</li>
+<li>2</li>
+<li>無限多個</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。只要記住「目前 1 的個數是奇數還是偶數」：兩個狀態，讀 1 就互換，讀 0 不動。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> 為什麼有限狀態機辨識不了「0 的個數等於 1 的個數」？</p>
+<ol>
+<li>輸入的字串太長</li>
+<li>要記住兩者差多少，差距可以任意大，有限個狀態記不住</li>
+<li>只要兩個狀態就能辨識</li>
+<li>因為輸出只有 0 和 1</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。差距 <span class="arithmatex">\(0,1,2,\dots\)</span> 每一種都要不同的狀態，狀態數會無限多。只要記得住「有限多種情況」的語言，才做得出有限狀態機。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> 設計辨識「以 011 結尾」的 Mealy 機器，寫出轉移表，再讀 0011011，寫出輸出。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>狀態：<span class="arithmatex">\(s_0\)</span> 沒有吻合、<span class="arithmatex">\(s_1\)</span> 末尾吻合「0」、<span class="arithmatex">\(s_2\)</span> 末尾吻合「01」。</p>
+<table>
+<thead>
+<tr>
+<th>狀態</th>
+<th>讀 0</th>
+<th>讀 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(s_0\)</span></td>
+<td>→ <span class="arithmatex">\(s_1\)</span> / 0</td>
+<td>→ <span class="arithmatex">\(s_0\)</span> / 0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_1\)</span></td>
+<td>→ <span class="arithmatex">\(s_1\)</span> / 0（00 的末尾還是 0）</td>
+<td>→ <span class="arithmatex">\(s_2\)</span> / 0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_2\)</span></td>
+<td>→ <span class="arithmatex">\(s_1\)</span> / 0（010 的末尾是 0）</td>
+<td>→ <span class="arithmatex">\(s_0\)</span> / <strong>1</strong>（011 的末尾沒有 0 開頭的段）</td>
+</tr>
+</tbody>
+</table>
+<p>讀 0011011：<span class="arithmatex">\(s_0\to s_1\to s_1\to s_2\to s_0\)</span>（1）<span class="arithmatex">\(\to s_1\to s_2\to s_0\)</span>（1），輸出 <strong>0001001</strong>。我用程式跑過，結果一樣。</p>
+</details>
+<p><strong>W-2.</strong> 飲料 15 元，販賣機收 5 元和 10 元硬幣，投滿 15 元以上就出貨（多投的不找零，回到 0 元）。用狀態「目前投了多少錢」設計這台機器。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>狀態 0、5、10 元三個（投滿就出貨歸零，不需要 15 這個狀態）：</p>
+<table>
+<thead>
+<tr>
+<th>狀態</th>
+<th>投 5 元</th>
+<th>投 10 元</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 元</td>
+<td>→ 5 元 / 不出貨</td>
+<td>→ 10 元 / 不出貨</td>
+</tr>
+<tr>
+<td>5 元</td>
+<td>→ 10 元 / 不出貨</td>
+<td>→ 0 元 / <strong>出貨</strong></td>
+</tr>
+<tr>
+<td>10 元</td>
+<td>→ 0 元 / <strong>出貨</strong></td>
+<td>→ 0 元 / <strong>出貨</strong>（多投 5 元不找）</td>
+</tr>
+</tbody>
+</table>
+<p>這就是 Mealy 機器：輸出（出不出貨）跟著「目前狀態 ＋ 這次投的硬幣」。</p>
+</details>
 <h3 id="u8-quiz">單元 8 小考</h3>
 <p><strong>8-1.</strong> 畫出辨識「以 00 結尾」字串的 FSM（<span class="arithmatex">\(I=O=\{0,1\}\)</span>）。</p>
 <details class="quiz">
@@ -6030,7 +6270,7 @@ window.MathJax = {
 <p>離散的機率題就是「好的個數 ÷ 全部個數」，難的是分子，分子用前面的計數和生成函數算。</p>
 </div>
 <h3 id="u9-0">9.0 觀念課：機率就是兩次計數</h3>
-<h4 id="_69">機率 ＝ 好的情況 ÷ 全部情況</h4>
+<h4 id="_70">機率 ＝ 好的情況 ÷ 全部情況</h4>
 <p>前提是每種情況<strong>一樣可能</strong>。擲兩顆骰子，總和是 7 的機率：</p>
 <ul>
 <li>全部情況：<span class="arithmatex">\((\text{第一顆},\text{第二顆})\)</span> 共 <span class="arithmatex">\(6\times6=36\)</span> 種，每種機率相同。</li>
@@ -6038,10 +6278,10 @@ window.MathJax = {
 <li>機率 <span class="arithmatex">\(\frac{6}{36}=\frac16\)</span>。</li>
 </ul>
 <p><strong>為什麼兩顆骰子長得一樣，還要分「第一顆」「第二顆」？</strong> 因為 (3,4) 和 (4,3) 是兩種不同的結果，各有 <span class="arithmatex">\(\frac1{36}\)</span> 的機率。如果把它們當成同一種，各種情況就不再一樣可能，機率會算錯。所以機率題的分母，通常用「有順序、東西都不同」的方式數。</p>
-<h4 id="_70">期望值：加權平均</h4>
+<h4 id="_71">期望值：加權平均</h4>
 <p>擲一顆骰子的期望值 <span class="arithmatex">\(=\frac{1+2+3+4+5+6}{6}=3.5\)</span>。</p>
 <p><strong>線性</strong>：<span class="arithmatex">\(E[X+Y]=E[X]+E[Y]\)</span>，就算 <span class="arithmatex">\(X\)</span>、<span class="arithmatex">\(Y\)</span> 不獨立也成立。擲兩顆骰子總和的期望值直接是 <span class="arithmatex">\(3.5+3.5=7\)</span>。</p>
-<h4 id="_71">賭徒破產：用遞迴算期望值</h4>
+<h4 id="_72">賭徒破產：用遞迴算期望值</h4>
 <p>一共 <span class="arithmatex">\(N\)</span> 元，你有 <span class="arithmatex">\(k\)</span> 元，每局公平地贏 1 元或輸 1 元，到 0 或 <span class="arithmatex">\(N\)</span> 停止。令 <span class="arithmatex">\(E_k\)</span> 為還要玩幾局的期望值：</p>
 <div class="arithmatex">\[E_k=1+\frac12E_{k-1}+\frac12E_{k+1},\quad E_0=E_N=0\]</div>
 <p>意思是：先玩 1 局，之後一半機會變成 <span class="arithmatex">\(k-1\)</span> 元、一半變成 <span class="arithmatex">\(k+1\)</span> 元。</p>
@@ -6058,7 +6298,7 @@ window.MathJax = {
 <li><strong>英文課本</strong>：<a href="https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-spring-2015/">MIT 6.042J</a> 的機率章節（免費 PDF）。</li>
 </ul>
 </div>
-<h4 id="_72">換你試試</h4>
+<h4 id="_73">換你試試</h4>
 <p><strong>T-1.</strong> 擲兩顆骰子，總和是 8 的機率？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -6120,7 +6360,7 @@ window.MathJax = {
 <p>111–115 年幾乎沒考圖論，但 100、101、104、105、106 年都有（106 年一題 30%），而且<strong>幾乎都是證明題</strong>。先背熟名詞、握手定理、Euler 公式，再學三種證明套路：看最長的路徑、數度數、反證法。</p>
 </div>
 <h3 id="u10-0">10.0 觀念課：點和線</h3>
-<h4 id="_73">基本名詞</h4>
+<h4 id="_74">基本名詞</h4>
 <table>
 <thead>
 <tr>
@@ -6207,7 +6447,7 @@ window.MathJax = {
 </tbody>
 </table>
 <p><strong>補圖（complement）<span class="arithmatex">\(\bar G\)</span></strong>：同樣的點，原本沒有邊的地方畫上邊、原本有邊的拿掉。所以 <span class="arithmatex">\(|E(G)|+|E(\bar G)|=\binom n2\)</span>。</p>
-<h4 id="_74">握手定理：度數加起來是邊數的兩倍</h4>
+<h4 id="_75">握手定理：度數加起來是邊數的兩倍</h4>
 <div class="arithmatex">\[\sum_{v\in V}\deg(v)=2|E|\]</div>
 <p><strong>為什麼</strong>：一群人握手，每握一次手，兩個人各算一次。每條邊有兩個端點，算度數時被兩端各算一次。</p>
 <p><strong>推論：度數是奇數的點一定有偶數個</strong>。度數總和是偶數，奇數要成對出現加起來才會是偶數。</p>
@@ -6217,14 +6457,14 @@ window.MathJax = {
 <li><strong>連通、沒有環、n−1 條邊</strong>：三個條件任兩個成立，第三個就成立。</li>
 <li>任兩點之間<strong>剛好一條</strong>路徑；拿掉任何一條邊就不連通；加上任何一條邊就有環。</li>
 </ul>
-<h4 id="_75">證明的三種套路</h4>
+<h4 id="_76">證明的三種套路</h4>
 <ol>
 <li><strong>看最長的路徑</strong>：最長路徑的端點，鄰居一定都在這條路徑上，不然路徑還可以再延長。（100 Q6、101 Q4）</li>
 <li><strong>數度數</strong>：握手定理加上不等式。（100 Q6 的第二種證法）</li>
 <li><strong>反證法</strong>：假設不連通（或兩個都是平面圖），算出矛盾。（104 Q6、100 Q4）</li>
 </ol>
 <p>鴿籠也常出現：度數的可能值比點數少，就有兩點度數一樣（101 Q3）。</p>
-<h4 id="_76">換你試試</h4>
+<h4 id="_77">換你試試</h4>
 <p><strong>T-1.</strong> 一個圖有 5 個點，度數分別是 3、3、2、2、1，畫得出來嗎？</p>
 <details class="quiz">
 <summary>看答案</summary>
@@ -6453,7 +6693,7 @@ window.MathJax = {
 </tbody>
 </table>
 <p>再加上<strong>交換律</strong>（<span class="arithmatex">\(a*b=b*a\)</span>），叫<strong>交換群</strong>（commutative group，又叫 abelian group）。</p>
-<h4 id="_77">兩個最常考的群</h4>
+<h4 id="_78">兩個最常考的群</h4>
 <table>
 <thead>
 <tr>
@@ -6513,18 +6753,18 @@ window.MathJax = {
 <li>如果 <span class="arithmatex">\(\gcd(a,n)=1\)</span>，把 e 換成 <span class="arithmatex">\(e\bmod\varphi(n)\)</span>。</li>
 <li>剩下的用<strong>重複平方</strong>：算 <span class="arithmatex">\(a^2, a^4, a^8,\dots\)</span>，再把 e 拆成 2 的次方相加。</li>
 </ol>
-<h4 id="_78">同態與同構</h4>
+<h4 id="_79">同態與同構</h4>
 <ul>
 <li><strong>同態</strong>（homomorphism）<span class="arithmatex">\(f:G\to H\)</span>：<span class="arithmatex">\(f(a*b)=f(a)\circ f(b)\)</span>，運算的結果先算再對應、先對應再算都一樣。所以 <span class="arithmatex">\(f(e_G)=e_H\)</span>、<span class="arithmatex">\(f(a^k)=f(a)^k\)</span>。</li>
 <li><strong>同構</strong>（isomorphism）：一對一而且映成的同態。兩個群同構，就是「同一個群換了名字」。</li>
 </ul>
-<h4 id="_79">環與體</h4>
+<h4 id="_80">環與體</h4>
 <ul>
 <li><strong>環</strong>（ring）<span class="arithmatex">\((R,+,\cdot)\)</span>：<span class="arithmatex">\((R,+)\)</span> 是交換群，乘法有結合律，而且有分配律。例：整數 <span class="arithmatex">\(\mathbb Z\)</span>、<span class="arithmatex">\(\mathbb Z_n\)</span>。</li>
 <li><strong>整環</strong>（integral domain）：有乘法單位 1 的交換環，而且<strong>沒有零因子</strong>（<span class="arithmatex">\(ab=0\)</span> 就一定 <span class="arithmatex">\(a=0\)</span> 或 <span class="arithmatex">\(b=0\)</span>）。<span class="arithmatex">\(\mathbb Z_6\)</span> 不是：<span class="arithmatex">\(2\cdot3=0\)</span>。</li>
 <li><strong>體</strong>（field）：每個不是 0 的元素都有乘法反元素。例：有理數 <span class="arithmatex">\(\mathbb Q\)</span>、<span class="arithmatex">\(\mathbb Z_p\)</span>（p 是質數）。<span class="arithmatex">\(\mathbb Z\)</span> 是整環但不是體（2 沒有整數的倒數）。</li>
 </ul>
-<h4 id="_80">換你試試</h4>
+<h4 id="_81">換你試試</h4>
 <p><strong>T-1.</strong> <span class="arithmatex">\((\mathbb Z_{12},+)\)</span> 的生成元有哪些？</p>
 <details class="quiz">
 <summary>看答案</summary>
