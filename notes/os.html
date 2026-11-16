@@ -4672,6 +4672,42 @@ signal(empty);</code></pre>
 <li>照<strong>欄</strong>存（每個檔案記錄誰能用它）→ <strong>access control list（ACL）</strong></li>
 <li>照<strong>列</strong>存（每個使用者帶著自己能用什麼）→ <strong>capability list</strong></li>
 </ul>
+<figure class="fig">
+<svg viewBox="0 0 360 196" role="img" aria-label="存取矩陣：列是 Alice、Bob、Carol，欄是 file1、file2、printer。把 file1 那一欄存起來，就是 file1 的 ACL；把 Alice 那一列存起來，就是 Alice 的 capability list。">
+<text x="137" y="28" text-anchor="middle" dominant-baseline="central" class="sm mono">file1</text>
+<text x="219" y="28" text-anchor="middle" dominant-baseline="central" class="sm mono">file2</text>
+<text x="301" y="28" text-anchor="middle" dominant-baseline="central" class="sm mono">printer</text>
+<text x="88" y="56" text-anchor="end" dominant-baseline="central" class="sm mono">Alice</text>
+<rect class="box" x="96" y="40" width="82" height="32"/>
+<rect class="box" x="178" y="40" width="82" height="32"/>
+<rect class="box" x="260" y="40" width="82" height="32"/>
+<text x="88" y="88" text-anchor="end" dominant-baseline="central" class="sm mono">Bob</text>
+<rect class="box" x="96" y="72" width="82" height="32"/>
+<rect class="box" x="178" y="72" width="82" height="32"/>
+<rect class="box" x="260" y="72" width="82" height="32"/>
+<text x="88" y="120" text-anchor="end" dominant-baseline="central" class="sm mono">Carol</text>
+<rect class="box" x="96" y="104" width="82" height="32"/>
+<rect class="box" x="178" y="104" width="82" height="32"/>
+<rect class="box" x="260" y="104" width="82" height="32"/>
+<rect class="fb" x="96" y="40" width="82" height="96"/>
+<rect class="fc" x="96" y="40" width="246" height="32"/>
+<text x="137" y="56" text-anchor="middle" dominant-baseline="central" class="sm">read, write</text>
+<text x="219" y="56" text-anchor="middle" dominant-baseline="central" class="sm">read</text>
+<text x="301" y="56" text-anchor="middle" dominant-baseline="central" class="sm">print</text>
+<text x="137" y="88" text-anchor="middle" dominant-baseline="central" class="sm">read</text>
+<text x="219" y="88" text-anchor="middle" dominant-baseline="central" class="sm">—</text>
+<text x="301" y="88" text-anchor="middle" dominant-baseline="central" class="sm">print</text>
+<text x="137" y="120" text-anchor="middle" dominant-baseline="central" class="sm">—</text>
+<text x="219" y="120" text-anchor="middle" dominant-baseline="central" class="sm">read, write</text>
+<text x="301" y="120" text-anchor="middle" dominant-baseline="central" class="sm">—</text>
+<text x="137" y="154" text-anchor="middle" dominant-baseline="central" class="sm tb">一欄 → ACL</text>
+<text x="338" y="154" text-anchor="end" dominant-baseline="central" class="sm tc">一列 → capability list</text>
+<text x="180" y="180" text-anchor="middle" dominant-baseline="central" class="sm">ACL 跟著檔案；capability 跟著使用者</text>
+</svg>
+<figcaption>同一張矩陣，直的切下來是 ACL，橫的切下來是 capability list</figcaption>
+</figure>
+
+<p><strong>哪一種比較方便</strong>：要知道「這個檔案誰能用」，或要撤銷某個檔案的所有權限，ACL 一次看完；要知道「這個人能用哪些東西」，capability list 一次看完。實際的系統常常兩個混著用。</p>
 <h4 id="_41">惡意程式的名詞</h4>
 <table>
 <thead>
@@ -4704,6 +4740,44 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p>這一單元的分數幾乎都在<strong>名詞填空</strong>，看懂意思後，把英文名詞做成閃卡背起來。</p>
+<div class="admonition key">
+<p class="admonition-title">保護與安全題要做什麼</p>
+<table>
+<thead>
+<tr>
+<th>題目問</th>
+<th>怎麼答</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>破壞了 CIA 的哪一項</td>
+<td>被讀到 → confidentiality；被改 → integrity；用不了 → availability</td>
+</tr>
+<tr>
+<td>ACL 和 capability</td>
+<td>ACL 是存取矩陣的一欄（跟著物件）；capability 是一列（跟著使用者）</td>
+</tr>
+<tr>
+<td>最小權限、need-to-know</td>
+<td>前者講權限（privilege），後者講資源（object）（<a href="#u6-more">6.2</a>）</td>
+</tr>
+<tr>
+<td>MAC 和數位簽章</td>
+<td>MAC 用共用金鑰，不能防否認；簽章用私鑰簽、公鑰驗，能防否認</td>
+</tr>
+<tr>
+<td>惡意程式名詞</td>
+<td>virus 要寄生、worm 自己散播、trojan 偽裝、logic bomb 條件成立才發作</td>
+</tr>
+<tr>
+<td>Lamport 時鐘</td>
+<td>每個事件加 1；收訊息取 max(自己的, 訊息的) ＋ 1（<a href="#u6-dist">6.3</a>）</td>
+</tr>
+</tbody>
+</table>
+<p>名詞對照：confidentiality／integrity／availability（機密性／完整性／可用性）、access matrix（存取矩陣）、access control list（存取控制串列）、capability list（能力串列）、nonrepudiation（不可否認性）。</p>
+</div>
 <div class="admonition read">
 <p class="admonition-title">還不懂？看別人怎麼講</p>
 <ul>
@@ -5077,6 +5151,40 @@ signal(empty);</code></pre>
 </tr>
 </tbody>
 </table>
+<figure class="fig">
+<svg viewBox="0 0 360 206" role="img" aria-label="三條橫線是 P1、P2、P3 的時間軸，往右是時間。P1 有 a、b、c，b 送訊息給 P2 的 d；P2 有 d、e，e 送訊息給 P3 的 g；P3 有 f、g。時間戳記：a 1、b 2、c 3、d 3、e 4、f 1、g 5。">
+<text x="18" y="44" text-anchor="middle" dominant-baseline="central" class="sm mono">P1</text>
+<line class="arw" x1="38" y1="44" x2="338.0" y2="44.0"/>
+<polygon class="ah" points="346.0,44.0 338.0,48.5 338.0,39.5"/>
+<text x="18" y="104" text-anchor="middle" dominant-baseline="central" class="sm mono">P2</text>
+<line class="arw" x1="38" y1="104" x2="338.0" y2="104.0"/>
+<polygon class="ah" points="346.0,104.0 338.0,108.5 338.0,99.5"/>
+<text x="18" y="164" text-anchor="middle" dominant-baseline="central" class="sm mono">P3</text>
+<line class="arw" x1="38" y1="164" x2="338.0" y2="164.0"/>
+<polygon class="ah" points="346.0,164.0 338.0,168.5 338.0,159.5"/>
+<line class="arw-a" x1="134.44" y1="48.036" x2="185.6" y2="94.6"/>
+<polygon class="ah-a" points="191.6,100.0 182.6,97.9 188.7,91.3"/>
+<line class="arw-a" x1="266.094" y1="108.386" x2="308.4" y2="153.8"/>
+<polygon class="ah-a" points="313.9,159.6 305.2,156.8 311.7,150.7"/>
+<circle class="ah" cx="70" cy="44" r="5"/>
+<text x="70" y="30" text-anchor="middle" dominant-baseline="central" class="sm mono">a : 1</text>
+<circle class="ah" cx="130" cy="44" r="5"/>
+<text x="130" y="30" text-anchor="middle" dominant-baseline="central" class="sm mono">b : 2</text>
+<circle class="ah" cx="250" cy="44" r="5"/>
+<text x="250" y="30" text-anchor="middle" dominant-baseline="central" class="sm mono">c : 3</text>
+<circle class="ah" cx="196" cy="104" r="5"/>
+<text x="196" y="122" text-anchor="middle" dominant-baseline="central" class="sm mono">d : 3</text>
+<circle class="ah" cx="262" cy="104" r="5"/>
+<text x="262" y="90" text-anchor="middle" dominant-baseline="central" class="sm mono">e : 4</text>
+<circle class="ah" cx="92" cy="164" r="5"/>
+<text x="92" y="150" text-anchor="middle" dominant-baseline="central" class="sm mono">f : 1</text>
+<circle class="ah" cx="318" cy="164" r="5"/>
+<text x="318" y="182" text-anchor="middle" dominant-baseline="central" class="sm mono">g : 5</text>
+<text x="178" y="198" text-anchor="middle" dominant-baseline="central" class="sm ta">收訊息：max(自己的, 訊息的) ＋ 1</text>
+</svg>
+<figcaption>畫成時空圖：每條橫線是一個 process，斜的箭頭是訊息；沿著箭頭和橫線走得到的，才有先後關係</figcaption>
+</figure>
+
 <p><strong>保證</strong>：A → B 就一定 LC(A) &lt; LC(B)。反過來不一定：c（3）和 f（1）是同時發生的，數字大小沒有意義。要排出全部事件的順序（total order），戳記一樣時用 process 編號決定。</p>
 <div class="admonition example">
 <p class="admonition-title">101 Q6（10%）：區域網路裡的電腦可能同時傳資料，造成嚴重的碰撞。說明 CSMA/CD 和 token passing 怎麼運作</p>
@@ -5179,6 +5287,128 @@ signal(empty);</code></pre>
 </tbody>
 </table>
 <p>w 的戳記 3 比 y 的 2 大，符合「送一定比收早」。u、v 和 x、y 之間沒有訊息連接，是同時發生的。</p>
+</details>
+<h3 id="u6-concept">6.4 觀念小考</h3>
+<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<div class="mcq" data-ans="2">
+<p><strong>C-1.</strong> 選課系統被大量假請求灌爆，正常的學生都連不上。破壞的是 CIA 的哪一項？</p>
+<ol>
+<li>confidentiality</li>
+<li>availability</li>
+<li>integrity</li>
+<li>都沒有</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。資料沒被偷看也沒被改，但合法的使用者用不了服務，這是 availability。這種攻擊叫 DoS（denial of service）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4">
+<p><strong>C-2.</strong> 把存取矩陣「照欄存」，每個物件記錄誰能用它、能做什麼，這叫什麼？</p>
+<ol>
+<li>capability list</li>
+<li>protection domain</li>
+<li>role</li>
+<li>access control list</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。一欄就是一個物件，記在物件旁邊就是 ACL。照列存（跟著使用者）才是 capability list。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1">
+<p><strong>C-3.</strong> 想知道「Alice 能存取哪些東西」，哪一種存法最快？</p>
+<ol>
+<li>capability list</li>
+<li>ACL</li>
+<li>兩種一樣快</li>
+<li>兩種都查不到</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。Alice 的那一列就是她的 capability list。用 ACL 的話，要把每個物件的名單都翻一遍。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3">
+<p><strong>C-4.</strong> 數位簽章能做到、MAC 做不到的是？</p>
+<ol>
+<li>檢查訊息有沒有被改（integrity）</li>
+<li>讓別人看不到訊息內容（confidentiality）</li>
+<li>送的人事後不能否認（nonrepudiation）</li>
+<li>讓服務不會中斷（availability）</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。MAC 的金鑰雙方都有，收的人自己也算得出同一個 MAC，所以無法證明是誰送的。簽章只有持有私鑰的人做得出來。A 兩個都做得到；B 要靠加密，兩個都不是在做這件事。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2">
+<p><strong>C-5.</strong> Lamport 時鐘：P2 的計數器現在是 3，收到一個戳記是 7 的訊息。收訊息這個事件的戳記是？</p>
+<ol>
+<li>4</li>
+<li>8</li>
+<li>7</li>
+<li>10</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(\max(3,7)+1=8\)</span>，保證收的事件比送的事件（7）晚。A 是忘了跟訊息的戳記比。</p>
+</details>
+</div>
+<p><strong>W-1.</strong> P1 依序有 a、b（送訊息 m1 給 P2）、c（收到 P2 的 m2）；P2 依序有 d、e（收到 m1）、f（送 m2 給 P1）。寫出每個事件的 Lamport 時間戳記。a 和 d 誰先發生？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<table>
+<thead>
+<tr>
+<th>事件</th>
+<th>戳記</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a</td>
+<td>1</td>
+<td>P1 的第一個事件</td>
+</tr>
+<tr>
+<td>b</td>
+<td>2</td>
+<td>送 m1，附上 2</td>
+</tr>
+<tr>
+<td>d</td>
+<td>1</td>
+<td>P2 的第一個事件</td>
+</tr>
+<tr>
+<td>e</td>
+<td>3</td>
+<td>收 m1：<span class="arithmatex">\(\max(1,2)+1\)</span></td>
+</tr>
+<tr>
+<td>f</td>
+<td>4</td>
+<td>送 m2，附上 4</td>
+</tr>
+<tr>
+<td>c</td>
+<td>5</td>
+<td>收 m2：<span class="arithmatex">\(\max(2,4)+1\)</span></td>
+</tr>
+</tbody>
+</table>
+<p><strong>a 和 d 是同時發生的（concurrent）</strong>：從 a 出發，要經過 m1 才到 P2，到的是 e，在 d 之後，所以 a → d 不成立；P2 在 d 之前沒有送任何訊息給 P1，d → a 也不成立。兩個的戳記剛好都是 1，但就算數字不一樣，也不代表誰先誰後。</p>
+</details>
+<p><strong>W-2.</strong> Alice 對 file1 可以 read、write；Bob 對 file1 只能 read、對 file2 可以 read、write；Alice 對 file2 沒有權限。寫出 file1 的 ACL 和 Bob 的 capability list。如果要撤銷所有人對 file2 的存取，哪一種存法比較方便？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ul>
+<li><strong>file1 的 ACL</strong>：Alice：read、write；Bob：read。</li>
+<li><strong>Bob 的 capability list</strong>：file1：read；file2：read、write。</li>
+<li><strong>撤銷 file2：ACL 比較方便</strong>。所有權限都記在 file2 自己的名單上，清掉這一份就好；用 capability 的話，要找出每個使用者（或已經發出去的 capability）裡有 file2 的那一項，一個一個刪。</li>
+</ul>
 </details>
 
 </section>
