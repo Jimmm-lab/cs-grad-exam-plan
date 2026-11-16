@@ -1420,6 +1420,17 @@
   /* ---------- cache 模擬 ---------- */
   defs.cache = {
     title: "cache 模擬：位址切割、hit／miss、替換",
+    code: v => [
+      "for each address a",
+      "  blk = a div B",
+      "  set = blk mod S; tag = blk div S",
+      "  if tag is in the set:",
+      v.policy === "fifo" ? "    hit" : "    hit  // LRU：記成剛用過",
+      "  else:  // miss",
+      "    if the set is full:",
+      v.policy === "fifo" ? "      evict the oldest way" : "      evict the least recently used",
+      "    put tag into the set"
+    ],
     fields: [
       { name: "addrs", label: "依序存取的位址", def: "45,109,45" },
       { name: "unit", label: "位址單位", def: "byte", type: "select", options: [["byte", "byte address"], ["word", "word address"]] },
@@ -1469,8 +1480,9 @@
           }
         }
         const chips = hist.map(h => `<span class="vz-chip ${h[1] ? "hit" : "on"}">${h[0]} ${h[1] ? "H" : "M"}</span>`).join("");
-        F.push({ items, cap, info: `<div class="vz-chips">${chips || "（還沒有存取）"}</div>hit ${hits} 次、miss ${hist.length - hits} 次（cache 格子裡寫的是 tag）` });
+        F.push({ items, cap, info: `<div class="vz-chips">${chips || "（還沒有存取）"}</div>hit ${hits} 次、miss ${hist.length - hits} 次（cache 格子裡寫的是 tag）`, line: ln });
       };
+      let ln = null;
       snap(null, {}, `${u} address，block ${B} 個 ${u} → offset ${ob} 位元；${S} 個 set → index ${ib} 位元；其他 ${tb} 位元是 tag。` + (S === 1 ? "（fully associative）" : W === 1 ? "（direct-mapped）" : `（${W}-way set-associative）`));
       for (const a of addrs) {
         const blk = Math.floor(a / B), idx = blk % S, tag = Math.floor(blk / S);
@@ -1478,6 +1490,7 @@
           (S > 1 ? `index ＝ ${blk} mod ${S} ＝ <b>${idx}</b>，tag ＝ ⌊${blk}/${S}⌋ ＝ <b>${tag}</b>` : `只有 1 個 set，tag ＝ block 位址 ＝ <b>${tag}</b>`);
         const m0 = {};
         for (let w = 0; w < W; w++) m0[`${idx}-${w}`] = "cmp";
+        ln = [1, 2, 3];
         snap(a, m0, `存取 <b>${a}</b>：${how}。到 set ${idx} 找 tag ${tag}。`);
         clock++;
         const row = sets[idx];
@@ -1485,6 +1498,7 @@
         if (hw >= 0) {
           hits++; hist.push([a, true]);
           if (v.policy !== "fifo") row[hw].used = clock;
+          ln = [3, 4];
           snap(a, { [`${idx}-${hw}`]: "done" }, `set ${idx} 裡有 tag ${tag} → <b>hit</b>。` + (v.policy !== "fifo" && W > 1 ? "（LRU：它變成最近用過的）" : ""));
           seen.add(blk);
           continue;
@@ -1496,6 +1510,7 @@
         for (let k = 0; k < W; k++) if (!row[k]) { w = k; break; }
         if (w >= 0) {
           row[w] = { tag, blk, used: clock, put: clock };
+          ln = [5, 8];
           snap(a, { [`${idx}-${w}`]: "cur" }, `set ${idx} 沒有 tag ${tag} → <b>miss</b>（${kind}）。從記憶體搬 block ${blk} 進來，放進空的${W > 1 ? ` way ${w}` : "格子"}。`);
         } else {
           const key = v.policy === "fifo" ? "put" : "used";
@@ -1504,11 +1519,13 @@
           const old = row[w];
           const emptyElse = !kind.startsWith("第一次") && sets.some((r, s) => s !== idx && r.filter(Boolean).length < W);
           row[w] = { tag, blk, used: clock, put: clock };
+          ln = [6, 7, 8];
           snap(a, { [`${idx}-${w}`]: "bad" }, `set ${idx} 沒有 tag ${tag} → <b>miss</b>（${kind}）。set ${idx} 已經滿了，` +
             (W > 1 ? `${v.policy === "fifo" ? "最早放進來" : "最久沒用"}的是 way ${w} 的 tag ${old.tag}` : `只好把原本的 tag ${old.tag}`) +
             `（block ${old.blk}）踢掉，換成 tag ${tag}。` + (emptyElse ? "其他 set 明明還有空位，這叫 <b>conflict miss</b>。" : ""));
         }
       }
+      ln = null;
       snap(null, {}, `做完了：hit ${hits} 次、miss ${addrs.length - hits} 次，hit rate ${hits}/${addrs.length}。可以把 set 數或每個 set 的格數改掉，看 miss 怎麼變。`);
       return F;
     }
@@ -1517,6 +1534,17 @@
   /* ---------- 分頁置換 ---------- */
   defs.paging = {
     title: "page 置換：FIFO／LRU／OPT",
+    code: v => [
+      "for each reference p",
+      "  if p is in a frame:",
+      v.algo === "lru" ? "    hit  // 更新它的上次用" : "    hit",
+      "  else:  // page fault",
+      "    if some frame is empty:",
+      "      load p into it",
+      "    else:",
+      { fifo: "      victim = loaded earliest", lru: "      victim = used longest ago", opt: "      victim = next used farthest" }[v.algo] || "      choose a victim",
+      "      replace victim with p"
+    ],
     fields: [
       { name: "refs", label: "page 存取順序", def: "7,0,1,2,0,3,0,4" },
       { name: "frames", label: "frame 數", def: "3", mode: "numeric" },
@@ -1552,14 +1580,16 @@
           items.push(text("ri" + i, x + RW / 2, y - 9, "#" + (i + 1), "vz-sub"));
           items.push(box("r" + i, x, y, String(p), i === t ? "cur" : i < t ? (res[i] ? "bad" : "done") : "dim", { w: RW, h: 30, sub: i <= t && res[i] != null ? (res[i] ? "F" : "hit") : "" }));
         });
-        F.push({ items, cap, info: `page fault：<b>${faults}</b> 次` + (t >= 0 ? `（已處理 ${Math.min(t + 1, refs.length)}／${refs.length} 個）` : "") });
+        F.push({ items, cap, info: `page fault：<b>${faults}</b> 次` + (t >= 0 ? `（已處理 ${Math.min(t + 1, refs.length)}／${refs.length} 個）` : ""), line: ln });
       };
+      let ln = null;
       snap(-1, {}, `${K} 個 frame 一開始都是空的。${name}：${{ fifo: "frame 滿了就踢掉最早進來的那一頁。", lru: "frame 滿了就踢掉最久沒被用到的那一頁。", opt: "frame 滿了就踢掉「未來最晚才會用到（或再也不用）」的那一頁。這是理論最佳，實際上做不到，因為不知道未來。" }[algo]}`);
       refs.forEach((p, t) => {
         const hit = fr.findIndex(e => e && e.p === p);
         if (hit >= 0) {
           res[t] = false;
           if (algo === "lru") fr[hit].last = t;
+          ln = [1, 2];
           snap(t, { ["f" + hit]: "done" }, `存取 ${p}：已經在 frame 裡 → <b>hit</b>，不用載入。` + (algo === "lru" ? "（LRU：更新它的「上次用」）" : ""));
           return;
         }
@@ -1567,6 +1597,7 @@
         const empty = fr.findIndex(e => !e);
         if (empty >= 0) {
           fr[empty] = { p, in: t, last: t };
+          ln = [3, 4, 5];
           snap(t, { ["f" + empty]: "cur" }, `存取 ${p}：不在記憶體 → <b>page fault</b>，還有空的 frame，直接放進去。`);
           return;
         }
@@ -1581,10 +1612,13 @@
         for (let s = 1; s < K; s++) if (score(s) > score(vi)) vi = s;
         const old = fr[vi].p;
         const why = { fifo: `最早進來的是 ${old}`, lru: `最久沒被用到的是 ${old}`, opt: refs.indexOf(old, t + 1) < 0 ? `${old} 之後再也不會用到` : `${old} 是所有 frame 裡最晚才會再用到的（第 ${refs.indexOf(old, t + 1) + 1} 個）` }[algo];
+        ln = [3, 6, 7];
         snap(t, { ["f" + vi]: "bad" }, `存取 ${p}：不在記憶體 → <b>page fault</b>。frame 都滿了，${why} → 踢掉 ${old}。`);
         fr[vi] = { p, in: t, last: t };
+        ln = 8;
         snap(t, { ["f" + vi]: "cur" }, `把 ${p} 載入剛空出來的 frame。`);
       });
+      ln = null;
       snap(refs.length, {}, `${name} 一共 <b>${faults}</b> 次 page fault。換一種策略或改 frame 數比較看看（FIFO 用 1,2,3,4,1,2,5,1,2,3,4,5 試 3 和 4 個 frame，會看到 Belady's anomaly）。`);
       return F;
     }
@@ -1593,6 +1627,27 @@
   /* ---------- CPU 排程 ---------- */
   defs.sched = {
     title: "CPU 排程：畫 Gantt chart",
+    code: v => {
+      if (v.algo === "rr") return [
+        "Q = processes that arrive at 0",
+        "while some process is unfinished",
+        "  if Q is empty: wait for arrival",
+        "  p = dequeue(Q)",
+        "  run p for min(q, p.remaining)",
+        "  enqueue processes that arrived",
+        "  if p is unfinished: enqueue(p)"
+      ];
+      const pick = { fcfs: "the earliest arrival", sjf: "the shortest burst", srtf: "the shortest remaining", pri: "the smallest priority", ppri: "the smallest priority" }[v.algo] || "the best one";
+      const pre = v.algo === "srtf" || v.algo === "ppri";
+      return [
+        "t = 0",
+        "while some process is unfinished",
+        "  R = arrived, unfinished at t",
+        "  if R is empty: wait for arrival",
+        `  p = ${pick} in R`,
+        pre ? "  run p until done or next arrival" : "  run p to completion  // 不搶"
+      ];
+    },
     fields: [
       { name: "procs", label: "行程（名稱 到達時間 burst [priority]，用逗號隔開）", def: "P1 0 10 3, P2 0 1 1, P3 0 2 3, P4 0 1 4, P5 0 5 2" },
       { name: "algo", label: "演算法", def: "rr", type: "select", options: [["fcfs", "FCFS：先來先做"], ["sjf", "SJF：burst 最短的先做（不搶）"], ["srtf", "SRTF：剩餘時間最短的先做（會搶）"], ["pri", "Priority：數字小的先做（不搶）"], ["ppri", "Priority：數字小的先做（會搶）"], ["rr", "Round Robin"]] },
@@ -1613,10 +1668,10 @@
       const q = Number(v.q), algo = v.algo;
       if (algo === "rr" && (!Number.isInteger(q) || q < 1)) throw new Error("quantum 要是正整數");
       const segs = [], F = [], shots = [];
-      let t = 0;
+      let t = 0, ln = null;
       const fmtQ = list => (list.length ? list.map(p => p.n).join("、") : "（空）");
       // 先把每一步的狀態記下來，跑完知道總長度後再畫：每 12 個時間單位換一列，手機上 1 個單位也放得下名字
-      const snap = (ready, mark, cap) => shots.push({ segs: segs.map(x => ({ ...x })), ready: ready.map(p => ({ n: p.n, rem: p.rem })), mark, cap });
+      const snap = (ready, mark, cap) => shots.push({ segs: segs.map(x => ({ ...x })), ready: ready.map(p => ({ n: p.n, rem: p.rem })), mark, cap, line: ln });
       const draw = () => {
         const end = segs.length ? segs[segs.length - 1].b : 1, PER = 12;
         const U = end <= PER ? Math.max(26, Math.min(40, Math.floor(312 / end))) : 26;
@@ -1637,7 +1692,7 @@
           });
           items.push(text("hq", 0, qy - 14, algo === "rr" ? "ready queue（左邊是前面）" : "ready queue", "vz-sub", "start"));
           sh.ready.forEach((p, k) => items.push(box("q" + p.n, k * STEP, qy, p.n, "cmp", { sub: `剩 ${p.rem}` })));
-          F.push({ items, cap: sh.cap });
+          F.push({ items, cap: sh.cap, line: sh.line });
         });
       };
       const arrived = (from, to) => P.filter(p => p.at > from && p.at <= to);
@@ -1651,6 +1706,7 @@
         if (p.first == null) p.first = a;
         if (!p.rem) p.done = b;
       };
+      ln = 0;
       snap([], false, `${P.length} 個行程。${algo === "rr" ? `Round Robin，每次最多跑 ${q} 個時間單位，沒跑完就排到 queue 最後面。` : `每次從已經到達的行程裡挑${rule}。`}`);
       if (algo === "rr") {
         const qu = [];
@@ -1661,6 +1717,7 @@
             segs.push({ p: null, a: t, b: nx });
             arrived(t, nx).sort((a, b) => a.at - b.at || a.i - b.i).forEach(p => qu.push(p));
             t = nx;
+            ln = 2;
             snap(qu, false, `CPU 閒置到 ${t}，${fmtQ(qu)} 到達。`);
             continue;
           }
@@ -1671,6 +1728,7 @@
           const nw = arrived(from, t).sort((a, b) => a.at - b.at || a.i - b.i);
           nw.forEach(x => qu.push(x));
           if (p.rem) qu.push(p);
+          ln = [3, 4].concat(nw.length ? [5] : [], p.rem ? [6] : []);
           snap(qu, true, `時間 ${from}–${t}：從 queue 前面拿出 <b>${p.n}</b> 跑 ${d}。` + (nw.length ? `這段時間 ${nw.map(x => x.n).join("、")} 到達，排到後面。` : "") + (p.rem ? `${p.n} 還剩 ${p.rem}，排回 queue 最後面。` : `${p.n} 做完了（完成時間 ${t}）。`));
         }
       } else {
@@ -1681,6 +1739,7 @@
             const nx = Math.min(...P.filter(p => p.rem).map(p => p.at));
             segs.push({ p: null, a: t, b: nx });
             t = nx;
+            ln = 3;
             snap(P.filter(p => p.rem && p.at <= t).sort(cmp), false, `沒有行程可以跑，CPU 閒置到 ${t}。`);
             continue;
           }
@@ -1694,6 +1753,7 @@
           run(p, t, end);
           t = end;
           const why = others.length ? `ready 裡有 ${ready.map(x => `${x.n}（${algo === "srtf" ? "剩 " + (x === p ? x.rem + (end - from) : x.rem) : algo === "sjf" ? "burst " + x.bt : algo === "fcfs" ? "到達 " + x.at : "priority " + x.pr}）`).join("、")}，挑${rule} → ` : "";
+          ln = [4, 5];
           snap(P.filter(x => x.rem && x.at <= t && x !== p).sort(cmp), true,
             `時間 ${from}–${t}：${why}<b>${p.n}</b>。` + (p.rem ? `${t} 時有新行程到達，重新比較（${p.n} 還剩 ${p.rem}）。` : `${p.n} 做完了（完成時間 ${t}）。`));
         }
@@ -1702,6 +1762,7 @@
       const avg = k => (rows.reduce((s, r) => s + r[k], 0) / rows.length);
       const f2 = x => (Number.isInteger(x) ? String(x) : x.toFixed(2));
       const tbl = `<table class="vz-tbl"><tr><th>行程</th><th>完成</th><th>turnaround</th><th>waiting</th><th>response</th></tr>${rows.map(r => `<tr><td>${r.n}</td><td>${r.done}</td><td>${r.ta}</td><td>${r.w}</td><td>${r.rs}</td></tr>`).join("")}<tr><td>平均</td><td></td><td>${f2(avg("ta"))}</td><td><b>${f2(avg("w"))}</b></td><td>${f2(avg("rs"))}</td></tr></table>turnaround ＝ 完成 − 到達；waiting ＝ turnaround − burst；response ＝ 第一次執行 − 到達`;
+      ln = null;
       snap([], false, `全部做完。平均 waiting time ＝ <b>${f2(avg("w"))}</b>，平均 turnaround ＝ ${f2(avg("ta"))}。`);
       draw();
       F[F.length - 1].info = tbl;
@@ -1710,8 +1771,31 @@
   };
 
   /* ---------- 磁碟排程 ---------- */
+  function diskCode(v) {
+    const L = [], at = {};
+    const put = (n, t) => { if (n) at[n] = L.length; L.push(t); };
+    put("start", "pos = head");
+    if (v.algo === "fcfs") {
+      put("loop", "for each request r (arrival order)");
+      put("move", "  move to r; pos = r");
+    } else if (v.algo === "sstf") {
+      put("loop", "while requests remain");
+      put("pick", "  r = the one closest to pos");
+      put("move", "  move to r; pos = r");
+    } else {
+      put("serve", "serve requests ahead, nearest first");
+      put("ifRemain", "if requests remain behind:");
+      if (v.algo === "scan" || v.algo === "cscan") put("toEnd", "  go to the end (0 or max)");
+      if (v.algo === "look") put(null, "  // 不用走到盡頭");
+      if (v.algo === "cscan") put("jump", "  jump to the other end");
+      if (v.algo === "clook") put("jump", "  jump to the farthest one");
+      put("serveB", v.algo === "scan" || v.algo === "look" ? "  turn around, serve them" : "  serve them in the same direction");
+    }
+    return { lines: L, at };
+  }
   defs.disk = {
     title: "磁碟排程：讀寫頭怎麼移動",
+    code: v => diskCode(v).lines,
     fields: [
       { name: "reqs", label: "要求的磁柱（照到達順序）", def: "98,183,37,122,14,124,65,67" },
       { name: "head", label: "讀寫頭現在在哪一柱", def: "53", mode: "numeric" },
@@ -1779,7 +1863,7 @@
       let sum = 0;
       const F = [], tbl = [];
       const table = () => `<table class="vz-tbl"><tr><th>步</th><th>移到</th><th>距離</th><th>累計</th></tr>${tbl.map((r, i) => `<tr><td>${i + 1}</td><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("")}</table>`;
-      const snap = (cap, curI) => {
+      const snap = (cap, curI, line = null) => {
         const items = base.slice();
         pts.forEach((p, i) => {
           const x = X(p.c), y = Y0 + i * DY;
@@ -1790,17 +1874,29 @@
           items.push({ t: "node", k: "p" + i, x, y, r: 7, label: "", cls: i === curI ? "cur" : p.end ? "dim" : i ? "done" : "cmp", note: "" });
           items.push(text("pl" + i, x + (x > W - 50 ? -12 : 12), y, String(p.c), i === curI ? "vz-hl" : "vz-sub", x > W - 50 ? "end" : "start"));
         });
-        F.push({ items, cap, info: tbl.length ? table() + `總移動距離 ${sum}` : "" });
+        F.push({ items, cap, info: tbl.length ? table() + `總移動距離 ${sum}` : "", line });
       };
       const name = { fcfs: "FCFS", sstf: "SSTF", scan: "SCAN", look: "LOOK", cscan: "C-SCAN", clook: "C-LOOK" }[algo];
-      snap(`${name}：讀寫頭在 <b>${head}</b>，往${dirTxt(up)}方向移動（FCFS、SSTF 不管方向）。縱軸往下是時間，每往下一格就移動一次。`, 0);
+      // 每一步對應的虛擬碼：前方的要求、走到盡頭、跳回去、回頭服務後面的
+      const DL = diskCode(v).at, ahead = new Set(R.filter(r => (up ? r >= head : r <= head)));
+      let firstB = true;
+      mv.forEach(m => {
+        if (algo === "fcfs") m.ln = [DL.loop, DL.move];
+        else if (algo === "sstf") m.ln = [DL.pick, DL.move];
+        else if (m.end && !m.jump) m.ln = [DL.ifRemain, DL.toEnd];
+        else if (m.jump && !m.req) m.ln = DL.jump;
+        else if (m.jump) { m.ln = [DL.ifRemain, DL.jump]; firstB = false; }
+        else if (ahead.has(m.c) && firstB) m.ln = DL.serve;
+        else { m.ln = firstB && algo === "look" ? [DL.ifRemain, DL.serveB] : DL.serveB; firstB = false; }
+      });
+      snap(`${name}：讀寫頭在 <b>${head}</b>，往${dirTxt(up)}方向移動（FCFS、SSTF 不管方向）。縱軸往下是時間，每往下一格就移動一次。`, 0, DL.start);
       mv.forEach(m => {
         const from = pts[pts.length - 1].c, d = Math.abs(m.c - from);
         const add = m.jump && !cnt ? 0 : d;
         sum += add;
         pts.push(m);
         tbl.push([m.c + (m.req ? "" : "（不是要求）"), m.jump && !cnt ? `${d}（不算）` : String(d), sum]);
-        snap(`${m.why} <b>${m.c}</b>：從 ${from} 移到 ${m.c}，距離 ${d}${m.jump ? (cnt ? "（跳回這段照樣算進距離）" : "（這段跳回不算距離）") : ""}，累計 <b>${sum}</b>。`, pts.length - 1);
+        snap(`${m.why} <b>${m.c}</b>：從 ${from} 移到 ${m.c}，距離 ${d}${m.jump ? (cnt ? "（跳回這段照樣算進距離）" : "（這段跳回不算距離）") : ""}，累計 <b>${sum}</b>。`, pts.length - 1, m.ln);
       });
       snap(`完成。服務順序：<b>${mv.filter(m => m.req).map(m => m.c).join(", ")}</b>；總移動距離 <b>${sum}</b>。`, -1);
       return F;
@@ -1810,6 +1906,28 @@
   /* ---------- 運算式：stack 求值、中序轉後序 ---------- */
   defs.expr = {
     title: "運算式：用 stack 求值、中序轉後序",
+    code: v => (v.mode === "in2post" ? [
+      "for each token t (left to right)",
+      "  if t is an operand: output t",
+      "  else if t is \"(\": push t",
+      "  else if t is \")\":",
+      "    pop to output until \"(\"",
+      "    discard the \"(\"",
+      "  else:  // t is an operator",
+      "    while prec(top) >= prec(t):",
+      "      // 遇到 ( 就停；^ 用 >",
+      "      pop top to output",
+      "    push t",
+      "pop all the rest to output"
+    ] : [
+      v.mode === "pre" ? "for each token t (right to left)" : "for each token t (left to right)",
+      "  if t is an operand: push t",
+      "  else:  // t is an operator",
+      v.mode === "pre" ? "    a = pop()  // 左運算元" : "    b = pop()  // 右運算元",
+      v.mode === "pre" ? "    b = pop()  // 右運算元" : "    a = pop()  // 左運算元",
+      "    push(a t b)",
+      "answer = pop()"
+    ]),
     fields: [
       { name: "expr", label: "運算式（數字之間要空白；中序式可以不隔）", def: "8 3 2 + - 4 9 3 / + * 3 * 7 +" },
       { name: "mode", label: "要做什麼", def: "post", type: "select", options: [["post", "後序式求值（由左往右讀）"], ["pre", "前序式求值（由右往左讀）"], ["in2post", "中序式轉後序式（運算子 stack）"]] }
@@ -1835,6 +1953,7 @@
         list.forEach(o => { items.push(box(o.k, x, y, o.s, mark[o.k] || cls, { w: bw(o.s) })); x += bw(o.s) + 6; });
       };
       const F = [];
+      let ln = null;
       if (mode === "in2post") {
         let want = "operand";
         T.forEach((t, j) => {
@@ -1858,7 +1977,7 @@
           items.push(text("h2", 0, yOut - 16, "輸出（後序式）", "vz-sub", "start"));
           out.forEach((o, j) => { const [x, y] = at(j, yOut); items.push(box(o.k, x, y, show(o.t), mark[o.k] || "done", { w: 40 })); });
           hstack(items, ops.map(o => ({ k: o.k, s: show(o.t) })), yOps, "運算子 stack（右邊是 top）", "cmp", mark);
-          F.push({ items, cap, info: `輸出：${out.map(o => show(o.t)).join(" ") || "（還沒有）"}` });
+          F.push({ items, cap, info: `輸出：${out.map(o => show(o.t)).join(" ") || "（還沒有）"}`, line: ln });
         };
         snap(-1, "由左往右讀。<b>運算元直接輸出</b>；運算子先放進 stack，等確定後面沒有更優先的運算子才輸出。");
         let depth = 0;
@@ -1866,10 +1985,12 @@
           const k = "x" + i;
           if (!isOp(t) && t !== "(" && t !== ")") {
             out.push({ t, k });
+            ln = 1;
             snap(i, `讀到 <b>${t}</b>：運算元直接輸出。`, { [k]: "cur" });
           } else if (t === "(") {
             depth++;
             ops.push({ t, k });
+            ln = 2;
             snap(i, "讀到 <b>(</b>：直接 push。它像一道牆，右括號出現前，牆下面的運算子都不會被 pop。", { [k]: "cur" });
           } else if (t === ")") {
             if (!depth) throw new Error("右括號比左括號多");
@@ -1877,6 +1998,7 @@
             const popped = [];
             while (ops.length && ops[ops.length - 1].t !== "(") { const o = ops.pop(); out.push(o); popped.push(show(o.t)); }
             ops.pop();
+            ln = [3, 4, 5];
             snap(i, `讀到 <b>)</b>：一直 pop 到左括號為止${popped.length ? `，${popped.join("、")} 依序輸出` : ""}；兩個括號都丟掉，不輸出。`, Object.fromEntries(out.slice(out.length - popped.length).map(o => [o.k, "cur"])));
           } else {
             const p = PREC[norm(t)], popped = [];
@@ -1889,12 +2011,14 @@
               else { why.push(`top 是 ${show(top.t)}，優先順序比 ${show(t)} 低 → 停`); break; }
             }
             ops.push({ t, k });
+            ln = popped.length ? [6, 7, 9, 10] : [6, 7, 10];
             snap(i, `讀到 <b>${show(t)}</b>：` + (why.length ? why.join("；") + "。" : "stack 是空的（或 top 是左括號）。") + `然後 push ${show(t)}。`, { [k]: "cur" });
           }
         });
         if (depth) throw new Error("左括號比右括號多");
         const rest = [];
         while (ops.length) { const o = ops.pop(); out.push(o); rest.push(show(o.t)); }
+        ln = 11;
         snap(T.length, (rest.length ? `讀完了，stack 裡剩下的運算子從 top（右邊）開始依序 pop 輸出：${rest.join("、")}。` : "讀完了。") + `後序式：<b>${out.map(o => show(o.t)).join(" ")}</b>`);
         return F;
       }
@@ -1913,7 +2037,7 @@
           items.push(box("t" + j, x, y, show(t), j === i ? "cur" : done ? "dim" : "", { w: 40 }));
         });
         hstack(items, st, inH + 40, "stack（右邊是 top）", "cmp", mark);
-        F.push({ items, cap, info: st.length ? `stack 裡每一格對應的中序式（從左到右）：${st.map(o => o.in).join("　｜　")}` : "" });
+        F.push({ items, cap, info: st.length ? `stack 裡每一格對應的中序式（從左到右）：${st.map(o => o.in).join("　｜　")}` : "", line: ln });
       };
       snap(-1, mode === "pre" ? "前序式<b>由右往左</b>讀：運算元 push；遇到運算子就 pop 兩個，<b>先 pop 出來的是左運算元</b>，算完 push 回去。" : "後序式<b>由左往右</b>讀：運算元 push；遇到運算子就 pop 兩個，<b>先 pop 出來的是右運算元</b>，算完 push 回去。");
       for (const i of order) {
@@ -1921,6 +2045,7 @@
         if (!isOp(t)) {
           const k = "v" + id++;
           st.push({ k, s: t, val: numeric ? Number(t) : null, in: t });
+          ln = 1;
           snap(i, `讀到 <b>${t}</b>：運算元，push。`, { [k]: "cur" });
           continue;
         }
@@ -1938,9 +2063,11 @@
         const k = "v" + id++;
         const s = numeric ? fmt(val) : inf;
         st.push({ k, s, val, in: inf });
+        ln = [3, 4, 5];
         snap(i, `讀到 <b>${show(t)}</b>：pop 出 ${x.s}${mode === "pre" ? "（左）" : "（右）"}、${y.s}${mode === "pre" ? "（右）" : "（左）"}，` + (numeric ? `算 ${L.s} ${show(t)} ${R.s} ＝ <b>${s}</b>，push。` : `組成 ${inf}，push。`), { [k]: "cur" });
       }
       if (st.length !== 1) throw new Error(`讀完後 stack 裡有 ${st.length} 個東西（應該剩 1 個），這不是合法的${mode === "pre" ? "前" : "後"}序式`);
+      ln = 6;
       snap(mode === "pre" ? -1 : T.length, `讀完了，stack 裡剩下的就是答案${numeric ? `：<b>${st[0].s}</b>` : ""}。對應的中序式：${st[0].in}`);
       return F;
     }
@@ -1949,6 +2076,16 @@
   /* ---------- Huffman 編碼 ---------- */
   defs.huffman = {
     title: "Huffman：每次合併頻率最小的兩個",
+    code: [
+      "Q = every symbol as a 1-node tree",
+      "while Q has 2 or more trees",
+      "  x = extract-min(Q)",
+      "  y = extract-min(Q)",
+      "  z = new node, freq = x + y",
+      "  z.left, z.right = x, y  // 依規則",
+      "  insert z into Q",
+      "code: left edge 0, right edge 1"
+    ],
     fields: [
       { name: "freq", label: "符號與頻率（像 A 8, B 15 這樣寫）", def: "A 8, B 15, C 1, D 6, E 15, F 3, G 7" },
       { name: "left", label: "合併時誰放左邊（左邊編 0）", def: "lex", type: "select", options: [["lex", "標籤字母順序小的放左邊"], ["freq", "頻率小的放左邊（一樣大比標籤）"]] }
@@ -1989,16 +2126,19 @@
           });
           ox += x1 - x0 + 12;
         });
-        F.push({ items, cap, info });
+        F.push({ items, cap, info, line: ln });
       };
+      let ln = 0;
       snap(`每個符號先自己是一棵樹（圓圈裡是頻率，下面是符號）。照頻率由小到大排好；每一步拿出<b>最小的兩棵</b>合併成新的一棵，新的根是兩個頻率的和。`);
       while (forest.length > 1) {
         const [a, b] = forest;
+        ln = [1, 2, 3];
         snap(`最小的兩棵：<b>${a.label}（${a.f}）</b>和 <b>${b.label}（${b.f}）</b>` + (forest.length > 2 && forest[2].f === b.f ? `（${b.label} 和 ${forest[2].label} 頻率一樣，照規則挑標籤字母小的 ${b.label}）` : "") + "。", { [a.k]: "cmp", [b.k]: "cmp" });
         let L = a, R = b;
         if (v.left === "lex" ? b.label < a.label : cmp(b, a) < 0) { L = b; R = a; }
         const n = { k: "i" + nid++, label: L.label + R.label, f: a.f + b.f, l: L, r: R };
         forest = [n, ...forest.slice(2)].sort(cmp);
+        ln = [4, 5, 6];
         snap(`合併成 <b>${n.label}（${n.f}）</b>：${L.label} 放左邊（編 0）、${R.label} 放右邊（編 1）` + (v.left === "lex" ? "，因為標籤字母順序小的放左邊。" : "，頻率小的放左邊。") + `還剩 ${forest.length} 棵。`, { [n.k]: "cur" });
       }
       const codes = [];
@@ -2010,6 +2150,7 @@
       const total = codes.reduce((s, c) => s + c[1] * c[2].length, 0);
       const sumF = codes.reduce((s, c) => s + c[1], 0), fixedLen = Math.max(1, Math.ceil(Math.log2(codes.length)));
       const tbl = `<table class="vz-tbl"><tr><th>符號</th><th>頻率</th><th>編碼</th><th>長度</th><th>頻率×長度</th></tr>${codes.map(c => `<tr><td>${c[0]}</td><td>${c[1]}</td><td>${c[2]}</td><td>${c[2].length}</td><td>${c[1] * c[2].length}</td></tr>`).join("")}</table>總位元數 ${total}；固定長度要 ${fixedLen} 位元 × ${sumF} ＝ ${fixedLen * sumF}`;
+      ln = 7;
       snap(`完成。從根往下走，往左寫 0、往右寫 1，走到葉子就是那個符號的編碼。頻率越大的符號越靠近根，編碼越短。總位元數 ＝ Σ 頻率 × 編碼長度 ＝ <b>${total}</b>。`, {}, tbl);
       return F;
     }
