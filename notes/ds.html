@@ -1572,6 +1572,404 @@ printf("%c %c %s",
 <li><strong>答案</strong>：<code>g a ogoam</code></li>
 </ul>
 </details>
+<h3 id="u1-exam">1.7 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 115 Q5a・換數字・換運算子）<code>int x = 21, y = 10;</code> 印出 <code>x | y &amp; ~x ^ y &gt;&gt; 1</code> 的值。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了，運算子的組合也換了，關鍵一樣是<strong>優先順序</strong>：<code>~</code> ＞ <code>&gt;&gt;</code> ＞ <code>&amp;</code> ＞ <code>^</code> ＞ <code>|</code>。</li>
+<li><strong>加括號</strong>：<code>x | ((y &amp; ~x) ^ (y &gt;&gt; 1))</code>。</li>
+<li><strong>一步一步算</strong>（x ＝ <code>10101</code>、y ＝ <code>01010</code>）：<ul>
+<li><code>y &gt;&gt; 1</code> ＝ <code>00101</code> ＝ 5</li>
+<li><code>~x</code> 的低 5 位是 <code>01010</code>，<code>y &amp; ~x</code> ＝ <code>01010 &amp; 01010</code> ＝ <code>01010</code> ＝ 10</li>
+<li><code>10 ^ 5</code> ＝ <code>01010 ^ 00101</code> ＝ <code>01111</code> ＝ 15</li>
+<li><code>x | 15</code> ＝ <code>10101 | 01111</code> ＝ <code>11111</code> ＝ <strong>31</strong></li>
+</ul>
+</li>
+<li><strong>常見錯誤</strong>：把 <code>|</code> 當成比 <code>^</code> 先算，或把 <code>&gt;&gt;</code> 放到最後才算。</li>
+</ul>
+<p>這段程式用 gcc 實際編譯執行過，輸出跟上面一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 112 Q1a・換式子）<code>int a = 45, b = 27;</code> 求 (a) <code>(a | b) &amp; ~(a &amp; b)</code> (b) <code>a &amp; ~b</code> (c) <code>(a ^ b) ^ b</code></p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題的式子是 XOR 的一種寫法；這題換另一種寫法，再多問兩個常見的位元技巧。</li>
+<li><strong>二進位</strong>：a ＝ <code>101101</code>、b ＝ <code>011011</code>。</li>
+<li><strong>(a)</strong>：「有一個是 1」而且「不是兩個都是 1」＝ 剛好一個是 1，也是 <strong>XOR</strong>：<code>101101 ^ 011011</code> ＝ <code>110110</code> ＝ <strong>54</strong>。</li>
+<li><strong>(b)</strong>：把 b 是 1 的位置清掉：<code>101101 &amp; 100100</code> ＝ <code>100100</code> ＝ <strong>36</strong>。</li>
+<li><strong>(c)</strong>：XOR 兩次同一個數會還原：<span class="arithmatex">\(a\oplus b\oplus b=a\)</span> ＝ <strong>45</strong>。</li>
+</ul>
+<p>這段程式用 gcc 實際編譯執行過，輸出跟上面一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 113 Q1a・換式子）<code>int d = 40;</code> 求 <code>(d &amp; -d) + (d &amp; (d - 1))</code>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題故意寫成 <code>-d+1</code> 讓你算錯；這題是兩個標準技巧相加。</li>
+<li><strong>40 ＝ <code>00101000</code></strong>。</li>
+<li><strong><code>d &amp; -d</code></strong>：取出最低位的 1。<code>-d</code> ＝ <code>~d + 1</code> ＝ <code>11011000</code>，<code>00101000 &amp; 11011000</code> ＝ <code>00001000</code> ＝ 8。</li>
+<li><strong><code>d &amp; (d - 1)</code></strong>：把最低位的 1 清掉。<code>d - 1</code> ＝ 39 ＝ <code>00100111</code>，<code>00101000 &amp; 00100111</code> ＝ <code>00100000</code> ＝ 32。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(8+32=\)</span> <strong>40</strong>。兩個合起來剛好就是 d 本身：一個只留最低位的 1，一個只去掉它。</li>
+</ul>
+<p>這段程式用 gcc 實際編譯執行過，輸出跟上面一樣。</p>
+</details>
+<div>
+<p><strong>考古變化 4.</strong>（改自 111 Q1a・換參數）下面的程式印出什麼？</p>
+<pre class="highlight"><code class="language-c">void f(int *v, int *w, int *x, int *y, int *z) {
+    w[1] += 5;
+    printf("%d %d %d %d %d\n", v[1], w[0], x[-2], *(y + 2), z[4]);
+}
+int main(void) {
+    int e[] = {10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20};
+    f(e + 3, &amp;e[1] + 2, e + 5, &amp;e[5] - 2, e);
+    return 0;
+}</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：一樣是好幾個指標指到同一個陣列的不同位置，這次還有負的索引 <code>x[-2]</code>。</li>
+<li>
+<p><strong>先算每個參數指到哪</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>參數</th>
+<th>指向</th>
+<th>所以 <code>p[k]</code> 是</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v</td>
+<td><code>e + 3</code> → e[3]</td>
+<td>e[3+k]</td>
+</tr>
+<tr>
+<td>w</td>
+<td><code>&amp;e[1] + 2</code> → e[3]</td>
+<td>e[3+k]</td>
+</tr>
+<tr>
+<td>x</td>
+<td><code>e + 5</code> → e[5]</td>
+<td>e[5+k]</td>
+</tr>
+<tr>
+<td>y</td>
+<td><code>&amp;e[5] - 2</code> → e[3]</td>
+<td>e[3+k]</td>
+</tr>
+<tr>
+<td>z</td>
+<td>e[0]</td>
+<td>e[k]</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong><code>w[1] += 5</code></strong>：改的是 e[4]，從 14 變 19。v、w、y 都指到同一個地方，大家都看得到。</p>
+</li>
+<li><strong>印出</strong>：v[1] ＝ e[4] ＝ 19；w[0] ＝ e[3] ＝ 13；x[-2] ＝ e[3] ＝ 13；<code>*(y+2)</code> ＝ e[5] ＝ 15；z[4] ＝ e[4] ＝ 19。
+    <pre class="highlight"><code class="language-text">19 13 13 15 19</code></pre></li>
+</ul>
+<p>這段程式用 gcc 實際編譯執行過，輸出跟上面一樣。</p>
+</details>
+<div>
+<p><strong>考古變化 5.</strong>（改自 111 Q1b・換參數）同一個排列產生程式，改成呼叫 <code>g(s, 1, 3)</code>，<code>s</code> 是 "abcd"。印出什麼？</p>
+<pre class="highlight"><code class="language-c">void swap(char *a, int i, int j) { char t = a[i]; a[i] = a[j]; a[j] = t; }
+void g(char *a, int k, int m) {
+    if (k == m) {
+        for (int i = 0; i &lt;= m; i++) printf("%c ", a[i]);
+        printf("\n");
+    } else {
+        for (int i = k; i &lt;= m; i++) {
+            swap(a, k, i);
+            g(a, k + 1, m);
+            swap(a, k, i);
+        }
+    }
+}
+int main(void) { char s[] = "abcd"; g(s, 1, 3); return 0; }</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題從位置 0 開始排、只排前 3 個；這題從位置 1 開始，第 0 個字母 a 固定不動，排後面 3 個。</li>
+<li><strong>呼叫樹</strong>（k＝1 輪流跟 1、2、3 交換）：<ul>
+<li>換 b↔b：k＝2 再排 c、d → <code>a b c d</code>、<code>a b d c</code></li>
+<li>換 b↔c（變 acbd）：→ <code>a c b d</code>、<code>a c d b</code></li>
+<li>換 b↔d（變 adcb）：→ <code>a d c b</code>、<code>a d b c</code></li>
+</ul>
+</li>
+<li><strong>答案</strong>（每組一行，共 <span class="arithmatex">\(3!=6\)</span> 行）：
+    <pre class="highlight"><code class="language-text">a b c d
+a b d c
+a c b d
+a c d b
+a d c b
+a d b c</code></pre></li>
+<li><strong>小心</strong>：第三組是 <code>a d c b</code> 不是 <code>a d b c</code>，因為是 b 和 d 交換（c 留在原位），而不是把 d 插到最前面。</li>
+</ul>
+<p>這段程式用 gcc 實際編譯執行過，輸出跟上面一樣。</p>
+</details>
+<div>
+<p><strong>考古變化 6.</strong>（改自 112 Q1b・換數字）同一個遞迴 <code>h(i)</code>（奇數 → <code>b[i+1]++</code> 後呼叫 <code>h(i+1)</code>；偶數 → 印 <code>b[i]</code>、<code>b[i/2] += i/2</code> 後呼叫 <code>h(i/2)</code>；<code>i==1</code> → 印 <code>b[1]</code>），改成 <code>b[k] = 50 + k</code>（k ＝ 0..15），呼叫 <code>h(11)</code>。印出什麼？</p>
+<pre class="highlight"><code class="language-c">int b[16];
+void h(int i) {
+    if (i == 1) { printf("%d ", b[1]); return; }
+    if (i % 2 == 1) { b[i + 1]++; h(i + 1); }
+    else { printf("%d ", b[i]); b[i / 2] += i / 2; h(i / 2); }
+}
+int main(void) { for (int k = 0; k &lt; 16; k++) b[k] = 50 + k; h(11); return 0; }</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li>
+<p><strong>跟原題差在哪</strong>：起點和陣列換了，路徑也不同；做法一樣，用表格一行一行追。</p>
+<table>
+<thead>
+<tr>
+<th>呼叫</th>
+<th>動作</th>
+<th>印出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>h(11)</td>
+<td>奇數，b[12] 62→63</td>
+<td></td>
+</tr>
+<tr>
+<td>h(12)</td>
+<td>印 b[12]；b[6] 56→62</td>
+<td>63</td>
+</tr>
+<tr>
+<td>h(6)</td>
+<td>印 b[6]；b[3] 53→56</td>
+<td>62</td>
+</tr>
+<tr>
+<td>h(3)</td>
+<td>奇數，b[4] 54→55</td>
+<td></td>
+</tr>
+<tr>
+<td>h(4)</td>
+<td>印 b[4]；b[2] 52→54</td>
+<td>55</td>
+</tr>
+<tr>
+<td>h(2)</td>
+<td>印 b[2]；b[1] 51→52</td>
+<td>54</td>
+</tr>
+<tr>
+<td>h(1)</td>
+<td>印 b[1]</td>
+<td>52</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>答案</strong>：<code>63 62 55 54 52</code>。印出來的都是被前一步改過的值，所以不能直接用 50 ＋ k。</p>
+</li>
+</ul>
+<p>這段程式用 gcc 實際編譯執行過，輸出跟上面一樣。</p>
+</details>
+<div>
+<p><strong>考古變化 7.</strong>（改自 113 Q1b・換數字）同一個分治求最大值的程式（每次呼叫結束都印 b），x[1..5] 改成 3, 1, 2, 8, 5，呼叫 <code>max(1, 5)</code>。印出什麼？</p>
+<pre class="highlight"><code class="language-c">int x[6] = {0, 3, 1, 2, 8, 5};
+int max(int left, int right) {
+    int b;
+    if (left == right) b = x[left];
+    else {
+        int mid = (left + right) / 2;
+        int c = max(left, mid);
+        if (c &gt; max(mid + 1, right)) b = c;
+        else b = max(mid + 1, right);
+    }
+    printf("%d ", b);
+    return b;
+}
+int main(void) { max(1, 5); return 0; }</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題被重複執行的是一個葉子；這題最大值在右半邊，最上層的比較不成立，<strong>整個右子樹 max(4,5) 會被執行兩次</strong>。</li>
+<li><strong>追蹤</strong>：<ul>
+<li>max(1,5)：mid 3<ul>
+<li>max(1,3)：mid 2<ul>
+<li>max(1,2)：max(1,1) 印 <strong>3</strong>、max(2,2) 印 <strong>1</strong>，3＞1 → 印 <strong>3</strong></li>
+<li>max(3,3) 印 <strong>2</strong>；3＞2 成立 → 印 <strong>3</strong></li>
+</ul>
+</li>
+<li>比較 3 ＞ max(4,5)：max(4,4) 印 <strong>8</strong>、max(5,5) 印 <strong>5</strong>，8＞5 → 印 <strong>8</strong></li>
+<li>3＞8 不成立 → else 再呼叫一次 max(4,5)：又印 <strong>8 5 8</strong></li>
+<li>最後印 <strong>8</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>答案</strong>：<code>3 1 3 2 3 8 5 8 8 5 8 8</code>（12 個數）。</li>
+</ul>
+<p>這段程式用 gcc 實際編譯執行過，輸出跟上面一樣。</p>
+</details>
+<div>
+<p><strong>考古變化 8.</strong>（改自 115 Q5b・改條件）同一個有 <code>static int count</code> 的遞迴，連續呼叫兩次。印出什麼？</p>
+<pre class="highlight"><code class="language-c">int mystery(int *p, int n) {
+    static int count = 0;
+    count++;
+    if (n &lt;= 0) return count;
+    if (*p &gt; 10) return *p + mystery(p + 1, n - 1);
+    return mystery(p + 1, n - 1);
+}
+int main(void) {
+    int arr[] = {12, 7, 30, 9, 11};
+    printf("%d\n", mystery(arr, 4));
+    printf("%d\n", mystery(arr + 1, 2));
+    return 0;
+}</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只呼叫一次；這題呼叫兩次，<code>static</code> 的 count <strong>不會重新歸零</strong>，第二次接著第一次往上加。</li>
+<li>
+<p><strong>第一次 <code>mystery(arr, 4)</code></strong>：</p>
+<table>
+<thead>
+<tr>
+<th>呼叫</th>
+<th>count</th>
+<th><code>*p</code></th>
+<th>回傳</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mystery(arr, 4)</td>
+<td>1</td>
+<td>12 ＞ 10</td>
+<td>12 ＋ 下一層</td>
+</tr>
+<tr>
+<td>mystery(arr+1, 3)</td>
+<td>2</td>
+<td>7</td>
+<td>下一層</td>
+</tr>
+<tr>
+<td>mystery(arr+2, 2)</td>
+<td>3</td>
+<td>30 ＞ 10</td>
+<td>30 ＋ 下一層</td>
+</tr>
+<tr>
+<td>mystery(arr+3, 1)</td>
+<td>4</td>
+<td>9</td>
+<td>下一層</td>
+</tr>
+<tr>
+<td>mystery(arr+4, 0)</td>
+<td>5</td>
+<td>—</td>
+<td>回傳 count ＝ 5</td>
+</tr>
+</tbody>
+</table>
+<p><span class="arithmatex">\(12+30+5=\)</span> <strong>47</strong>。</p>
+</li>
+<li>
+<p><strong>第二次 <code>mystery(arr+1, 2)</code></strong>：count 從 5 接著加：7（count 6）→ 30（count 7）→ n ＝ 0（count 8）。<span class="arithmatex">\(30+8=\)</span> <strong>38</strong>。</p>
+</li>
+<li><strong>答案</strong>：
+    <pre class="highlight"><code class="language-text">47
+38</code></pre></li>
+</ul>
+<p>這段程式用 gcc 實際編譯執行過，輸出跟上面一樣。</p>
+</details>
+<div>
+<p><strong>考古變化 9.</strong>（改自 114 Q1・換數字・改順序）(a) 快速冪 <code>for (c = 1; b &gt; 0; b = b &gt;&gt; 1) { if (b % 2 == 1) c = c * a; a = a * a; }</code>，<code>a = 3, b = 11</code>，印出 c (b) 陣列 <code>s[j] = j</code>（j ＝ 0..15，其餘 0），只做一輪 <code>s[j] += s[j+1]</code>，但 <strong>j 由 15 往 0</strong>。印出 s[0]、s[5]、s[14]。</p>
+<pre class="highlight"><code class="language-c">int main(void) {
+    int a = 3, b = 11, c;
+    for (c = 1; b &gt; 0; b = b &gt;&gt; 1) {
+        if (b % 2 == 1) c = c * a;
+        a = a * a;
+    }
+    printf("%d\n", c);
+    int s[64] = {0};
+    for (int j = 0; j &lt; 16; j++) s[j] = j;
+    for (int j = 15; j &gt;= 0; j--) s[j] += s[j + 1];   /* 由大到小 */
+    printf("%d %d %d\n", s[0], s[5], s[14]);
+    return 0;
+}</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：(a) 換數字；(b) 迴圈方向反過來，<code>s[j+1]</code> 在這一輪<strong>已經被改過了</strong>，結果完全不同。</li>
+<li>
+<p><strong>(a)</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>這輪的 b</th>
+<th>b 是奇數？</th>
+<th>c</th>
+<th>這輪結束時 a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>11（<code>1011</code>）</td>
+<td>是 → c ＝ 1 × 3</td>
+<td>3</td>
+<td>9</td>
+</tr>
+<tr>
+<td>5（<code>101</code>）</td>
+<td>是 → c ＝ 3 × 9</td>
+<td>27</td>
+<td>81</td>
+</tr>
+<tr>
+<td>2（<code>10</code>）</td>
+<td>否</td>
+<td>27</td>
+<td>6561</td>
+</tr>
+<tr>
+<td>1（<code>1</code>）</td>
+<td>是 → c ＝ 27 × 6561</td>
+<td>177147</td>
+<td>43046721</td>
+</tr>
+</tbody>
+</table>
+<p>印出 <strong>177147</strong> ＝ <span class="arithmatex">\(3^{11}\)</span>（11 ＝ <code>1011</code>，所以是 <span class="arithmatex">\(3^1\cdot3^2\cdot3^8\)</span>）。</p>
+</li>
+<li>
+<p><strong>(b)</strong>：j 從大到小，s[15] 先變成 15＋0，s[14] 加的是<strong>新的</strong> s[15]，以此類推，一輪就變成「從 j 加到 15」的<strong>後綴和</strong>：</p>
+<ul>
+<li>s[14] ＝ 14＋15 ＝ <strong>29</strong></li>
+<li>s[5] ＝ 5＋6＋…＋15 ＝ <strong>110</strong></li>
+<li>s[0] ＝ 0＋1＋…＋15 ＝ <strong>120</strong></li>
+</ul>
+</li>
+<li><strong>對照原題</strong>：j 由小到大時，s[j+1] 還是舊的值，每一輪只把相鄰兩個加起來。迴圈的方向決定了讀到的是舊值還是新值。</li>
+</ul>
+<p>這段程式用 gcc 實際編譯執行過，輸出跟上面一樣。</p>
+</details>
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> <code>printf("%d", 5 &amp; 3 | 4 ^ 6);</code></p>
 <details class="quiz">
@@ -3180,6 +3578,131 @@ swap(A[i + 1], A[r]);</code></pre>
 </ul>
 <p>用動畫對答案：把 <code>504,81,9,470,65,18,300</code> 貼進 <a href="#u2-4">2.4 的動畫</a>。</p>
 </details>
+<h3 id="u2-exam">2.8 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 112 Q2・換數字・延伸）(a) insertion sort 排 7, 2, 9, 4, 1, 8（由小到大），一共 swap 幾次？(b) 6 個不同的數，swap 次數最多是多少？什麼樣的輸入會達到？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了；(b) 問最壞情況，連到逆序對的最大值。</li>
+<li><strong>(a) 數逆序對</strong>（前面比後面大的對數；insertion sort 每次 swap 剛好消掉一個）：<ul>
+<li>7 後面比它小的：2、4、1 → 3</li>
+<li>2：1 → 1</li>
+<li>9：4、1、8 → 3</li>
+<li>4：1 → 1</li>
+<li>1：0；8：0</li>
+<li>合計 <strong>8 次</strong>。</li>
+</ul>
+</li>
+<li><strong>(b)</strong>：任兩個數最多形成一個逆序對，6 個數最多 <span class="arithmatex">\(\binom62=\)</span> <strong>15</strong> 次，輸入是<strong>完全反過來排</strong>（由大到小）的時候。</li>
+</ul>
+<p>我用程式實際跑 insertion sort 數 swap，也把 6 個數的 720 種排列都試過，最多就是 15 次。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 111 Q4・換數字）heap sort 排 6, 15, 3, 12, 9, 20, 1, 17（由小到大）。(a) 用 bottom-up 建 max-heap，寫出每一步之後的陣列 (b) 再做兩次「最大值換到最後、heap 縮小、sift-down」之後的陣列</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了，個數變成 8 個（最後一個非葉節點換了位置）。</li>
+<li>
+<p><strong>(a)</strong>：<span class="arithmatex">\(n=8\)</span>，最後一個非葉節點是 index <span class="arithmatex">\(\lfloor8/2\rfloor-1=3\)</span>。從 index 3 往前，每個做 sift-down（跟比較大的孩子換，一路往下）：</p>
+<table>
+<thead>
+<tr>
+<th>處理</th>
+<th>之後的陣列</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>index 3（12）</td>
+<td>6, 15, 3, 17, 9, 20, 1, 12</td>
+</tr>
+<tr>
+<td>index 2（3）</td>
+<td>6, 15, 20, 17, 9, 3, 1, 12</td>
+</tr>
+<tr>
+<td>index 1（15）</td>
+<td>6, 17, 20, 15, 9, 3, 1, 12</td>
+</tr>
+<tr>
+<td>index 0（6）</td>
+<td>20, 17, 6, 15, 9, 3, 1, 12</td>
+</tr>
+</tbody>
+</table>
+<p>max-heap：<strong>20, 17, 6, 15, 9, 3, 1, 12</strong>。</p>
+</li>
+<li>
+<p><strong>(b)</strong>：</p>
+<ul>
+<li>第 1 次：20 和最後的 12 交換，heap 剩前 7 個，12 往下沉 → <strong>17, 15, 6, 12, 9, 3, 1｜20</strong></li>
+<li>第 2 次：17 和 1 交換，heap 剩前 6 個，1 往下沉 → <strong>15, 12, 6, 1, 9, 3｜17, 20</strong></li>
+</ul>
+</li>
+</ul>
+<p>我用程式照 bottom-up 建 heap 和 sift-down 跑過，每一步都一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 114 Q2・換數字）用 LSD radix sort（基數 10）排 523, 158, 46, 307, 891, 72, 260。寫出每一輪之後的順序。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了，而且有兩位數、三位數混在一起，位數不夠的當成前面補 0（46 ＝ 046）。</li>
+<li><strong>第 1 輪（個位數）</strong>：0 → 260；1 → 891；2 → 72；3 → 523；6 → 46；7 → 307；8 → 158
+    <code>260, 891, 72, 523, 46, 307, 158</code></li>
+<li><strong>第 2 輪（十位數）</strong>：0 → 307；2 → 523；4 → 46；5 → 158；6 → 260；7 → 72；9 → 891
+    <code>307, 523, 46, 158, 260, 72, 891</code></li>
+<li><strong>第 3 輪（百位數）</strong>：0 → 46, 72（照上一輪的順序）；1 → 158；2 → 260；3 → 307；5 → 523；8 → 891
+    <code>46, 72, 158, 260, 307, 523, 891</code></li>
+<li><strong>重點</strong>：同一個桶子裡保持上一輪的順序（穩定），第 3 輪的 46 和 72 才會排對。</li>
+</ul>
+<p>我用程式模擬過三輪分配，答案一樣。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 104 Q1・量化）用原題的決策樹論證：比較排序在最壞情況下，(a) 排 5 個數至少要比較幾次？(b) 排 12 個數呢？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題證明 <span class="arithmatex">\(\Omega(n\lg n)\)</span>；這題把同一個論證代具體的數字，得到精確的下界。</li>
+<li><strong>論證</strong>：決策樹至少要有 <span class="arithmatex">\(n!\)</span> 片葉子（每一種排列都要有一片），高度 <span class="arithmatex">\(h\)</span> 的二元樹最多 <span class="arithmatex">\(2^h\)</span> 片葉子，所以 <span class="arithmatex">\(2^h\ge n!\)</span>，<span class="arithmatex">\(h\ge\lceil\lg n!\rceil\)</span>。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(5!=120\)</span>，<span class="arithmatex">\(2^6=64&lt;120\le128=2^7\)</span>，至少 <strong>7 次</strong>。</li>
+<li><strong>(b)</strong>：<span class="arithmatex">\(12!=479001600\)</span>，<span class="arithmatex">\(2^{28}\approx2.7\times10^8&lt;12!&lt;2^{29}\approx5.4\times10^8\)</span>，至少 <strong>29 次</strong>。</li>
+<li><strong>補充</strong>：merge sort 排 12 個數最壞要 33 次比較，比下界多一點；比較次數真的能達到下界的演算法很少。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 101 Q7・反過來問）有人說他能在 <span class="arithmatex">\(O(n)\)</span> 時間內排好 <span class="arithmatex">\(n\)</span> 個介於 0 到 <span class="arithmatex">\(n^2-1\)</span> 之間的整數。這跟原題「比較排序最壞至少 <span class="arithmatex">\(\Omega(n\lg n)\)</span>」矛盾嗎？說明怎麼做到。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題的 Supersort 是比較排序，不可能；這題的資料有範圍限制，可以不用比較。</li>
+<li><strong>不矛盾</strong>：<span class="arithmatex">\(\Omega(n\lg n)\)</span> 只限制「只靠比較」的排序。知道數字的範圍時，可以用數字本身當索引（counting sort、radix sort），不受這個下界限制。</li>
+<li><strong>做法</strong>：把每個數寫成 <span class="arithmatex">\(n\)</span> 進位的兩位數（<span class="arithmatex">\(0\le x&lt;n^2\)</span> ⇒ <span class="arithmatex">\(x=a\cdot n+b\)</span>，<span class="arithmatex">\(0\le a,b&lt;n\)</span>），做兩輪 counting sort（先按 <span class="arithmatex">\(b\)</span>、再按 <span class="arithmatex">\(a\)</span>，每輪都穩定）。每輪 <span class="arithmatex">\(O(n+n)=O(n)\)</span>，兩輪還是 <span class="arithmatex">\(O(n)\)</span>。</li>
+<li><strong>對照</strong>：如果直接對 0 到 <span class="arithmatex">\(n^2-1\)</span> 做 counting sort，要開 <span class="arithmatex">\(n^2\)</span> 個桶子，是 <span class="arithmatex">\(O(n^2)\)</span>，反而慢。</li>
+</ul>
+</details>
+<p><strong>考古變化 6.</strong>（改自 105 Q6(3)、107 Q5(5)・實際算）quicksort 用「最後一個元素當 pivot」（Lomuto partition，每次分割比較 pivot 以外的每個元素一次）。排 8 個數 1, 2, …, 8（已經排好），一共比較幾次？如果輸入是 8, 7, …, 1 呢？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題要證明最壞是 <span class="arithmatex">\(O(n^2)\)</span>；這題把最壞情況的比較次數真的數出來。</li>
+<li><strong>已排好的輸入</strong>：pivot 永遠是最大的，每次只切掉 pivot 自己，剩下 <span class="arithmatex">\(n-1\)</span> 個：比較 <span class="arithmatex">\(7+6+\cdots+1=\frac{8\times7}{2}=\)</span> <strong>28 次</strong>。</li>
+<li><strong>反過來的輸入</strong>：pivot 永遠是最小的，一樣只切掉自己，也是 <strong>28 次</strong>。</li>
+<li><strong>一般式</strong>：最壞 <span class="arithmatex">\(\frac{n(n-1)}{2}=\Theta(n^2)\)</span>。所以「已經排好」對這個版本的 quicksort 反而是最壞情況；隨機選 pivot 或取三個數的中位數可以避開。</li>
+</ul>
+<p>我用程式實際跑了這個版本的 quicksort，數到的比較次數一樣。</p>
+</details>
+<p><strong>考古變化 7.</strong>（改自 106 Q9・換條件）如果 quicksort 的 pivot 每次都把陣列切成 1 : 9（一邊 10%、一邊 90%），時間複雜度是多少？<span class="arithmatex">\(n=10^6\)</span> 時，遞迴樹大約有幾層？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題是「好壞輪流」；這題每次都切得很不平均，但比例固定。</li>
+<li><strong>遞迴式</strong>：<span class="arithmatex">\(T(n)=T(n/10)+T(9n/10)+cn\)</span>。</li>
+<li><strong>遞迴樹</strong>：每一層的工作加起來最多 <span class="arithmatex">\(cn\)</span>；最長的路徑是一直走 90% 那邊，長度 <span class="arithmatex">\(\log_{10/9}n\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(T(n)=\Theta(n\lg n)\)</span>。只要每次切掉固定的<strong>比例</strong>，不管比例多難看，都是 <span class="arithmatex">\(n\lg n\)</span>，只是常數比較大。</li>
+<li><strong><span class="arithmatex">\(n=10^6\)</span></strong>：<span class="arithmatex">\(\log_{10/9}10^6=\frac{6}{\log_{10}(10/9)}\approx\frac{6}{0.0458}\approx\)</span> <strong>131 層</strong>（切一半的話只要 <span class="arithmatex">\(\lg10^6\approx20\)</span> 層）。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
 <h3 id="u2-quiz">單元 2 小考</h3>
 <p><strong>2-1.</strong> 5, 1, 4, 2, 3 用 insertion sort 要 swap 幾次？</p>
 <details class="quiz">
@@ -3291,8 +3814,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </table>
 <p>名字裡的 pre／in／post 就是「根在前面、中間、後面」。大一點的樹，對每棵子樹遞迴套用同一個規則。</p>
 <p>動畫裡藍色是「現在在哪個節點」，虛線圈是「還沒走完、等著回來的祖先」，綠色是已經輸出的。換一種走訪比較看看，樹也可以自己改（一層一層從左到右寫，<code>#</code> 表示那個位置是空的）：</p>
-<div class="viz" data-viz="traverse" data-tree="A,B,C,D,E,#,F"></div>
-
+<p><div class="viz" data-viz="traverse" data-tree="A,B,C,D,E,#,F"></div></p>
 <h4 id="_15">為什麼可以由走訪結果重建樹</h4>
 <ul>
 <li>preorder 的<strong>第一個</strong>、postorder 的<strong>最後一個</strong>一定是根。</li>
@@ -4914,6 +5436,239 @@ swap(A[i + 1], A[r]);</code></pre>
 </ul>
 <p>用動畫對答案：把 <code>W 40, X 25, Y 9, Z 13, V 4, U 6</code> 貼進 <a href="#u3-huff">3.6 的動畫</a>，選「頻率小的放左邊」。</p>
 </details>
+<h3 id="u3-exam">3.9 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 115 Q6・換資料・換組合）inorder 是 H D I B E A F C G，<strong>preorder</strong> 是 A B D H I E C F G，求 postorder。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題給 inorder ＋ postorder；這題給 inorder ＋ <strong>preorder</strong>，根改從 preorder 的<strong>最前面</strong>拿。</li>
+<li><strong>1. 整棵樹</strong>：preorder 第一個 <strong>A</strong> 是根。inorder 切成左 H D I B E、右 F C G。</li>
+<li><strong>2. 左子樹</strong>（preorder B D H I E）：根 <strong>B</strong>；inorder H D I B E → 左 H D I、右 E。<ul>
+<li>H D I 的 preorder 是 D H I，根 <strong>D</strong>，左 H、右 I。</li>
+</ul>
+</li>
+<li><strong>3. 右子樹</strong>（preorder C F G）：根 <strong>C</strong>；inorder F C G → 左 F、右 G。</li>
+<li><strong>4. postorder（左右根）</strong>：左子樹 H I D E B，右子樹 F G C，最後 A：<strong>H I D E B F G C A</strong>。</li>
+</ul>
+<p>我用程式由兩種走訪重建這棵樹，再輸出 postorder，答案一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 111 Q3・換數字）依序插入 8, 3, 10, 1, 6, 14, 4, 7, 13 建 BST，再刪除 3、接著刪除 8（刪除有兩個孩子的點時，用 inorder successor 取代）。寫出每次刪除後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了；第二次刪的是<strong>根</strong>，而且 successor 沒有左孩子、只有右子樹，要看清楚誰接上去。</li>
+<li><strong>插入後</strong>：根 8；左邊 3（左子 1、右子 6；6 的左子 4、右子 7）；右邊 10（右子 14；14 的左子 13）。</li>
+<li><strong>刪除 3</strong>：兩個孩子 → successor 是右子樹最小的 <strong>4</strong>。4 搬到 3 的位置；4 原本是葉子，直接拿掉。<ul>
+<li>結果：根 8；左邊 4（左子 1、右子 6；6 只剩右子 7）；右邊 10（右子 14、14 的左子 13）。</li>
+</ul>
+</li>
+<li><strong>刪除 8</strong>：successor 是右子樹最小的 <strong>10</strong>（10 沒有左孩子）。10 搬到根，10 原本的位置由它的右子樹 14 接上。<ul>
+<li>結果：根 <strong>10</strong>；左邊 4（左子 1、右子 6、6 的右子 7）；右邊 <strong>14</strong>（左子 13）。</li>
+</ul>
+</li>
+<li><strong>檢查</strong>：中序走訪 1, 4, 6, 7, 10, 13, 14 由小到大，是合法的 BST。</li>
+</ul>
+<p>我用程式照同樣的規則插入、刪除，每一步的樹都一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 114 Q3・換數字）AVL 樹：根 20，左子 10（10 的孩子 5、15），右子 30。(a) 插入 12 (b) 插入 3（不插 12）。各需要哪一種旋轉？寫出結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了，兩小題剛好又是 LR 和 LL 兩種情況，練習判斷。</li>
+<li><strong>(a) 插入 12</strong>：12 ＜ 20 往左、12 ＞ 10 往右、12 ＜ 15 往左，放在 15 的左邊。<ul>
+<li>20 的左子樹高 3、右子樹高 1，不平衡。新節點在左子樹（10）的<strong>右邊</strong>（15）→ <strong>LR</strong>：先對 10 左旋、再對 20 右旋。</li>
+<li>結果：根 <strong>15</strong>，左子樹 10（5、12），右子樹 20（右子 30）。</li>
+</ul>
+</li>
+<li><strong>(b) 插入 3</strong>：放在 5 的左邊。20 不平衡，新節點在左子樹（10）的<strong>左邊</strong>（5）→ <strong>LL</strong>：對 20 右旋。<ul>
+<li>結果：根 <strong>10</strong>，左子樹 5（左子 3），右子樹 20（15、30）。</li>
+</ul>
+</li>
+</ul>
+<p>我用程式實作 AVL 插入（含四種旋轉）跑過，兩題的結果都一樣。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 112 Q3・換數字）A～E 的搜尋頻率是 3, 1, 4, 2, 5。用動態規劃建 optimal BST（成本 ＝ 每個節點的頻率 × 深度，根的深度是 1），寫出每個區間的最小成本和根，以及整棵樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了、節點少一個，但表一樣要從長度 1 填到全部。</li>
+<li><strong>遞迴式</strong>：<span class="arithmatex">\(c(i,j)=\min_{i\le r\le j}\{c(i,r-1)+c(r+1,j)\}+w(i,j)\)</span>，<span class="arithmatex">\(w(i,j)\)</span> 是區間裡頻率的總和（整棵子樹往下一層，每個點都多算一次）。</li>
+<li>
+<p><strong>表</strong>（每一格寫「最小成本（根）」，區間用頭尾字母表示）：</p>
+<table>
+<thead>
+<tr>
+<th>長度</th>
+<th>各區間</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A 3（A）、B 1（B）、C 4（C）、D 2（D）、E 5（E）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AB 5（A）、BC 6（C）、CD 8（C）、DE 9（E）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>AC 13（C）、BD 10（C）、CE 19（E）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>AD 17（C）、BE 22（C）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>AE 29（C）</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>答案</strong>：最小成本 <strong>29</strong>，根是 <strong>C</strong>。左邊 AB 的根是 A（B 在 A 的右邊），右邊 DE 的根是 E（D 在 E 的左邊）：<span class="arithmatex">\(5+9+15=29\)</span>。</p>
+</li>
+<li><strong>平手</strong>：區間 B～E 用 C 或 E 當根都是 22，表裡寫哪一個都可以，不影響整棵樹的答案。</li>
+<li><strong>直覺</strong>：頻率最高的 E 不一定當根；C 放中間能把兩邊分得比較平均，總成本最小。</li>
+</ul>
+<p>我用程式跑過這個動態規劃，也把所有可能的 BST 都算過成本，最小值一樣是 29。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 106 Q10、100 Q7・換式子）把 A × (B ＋ C) − D ÷ (E − F) 轉成後序式和前序式，並說明運算式樹的根是哪個運算子。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：式子換了；這題的根是最後算的 −，左右兩邊各有一組括號。</li>
+<li><strong>全部加括號</strong>：<span class="arithmatex">\((A\times(B+C))-(D\div(E-F))\)</span>。最後算的是中間的 −，它就是運算式樹的<strong>根</strong>；左子樹是 <span class="arithmatex">\(A\times(B+C)\)</span>、右子樹是 <span class="arithmatex">\(D\div(E-F)\)</span>。</li>
+<li><strong>後序式（左右根）</strong>：<strong>A B C ＋ × D E F − ÷ −</strong></li>
+<li><strong>前序式（根左右）</strong>：<strong>− × A ＋ B C ÷ D − E F</strong></li>
+<li><strong>驗算</strong>：兩個式子裡運算元的順序都是 A B C D E F，跟原式一樣，只有運算子的位置不同。</li>
+</ul>
+<p>我用程式（stack 版的中序轉後序）轉換過，再由後序式建樹輸出前序式，答案一樣。</p>
+</details>
+<p><strong>考古變化 6.</strong>（改自 103 Q7(2)、107 Q5(2)・換式子）算出後序式的值，並寫出中序式：(a) 5 1 2 ＋ 4 × ＋ 3 − (b) 9 3 − 2 ÷ 4 6 × ＋</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：式子換了；(b) 有減法和除法，要注意先 pop 出來的是<strong>右</strong>運算元。</li>
+<li><strong>(a)</strong> 用 stack（右邊是 top）：<ul>
+<li>5 1 2 → push；＋ → 1 ＋ 2 ＝ 3（stack：5 3）</li>
+<li>4 → push；× → 3 × 4 ＝ 12（stack：5 12）</li>
+<li>＋ → 5 ＋ 12 ＝ 17；3 → push；− → 17 − 3 ＝ <strong>14</strong></li>
+<li>中序式：<span class="arithmatex">\(5+(1+2)\times4-3\)</span></li>
+</ul>
+</li>
+<li><strong>(b)</strong>：<ul>
+<li>9 3 − → 9 − 3 ＝ 6（不是 3 − 9）</li>
+<li>2 ÷ → 6 ÷ 2 ＝ 3</li>
+<li>4 6 × → 24；＋ → 3 ＋ 24 ＝ <strong>27</strong></li>
+<li>中序式：<span class="arithmatex">\((9-3)\div2+4\times6\)</span></li>
+</ul>
+</li>
+</ul>
+<p>我用程式（stack）算過兩個後序式，答案一樣。</p>
+</details>
+<p><strong>考古變化 7.</strong>（改自 104 Q2(2)・換式子）前序式 − × ＋ 2 3 4 ÷ 8 2 轉成中序式並算出結果。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：換成有減法和除法的前序式，由右往左用 stack 時，<strong>先 pop 出來的是左運算元</strong>（跟後序式相反）。</li>
+<li><strong>由右往左</strong>：2、8 push；÷ → pop 出 8（左）、2（右）→ 8 ÷ 2 ＝ 4；4 push；3、2 push；＋ → 2 ＋ 3 ＝ 5；× → 5 × 4 ＝ 20；− → 20 − 4 ＝ <strong>16</strong>。</li>
+<li><strong>或由左往右切</strong>：最前面的 − 有兩個運算元：第一個是「× ＋ 2 3 4」＝ (2 ＋ 3) × 4，第二個是「÷ 8 2」＝ 8 ÷ 2。</li>
+<li><strong>中序式</strong>：<span class="arithmatex">\((2+3)\times4-8\div2=20-4=16\)</span>。</li>
+</ul>
+<p>我用程式（由右往左的 stack）算過，答案一樣。</p>
+</details>
+<p><strong>考古變化 8.</strong>（改自 102 Q1(5)・換敘述）關於運算式的敘述，哪些對？(A) 同一個運算式的前序式和後序式，運算元的出現順序一樣 (B) 把後序式整串反過來，就是前序式 (C) 後序式的最後一個符號一定是運算子（式子裡至少一個運算子時）(D) 中序式不加括號，有些運算順序表示不出來</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：同樣是判斷題，換成四個常被搞混的性質。</li>
+<li><strong>(A) 對</strong>：三種走訪都是「左子樹的東西在右子樹的東西前面」，運算元（葉子）的相對順序不會變。</li>
+<li><strong>(B) 錯</strong>：反過來的後序式是「根右左」，前序式是「根左右」，左右顛倒了。例如 <span class="arithmatex">\(A\times(B+C)-D\div(E-F)\)</span> 的後序式反過來是 − ÷ − F E D × ＋ C B A，跟前序式 − × A ＋ B C ÷ D − E F 不一樣。</li>
+<li><strong>(C) 對</strong>：根（最後算的運算子）在後序式的最後一個位置。</li>
+<li><strong>(D) 對</strong>：例如 <span class="arithmatex">\((A+B)\times C\)</span>，不加括號寫成 <span class="arithmatex">\(A+B\times C\)</span> 就變成另一個式子；前序式、後序式都不需要括號。</li>
+<li><strong>答案</strong>：<strong>A、C、D</strong>。</li>
+</ul>
+<p>我用程式拿上一題的式子檢查過 (A)、(B)。</p>
+</details>
+<p><strong>考古變化 9.</strong>（改自 101 Q8・換數字）10000 個字元的文章只有 A～F 六種字元，各出現 4000、2000、1500、1500、600、400 次。固定長度編碼和 Huffman 編碼各要幾個位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：頻率換了，而且有兩個 1500 一樣大；不管平手時選哪一個，總位元數都一樣。</li>
+<li><strong>固定長度</strong>：6 種要 3 位元，<span class="arithmatex">\(10000\times3=\)</span> <strong>30000</strong> 位元。</li>
+<li><strong>Huffman</strong>（每次合併最小的兩個）：<ul>
+<li>400 ＋ 600 ＝ 1000</li>
+<li>1000 ＋ 1500 ＝ 2500</li>
+<li>1500 ＋ 2000 ＝ 3500</li>
+<li>2500 ＋ 3500 ＝ 6000</li>
+<li>4000 ＋ 6000 ＝ 10000</li>
+</ul>
+</li>
+<li><strong>總位元數 ＝ 所有合併出來的節點加總</strong>（每合併一次，底下的字元都多一個位元）：<span class="arithmatex">\(1000+2500+3500+6000+10000=\)</span> <strong>23000</strong> 位元，比固定長度省了約 23%。</li>
+<li><strong>碼長</strong>：A 1 位元；B、C、D 各 3 位元；E、F 各 4 位元。驗算 <span class="arithmatex">\(4000\times1+2000\times3+1500\times3+1500\times3+600\times4+400\times4=23000\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式跑過 Huffman，總位元數一樣。</p>
+</details>
+<p><strong>考古變化 10.</strong>（改自 102 Q4・換數字）A～F 的頻率是 4、7、4、2、7、10。照原題的規則：內部節點的標籤是左右子標籤接起來；合併時標籤字母順序小的當左子；最小頻率相同時，挑標籤字母順序小的。寫出每一步，並求每個字元的碼。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了，平手的情況更多（兩個 4、兩個 7、兩個 10），規則每一步都會用到。</li>
+<li>
+<p><strong>合併過程</strong>（「左、右」照標籤字母順序）：</p>
+<table>
+<thead>
+<tr>
+<th>步</th>
+<th>合併（左、右）</th>
+<th>新節點</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>A 4、D 2</td>
+<td>AD 6</td>
+</tr>
+<tr>
+<td>2</td>
+<td>AD 6、C 4</td>
+<td>ADC 10</td>
+</tr>
+<tr>
+<td>3</td>
+<td>B 7、E 7</td>
+<td>BE 14</td>
+</tr>
+<tr>
+<td>4</td>
+<td>ADC 10、F 10</td>
+<td>ADCF 20</td>
+</tr>
+<tr>
+<td>5</td>
+<td>ADCF 20、BE 14</td>
+<td>ADCFBE 34</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>每一步的理由</strong>：</p>
+<ul>
+<li>第 1 步：最小的是 D 2，再來 A 4 和 C 4 平手，挑字母小的 A。標籤 A ＜ D，A 放左邊。</li>
+<li>第 2 步：剩 C 4、AD 6；AD ＜ C（比第一個字母 A ＜ C），AD 放左邊。</li>
+<li>第 3 步：B 7、E 7 最小。第 4 步：ADC 10 和 F 10。第 5 步：ADCF 20 和 BE 14，ADCF ＜ BE 放左邊。</li>
+</ul>
+</li>
+<li><strong>碼</strong>（左 0、右 1）：A ＝ 0000、D ＝ 0001、C ＝ 001、F ＝ 01、B ＝ 10、E ＝ 11。</li>
+<li><strong>檢查</strong>：總位元數 <span class="arithmatex">\(4\times4+2\times4+4\times3+10\times2+7\times2+7\times2=84\)</span>，等於所有合併節點的加總 <span class="arithmatex">\(6+10+14+20+34=84\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式照這三條規則跑過，每一步都一樣。</p>
+</details>
 <h3 id="u3-quiz">單元 3 小考</h3>
 <p><strong>3-1.</strong> preorder ABDECF、inorder DBEAFC，postorder 是什麼？</p>
 <details class="quiz">
@@ -5855,6 +6610,127 @@ swap(A[i + 1], A[r]);</code></pre>
 </table>
 <p><strong>答案</strong>：[0]=31、[2]=41、[5]=18、[6]=32、[7]=59、[8]=73、[9]=22、[10]=44，其他是空的；共碰撞 <strong>3</strong> 次。</p>
 <p>用動畫對答案：在 <a href="#u4-1">4.1 的動畫</a> 填 key <code>18,41,22,44,59,32,31,73</code>、M ＝ 13，碰撞時選 double hashing、R ＝ 7。</p>
+</details>
+<h3 id="u4-exam">4.5 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 115 Q7・換數字）表的大小 <span class="arithmatex">\(M=13\)</span>，double hashing：<span class="arithmatex">\(h_1=k\bmod13\)</span>、<span class="arithmatex">\(h_2=7-(k\bmod7)\)</span>，第 <span class="arithmatex">\(i\)</span> 次探測的位置是 <span class="arithmatex">\((h_1+i\cdot h_2)\bmod13\)</span>。依序插入 18, 41, 22, 44, 59, 32, 31, 73，每個 key 放在哪？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：表變大、key 變多，會出現探測兩次以上的情況（31）。</li>
+<li>
+<p><strong>逐一插入</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th><span class="arithmatex">\(h_1\)</span></th>
+<th><span class="arithmatex">\(h_2\)</span></th>
+<th>探測</th>
+<th>放在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>18</td>
+<td>5</td>
+<td>3</td>
+<td>5</td>
+<td>5</td>
+</tr>
+<tr>
+<td>41</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>22</td>
+<td>9</td>
+<td>6</td>
+<td>9</td>
+<td>9</td>
+</tr>
+<tr>
+<td>44</td>
+<td>5</td>
+<td>5</td>
+<td>5 佔用 → 10</td>
+<td>10</td>
+</tr>
+<tr>
+<td>59</td>
+<td>7</td>
+<td>4</td>
+<td>7</td>
+<td>7</td>
+</tr>
+<tr>
+<td>32</td>
+<td>6</td>
+<td>3</td>
+<td>6</td>
+<td>6</td>
+</tr>
+<tr>
+<td>31</td>
+<td>5</td>
+<td>4</td>
+<td>5 佔用 → 9 佔用 → 0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>73</td>
+<td>8</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>31 怎麼來的</strong>：<span class="arithmatex">\(h_1=5\)</span> 被 18 佔了；<span class="arithmatex">\(h_2=7-3=4\)</span>，下一個是 9，被 22 佔了；再下一個是 <span class="arithmatex">\(5+2\times4=13\equiv0\)</span>，空的。</p>
+</li>
+<li><strong>為什麼 <span class="arithmatex">\(h_2\)</span> 不能是 0</strong>：<span class="arithmatex">\(h_2=0\)</span> 會一直探測同一格。這裡 <span class="arithmatex">\(7-(k\bmod7)\)</span> 的範圍是 1～7，永遠不是 0；而 13 是質數，任何 <span class="arithmatex">\(h_2\)</span> 都能走遍整張表。</li>
+</ul>
+<p>我用程式照同樣的公式插入過，每個 key 的位置都一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 104 Q2(3)・量化）用 chaining，表有 <span class="arithmatex">\(m=1000\)</span> 格，放了 <span class="arithmatex">\(n=2000\)</span> 個 key（simple uniform hashing）。(a) 失敗的搜尋平均要檢查幾個元素？(b) 成功的搜尋呢？(c) 想讓失敗的搜尋平均只檢查 0.5 個元素，表至少要幾格？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只要說出 <span class="arithmatex">\(\Theta(1+\alpha)\)</span>；這題代數字，並反過來問表的大小。</li>
+<li><strong>load factor</strong>：<span class="arithmatex">\(\alpha=\frac nm=2\)</span>。</li>
+<li><strong>(a)</strong>：失敗的搜尋要把那一格的串列整條走完，平均長度 <span class="arithmatex">\(\alpha\)</span>：檢查 <strong>2 個</strong>元素（加上算雜湊值，<span class="arithmatex">\(\Theta(1+\alpha)\)</span>）。</li>
+<li><strong>(b)</strong>：成功的搜尋平均檢查 <span class="arithmatex">\(1+\frac{\alpha}{2}-\frac{\alpha}{2n}\approx\)</span> <strong>2 個</strong>元素（要找的那個 key 平均排在串列中間，再加上它自己）。</li>
+<li><strong>(c)</strong>：要 <span class="arithmatex">\(\alpha=\frac{2000}{m}\le0.5\)</span>，<span class="arithmatex">\(m\ge\)</span> <strong>4000</strong> 格。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 105 Q5(1)・改條件）用 universal hashing 把 <span class="arithmatex">\(n\)</span> 個 key 放進表裡。(a) 表的大小是 <span class="arithmatex">\(2n^2\)</span> 時，至少發生一次碰撞的機率上限是多少？(b) 表的大小只有 <span class="arithmatex">\(n\)</span> 時，碰撞的對數期望值是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題表的大小是 <span class="arithmatex">\(n^2\)</span>、上限 <span class="arithmatex">\(\frac12\)</span>；這題換兩種大小，看出表越大越不容易碰撞。</li>
+<li><strong>共同的步驟</strong>：<span class="arithmatex">\(n\)</span> 個 key 有 <span class="arithmatex">\(\binom n2\)</span> 對，universal 保證每一對碰撞的機率 <span class="arithmatex">\(\le\frac1m\)</span>；令 <span class="arithmatex">\(X\)</span> 是碰撞的對數，<span class="arithmatex">\(E[X]\le\binom n2\cdot\frac1m\)</span>。</li>
+<li><strong>(a)</strong> <span class="arithmatex">\(m=2n^2\)</span>：<span class="arithmatex">\(E[X]\le\frac{n(n-1)}{2}\cdot\frac{1}{2n^2}&lt;\frac14\)</span>。由 Markov 不等式，<span class="arithmatex">\(\Pr[X\ge1]\le E[X]&lt;\)</span> <strong><span class="arithmatex">\(\frac14\)</span></strong>。</li>
+<li><strong>(b)</strong> <span class="arithmatex">\(m=n\)</span>：<span class="arithmatex">\(E[X]\le\frac{n(n-1)}{2}\cdot\frac1n=\)</span> <strong><span class="arithmatex">\(\frac{n-1}{2}\)</span></strong>，幾乎一定會碰撞，只能用 chaining 處理。</li>
+<li><strong>用途</strong>：perfect hashing 的第二層選平方大小，就是為了讓「完全不碰撞」的機率夠高，試幾次就找得到。</li>
+</ul>
+</details>
+<p><strong>考古變化 4.</strong>（改自 103 Q9・延伸）用 linear probing（<span class="arithmatex">\(h(k)=k\bmod10\)</span>）依序插入 5、15、25。如果刪除 15 時直接把那一格清空，接著搜尋 25 會發生什麼事？應該怎麼刪除？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題問 chaining 怎麼解決碰撞；這題換成 open addressing，看它刪除時的麻煩。</li>
+<li><strong>插入</strong>：5 放在第 5 格；15 撞到第 5 格，往後放第 6 格；25 撞到第 5、6 格，放第 7 格。</li>
+<li><strong>直接清空第 6 格</strong>：搜尋 25 時從第 5 格開始，不是 25；第 6 格是空的，就以為「25 不在表裡」而停下來。但 25 明明在第 7 格，<strong>找不到了</strong>。</li>
+<li><strong>正確做法</strong>：刪除時不清空，而是標成 <strong>DELETED</strong>（墓碑）。搜尋時遇到 DELETED 繼續往下找；插入時可以把新 key 放進 DELETED 的格子。</li>
+<li><strong>代價</strong>：DELETED 一多，搜尋變慢，所以刪除很多的情況比較適合 chaining。</li>
+</ul>
+<p>我用程式模擬過：直接清空之後，搜尋 25 會回報找不到。</p>
 </details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> <span class="arithmatex">\(M=7\)</span>、linear probing、<span class="arithmatex">\(h=k\bmod7\)</span>，插入 10, 3, 17, 24 的結果？</p>
@@ -7354,6 +8230,70 @@ swap(A[i + 1], A[r]);</code></pre>
 <p><strong>DFS（B, A, C, F, D, G, E）</strong>：每次走到第一個還沒拜訪的鄰居，走不下去才退回。往下走的邊依序是 B→A、A→C、C→F、F→D、D→G、F→E。</p>
 <p>用動畫對答案：把 <code>A-B, A-C, A-E, A-G, B-C, B-G, C-F, D-F, D-G, E-F, F-G</code> 貼進 <a href="#u5-bfs">5.2 的動畫</a>，起點 B，演算法選 BFS、DFS 各跑一次。</p>
 </details>
+<h3 id="u5-exam">5.6 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 115 Q8・換起點・換演算法）同一張圖（邊：AB 2、AC 4、AE 5、BC 1、BD 9、BF 7、CE 6、CF 10、DF 8、EF 3）。(a) 用 Kruskal 找最小生成樹，寫出每條邊加入或跳過的理由 (b) 改從 D 開始用 Prim，邊的加入順序是什麼？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題從 A 用 Prim；這題換 Kruskal，再換起點，確認兩種方法得到同樣的總權重。</li>
+<li><strong>(a) Kruskal</strong>（由小到大）：<ul>
+<li>BC 1 加入；AB 2 加入；EF 3 加入。</li>
+<li>AC 4：A、C 已經透過 B 連在一起，<strong>會成環，跳過</strong>。</li>
+<li>AE 5 加入（把 {A,B,C} 和 {E,F} 連起來）。</li>
+<li>CE 6、BF 7：都會成環，跳過。</li>
+<li>DF 8 加入，已經 5 條邊（6 個點），結束。總權重 <span class="arithmatex">\(1+2+3+5+8=\)</span> <strong>19</strong>。</li>
+</ul>
+</li>
+<li><strong>(b) Prim 從 D</strong>：D 只有 BD 9、DF 8 → <strong>DF 8</strong>；從 {D,F} 出去最小的是 <strong>FE 3</strong>；再來是 <strong>EA 5</strong>（比 CE 6、BF 7 小）；接著 <strong>AB 2</strong>、<strong>BC 1</strong>。總權重一樣是 <strong>19</strong>。</li>
+<li><strong>觀察</strong>：Prim 從 D 開始時，第一條邊就是 8，但最後的樹跟 Kruskal 完全一樣（這張圖的權重都不同，最小生成樹唯一）。</li>
+</ul>
+<p>我用程式跑過 Kruskal 和 Prim，加入的邊和總權重都一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 105 Q8・換起點）同一張圖（(A,B) 10、(A,C) 9、(B,C) 14、(B,D) 3、(B,E) 5、(C,E) 7、(D,F) 6、(D,G) 1、(E,F) 2、(E,H) 8、(F,G) 7、(G,H) 11、(G,I) 8、(H,I) 4），鄰居照字母順序。(1) 從 A 做 BFS (2) 從 I 做 DFS (3) 從 A 做 Prim</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：起點全部換了；DFS 從 I 出發會一路往深處走，跟 BFS 的順序差很多。</li>
+<li><strong>(1) BFS 從 A</strong>：A 的鄰居 B、C；B 帶出 D、E；C 沒有新的；D 帶出 F、G；E 帶出 H；G 帶出 I。<ul>
+<li>順序：<strong>A, B, C, D, E, F, G, H, I</strong>。</li>
+</ul>
+</li>
+<li><strong>(2) DFS 從 I</strong>：I 的鄰居 G、H，先走 G；G 的鄰居 D、F、H、I，先走 D；D → B；B → A；A → C；C → E；E → F；F 都走過了，退回 E → H。<ul>
+<li>順序：<strong>I, G, D, B, A, C, E, F, H</strong>。</li>
+</ul>
+</li>
+<li><strong>(3) Prim 從 A</strong>：AC 9 → CE 7 → EF 2 → EB 5 → BD 3 → DG 1 → EH 8 → HI 4，總權重 <strong>39</strong>（跟原題的 Kruskal、從 I 的 Prim 一樣）。<ul>
+<li>第一步只能在 AB 10、AC 9 裡選，所以先選 9；之後每一步都選「樹內連到樹外」最小的邊。</li>
+</ul>
+</li>
+</ul>
+<p>我用程式跑過 BFS、DFS（鄰居照字母順序）和 Prim，答案一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 107 Q5(1)、103 Q7(1)・換資料）一棵二元樹（每個內部節點都有兩個孩子）的 BFS 是 a, b, c, d, e, f, g, h, i，DFS（preorder）是 a, b, d, e, h, i, c, f, g。畫出這棵樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：資料換了；這題每個內部節點都有兩個孩子，左右不會有歧義。</li>
+<li><strong>方法</strong>：照 DFS 的順序一個一個放。DFS 的下一個點，要嘛是目前這個點的孩子，要嘛是某個祖先的孩子；用 BFS 判斷它跟誰同一層（BFS 裡兄弟會排在一起）。</li>
+<li><strong>逐步</strong>：<ul>
+<li>a 是根。b 是 a 的孩子；d 是 b 的孩子。</li>
+<li>e：BFS 裡 e 緊接在 d 後面、都排在 c 後面，跟 d 在同一層，所以 e 不是 d 的孩子，而是 d 的兄弟，也就是 b 的右孩子。</li>
+<li>h、i：BFS 裡排在最後一層，DFS 接在 e 後面 → e 的兩個孩子。</li>
+<li>c：BFS 裡 b 後面是 c → c 是 b 的兄弟，a 的右孩子；f、g 是 c 的孩子。</li>
+</ul>
+</li>
+<li><strong>答案</strong>：
+    <pre class="highlight"><code class="language-text">        a
+      /   \
+     b     c
+    / \   / \
+   d   e f   g
+      / \
+     h   i</code></pre></li>
+</ul>
+<p>我用程式由這棵樹算出 BFS 和 DFS，跟題目給的一樣。</p>
+</details>
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> 同一張圖用 Kruskal，加邊的順序？</p>
 <details class="quiz">
@@ -8807,6 +9747,86 @@ swap(A[i + 1], A[r]);</code></pre>
 </ul>
 <p>我用程式把所有拿法都試過，最大也是 9。</p>
 </details>
+<h3 id="u6-exam">6.6 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 114 Q4・換數字・改條件）(a) 用原題的遞迴式算 <span class="arithmatex">\(p(4)\)</span>、<span class="arithmatex">\(p(5)\)</span> (b) 4 對括號的合法序列中，有幾個<strong>不是</strong>「整串被一對括號包起來」的形式（也就是不能寫成 <code>(S)</code>）？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：(a) 往下多算兩項；(b) 改條件，要用原題「看第一個左括號配對的右括號」的想法拆解。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(p(n)=\sum_{k=0}^{n-1}p(k)\,p(n-1-k)\)</span>，<span class="arithmatex">\(p(0)=1\)</span>、<span class="arithmatex">\(p(1)=1\)</span>、<span class="arithmatex">\(p(2)=2\)</span>、<span class="arithmatex">\(p(3)=5\)</span>：<ul>
+<li><span class="arithmatex">\(p(4)=p(0)p(3)+p(1)p(2)+p(2)p(1)+p(3)p(0)=5+2+2+5=\)</span> <strong>14</strong></li>
+<li><span class="arithmatex">\(p(5)=14+5+4+5+14=\)</span> <strong>42</strong>（就是 Catalan 數）</li>
+</ul>
+</li>
+<li><strong>(b)</strong>：「整串被包起來」＝ 第一個左括號配對的是最後一個右括號，裡面是任意 3 對的合法序列，有 <span class="arithmatex">\(p(3)=5\)</span> 個。其他的就是答案：<span class="arithmatex">\(14-5=\)</span> <strong>9</strong>。</li>
+</ul>
+<p>我用程式把 4 對、5 對括號的合法序列全部列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 111 Q2・換數字）A, B, C, D, E 依序 push（中間可以隨時 pop）。(a) 合法的輸出序列有幾個？不可能的有幾個？(b) 不可能的序列依開頭字母分別有幾個？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：4 個字母換成 5 個，總數變大，要用公式和「開頭字母決定 stack 裡剩什麼」的想法數，不能一個一個列。</li>
+<li><strong>(a)</strong>：合法的是 Catalan 數 <span class="arithmatex">\(C_5=\frac{1}{6}\binom{10}{5}=\)</span> <strong>42</strong>；全部 <span class="arithmatex">\(5!=120\)</span> 種，不可能的 <strong>78</strong> 種。</li>
+<li><strong>(b) 以某個字母開頭</strong>：要先把它前面的字母都 push 進去，它才能第一個出來。開頭是第 <span class="arithmatex">\(k\)</span> 個字母時，stack 裡由下到上是前 <span class="arithmatex">\(k-1\)</span> 個，後面還有 <span class="arithmatex">\(5-k\)</span> 個沒 push。<ul>
+<li>合法的個數 ＝ 「stack 裡的 <span class="arithmatex">\(k-1\)</span> 個只能照反順序出來，中間可以穿插還沒 push 的」，依序是 14、14、9、4、1（加起來 42）。</li>
+<li>不可能的 ＝ <span class="arithmatex">\(24-\)</span> 合法：開頭 A <strong>10</strong>、B <strong>10</strong>、C <strong>15</strong>、D <strong>20</strong>、E <strong>23</strong>（加起來 78）。</li>
+</ul>
+</li>
+<li><strong>檢查開頭 E</strong>：E 出來時 A、B、C、D 都在 stack 裡，接下來只能 D、C、B、A，只有 1 種合法，其他 23 種都不可能。</li>
+</ul>
+<p>我用程式模擬 stack，把 120 種排列逐一檢查過，答案一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 112 Q4・換數字）郵局有 1 到 6 元的郵票，但 2 元和 5 元賣完了。湊出剛好 10 元有幾種組合（不計順序）？用原題的 <span class="arithmatex">\(g(i,j)\)</span> 遞迴式的想法說明。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：缺貨的面額和總額都換了；遞迴式的寫法一樣，缺貨的面額只能走「不用它」那條路。</li>
+<li><strong>遞迴式</strong>：<span class="arithmatex">\(g(i,j)=g(i-1,j)+g(i,j-i)\)</span>（<span class="arithmatex">\(i\in\{1,3,4,6\}\)</span>）；<span class="arithmatex">\(g(i,j)=g(i-1,j)\)</span>（<span class="arithmatex">\(i\in\{2,5\}\)</span>）。邊界 <span class="arithmatex">\(g(i,0)=1\)</span>、<span class="arithmatex">\(j&lt;0\)</span> 時是 0、<span class="arithmatex">\(g(0,j)=0\)</span>（<span class="arithmatex">\(j&gt;0\)</span>）。</li>
+<li><strong>照「最大的面額用幾張」分類</strong>（跟遞迴式一樣，一次決定一種面額）：<ul>
+<li><strong>用 1 張 6 元</strong>，剩 4 元用 1、3、4：4、3＋1、1×4 → 3 種</li>
+<li><strong>不用 6 元、用 2 張 4 元</strong>，剩 2：1×2 → 1 種</li>
+<li><strong>不用 6 元、用 1 張 4 元</strong>，剩 6 用 1、3：3×2、3＋1×3、1×6 → 3 種</li>
+<li><strong>只用 1、3 元</strong>湊 10：3×3＋1、3×2＋1×4、3＋1×7、1×10 → 4 種</li>
+</ul>
+</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(3+1+3+4=\)</span> <strong>11</strong> 種。</li>
+</ul>
+<p>我用動態規劃算過，也把所有張數組合列出來數過，都是 11 種。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 113 Q4・往下算）<span class="arithmatex">\(2\times m\)</span> 的方塊用 L 形（3 格，4 種方向）和 <span class="arithmatex">\(1\times1\)</span> 正方形填滿，<span class="arithmatex">\(d(1)=1\)</span>、<span class="arithmatex">\(d(2)=5\)</span>、<span class="arithmatex">\(d(3)=11\)</span>。用原題的遞迴式算 <span class="arithmatex">\(d(4)\)</span>、<span class="arithmatex">\(d(5)\)</span>，並說明最後一項為什麼是 <span class="arithmatex">\(2\,d(m-3)\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只要寫出遞迴式；這題要用它往下算，並解釋最難想到的那一項。</li>
+<li><strong>遞迴式</strong>：<span class="arithmatex">\(d(m)=d(m-1)+4\,d(m-2)+2\,d(m-3)\)</span>，令 <span class="arithmatex">\(d(0)=1\)</span>。</li>
+<li><strong>往下算</strong>：<ul>
+<li><span class="arithmatex">\(d(4)=d(3)+4d(2)+2d(1)=11+20+2=\)</span> <strong>33</strong></li>
+<li><span class="arithmatex">\(d(5)=d(4)+4d(3)+2d(2)=33+44+10=\)</span> <strong>87</strong></li>
+</ul>
+</li>
+<li><strong><span class="arithmatex">\(2\,d(m-3)\)</span> 的意思</strong>：最右邊三行可以用<strong>兩個 L 形互相咬合</strong>剛好填滿一個 <span class="arithmatex">\(2\times3\)</span> 的長方形（一個缺口朝上、一個缺口朝下，有 2 種擺法），而且這個長方形不能從中間切成更小的塊，所以要單獨算一項。</li>
+</ul>
+<p>我用程式把 <span class="arithmatex">\(m\le6\)</span> 的所有填法暴力列出來數過，跟遞迴式算的完全一樣（1、5、11、33、87、241）。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 113 Q2・換數字）同一個蛇形編號（<span class="arithmatex">\(m=\max(i,j)\)</span> 的 L 形殼裡放 <span class="arithmatex">\(m^2\)</span> 到 <span class="arithmatex">\(m^2+2m\)</span>；<span class="arithmatex">\(m\)</span> 偶數時從右上往下再往左，<span class="arithmatex">\(m\)</span> 奇數時從左下往右再往上）。求 <span class="arithmatex">\(N[4][1]\)</span>、<span class="arithmatex">\(N[2][5]\)</span>、<span class="arithmatex">\(N[5][5]\)</span>、<span class="arithmatex">\(N[3][6]\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題要你推出公式；這題用公式代值，四個格子剛好涵蓋公式的四種情況。</li>
+<li><strong>公式</strong>：<ul>
+<li><span class="arithmatex">\(m\)</span> 偶數：<span class="arithmatex">\(j=m\)</span> 時 <span class="arithmatex">\(m^2+i\)</span>；<span class="arithmatex">\(i=m\)</span> 時 <span class="arithmatex">\(m^2+2m-j\)</span></li>
+<li><span class="arithmatex">\(m\)</span> 奇數：<span class="arithmatex">\(i=m\)</span> 時 <span class="arithmatex">\(m^2+j\)</span>；<span class="arithmatex">\(j=m\)</span> 時 <span class="arithmatex">\(m^2+2m-i\)</span></li>
+</ul>
+</li>
+<li><strong><span class="arithmatex">\(N[4][1]\)</span></strong>：<span class="arithmatex">\(m=4\)</span> 偶數、<span class="arithmatex">\(i=m\)</span> → <span class="arithmatex">\(16+8-1=\)</span> <strong>23</strong>。</li>
+<li><strong><span class="arithmatex">\(N[2][5]\)</span></strong>：<span class="arithmatex">\(m=5\)</span> 奇數、<span class="arithmatex">\(j=m\)</span> → <span class="arithmatex">\(25+10-2=\)</span> <strong>33</strong>。</li>
+<li><strong><span class="arithmatex">\(N[5][5]\)</span></strong>：<span class="arithmatex">\(m=5\)</span> 奇數、<span class="arithmatex">\(i=m\)</span> → <span class="arithmatex">\(25+5=\)</span> <strong>30</strong>（角落兩個公式都適用，用 <span class="arithmatex">\(j=m\)</span> 的也是 <span class="arithmatex">\(25+10-5=30\)</span>）。</li>
+<li><strong><span class="arithmatex">\(N[3][6]\)</span></strong>：<span class="arithmatex">\(m=6\)</span> 偶數、<span class="arithmatex">\(j=m\)</span> → <span class="arithmatex">\(36+3=\)</span> <strong>39</strong>。</li>
+</ul>
+<p>我用程式照規則把 8 × 8 的編號一格一格填出來，跟公式算的全部一樣。</p>
+</details>
 <h3 id="u6-quiz">單元 6 小考</h3>
 <p><strong>6-1.</strong> 1, 2, 3, 4, 5 依序 push，可能的輸出有幾種？</p>
 <details class="quiz">
@@ -10211,6 +11231,123 @@ swap(A[i + 1], A[r]);</code></pre>
 |       `-- R 50:20
 `-- R 70:12</code></pre>
 <p><strong>驗算</strong>：刪除後的形狀，跟只用剩下的節點直接建出來的 treap 一樣（我用程式比對過）。</p>
+</details>
+<h3 id="u7-exam">7.8 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 105 Q7(2)、103 Q6・反過來問）一棵紅黑樹的 black-height（從根往下到葉子 NIL、不算根自己的黑色節點數）是 3。它最少、最多有幾個內部節點？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題用節點數推高度的上界；這題反過來，固定 black-height，問節點數的範圍。</li>
+<li><strong>最少</strong>：原題證明過，black-height 是 <span class="arithmatex">\(b\)</span> 的子樹至少有 <span class="arithmatex">\(2^b-1\)</span> 個內部節點。<span class="arithmatex">\(b=3\)</span> 時最少 <strong>7</strong> 個：一棵全黑、完全平衡的三層樹。</li>
+<li><strong>最多</strong>：紅色不能連續，所以從根到葉子最多「黑紅黑紅…」，高度最多 <span class="arithmatex">\(2b=6\)</span>。高度 6 的二元樹最多 <span class="arithmatex">\(2^6-1=\)</span> <strong>63</strong> 個節點：一棵完全平衡的六層樹，一層黑、一層紅交錯（根是黑的），每條路徑剛好 3 個黑色節點。</li>
+<li><strong>結論</strong>：節點數在 7 到 63 之間都有可能，差了 9 倍，但高度只差 2 倍，這就是紅黑樹「大致平衡」的意思。</li>
+</ul>
+<p>我用程式建出這兩棵樹，檢查過紅黑樹的性質和 black-height。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 107 Q6(1)・代數字）用原題的結論 <span class="arithmatex">\(h\le\log_t\frac{n+1}{2}\)</span>：minimum degree <span class="arithmatex">\(t=100\)</span> 的 B-tree 放 <span class="arithmatex">\(n=2{,}000{,}000\)</span> 個 key，高度最多多少？找一個 key 最多要讀幾個節點？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題要證明上界；這題代數字，感受 B-tree 有多矮。</li>
+<li><strong>代入</strong>：<span class="arithmatex">\(\frac{n+1}{2}=1{,}000{,}000.5\)</span>，<span class="arithmatex">\(\log_{100}10^6=3\)</span>，所以 <span class="arithmatex">\(h\le3\)</span>（只比 3 多一點點，高度是整數）。</li>
+<li><strong>讀幾個節點</strong>：高度 3 代表根下面還有 3 層，從根走到葉子最多讀 <strong>4 個節點</strong>。如果根一直放在記憶體裡，只要讀 3 次磁碟。</li>
+<li><strong>對照</strong>：同樣兩百萬個 key 放在平衡的二元搜尋樹，高度大約 <span class="arithmatex">\(\lg(2\times10^6)\approx21\)</span>。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 104 Q4(3)・量化）磁碟一頁 4096 bytes，B-tree 的一個節點剛好放一頁。每個 key 8 bytes、每個孩子指標 8 bytes（其他欄位忽略）。(a) minimum degree <span class="arithmatex">\(t\)</span> 最大可以設多少？(b) 放 <span class="arithmatex">\(10^9\)</span> 個 key 時，高度最多多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只要說明 B-tree 為什麼省磁碟；這題把「一個節點 ＝ 一頁」算出來。</li>
+<li><strong>(a)</strong>：節點最多 <span class="arithmatex">\(2t-1\)</span> 個 key、<span class="arithmatex">\(2t\)</span> 個指標：<span class="arithmatex">\((2t-1)\times8+2t\times8\le4096\)</span> → <span class="arithmatex">\(32t-8\le4096\)</span> → <span class="arithmatex">\(t\le128.25\)</span>，取 <strong><span class="arithmatex">\(t=128\)</span></strong>（最多 255 個 key、256 個孩子）。</li>
+<li><strong>(b)</strong>：<span class="arithmatex">\(h\le\log_{128}\frac{10^9+1}{2}\approx\log_{128}(5\times10^8)\approx4.1\)</span>，所以高度最多 <strong>4</strong>。找一個 key 最多讀 5 個節點，根常駐記憶體的話只要 4 次磁碟。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 104 Q4(1)、107 Q6(3)・代數字）binomial tree <span class="arithmatex">\(B_5\)</span>：(a) 有幾個節點？高度多少？(b) 每一層各有幾個節點？(c) 根的度數是多少？根的孩子分別是哪幾種 binomial tree？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題列性質、證明深度 <span class="arithmatex">\(i\)</span> 有 <span class="arithmatex">\(\binom ki\)</span> 個；這題代 <span class="arithmatex">\(k=5\)</span> 實際算。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(2^5=\)</span> <strong>32</strong> 個節點，高度 <strong>5</strong>。</li>
+<li><strong>(b)</strong>：深度 <span class="arithmatex">\(i\)</span> 有 <span class="arithmatex">\(\binom5i\)</span> 個：1、5、10、10、5、1（加起來 32）。</li>
+<li><strong>(c)</strong>：根的度數 <strong>5</strong>，孩子從左到右是 <span class="arithmatex">\(B_4,B_3,B_2,B_1,B_0\)</span> 的根（<span class="arithmatex">\(16+8+4+2+1=31\)</span>，加上根自己 32）。</li>
+</ul>
+<p>我用程式照「兩棵 <span class="arithmatex">\(B_{k-1}\)</span> 接起來」的定義建出 <span class="arithmatex">\(B_5\)</span>，每一層的節點數都一樣。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 103 Q10、105 Q5(2)・代數字）一個 binomial heap 有 13 個節點，另一個有 11 個節點。(a) 兩個 heap 各由哪幾棵 binomial tree 組成？(b) 合併後由哪幾棵組成？合併時一共做了幾次「把兩棵一樣大的樹接成一棵」？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題問合併要多久；這題實際做一次，看出合併就是<strong>二進位加法</strong>。</li>
+<li><strong>(a)</strong>：節點數寫成二進位，第 <span class="arithmatex">\(k\)</span> 位是 1 就有一棵 <span class="arithmatex">\(B_k\)</span>。<ul>
+<li><span class="arithmatex">\(13=1101_2\)</span> → <span class="arithmatex">\(B_3\)</span>、<span class="arithmatex">\(B_2\)</span>、<span class="arithmatex">\(B_0\)</span></li>
+<li><span class="arithmatex">\(11=1011_2\)</span> → <span class="arithmatex">\(B_3\)</span>、<span class="arithmatex">\(B_1\)</span>、<span class="arithmatex">\(B_0\)</span></li>
+</ul>
+</li>
+<li><strong>(b)</strong> 由小到大合併（像加法進位）：<ul>
+<li><span class="arithmatex">\(B_0+B_0\)</span> → 接成 <span class="arithmatex">\(B_1\)</span>（進位）</li>
+<li><span class="arithmatex">\(B_1\)</span>（11 的）＋ <span class="arithmatex">\(B_1\)</span>（進位）→ 接成 <span class="arithmatex">\(B_2\)</span>（進位）</li>
+<li><span class="arithmatex">\(B_2\)</span>（13 的）＋ <span class="arithmatex">\(B_2\)</span>（進位）→ 接成 <span class="arithmatex">\(B_3\)</span>（進位）</li>
+<li><span class="arithmatex">\(B_3\)</span>、<span class="arithmatex">\(B_3\)</span>、<span class="arithmatex">\(B_3\)</span>（進位）三棵：兩棵接成 <span class="arithmatex">\(B_4\)</span>（進位），留一棵 <span class="arithmatex">\(B_3\)</span></li>
+<li>結果：<strong><span class="arithmatex">\(B_4\)</span> 和 <span class="arithmatex">\(B_3\)</span></strong>（<span class="arithmatex">\(24=11000_2\)</span>），一共接了 <strong>4 次</strong>。</li>
+</ul>
+</li>
+<li><strong>每次接</strong>：比較兩個根，大的那個變成小的的最左孩子（維持 min-heap），<span class="arithmatex">\(O(1)\)</span>。</li>
+</ul>
+<p>我用程式模擬過這個進位的過程，結果一樣。</p>
+</details>
+<p><strong>考古變化 6.</strong>（改自 103 Q8・換操作）用原題的 treap（G:4 為根；左子 B:7，B 的左子 A:10、右子 E:23，E 的左子 C:25；右子 H:5，H 的右子 K:65，K 的左子 I:73；數字小的 priority 高）。(1) 插入 (J:6) (2) 接著刪除 B</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：插入的位置在右半邊；還多了<strong>刪除</strong>：要把 B 一路往下轉到葉子再拿掉。</li>
+<li><strong>(1) 插入 J:6</strong>：<ul>
+<li><strong>BST 的位置</strong>：J ＞ G 往右 → J ＞ H 往右 → J ＜ K 往左 → J ＞ I 往右，放在 <strong>I 的右孩子</strong>。</li>
+<li>6 ＜ 73（父親 I），J 是右孩子 → 在 I <strong>左旋</strong>，I 變成 J 的左孩子。</li>
+<li>6 ＜ 65（父親 K），J 是左孩子 → 在 K <strong>右旋</strong>，K 變成 J 的右孩子。</li>
+<li>6 ＞ 5（父親 H），停。結果 H 的右子是 <strong>J:6</strong>，J 的左子 I:73、右子 K:65。</li>
+</ul>
+</li>
+<li><strong>(2) 刪除 B:7</strong>：每次把 priority 比較高（數字小）的孩子轉上來，B 往下沉，直到變成葉子：<ul>
+<li>B 的孩子 A:10、E:23，A 比較高 → 在 B <strong>右旋</strong>，A 上來；B 變成 A 的右孩子，B 只剩右子 E。</li>
+<li>B 只有右子 E → 在 B <strong>左旋</strong>，E 上來；B 變成 E 的左孩子，E 原本的左子 C 改掛到 B 的右邊。</li>
+<li>B 只有右子 C → 在 B <strong>左旋</strong>，C 上來；B 變成葉子，<strong>直接刪掉</strong>。</li>
+</ul>
+</li>
+<li><strong>最後的 treap</strong>：
+    <pre class="highlight"><code class="language-text">G:4
++-- L A:10
+|   `-- R E:23
+|       `-- L C:25
+`-- R H:5
+    `-- R J:6
+        +-- L I:73
+        `-- R K:65</code></pre></li>
+<li><strong>檢查</strong>：中序 A、C、E、G、H、I、J、K 照字母順序；每個節點的 priority 都比孩子小。</li>
+</ul>
+<p>我用程式照同樣的旋轉規則插入、刪除，結果一樣。</p>
+</details>
+<p><strong>考古變化 7.</strong>（改自 101 Q9・換數字）minimum degree <span class="arithmatex">\(t=2\)</span>（2-3-4 tree）的 B-tree，一開始是空的，用 CLRS 的插入法（往下走的時候遇到滿的節點就先分裂）依序插入 10、20、5、6、12、30、7、17。寫出最後的樹。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：<span class="arithmatex">\(t\)</span> 換成 2（每個節點最多 3 個 key），從空樹開始，會遇到根分裂和「往下走時先分裂」兩種情況。</li>
+<li><strong>10、20、5</strong>：根 [5 10 20]，滿了。</li>
+<li><strong>插入 6</strong>：根是滿的，先分裂：中間的 10 往上變成新的根，左 [5]、右 [20]。6 ＜ 10 往左 → <strong>[5 6]</strong>。</li>
+<li><strong>12、30</strong>：放進右邊 → [12 20 30]（滿了，但還沒有人要經過它，先不用分裂）。</li>
+<li><strong>7</strong>：往左 → [5 6 7]。</li>
+<li><strong>插入 17</strong>：17 ＞ 10，要往右走，右邊的 [12 20 30] 是滿的 → <strong>先分裂</strong>：20 往上到根 [10 20]，右邊分成 [12] 和 [30]。17 介於 10、20 之間 → 放進 <strong>[12 17]</strong>。</li>
+<li><strong>最後</strong>：
+    <pre class="highlight"><code class="language-text">[10 20]
++-- [5 6 7]
++-- [12 17]
+`-- [30]</code></pre></li>
+<li><strong>小心</strong>：插入 7 之後左邊的 [5 6 7] 也是滿的，但 17 沒有經過它，所以不分裂。CLRS 的方法只分裂「路上」的滿節點。</li>
+</ul>
+<p>我用程式照 CLRS 的 B-TREE-INSERT 跑過，最後的樹一樣。</p>
 </details>
 <h3 id="u7-quiz">單元 7 小考</h3>
 <div class="mcq" data-ans="2">
