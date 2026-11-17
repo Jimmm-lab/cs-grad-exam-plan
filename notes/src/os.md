@@ -2173,6 +2173,23 @@ for (int i = 0; i < 3; i++) {
 
 結果是 6，有一次加法不見了。**結果取決於交錯的順序**，這就是 race condition。
 
+考古題考過這個填空（112 Q9e、114 Q8c）：several processes access and manipulate the same data concurrently, and the outcome depends on the particular order in which the access takes place → **race condition**。（我實際跑過：兩個 thread 各做一百萬次 `counter++`、不加 lock，結果只有 1048268，不是 2000000。）
+
+<div data-qid="u2-0-race" markdown="1">
+
+**觀念題 1.** x 一開始是 0。Thread 1 執行 `x = x + 1`，Thread 2 執行 `x = x * 2`，兩個都是「讀 x、算、寫回」三步，沒有 lock。最後 x 可能是哪些值？哪一個是 race condition 造成的？
+
+??? quiz "看答案"
+    可能是 **0、1、2**。
+
+    - 1 先做完、2 再做：$(0+1)\times2=$ **2**。
+    - 2 先做完、1 再做：$0\times2+1=$ **1**。
+    - 兩個都先讀到 0：Thread 1 算出 1、Thread 2 算出 0，誰**最後寫回**就是誰的：1 或 **0**。
+
+    0 不可能來自任何「一個做完再做另一個」的順序，是 Thread 1 的加法被蓋掉（lost update）。我用程式把所有交錯列出來，最後的值只有 0、1、2 三種。
+
+</div>
+
 #### critical section：一次只能一個人進去
 
 存取共享資料的那段程式碼叫 **critical section**。像只有一把鑰匙的廁所：拿到鑰匙（lock）才能進去，出來再把鑰匙還回去。
@@ -2182,6 +2199,40 @@ for (int i = 0; i < 3; i++) {
 1. **mutual exclusion**：一次最多一個人在裡面。
 2. **progress**：沒人在裡面時，想進去的人不能一直被擋著。
 3. **bounded waiting**：排隊的人等待的次數有上限，不會一直被插隊（不會餓死）。
+
+三個條件各在防什麼：
+
+| 條件 | 不滿足時會發生 | 例子 |
+|---|---|---|
+| mutual exclusion | 兩個人同時在裡面改資料 | 下面「先檢查再設定」的寫法 |
+| progress | 裡面沒人，想進去的人卻進不去 | 觀念題 2 的「輪流」寫法 |
+| bounded waiting | 某個人一直被別人插隊，永遠輪不到 | 單純用 test_and_set 搶 lock |
+
+**progress 和 bounded waiting 最常搞混**：progress 看的是「**現在**沒人在裡面時，能不能在有限時間內決定讓誰進去」；bounded waiting 看的是「**我**提出要求之後，別人最多能插隊幾次」。
+
+<div data-qid="u2-0-cond" markdown="1">
+
+<div markdown="1">
+
+**觀念題 2.** 兩個 process 共用一個變數 `turn`（一開始是 0），process i 這樣進 critical section（j 是另一個）。三個條件各滿足嗎？
+
+```c
+while (turn != i)
+    ;          /* 不是我的回合就等 */
+/* critical section */
+turn = j;      /* 把回合交給對方 */
+```
+
+</div>
+
+??? quiz "看答案"
+    - **mutual exclusion：滿足**。turn 只能是 0 或 1，只有那一個能通過 while。
+    - **progress：不滿足**。兩人一定要**輪流**進去：如果 j 根本不想進去，i 做完一次之後 turn ＝ j，i 想再進去就只能等 j，而 j 永遠不會來。裡面沒人，i 卻進不去。
+    - **bounded waiting：滿足**。i 提出要求後，最多等 j 進去一次就輪到 i。
+
+    這個寫法叫 strict alternation。Peterson 的做法就是在它上面加 `flag`，讓「對方不想進去」時可以直接進去，補上 progress。
+
+</div>
 
 #### 為什麼「先檢查 lock，再把它設成佔用」不行？
 
@@ -2230,21 +2281,84 @@ flag[i] = false;
 
 #### 硬體怎麼幫忙：不可分割的指令
 
-所以要把「檢查」和「設定」合成一步，中間不能被插隊。
+所以要把「檢查」和「設定」合成一步，中間不能被插隊。CPU 提供這種**不可分割（atomic）**的指令：執行到一半不會被中斷，多顆 CPU 同時做也會被硬體排成一個一個來。
 
-`test_and_set` 這類指令把「讀舊值、設成 true」**合成一個不可分割的動作**：
+```c
+/* 硬體一次做完：回傳舊值，同時把 *target 設成 true */
+bool test_and_set(bool *target) {
+    bool rv = *target;
+    *target = true;
+    return rv;
+}
+
+/* 用它做 lock（lock 一開始是 false） */
+while (test_and_set(&lock))
+    ;          /* 舊值是 true：別人拿著 */
+/* critical section */
+lock = false;
+```
 
 - 讀到舊值 false → 你搶到 lock 了（它同時變成 true）。
 - 讀到舊值 true → 別人已經拿走了，繼續等。
 
+另一個常見的指令是 `compare_and_swap(&v, expected, new)`：v 等於 expected 時才改成 new，回傳 v 原本的值（寫法見[考古題變化題 1](#u2-exam)）。這兩種 lock 都滿足 mutual exclusion，但**不保證 bounded waiting**：lock 放開時誰先搶到看運氣，某個 process 可能一直搶輸。
+
+<div class="mcq" data-ans="3" data-qid="u2-0-tas" markdown="1">
+
+**觀念題 3.** lock 一開始是 false。T1 先呼叫 `test_and_set(&lock)`，接著 T2 也呼叫。兩次分別回傳什麼？誰進得去？
+
+1. 都回傳 false，兩個都進去
+2. T1 回傳 true、T2 回傳 false，T2 進去
+3. T1 回傳 false、T2 回傳 true，T1 進去、T2 等
+4. 都回傳 true，兩個都等
+
+??? quiz "看解析"
+    **C**。test_and_set 回傳的是**舊值**：T1 看到 false（沒人拿），同時把 lock 設成 true，進去；T2 看到的舊值已經是 true，只好在 while 裡繼續等，直到 T1 把 lock 設回 false。
+
+</div>
+
 #### semaphore：停車場的剩餘車位
 
-semaphore 是一個整數，像停車場門口的「剩餘車位」看板：
+semaphore 是一個整數，像停車場門口的「剩餘車位」看板，只能用兩個不可分割的操作改它：
 
-- `wait()`：要進場，車位減 1；減完小於 0 就在門口排隊。
-- `signal()`：離場，車位加 1；有人在排隊就叫醒一個。
+```c
+wait(S) {               /* 也叫 P() */
+    S->value--;
+    if (S->value < 0) { /* 沒車位 */
+        add this process to S->list;
+        sleep();        /* 排隊睡覺 */
+    }
+}
+signal(S) {             /* 也叫 V() */
+    S->value++;
+    if (S->value <= 0) { /* 有人在排 */
+        remove a process P from S->list;
+        wakeup(P);      /* 叫醒一個 */
+    }
+}
+```
 
-初始值 1 的 semaphore 就是一把 lock（一次一台車）；初始值 $n$ 就能管理 $n$ 份資源。
+- **值是正的**：還剩幾個車位，也就是還可以讓幾個人直接進去。
+- **值是負的**：有幾個人在排隊，例如 −2 就是 2 個人在等。
+- 初始值 1 的叫 **binary semaphore**，就是一把 lock（一次一台車）；初始值 $n$ 的叫 **counting semaphore**，可以管理 $n$ 份資源。
+- 初始值 0 可以用來**排先後**：P2 先 `wait` 會被擋住，等 P1 做完某件事 `signal` 才放行。
+
+<div data-qid="u2-0-sem" markdown="1">
+
+**觀念題 4.** semaphore S 初始值 2。依序發生：P1 `wait(S)`、P2 `wait(S)`、P3 `wait(S)`、P1 `signal(S)`、P4 `wait(S)`。寫出每一步之後 S 的值，最後誰在 critical section 裡、誰在等？
+
+??? quiz "看答案"
+    | 動作 | S | 說明 |
+    |---|---|---|
+    | P1 wait | 1 | 進去 |
+    | P2 wait | 0 | 進去 |
+    | P3 wait | −1 | 沒位子，P3 排隊 |
+    | P1 signal | 0 | P1 離開；值還 ≤ 0，表示有人在排隊，叫醒 P3，P3 進去 |
+    | P4 wait | −1 | 沒位子，P4 排隊 |
+
+    最後 **P2、P3 在裡面，P4 在等**，S ＝ −1（負 1 表示 1 個在排隊）。我用程式照上面的定義模擬過，每一步的值都一樣。
+
+</div>
 
 #### 生產者－消費者：三個 semaphore 各管什麼？
 
@@ -2298,20 +2412,73 @@ signal(empty);
 !!! trap "常考：wait 的順序不能反"
     生產者如果寫成先 `wait(mutex)` 再 `wait(empty)`：buffer 滿的時候，它**拿著 mutex** 卡在 `wait(empty)`；消費者要先拿 mutex 才能拿資料，也卡住，兩邊永遠等下去，就是**死結**（[單元 3](#u3)）。所以要先等「有沒有空間」，再拿 mutex。
 
+<div data-qid="u2-0-pc" markdown="1">
+
+**觀念題 5.** buffer 有 3 格，一開始是空的（empty ＝ 3、full ＝ 0、mutex ＝ 1）。生產者連續放了 3 個，接著想放第 4 個。(a) 第 4 次會卡在哪一行？(b) 消費者拿走一個（做完 `signal(empty)`），生產者被叫醒、放進第 4 個之後，empty、full 各是多少？
+
+??? quiz "看答案"
+    - **(a) 卡在 `wait(empty)`**：放完 3 個後 empty ＝ 0、full ＝ 3。第 4 次的 `wait(empty)` 把 empty 減成 −1（1 個在等），生產者睡覺。它還沒碰 mutex，所以消費者可以正常拿東西，不會死結。
+    - **(b)**：消費者 `wait(full)` 讓 full 變 2，拿走一個後 `signal(empty)` 讓 empty 從 −1 回到 0、叫醒生產者；生產者放進第 4 個，再 `signal(full)` 讓 full 回到 3。最後 **empty ＝ 0、full ＝ 3**（buffer 又滿了）。
+
+</div>
+
 #### busy waiting 和 blocking 差在哪？
 
 - **busy waiting（spinlock）**：一直跑迴圈檢查，等的時候還佔著 CPU。等很短時（多處理器、critical section 很短）反而好，因為不用 context switch。
 - **blocking**：semaphore 的 `wait()` 拿不到時，把自己放進 semaphore 的等待佇列、讓出 CPU；`signal()` 時再被叫醒放回 ready queue。等很久時比較省 CPU。
 
+<div class="mcq" data-ans="2" data-qid="u2-0-busy" markdown="1">
+
+**觀念題 6.** 單核心 CPU 上，T1 拿著一個 spinlock，T2 也想要，開始 busy waiting。接下來會怎樣？
+
+1. T2 很快就拿到 lock，因為 spinlock 不用 context switch
+2. T2 會空轉到自己的時間片用完；這段時間 T1 根本沒在跑、放不了 lock，CPU 全浪費了
+3. T1 會被 T2 強迫放開 lock
+4. 會立刻發生死結
+
+??? quiz "看解析"
+    **B**。單核心同一時間只有一個 thread 在跑：T2 空轉時，T1 不在 CPU 上，不可能把 lock 放掉。所以單核心上 busy waiting 是純浪費，應該用會讓出 CPU 的 blocking 寫法；spinlock 只適合多核心、critical section 很短的情況。
+
+</div>
+
 #### readers–writers：讀可以一起，寫要獨佔
 
-很多人讀同一份資料不會出事，但有人在寫的時候，誰都不能讀、也不能有第二個人寫。第一種解法（readers 優先）：
+很多人讀同一份資料不會出事，但有人在寫的時候，誰都不能讀、也不能有第二個人寫。第一種解法（readers 優先），`rw_mutex`、`mutex` 初始 1，`read_count` 初始 0：
 
-- 用 `read_count` 數現在有幾個 reader，`mutex` 保護這個計數。
-- **第一個進來的 reader** `wait(rw_mutex)`，把 writer 擋在外面；**最後一個離開的 reader** `signal(rw_mutex)`。
-- writer 直接 `wait(rw_mutex)`、寫完 `signal(rw_mutex)`。
+```c
+/* writer */
+wait(rw_mutex);
+/*   寫 */
+signal(rw_mutex);
 
-缺點：只要一直有 reader 進來，writer 永遠輪不到（starvation）。
+/* reader */
+wait(mutex);          /* 保護計數 */
+read_count++;
+if (read_count == 1)  /* 第一個 */
+    wait(rw_mutex);   /* 擋 writer */
+signal(mutex);
+/*   讀 */
+wait(mutex);
+read_count--;
+if (read_count == 0)  /* 最後一個 */
+    signal(rw_mutex); /* 放 writer */
+signal(mutex);
+```
+
+- reader 們共用一張「通行證」rw_mutex：第一個 reader 拿走，最後一個 reader 歸還，中間進來的 reader 不用再拿，所以可以一起讀。
+- `mutex` 只是保護 `read_count` 這個計數，不然兩個 reader 同時 `read_count++` 又是 race condition。
+- **缺點**：只要一直有 reader 進來，read_count 就不會變回 0，writer 永遠輪不到（starvation）。第二種解法（writers 優先）反過來：有 writer 在等時，新的 reader 不能進去，換成 reader 可能餓死。
+
+<div data-qid="u2-0-rw" markdown="1">
+
+**觀念題 7.** 用上面的 readers 優先解法。R1、R2 正在讀；writer W 來了；接著 R3 也來了。(a) W 和 R3 誰先進去？(b) 什麼時候 W 才進得去？(c) R3 進去之後 read_count 是多少？
+
+??? quiz "看答案"
+    - **(a) R3 先進去**：rw_mutex 已經被第一個 reader R1 拿走，W 卡在 `wait(rw_mutex)`；R3 只要把 read_count 加 1，不用拿 rw_mutex，直接進去讀。
+    - **(b)**：要等 R1、R2、R3 **全部**讀完，最後一個離開的 reader 把 read_count 減到 0、`signal(rw_mutex)`，W 才進得去。
+    - **(c)** read_count ＝ **3**。只要 reader 一直來，W 就一直等，這就是 writer 的 starvation。
+
+</div>
 
 !!! read "還不懂？看別人怎麼講"
     - **講義**：[周志遠講義下載頁](https://ocw.nthu.edu.tw/ocw/index.php?page=course_news_content&cid=141&id=999)的 Ch6 Process Synchronization。裡面的 producer／consumer 例子，counter 最後可能是 4、5 或 6（正確應該是 5），跟這節 `counter++` 的交錯是同一件事。
@@ -2336,20 +2503,71 @@ signal(empty);
 ??? quiz "看答案"
     關中斷只影響自己這顆 CPU，其他 CPU 照樣可以同時執行同一段 critical section。
 
-### 2.1 考古題與重點整理 {#u2-1}
+### 2.1 考古題觀念：一個一個講清楚 {#u2-1}
 
-- **race condition**：多個 process 並行存取同一份資料，結果取決於存取的順序。（112 Q9e、114 Q8c）
-- critical-section 問題的解法必須滿足三個條件：**mutual exclusion**、**progress**、**bounded waiting**。（113 Q8b、115 Q1d）
+| 觀念 | 考過的題目 | 講解在哪 |
+|---|---|---|
+| race condition | 112 Q9e、114 Q8c 填空 | [2.0](#u2-0) 觀念題 1 |
+| critical section 的三個條件 | 113 Q8b、115 Q1d 填空；105、107 問答 | [2.0](#u2-0) 觀念題 2 |
+| 三種硬體支援 | 114 Q6a | 下面 |
+| mutex、semaphore、condition variable | 112 Q5b | 下面 |
+| priority inversion | 105、107 | [2.2](#u2-more) |
+| Pthreads 的同步工具 | 104 Q8(1) | [2.2](#u2-more) |
+| two-phase locking | 104 Q8(3) | [2.2](#u2-more) |
+
+#### 三種硬體支援（114 Q6a）
+
+**hardware instructions**（test_and_set、compare_and_swap）在 [2.0](#u2-0) 講過了。另外兩種：
+
+- **memory barrier 為什麼需要**：現代 CPU 和編譯器為了快，可能把彼此無關的讀寫**換順序**執行。例如 thread 1 寫 `x = 100; flag = true;`，thread 2 等到 `flag` 是 true 才讀 x。如果 thread 1 的兩個寫入被換了順序，thread 2 可能看到 flag 是 true、x 卻還是舊值。在兩個寫入中間放一個 memory barrier，就保證 x 先寫好、而且別的處理器看得到，才寫 flag。
+- **atomic variable**：例如 `increment(&count)` 由硬體（通常用 compare_and_swap 重試）保證一次做完，很多 thread 同時加也不會掉數。但它只保護「這一個變數的這一個動作」，好幾個變數要一起改時，還是要用 lock。
 
 !!! example "114 Q6a（6%）：解決 critical-section 問題的三種硬體支援"
     1. **memory barriers（memory fences）**：強制之前的記憶體操作都完成、讓其他處理器看得到，才往下執行。
     2. **hardware instructions**：`test_and_set()`、`compare_and_swap()` 這類**不可分割（atomic）**的指令，可以用來實作 lock。
     3. **atomic variables**：對整數、布林值提供不可分割的更新操作（例如 atomic increment）。
 
+<div class="mcq" data-ans="1" data-qid="u2-1-hw" markdown="1">
+
+**觀念題 8.** memory barrier（memory fence）的作用是什麼？
+
+1. 保證它之前的記憶體讀寫都做完、其他處理器也看得到，才執行它之後的讀寫
+2. 讓下一條指令變成不可分割
+3. 關掉這顆 CPU 的中斷
+4. 把整塊記憶體鎖住，不讓別的處理器存取
+
+??? quiz "看解析"
+    **A**。它解決的是「CPU 或編譯器把讀寫換順序」造成的問題（例如上面先寫了 flag 才寫 x）。B 是 test_and_set、compare_and_swap 這類指令做的事；C 只對單核心有用；D 不是 memory barrier。
+
+</div>
+
+#### mutex、semaphore、condition variable（112 Q5b）
+
+- **mutex lock**：只有兩個狀態（可用、被拿走）。`acquire()` 拿、`release()` 放，**誰拿的誰放**。用來保護 critical section。
+- **semaphore**：一個整數（[2.0](#u2-0)），`wait()` 減 1、`signal()` 加 1。初始 1 當 lock 用；初始 n 管理 n 份資源；初始 0 用來排先後。跟 mutex 不同，**signal 可以由別的 process 做**。
+- **condition variable**：讓 thread 等「某個條件成立」，例如「buffer 不是空的」。它沒有計數，只有一個等待佇列：
+    - `x.wait()`：把自己掛在 x 的佇列上睡覺（同時放開保護共享資料的 lock）。
+    - `x.signal()`：叫醒 x 佇列上的一個；**佇列是空的時候什麼都不會發生**，signal 不會被「記住」，這是它跟 semaphore 最大的差別。（我實際跑過：沒人在等時先 signal，之後才來等的 thread 等不到，一直到逾時。）
+- **monitor**：condition variable 原本的家。monitor 是一種程式結構，把共享資料和操作它的函式包在一起，**同一時間只有一個 process 能在 monitor 裡執行**，所以裡面的程式自動互斥；要等條件時才用 condition variable。
+
 !!! example "112 Q5b（3%）：mutex、semaphore、condition variable 的用途"
     - **mutex lock**：保護 critical section，`acquire()` 進去、`release()` 出來，一次只有一個人持有。
     - **semaphore**：一個整數計數器，`wait()` 減 1（不夠就等）、`signal()` 加 1。binary semaphore 可當 lock 用；counting semaphore 可以管理 $n$ 份資源或用來做先後順序。
     - **condition variable**：在 monitor（或搭配 mutex）中，讓 thread 等待某個**條件**成立（`wait()`），條件改變時由別人 `signal()` 叫醒。
+
+<div class="mcq" data-ans="3" data-qid="u2-1-cv" markdown="1">
+
+**觀念題 9.** 沒有任何 thread 在等的時候，T1 呼叫 condition variable x 的 `x.signal()`，之後 T2 才呼叫 `x.wait()`。T2 會怎樣？如果換成 semaphore（初始 0，先 `signal` 再 `wait`）呢？
+
+1. 兩種都會直接通過
+2. 兩種都會卡住
+3. condition variable：T2 會卡住（先前的 signal 沒被記住）；semaphore：T2 直接通過（值已經是 1）
+4. condition variable：T2 直接通過；semaphore：T2 會卡住
+
+??? quiz "看解析"
+    **C**。condition variable 沒有計數，沒人在等時的 signal 等於沒做；semaphore 的 signal 會把值加 1 存起來，之後的 wait 減成 0 就直接通過。所以用 condition variable 一定要搭配一個「條件」判斷要不要等，例如 `while (count == 0) x.wait();`，不能只靠 signal 的次數。
+
+</div>
 
 ### 2.2 同步的考古題補充：priority inversion、thread 的同步工具、two-phase locking {#u2-more}
 
@@ -2371,6 +2589,20 @@ signal(empty);
 !!! example "105 Q1(1)（4%）、107 Q1(5)（2%）：什麼是 priority inversion？什麼時候發生？怎麼解決？"
     高優先權的 process 在等一個被低優先權 process 持有的資源，而低優先權的又被中優先權的搶走 CPU，結果高優先權的被中優先權的擋住。發生的條件：有共享資源（lock）、搶先式的優先權排程、三個以上不同優先權的 process。解法是 priority inheritance：持有資源的低優先權 process 暫時繼承等待者的高優先權，用完資源再恢復。
 
+<div class="mcq" data-ans="3" data-qid="u2-more-pi" markdown="1">
+
+**觀念題 10.** 只有兩個 process：高優先權 H 和低優先權 L。L 拿著 lock，H 在等這把 lock。這是不是課本說的 priority inversion？
+
+1. 是，因為高的在等低的
+2. 是，而且一定要用 priority inheritance 解決
+3. 還不是：H 等 L 用完 lock 是正常的互斥；要有中優先權的 M 把 L 搶走，H 才會被跟它無關的 M 拖住
+4. 不是，因為 H 可以直接搶走 lock
+
+??? quiz "看解析"
+    **C**。H 等 L 放開 lock 只是正常的互斥，等的時間就是 L 的 critical section。priority inversion 的關鍵是第三個角色 M：M 不需要那把 lock，卻因為優先權比 L 高而一直佔著 CPU，讓 L 放不了 lock，H 被迫等 M。所以答題一定要寫出三個角色。
+
+</div>
+
 !!! example "105 Q1(3)（3%）、107 Q1(3)（3%）：critical-section 問題的解法要滿足哪三個條件？"
     mutual exclusion、progress、bounded waiting，意思見 [2.0](#u2-0)。
 
@@ -2382,6 +2614,18 @@ signal(empty);
     3. **condition variable**：`pthread_cond_wait()`、`pthread_cond_signal()`，搭配 mutex 使用，讓 thread 等某個條件成立（例如 buffer 不空）。
 
     （也可以提 read-write lock：可以很多人同時讀，但寫的時候只能一個人。）
+
+<div data-qid="u2-more-cond" markdown="1">
+
+**觀念題 11.** `pthread_cond_wait(&cond, &mutex)` 為什麼一定要把 mutex 一起傳進去？呼叫前、等待中、返回後，mutex 各是什麼狀態？
+
+??? quiz "看答案"
+    - **呼叫前**：thread 已經拿著 mutex（它剛檢查完共享的條件，例如發現 buffer 是空的）。
+    - **等待中**：pthread_cond_wait 會**不可分割地「放開 mutex、開始睡」**，別的 thread 才拿得到 mutex 去改條件（例如放東西進 buffer）。如果睡覺時還拿著 mutex，別人永遠改不了條件，就卡死了。
+    - **返回後**：被 signal 叫醒時，它會**先重新拿回 mutex** 才返回，所以接著檢查條件、改共享資料都是安全的。
+    - 被叫醒時條件可能又不成立了，所以標準寫法用 while 再檢查一次：`while (count == 0) pthread_cond_wait(&cond, &mutex);`
+
+</div>
 
 #### 交易（transaction）與 two-phase locking
 
@@ -2397,57 +2641,44 @@ signal(empty);
 !!! example "104 Q8(3)（5%）：two-phase locking 怎麼保證非序列排程的正確性？"
     每個交易分兩個階段：先只拿 lock（growing），開始放 lock 之後就不能再拿（shrinking）。所有交易都這樣做，衝突的操作順序就會依照每個交易「拿到最後一把 lock」的時間（lock point）排好，所以結果等於依 lock point 順序一個一個執行，是 conflict serializable。
 
-#### 觀念小考
+<div data-qid="u2-more-2pl" markdown="1">
 
-<div class="mcq" data-ans="2" markdown="1">
+**觀念題 12.** 交易 T：`lock(A) lock(B) read(A) unlock(A) write(B) unlock(B)`。它遵守 two-phase locking 嗎？growing phase 和 shrinking phase 各是哪幾步？lock point 在哪？
 
-**C-1.** 下面哪一個情況是 priority inversion？
+??? quiz "看答案"
+    **遵守**：所有的 lock 都在第一個 unlock 之前。
 
-1. 高優先權的 process 一直搶走低優先權的 CPU
-2. 高優先權的 process 在等低優先權持有的 lock，低優先權的又被中優先權的搶走
-3. 兩個 process 互相等對方的資源
-4. 優先權最低的 process 一直排不到 CPU
+    - **growing phase**：`lock(A)`、`lock(B)`。
+    - **shrinking phase**：從 `unlock(A)` 開始，之後只放不拿（`unlock(B)`）。
+    - **lock point**：拿到最後一把 lock 的那一刻，也就是 `lock(B)` 之後。所有交易照 lock point 的先後排，就是等價的序列順序。
 
-??? quiz "看解析"
-    **B**。A 是正常的優先權排程；C 是死結；D 是 starvation（可以用 aging 解決）。
-
-</div>
-
-<div class="mcq" data-ans="3" markdown="1">
-
-**C-2.** priority inheritance 怎麼解決 priority inversion？
-
-1. 把高優先權 process 的優先權降低
-2. 不讓中優先權的 process 執行
-3. 持有 lock 的低優先權 process 暫時繼承等待者的高優先權
-4. 讓 lock 可以被搶走
-
-??? quiz "看解析"
-    **C**。L 繼承 H 的優先權後，M 就搶不走 L；L 很快用完 lock 放開，H 馬上拿到。放開後 L 恢復原本的優先權。
+    中間的 read、write 放在哪一段都可以，規則只限制 lock 和 unlock 的先後。
 
 </div>
 
-<div class="mcq" data-ans="1" markdown="1">
+### 2.3 練習：簡單觀念題 {#u2-concept}
 
-**C-3.** 遵守 two-phase locking 的交易，下面哪一個做法是**不允許**的？
+一兩句話就能回答的題目，確認名詞和觀念有沒有記對。題目照主題分組；選擇題按下選項就會對答案，問答題先寫在手寫板或紙上，再打開參考答案。
 
-1. 放開 lock A 之後，再拿 lock B
-2. 先拿 lock A、再拿 lock B，最後一起放
-3. 拿 A、拿 B、放 A、放 B
-4. 只拿一把 lock
+#### race condition 和 critical section
+
+<div class="mcq" data-ans="2" data-qid="u2-bank-s1" markdown="1">
+
+**簡單 1.** 下面哪一個最符合 race condition 的定義？
+
+1. 兩個 process 互相等對方手上的資源
+2. 多個 process 同時存取共享資料，結果取決於執行的先後順序
+3. 低優先權的 process 一直輪不到 CPU
+4. 高優先權的 process 被中優先權的擋住
 
 ??? quiz "看解析"
-    **A**。一旦開始放 lock（進入 shrinking phase），就不能再拿新的。
+    **B**。A 是死結（[單元 3](#u3)），C 是 starvation，D 是 priority inversion。這四個名詞常放在一起考，要分清楚。
 
 </div>
 
-### 2.3 觀念小考 {#u2-concept}
+<div class="mcq" data-qid="u2-concept-1" data-ans="2" markdown="1">
 
-選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
-
-<div class="mcq" data-ans="2" markdown="1">
-
-**C-1.** 用 `while (lock == 1); lock = 1;` 當作進入 critical section 的方法，會出什麼問題？
+**簡單 2.** 用 `while (lock == 1); lock = 1;` 當作進入 critical section 的方法，會出什麼問題？
 
 1. 一定會死結
 2. 兩個 thread 可能同時通過檢查，一起進去，違反 mutual exclusion
@@ -2459,37 +2690,23 @@ signal(empty);
 
 </div>
 
-<div class="mcq" data-ans="1" markdown="1">
+<div class="mcq" data-ans="4" data-qid="u2-bank-s2" markdown="1">
 
-**C-2.** 要保證 P1 的敘述 S1 一定在 P2 的敘述 S2 之前執行，用一個 semaphore `synch`，初始值和寫法是？
+**簡單 3.** 「一個 process 提出要進 critical section 的要求之後，別人插隊進去的次數有上限」是哪一個條件？
 
-1. 初始 0；P1：`S1; signal(synch);`，P2：`wait(synch); S2;`
-2. 初始 1；P1：`S1; signal(synch);`，P2：`wait(synch); S2;`
-3. 初始 0；P1：`wait(synch); S1;`，P2：`S2; signal(synch);`
-4. 初始 1；P1：`wait(synch); S1;`，P2：`signal(synch); S2;`
+1. mutual exclusion
+2. progress
+3. 不會死結
+4. bounded waiting
 
 ??? quiz "看解析"
-    **A**。初始 0：P2 先跑到 `wait` 會被擋住，直到 P1 做完 S1、`signal` 之後才能做 S2。B 初始 1 的話，P2 一開始就能直接通過，S2 可能比 S1 早。
+    **D**。progress 管的是「沒人在裡面時，要能在有限時間內決定誰進去」；bounded waiting 管的是「我在等的時候，別人最多插隊幾次」。
 
 </div>
 
-<div class="mcq" data-ans="3" markdown="1">
+<div class="mcq" data-qid="u2-concept-4" data-ans="4" markdown="1">
 
-**C-3.** 生產者寫成「先 `wait(mutex)`，再 `wait(empty)`」，什麼時候會出事？
-
-1. buffer 空的時候
-2. 只有一個生產者的時候
-3. buffer 滿的時候：生產者拿著 mutex 等空格，消費者拿不到 mutex，兩邊都卡住
-4. 不會出事，順序無所謂
-
-??? quiz "看解析"
-    **C**。這是死結：生產者握著 mutex 等 empty，消費者要 mutex 才能拿資料、`signal(empty)`。正確順序是先等資源（empty），再拿 mutex。
-
-</div>
-
-<div class="mcq" data-ans="4" markdown="1">
-
-**C-4.** Peterson's solution 裡，`turn = j` 這一行的作用是？
+**簡單 4.** Peterson's solution 裡，`turn = j` 這一行的作用是？
 
 1. 宣告自己要進 critical section
 2. 讓 j 不能再進來
@@ -2501,9 +2718,11 @@ signal(empty);
 
 </div>
 
-<div class="mcq" data-ans="2" markdown="1">
+#### lock、硬體與 semaphore
 
-**C-5.** 什麼情況下 spinlock（busy waiting）比會讓出 CPU 的 semaphore 好？
+<div class="mcq" data-qid="u2-concept-5" data-ans="2" markdown="1">
+
+**簡單 5.** 什麼情況下 spinlock（busy waiting）比會讓出 CPU 的 semaphore 好？
 
 1. 單處理器、等很久的時候
 2. 多處理器、critical section 很短的時候
@@ -2515,7 +2734,65 @@ signal(empty);
 
 </div>
 
-**W-1.** 生產者－消費者為什麼需要三個 semaphore？各自的初始值和用途？
+<div class="mcq" data-ans="3" data-qid="u2-bank-s3" markdown="1">
+
+**簡單 6.** 初始值是 1、值只會是 0 或 1 的 semaphore 叫什麼？通常拿來做什麼？
+
+1. counting semaphore，管理很多份資源
+2. condition variable，等條件成立
+3. binary semaphore，當作 mutex lock 保護 critical section
+4. spinlock，用 busy waiting 等待
+
+??? quiz "看解析"
+    **C**。初始 1：第一個 wait 減成 0 進去，第二個 wait 就要等，一次只放一個人，效果跟 mutex lock 一樣。
+
+</div>
+
+<div class="mcq" data-ans="2" data-qid="u2-bank-s4" markdown="1">
+
+**簡單 7.** 用「會排隊」的寫法實作 semaphore（[2.0](#u2-0)），S 現在的值是 −3，代表什麼？
+
+1. 還有 3 份資源可用
+2. 有 3 個 process 在 S 的等待佇列裡
+3. 出錯了，semaphore 不會是負的
+4. 有 3 個 process 在 critical section 裡
+
+??? quiz "看解析"
+    **B**。每個拿不到的 wait 都先減 1 再去排隊，所以負多少就有幾個在等。C 只有在「用 busy waiting、值不會減到負的」那種定義下才對。
+
+</div>
+
+<div class="mcq" data-qid="u2-concept-2" data-ans="1" markdown="1">
+
+**簡單 8.** 要保證 P1 的敘述 S1 一定在 P2 的敘述 S2 之前執行，用一個 semaphore `synch`，初始值和寫法是？
+
+1. 初始 0；P1：`S1; signal(synch);`，P2：`wait(synch); S2;`
+2. 初始 1；P1：`S1; signal(synch);`，P2：`wait(synch); S2;`
+3. 初始 0；P1：`wait(synch); S1;`，P2：`S2; signal(synch);`
+4. 初始 1；P1：`wait(synch); S1;`，P2：`signal(synch); S2;`
+
+??? quiz "看解析"
+    **A**。初始 0：P2 先跑到 `wait` 會被擋住，直到 P1 做完 S1、`signal` 之後才能做 S2。B 初始 1 的話，P2 一開始就能直接通過，S2 可能比 S1 早。
+
+</div>
+
+<div class="mcq" data-qid="u2-concept-3" data-ans="3" markdown="1">
+
+**簡單 9.** 生產者寫成「先 `wait(mutex)`，再 `wait(empty)`」，什麼時候會出事？
+
+1. buffer 空的時候
+2. 只有一個生產者的時候
+3. buffer 滿的時候：生產者拿著 mutex 等空格，消費者拿不到 mutex，兩邊都卡住
+4. 不會出事，順序無所謂
+
+??? quiz "看解析"
+    **C**。這是死結：生產者握著 mutex 等 empty，消費者要 mutex 才能拿資料、`signal(empty)`。正確順序是先等資源（empty），再拿 mutex。
+
+</div>
+
+<div data-qid="u2-concept-6" markdown="1">
+
+**簡單 10.** 生產者－消費者為什麼需要三個 semaphore？各自的初始值和用途？
 
 ??? quiz "看參考答案"
     | semaphore | 初始值 | 用途 |
@@ -2526,7 +2803,192 @@ signal(empty);
 
     empty、full 負責「先後條件」（有空間才放、有資料才拿），mutex 負責「互斥」，兩種工作要分開。
 
-**W-2.** 用 Peterson's solution 的程式碼說明：為什麼兩個 process 不可能同時在 critical section 裡？
+</div>
+
+<div class="mcq" data-ans="1" data-qid="u2-bank-s5" markdown="1">
+
+**簡單 11.** monitor 裡同一時間最多幾個 process 在執行 monitor 的函式？
+
+1. 1 個
+2. 2 個
+3. 看有幾個 condition variable
+4. 沒有限制
+
+??? quiz "看解析"
+    **A**。monitor 自動保證互斥：一個 process 在裡面執行時，其他想呼叫 monitor 函式的都要在外面排隊。在 condition variable 上 wait 的 process 是暫停的，不算在執行，它會先讓出 monitor。
+
+</div>
+
+#### priority inversion 和交易
+
+<div class="mcq" data-qid="u2-more-1" data-ans="2" markdown="1">
+
+**簡單 12.** 下面哪一個情況是 priority inversion？
+
+1. 高優先權的 process 一直搶走低優先權的 CPU
+2. 高優先權的 process 在等低優先權持有的 lock，低優先權的又被中優先權的搶走
+3. 兩個 process 互相等對方的資源
+4. 優先權最低的 process 一直排不到 CPU
+
+??? quiz "看解析"
+    **B**。A 是正常的優先權排程；C 是死結；D 是 starvation（可以用 aging 解決）。
+
+</div>
+
+<div class="mcq" data-qid="u2-more-2" data-ans="3" markdown="1">
+
+**簡單 13.** priority inheritance 怎麼解決 priority inversion？
+
+1. 把高優先權 process 的優先權降低
+2. 不讓中優先權的 process 執行
+3. 持有 lock 的低優先權 process 暫時繼承等待者的高優先權
+4. 讓 lock 可以被搶走
+
+??? quiz "看解析"
+    **C**。L 繼承 H 的優先權後，M 就搶不走 L；L 很快用完 lock 放開，H 馬上拿到。放開後 L 恢復原本的優先權。
+
+</div>
+
+<div class="mcq" data-ans="3" data-qid="u2-bank-s6" markdown="1">
+
+**簡單 14.** 下面哪一個情況**不會**發生 priority inversion？
+
+1. 搶先式優先權排程，高、中、低三個 process，高和低共用一把 lock
+2. 即時系統裡，高優先權的工作在等低優先權的放開資源時，中優先權的工作一直在跑
+3. 所有 process 的優先權都一樣，用 FCFS 排程
+4. 低優先權的 process 拿著 lock 時，被中優先權的搶走 CPU
+
+??? quiz "看解析"
+    **C**。沒有優先權高低，就談不上「高的被低的擋住」；FCFS 也不會搶走正在跑的 process。priority inversion 需要：共享資源、搶先式的優先權排程、三個以上不同的優先權。
+
+</div>
+
+<div class="mcq" data-qid="u2-more-3" data-ans="1" markdown="1">
+
+**簡單 15.** 遵守 two-phase locking 的交易，下面哪一個做法是**不允許**的？
+
+1. 放開 lock A 之後，再拿 lock B
+2. 先拿 lock A、再拿 lock B，最後一起放
+3. 拿 A、拿 B、放 A、放 B
+4. 只拿一把 lock
+
+??? quiz "看解析"
+    **A**。一旦開始放 lock（進入 shrinking phase），就不能再拿新的。
+
+</div>
+
+### 2.4 練習：基礎題 {#u2-drill}
+
+要動手追執行順序、算 semaphore 的值，但每題只用到一個觀念。先自己寫，再打開對答案；答案都用程式模擬或驗算過。
+
+#### 交錯與 semaphore 追蹤
+
+**做法**：把每個 thread 拆成「讀、算、寫回」或一行一行的 wait／signal，列出時間順序，每一步寫下共享變數和 semaphore 的值（semaphore 的定義見 [2.0](#u2-0)）。
+
+<div data-qid="u2-bank-b1" markdown="1">
+
+**基礎 1.** x 初始 10。T1 執行 `x = x + 3`，T2 執行 `x = x - 1`，兩個都是讀、算、寫回三步，沒有 lock。列出所有可能的最後值，哪些是 race condition 造成的？
+
+??? quiz "看答案"
+    可能是 **12、13、9**。
+
+    - 一個做完再做另一個（不管誰先）：$10+3-1=$ **12**，這是正確答案。
+    - 兩個都先讀到 10：T1 算出 13、T2 算出 9，誰最後寫回就是誰的：**13**（T2 的減法不見了）或 **9**（T1 的加法不見了）。
+
+    13 和 9 都是 race condition 造成的。我用程式把所有交錯列出來，只有這三種結果。
+
+</div>
+
+<div data-qid="u2-bank-b4" markdown="1">
+
+**基礎 2.** 生產者－消費者，buffer 2 格（empty ＝ 2、full ＝ 0）。依序：生產者放、生產者放、消費者拿、生產者放、生產者放。寫出每一步之後 empty、full 的值，哪一步會卡住？
+
+??? quiz "看答案"
+    | 動作 | empty | full | 說明 |
+    |---|---|---|---|
+    | 生產者放 | 1 | 1 | |
+    | 生產者放 | 0 | 2 | buffer 滿了 |
+    | 消費者拿 | 1 | 1 | 空出一格 |
+    | 生產者放 | 0 | 2 | 又滿了 |
+    | 生產者放 | −1 | 2 | 卡在 `wait(empty)`，等消費者再拿走一個 |
+
+    最後一步 empty 變成 −1，表示有 1 個生產者在排隊。我用程式照 [2.0](#u2-0) 的 semaphore 定義模擬過，每一步的值都一樣。
+
+</div>
+
+<div data-qid="u2-bank-b2" markdown="1">
+
+**基礎 3.** P1、P2、P3 各有一行敘述 S1、S2、S3，三個 process 同時開始。用 semaphore 保證執行順序一定是 S1 → S2 → S3。要幾個 semaphore？初始值多少？每個 process 怎麼寫？
+
+??? quiz "看答案"
+    **2 個**，a、b 初始都是 **0**：
+
+    ```c
+    /* P1 */  S1; signal(a);
+    /* P2 */  wait(a); S2; signal(b);
+    /* P3 */  wait(b); S3;
+    ```
+
+    - 初始 0，所以 P2 一開始就卡在 `wait(a)`，要等 P1 做完 S1、`signal(a)`。
+    - P3 卡在 `wait(b)`，要等 P2 做完 S2、`signal(b)`。
+    - 每一個「誰要等誰」就用一個初始 0 的 semaphore：等的人 wait，被等的人做完 signal。
+
+</div>
+
+<div data-qid="u2-bank-b3" markdown="1">
+
+<div markdown="1">
+
+**基礎 4.** semaphore S、Q 初始都是 1。找一個執行順序讓 P0、P1 永遠卡住，再說明怎麼改。
+
+```c
+/* P0 */          /* P1 */
+wait(S);          wait(Q);
+wait(Q);          wait(S);
+/* ... */         /* ... */
+signal(S);        signal(Q);
+signal(Q);        signal(S);
+```
+
+</div>
+
+??? quiz "看答案"
+    - **會卡住的順序**：P0 `wait(S)`（S ＝ 0）→ P1 `wait(Q)`（Q ＝ 0）→ P0 `wait(Q)`：Q 已經被 P1 拿走，P0 等 → P1 `wait(S)`：S 在 P0 手上，P1 也等。兩個都在等對方手上的那一個，誰也不會 signal，這就是**死結**（[單元 3](#u3)）。
+    - **怎麼改**：兩邊都照**同樣的順序**拿（都先 S 再 Q）。先拿到 S 的人一定也拿得到 Q，另一個在 `wait(S)` 就被擋住，不會出現「各拿一個、互相等」。
+
+</div>
+
+#### 經典問題與演算法追蹤
+
+<div data-qid="u2-bank-b5" markdown="1">
+
+**基礎 5.** readers 優先的 readers–writers（[2.0](#u2-0)）。R1 在時間 0 開始讀，要讀 4；writer W 在時間 1 來，要寫 2；R2 在時間 2 來，要讀 4。(a) W 什麼時候開始寫？(b) 如果 R3 在時間 5 又來，要讀 4，W 什麼時候開始寫？
+
+??? quiz "看答案"
+    - **(a) 時間 6**：R1 讀 0–4。W 在 1 來時 R1 還在讀，W 卡在 `wait(rw_mutex)`。R2 在 2 來，read_count 從 1 變 2，直接進去讀 2–6。R1 在 4 離開時 read_count 還有 1，不會放開 rw_mutex；R2 在 6 離開，read_count 變 0，W 才開始寫 6–8。
+    - **(b) 時間 9**：R3 在 5 來時 R2 還在讀，R3 直接進去讀 5–9；read_count 要到 9 才歸零，W 寫 9–11。
+
+    W 比 R2、R3 都早來，卻一直被後來的 reader 插隊，這就是 writer 的 starvation。
+
+</div>
+
+<div data-qid="u2-bank-b6" markdown="1">
+
+**基礎 6.** Peterson's solution（[2.0](#u2-0)）。P0、P1 幾乎同時想進去：P0 先執行 `flag[0] = true; turn = 1;`，接著 P1 執行 `flag[1] = true; turn = 0;`。誰先進 critical section？為什麼？
+
+??? quiz "看答案"
+    **P0 先進去**。最後 turn ＝ 0（P1 後寫的）。
+
+    - P0 的 while 條件是 `flag[1] && turn == 1`：turn 是 0，條件不成立，P0 通過。
+    - P1 的 while 條件是 `flag[0] && turn == 0`：兩個都成立，P1 等。
+
+    規律：兩個都舉手時，**最後寫 turn 的那一個要等**，因為它把機會讓給了對方。
+
+</div>
+
+<div data-qid="u2-concept-7" markdown="1">
+
+**基礎 7.** 用 Peterson's solution 的程式碼說明：為什麼兩個 process 不可能同時在 critical section 裡？
 
 ??? quiz "看參考答案"
     假設 i 和 j 都在 critical section 裡，那它們都通過了 while，而且 flag[i]、flag[j] 都是 true。
@@ -2536,7 +2998,250 @@ signal(empty);
 
     turn 只有一個值，兩個人最後都寫了 turn（i 寫 j、j 寫 i），**後寫的那個**把 turn 設成對方，自己就會卡在 while。所以不可能兩個都通過，矛盾。∎
 
-### 2.4 英文作答範例 {#u2-en}
+</div>
+
+### 2.5 練習：考古題變化題 {#u2-exam}
+
+把考過的題目**換數字、改條件，或反過來問**。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。
+
+<div data-qid="u2-exam-1" markdown="1">
+
+**考古變化 1.**（改自 114 Q6a・延伸）用 `compare_and_swap()` 寫一個 lock。這樣的 lock 滿足 bounded waiting 嗎？
+
+??? quiz "看完整解答"
+    - **跟原題差在哪**：原題只要列出三種硬體支援；這題要真的用其中一種寫出來，再檢查三個條件。
+    - **定義**：`compare_and_swap(&v, expected, new)` 不可分割地做：如果 `v == expected` 就把 v 設成 new；不管有沒有設，都回傳 v 原本的值。
+    - **寫法**（lock 一開始是 0）：
+        ```c
+        while (compare_and_swap(&lock, 0, 1) != 0)
+            ;              /* 有人拿著，一直重試 */
+        /* critical section */
+        lock = 0;
+        ```
+    - **mutual exclusion 成立**：只有看到 lock 是 0、並成功把它改成 1 的那一個能進去，其他人回傳值都是 1。
+    - **bounded waiting 不成立**：放開 lock 之後，誰搶到全看運氣，某個 process 可能一直搶輸。要滿足 bounded waiting，要再加一個 `waiting[]` 陣列：離開時依序找下一個在等的人，直接把進入權交給他。
+
+</div>
+
+<div data-qid="u2-exam-2" markdown="1">
+
+**考古變化 2.**（改自 112 Q5b・應用）下面三種情況，各用 mutex、counting semaphore、condition variable 哪一個最自然？(a) 很多 thread 會遞增同一個計數器 (b) 伺服器最多同時服務 5 個連線 (c) 消費者要等到 buffer 裡有東西才繼續
+
+??? quiz "看完整解答"
+    - **跟原題差在哪**：原題問三個工具的用途；這題反過來，給情境要選工具。
+    - **(a) mutex**：只是保護一小段 critical section，一次一個人。
+    - **(b) counting semaphore**：初值 5，每個連線進來 `wait()`、結束 `signal()`，第 6 個會被擋住。
+    - **(c) condition variable**（搭配保護 buffer 的 mutex）：buffer 空的時候 `wait()`，生產者放東西後 `signal()` 叫醒它。也可以用一個計數「有幾個項目」的 semaphore。
+
+</div>
+
+<div data-qid="u2-exam-3" markdown="1">
+
+**考古變化 3.**（改自 105 Q1(1)、107 Q1(5)・實際算）搶先式的優先權排程，H ＞ M ＞ L。L 在時間 0 開始，一開始就拿到一個 lock，要在 critical section 裡跑 3 個單位才會放掉（之後就結束）。H 在時間 1 到達，一開始就要那個 lock，拿到後跑 2 個單位。M 在時間 2 到達，不需要 lock，跑 5 個單位。(1) 沒有 priority inheritance 時，H 在什麼時候做完？(2) 有 priority inheritance 時呢？
+
+??? quiz "看完整解答"
+    - **跟原題差在哪**：原題只要說明 priority inversion；這題用時間軸把「H 被 M 擋住」算出來。
+    - **(1) 沒有 inheritance**（每格 1 個單位）：
+        - 0–1 L；1 時 H 到，搶走 CPU，但拿不到 lock，被擋住，L 繼續跑 1–2。
+        - 2 時 M 到，M 比 L 優先，**M 一路跑 2–7**。
+        - 7–8 L 跑完 critical section、放掉 lock；H 才拿到 lock，跑 8–10。
+        - 時間軸 `L L M M M M M L H H`，**H 在 10 做完**。H 的優先權最高，卻等了完全不相干的 M 5 個單位，這就是 priority inversion。
+    - **(2) 有 inheritance**：H 在 1 被擋住時，L 暫時繼承 H 的優先權。
+        - 2 時 M 到，但 L 現在的優先權比 M 高，L 繼續跑到 3，放掉 lock，優先權恢復。
+        - H 拿到 lock，跑 3–5；M 跑 5–10。
+        - 時間軸 `L L L H H M M M M M`，**H 在 5 做完**。
+
+    我寫了一個逐格模擬的排程程式，兩種情況的時間軸都跟上面一樣。
+
+</div>
+
+<div data-qid="u2-exam-4" markdown="1">
+
+<div markdown="1">
+
+**考古變化 4.**（改自 105 Q1(3)、107 Q1(3)・判斷）兩個 process（$i$ 和 $j$）用下面的方法進 critical section，`flag` 一開始都是 false。它滿足 mutual exclusion、progress、bounded waiting 哪幾個？
+
+```c
+flag[i] = true;
+while (flag[j])
+    ;               /* 等對方 */
+/* critical section */
+flag[i] = false;
+```
+
+</div>
+
+??? quiz "看完整解答"
+    - **跟原題差在哪**：原題只問三個條件的名字；這題給一個「看起來對」的寫法，要用三個條件去檢查它。
+    - **mutual exclusion：滿足**。要進去，必須先把自己的 flag 設成 true、而且看到對方是 false。兩個同時在裡面，代表兩人都看到對方是 false，但兩人進去前都已經把自己設成 true 了，矛盾。
+    - **progress：不滿足**。兩人幾乎同時執行第一行，都把 flag 設成 true，接著都卡在 while 迴圈，誰也進不去，而且永遠出不來（deadlock）。
+    - **bounded waiting**：既然可能兩個人都永遠進不去，也談不上「等有限次就輪到」。
+    - **怎麼修**：Peterson 的做法再加一個 `turn` 變數，兩人都想進時讓 turn 決定誰先，就三個條件都滿足。
+
+    我寫了一個小程式把兩個 process 所有可能的交錯都走過一遍：沒有任何狀態兩人同時在 critical section，但有一個狀態兩人都卡住；改成 Peterson 演算法後就不會卡住。
+
+</div>
+
+<div data-qid="u2-exam-5" markdown="1">
+
+**考古變化 5.**（改自 104 Q8(3)・判斷）下面兩個交易的寫法，哪一個符合 two-phase locking？不符合的會出什麼問題？T1：`lock(A) read(A) unlock(A) lock(B) write(B) unlock(B)`；T2：`lock(A) lock(B) read(A) write(B) unlock(A) unlock(B)`
+
+??? quiz "看完整解答"
+    - **跟原題差在哪**：原題問 2PL 為什麼正確；這題要判斷具體的交易有沒有遵守。
+    - **規則**：先只拿 lock（growing），一旦開始放 lock（shrinking），就不能再拿。
+    - **T1 不符合**：`unlock(A)` 之後又 `lock(B)`，在 shrinking 之後還在拿 lock。
+    - **T2 符合**：先拿 A、B，用完才開始放。
+    - **T1 的問題**：A 放掉之後、B 還沒拿到之前，別的交易可以插進來改 A 和 B，結果可能不等於任何一種「一個一個執行」的順序（不是 conflict serializable）。
+
+</div>
+
+### 2.6 練習：猜題 {#u2-bank}
+
+考古題還沒考過、但恐龍書第 6、7 章（同步工具、經典同步問題）的重點，我猜比較可能出現的題型，包含 115 年那種英文名詞填空。
+
+<div data-qid="u2-bank-g1" markdown="1">
+
+<div markdown="1">
+
+**猜題 1.**（英文名詞填空，115 年的格式）
+
+- (a) A lock that busy-waits while waiting to be acquired is called a ＿＿.
+- (b) The segment of code in which a process accesses and updates shared data is called its ＿＿.
+- (c) A ＿＿ is a high-level synchronization construct that ensures only one process at a time is active within it.
+- (d) With the ＿＿ protocol, a process holding a resource needed by a higher-priority process temporarily inherits that higher priority.
+- (e) Instructions such as test_and_set() execute ＿＿, that is, as one uninterruptible unit.
+
+</div>
+
+??? quiz "看答案"
+    - (a) **spinlock**
+    - (b) **critical section**
+    - (c) **monitor**
+    - (d) **priority-inheritance**
+    - (e) **atomically**
+
+</div>
+
+<div data-qid="u2-bank-g2" markdown="1">
+
+**猜題 2.** semaphore 的 `wait()`、`signal()` 本身也要改 S 的值。它們為什麼必須是不可分割的？作業系統怎麼做到？
+
+??? quiz "看答案"
+    - **為什麼**：wait 是「讀 S、減 1、寫回、判斷要不要睡」。兩個 process 同時 wait，如果交錯執行，可能都讀到 1、都減成 0、都以為自己拿到了，semaphore 本身就出現 race condition。
+    - **單核心**：執行 wait、signal 那幾行時**暫時關掉中斷**，就不會被切換。
+    - **多核心**：關中斷擋不住別顆 CPU，要用 compare_and_swap 或 spinlock 保護 wait、signal 的程式碼。這裡的 busy waiting 只發生在 wait、signal 這幾行，很短，可以接受。
+
+</div>
+
+<div data-qid="u2-bank-g3" markdown="1">
+
+<div markdown="1">
+
+**猜題 3.** 下面的 `increment` 沒有用 lock，多個 thread 同時呼叫也不會掉數，為什麼？
+
+```c
+void increment(int *v) {
+    int temp;
+    do {
+        temp = *v;      /* 先讀目前的值 */
+    } while (temp !=
+             compare_and_swap(v, temp, temp + 1));
+}
+```
+
+</div>
+
+??? quiz "看答案"
+    compare_and_swap 只有在 `*v` **還等於剛剛讀到的 temp** 時，才把它改成 temp ＋ 1，而且這一步不可分割。
+
+    - 沒人插隊：`*v` 還是 temp，改成功，回傳 temp，迴圈結束。
+    - 有人插隊、先改了 `*v`：`*v` 不等於 temp，這次**不改**，回傳的是新值，跟 temp 不一樣，迴圈**重讀再試**。
+
+    所以每一次成功的加 1 都是加在「最新的值」上，不會蓋掉別人的結果。atomic variable 的 increment 就是這樣做的。我實際跑過：兩個 thread 各加一百萬次，結果剛好 2000000。
+
+</div>
+
+<div data-qid="u2-bank-g4" markdown="1">
+
+**猜題 4.** monitor 裡，P 呼叫 `x.signal()` 叫醒了在 x 上等的 Q。但 monitor 一次只能有一個在執行，接下來誰先跑？
+
+??? quiz "看答案"
+    有兩種做法：
+
+    - **signal and wait**：P 先停下來等，讓 Q 馬上執行（Q 醒來時條件一定還成立）。
+    - **signal and continue**：P 繼續跑到離開 monitor 或去等別的條件，Q 之後才執行（Q 醒來時條件可能又被改了）。
+
+    Pthreads、Java 都是 signal and continue，所以等條件的程式要寫 `while (!條件) wait();`，醒來再檢查一次，不能只用 if。
+
+</div>
+
+<div data-qid="u2-bank-g5" markdown="1">
+
+**猜題 5.** 把 readers–writers 改成「writer 優先」：只要有 writer 在等，新來的 reader 就不能進去。這樣誰可能餓死？為什麼兩種版本都有人會餓死？
+
+??? quiz "看答案"
+    - **reader 可能餓死**：writer 一直來，reader 就一直被擋在外面。
+    - readers 優先時 writer 會餓死，writers 優先時 reader 會餓死：只要給某一邊「插隊權」，另一邊就可能永遠排不到。要兩邊都不餓死，可以讓所有人照到達的順序排隊（例如先通過一個大家共用的排隊 semaphore，再照原本的規則讀寫）。
+
+</div>
+
+<div data-qid="u2-bank-g6" markdown="1">
+
+**猜題 6.** deadlock 和 starvation 差在哪？各舉一個跟 semaphore 有關的例子。
+
+??? quiz "看答案"
+    - **deadlock**：一群 process 每個都在等**這群裡的別人**才能觸發的事件，大家一起永遠等下去。例：基礎題裡兩個 semaphore 拿的順序相反（P0 先 S 後 Q、P1 先 Q 後 S）。
+    - **starvation（indefinite blocking）**：系統還在運作、別人都有進展，只有某個 process 一直等不到。例：semaphore 的等待佇列如果用 LIFO（後來的先服務），最早來排隊的可能永遠被插隊。
+    - 差別：deadlock 是「那一群全部卡住」，starvation 是「只有某些人一直輪不到」。
+
+</div>
+
+<div data-qid="u2-bank-g7" markdown="1">
+
+<div markdown="1">
+
+**猜題 7.** 兩個 thread 都執行下面的函式，最後 count 應該是 2000000，但常常比較少。用 Pthreads 的 mutex 改寫，讓結果一定正確。
+
+```c
+long count = 0;
+void *worker(void *p) {
+    for (int i = 0; i < 1000000; i++)
+        count++;
+    return NULL;
+}
+```
+
+</div>
+
+??? quiz "看答案"
+    ```c
+    long count = 0;
+    pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+    void *worker(void *p) {
+        for (int i = 0; i < 1000000; i++) {
+            pthread_mutex_lock(&m);
+            count++;            /* critical section */
+            pthread_mutex_unlock(&m);
+        }
+        return NULL;
+    }
+    ```
+
+    `count++` 是讀、加、寫回三步，兩個 thread 交錯就會掉數。用 mutex 把它包起來，一次只有一個 thread 在做 `count++`。我實際跑過：不加 lock 時有一次只得到 1048268（每次跑都不一樣），加上 mutex 之後剛好 2000000。也可以改用 atomic 的加法，或上一題的 compare_and_swap 迴圈。
+
+</div>
+
+<div data-qid="u2-bank-g8" markdown="1">
+
+**猜題 8.** Peterson's solution 在現代多核心 CPU 上可能會失效，為什麼？怎麼補救？
+
+??? quiz "看答案"
+    - **原因**：CPU 和編譯器可能把彼此無關的讀寫換順序。進入前的 `flag[i] = true;`、`turn = j;` 跟之後 while 讀的 `flag[j]` 是不同的變數，可能被重排：例如讀 flag[j] 被提前到寫 flag[i] 之前，兩個 process 都看到對方的 flag 還是 false，同時進去。
+    - **補救**：在設定 flag、turn 和檢查 while 之間加上 **memory barrier**，強迫寫入先完成、讓另一顆 CPU 看得到（這就是 114 Q6a 第一種硬體支援的用途）；或直接改用硬體指令（test_and_set、compare_and_swap）做 lock。
+
+</div>
+
+### 2.7 英文作答範例 {#u2-en}
 
 考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把**粗體的關鍵字**記起來。寫法見 [0. 中山 OS 怎麼考](#u0-en)。
 
@@ -2631,86 +3336,6 @@ signal(empty);
     It can be solved with the **priority-inheritance protocol**: a process that holds a resource needed by a higher-priority process **temporarily inherits the higher priority** until it releases the resource. Then the medium-priority process cannot preempt it, and its priority **reverts to the original value** after it releases the resource.
 
     寫法提示：一定要有三個角色（high、medium、low），只寫兩個不算 priority inversion（[2.2](#u2-more)）。
-
-### 2.5 考古題變化題 {#u2-exam}
-
-把考過的題目**換數字、改條件，或反過來問**。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。
-
-**考古變化 1.**（改自 114 Q6a・延伸）用 `compare_and_swap()` 寫一個 lock。這樣的 lock 滿足 bounded waiting 嗎？
-
-??? quiz "看完整解答"
-    - **跟原題差在哪**：原題只要列出三種硬體支援；這題要真的用其中一種寫出來，再檢查三個條件。
-    - **定義**：`compare_and_swap(&v, expected, new)` 不可分割地做：如果 `v == expected` 就把 v 設成 new；不管有沒有設，都回傳 v 原本的值。
-    - **寫法**（lock 一開始是 0）：
-        ```c
-        while (compare_and_swap(&lock, 0, 1) != 0)
-            ;              /* 有人拿著，一直重試 */
-        /* critical section */
-        lock = 0;
-        ```
-    - **mutual exclusion 成立**：只有看到 lock 是 0、並成功把它改成 1 的那一個能進去，其他人回傳值都是 1。
-    - **bounded waiting 不成立**：放開 lock 之後，誰搶到全看運氣，某個 process 可能一直搶輸。要滿足 bounded waiting，要再加一個 `waiting[]` 陣列：離開時依序找下一個在等的人，直接把進入權交給他。
-
-
-**考古變化 2.**（改自 112 Q5b・應用）下面三種情況，各用 mutex、counting semaphore、condition variable 哪一個最自然？(a) 很多 thread 會遞增同一個計數器 (b) 伺服器最多同時服務 5 個連線 (c) 消費者要等到 buffer 裡有東西才繼續
-
-??? quiz "看完整解答"
-    - **跟原題差在哪**：原題問三個工具的用途；這題反過來，給情境要選工具。
-    - **(a) mutex**：只是保護一小段 critical section，一次一個人。
-    - **(b) counting semaphore**：初值 5，每個連線進來 `wait()`、結束 `signal()`，第 6 個會被擋住。
-    - **(c) condition variable**（搭配保護 buffer 的 mutex）：buffer 空的時候 `wait()`，生產者放東西後 `signal()` 叫醒它。也可以用一個計數「有幾個項目」的 semaphore。
-
-
-**考古變化 3.**（改自 105 Q1(1)、107 Q1(5)・實際算）搶先式的優先權排程，H ＞ M ＞ L。L 在時間 0 開始，一開始就拿到一個 lock，要在 critical section 裡跑 3 個單位才會放掉（之後就結束）。H 在時間 1 到達，一開始就要那個 lock，拿到後跑 2 個單位。M 在時間 2 到達，不需要 lock，跑 5 個單位。(1) 沒有 priority inheritance 時，H 在什麼時候做完？(2) 有 priority inheritance 時呢？
-
-??? quiz "看完整解答"
-    - **跟原題差在哪**：原題只要說明 priority inversion；這題用時間軸把「H 被 M 擋住」算出來。
-    - **(1) 沒有 inheritance**（每格 1 個單位）：
-        - 0–1 L；1 時 H 到，搶走 CPU，但拿不到 lock，被擋住，L 繼續跑 1–2。
-        - 2 時 M 到，M 比 L 優先，**M 一路跑 2–7**。
-        - 7–8 L 跑完 critical section、放掉 lock；H 才拿到 lock，跑 8–10。
-        - 時間軸 `L L M M M M M L H H`，**H 在 10 做完**。H 的優先權最高，卻等了完全不相干的 M 5 個單位，這就是 priority inversion。
-    - **(2) 有 inheritance**：H 在 1 被擋住時，L 暫時繼承 H 的優先權。
-        - 2 時 M 到，但 L 現在的優先權比 M 高，L 繼續跑到 3，放掉 lock，優先權恢復。
-        - H 拿到 lock，跑 3–5；M 跑 5–10。
-        - 時間軸 `L L L H H M M M M M`，**H 在 5 做完**。
-
-    我寫了一個逐格模擬的排程程式，兩種情況的時間軸都跟上面一樣。
-
-
-<div markdown="1">
-
-**考古變化 4.**（改自 105 Q1(3)、107 Q1(3)・判斷）兩個 process（$i$ 和 $j$）用下面的方法進 critical section，`flag` 一開始都是 false。它滿足 mutual exclusion、progress、bounded waiting 哪幾個？
-
-```c
-flag[i] = true;
-while (flag[j])
-    ;               /* 等對方 */
-/* critical section */
-flag[i] = false;
-```
-
-</div>
-
-??? quiz "看完整解答"
-    - **跟原題差在哪**：原題只問三個條件的名字；這題給一個「看起來對」的寫法，要用三個條件去檢查它。
-    - **mutual exclusion：滿足**。要進去，必須先把自己的 flag 設成 true、而且看到對方是 false。兩個同時在裡面，代表兩人都看到對方是 false，但兩人進去前都已經把自己設成 true 了，矛盾。
-    - **progress：不滿足**。兩人幾乎同時執行第一行，都把 flag 設成 true，接著都卡在 while 迴圈，誰也進不去，而且永遠出不來（deadlock）。
-    - **bounded waiting**：既然可能兩個人都永遠進不去，也談不上「等有限次就輪到」。
-    - **怎麼修**：Peterson 的做法再加一個 `turn` 變數，兩人都想進時讓 turn 決定誰先，就三個條件都滿足。
-
-    我寫了一個小程式把兩個 process 所有可能的交錯都走過一遍：沒有任何狀態兩人同時在 critical section，但有一個狀態兩人都卡住；改成 Peterson 演算法後就不會卡住。
-
-
-**考古變化 5.**（改自 104 Q8(3)・判斷）下面兩個交易的寫法，哪一個符合 two-phase locking？不符合的會出什麼問題？T1：`lock(A) read(A) unlock(A) lock(B) write(B) unlock(B)`；T2：`lock(A) lock(B) read(A) write(B) unlock(A) unlock(B)`
-
-??? quiz "看完整解答"
-    - **跟原題差在哪**：原題問 2PL 為什麼正確；這題要判斷具體的交易有沒有遵守。
-    - **規則**：先只拿 lock（growing），一旦開始放 lock（shrinking），就不能再拿。
-    - **T1 不符合**：`unlock(A)` 之後又 `lock(B)`，在 shrinking 之後還在拿 lock。
-    - **T2 符合**：先拿 A、B，用完才開始放。
-    - **T1 的問題**：A 放掉之後、B 還沒拿到之前，別的交易可以插進來改 A 和 B，結果可能不等於任何一種「一個一個執行」的順序（不是 conflict serializable）。
-
 
 ### 單元 2 小考 {#u2-quiz}
 
