@@ -10,6 +10,8 @@
  *   每種筆各自記住粗細和顏色（工具列的「● 數字」按鈕打開設定，有推薦色系和自訂顏色）。
  * - 「加長」一次多一段紙；「縮短」一次收回一段，但不會切到筆跡、也不會比原本短；兩個都可以「復原」。
  * - 「選取」：用筆圈起來（或直接點一筆）選取筆跡，拖框裡面移動、拖右下角的圓點縮放，也可以複製、刪除；都可以「復原」。
+ * - 拉直線：畫一條線，筆尖在終點停住一下（預設 0.6 秒，紙下方可以調整或關掉），這一筆就變成筆直的線；
+ *   還沒放開前可以繼續拖動調整方向和長度，接近水平、垂直、45° 時自動對齊。彎來彎去的筆畫（寫字、畫圈）不會被拉直。
  *
  * 一筆的資料：{ p: [x, y, 壓力, ...], c: 顏色, sw: 粗細, t: 筆的種類, pen: 是否觸控筆, k: 縮放倒數 }
  *   c 是數字 0–3 時是會跟著深色模式變的黑紅藍綠（舊資料都是這種），字串則是固定的色碼。
@@ -28,6 +30,7 @@
   var COLOR_VARS = ["--pen-ink", "--pen-red", "--pen-blue", "--pen-green"];
   var LIGHT = ["#1a2130", "#d0343f", "#2d5fd3", "#2f7d3b"];   // 存成圖片時用白底配色
   var PREF_KEY = "cgep:ink:pref";
+  var SNAP_MS = [400, 600, 1000, 1500];   // 筆停住多久拉成直線（毫秒），預設 600
   // 筆的種類。粗細範圍是紙寬 1000 時的單位
   var PENS = {
     fountain: { name: "鋼筆", icon: "penFountain", min: 1, max: 20, step: 0.5 },
@@ -263,6 +266,9 @@
       "</div>" +
       '<div class="ink-foot">' +
         '<label class="ink-pen"><input type="checkbox"> 觸控筆模式（只有筆會寫，一指拖曳是捲動）</label>' +
+        '<span class="ink-snap"><label><input type="checkbox" aria-label="畫線時筆停住一下會拉成直線"> 畫線時筆停住</label>' +
+          '<select aria-label="筆要停多久才拉成直線">' + SNAP_MS.map(function (ms) { return '<option value="' + ms + '">' + ms / 1000 + " 秒</option>"; }).join("") + "</select>" +
+          "<span>會拉成直線</span></span>" +
         '<span class="ink-hint">兩指捏合可以縮放、移動紙張；電腦用 Ctrl＋滾輪</span>' +
         '<span class="ink-status" aria-live="polite"></span>' +
       "</div>";
@@ -270,6 +276,8 @@
     this.sheet = panel.querySelector(".ink-sheet");
     this.canvas = panel.querySelector("canvas");
     this.penBox = panel.querySelector(".ink-pen input");
+    this.snapBox = panel.querySelector(".ink-snap input");
+    this.snapSel = panel.querySelector(".ink-snap select");
     this.statusEl = panel.querySelector(".ink-status");
     this.zLabel = panel.querySelector(".ink-zl");
     this.swBox = panel.querySelector(".ink-colors");
@@ -280,6 +288,7 @@
     this.bindPointer();
     this.syncTools();
     this.syncPenOnly();
+    this.syncSnap();
 
     var self = this, lastW = 0;
     if (window.ResizeObserver) {
@@ -586,6 +595,13 @@
     drawStroke(x, s, palette(false));
   };
   Pad.prototype.syncPenOnly = function () { this.penBox.checked = pref.penOnly === true; };
+  // 拉直線的設定：pref.snapOff＝關掉，pref.snapMs＝筆要停多久
+  function snapMs() { return SNAP_MS.indexOf(pref.snapMs) >= 0 ? pref.snapMs : 600; }
+  Pad.prototype.syncSnap = function () {
+    this.snapBox.checked = pref.snapOff !== true;
+    this.snapSel.value = String(snapMs());
+    this.snapSel.disabled = pref.snapOff === true;
+  };
 
   Pad.prototype.bindTools = function () {
     var self = this;
@@ -645,6 +661,14 @@
       pref.penOnly = self.penBox.checked; savePref();
       openPads.forEach(function (p) { p.syncPenOnly(); });
     });
+    this.snapBox.addEventListener("change", function () {
+      pref.snapOff = !self.snapBox.checked; savePref();
+      openPads.forEach(function (p) { p.syncSnap(); });
+    });
+    this.snapSel.addEventListener("change", function () {
+      pref.snapMs = +self.snapSel.value; savePref();
+      openPads.forEach(function (p) { p.syncSnap(); });
+    });
   };
 
   Pad.prototype.bindPointer = function () {
@@ -672,6 +696,55 @@
       self.syncZoom();
     }
 
+    /* 拉直線：畫線時筆尖停住 snapMs() 毫秒，這一筆就變成從起點到筆尖的直線 */
+    function r1(v) { return Math.round(v * 10) / 10; }
+    // 筆尖移動超過 4 個螢幕像素才算「還在畫」，重新計時（停住時的手抖不算移動）
+    function holdFrom(a, e) {
+      a.hx = e.clientX; a.hy = e.clientY; a.hi = a.s.p.length / 3;
+      clearTimeout(a.timer);
+      if (pref.snapOff !== true) a.timer = setTimeout(function () { straighten(a); }, snapMs());
+    }
+    function straighten(a) {
+      if (act !== a || a.straight) return;
+      var p = a.s.p, n = p.length / 3, k = self.scale * self.z;   // 紙上 1 單位在螢幕上是 k 像素
+      if (n < 2) return;
+      var m = Math.max(2, Math.min(a.hi, n));                      // 只看停住以前畫的點
+      var x0 = p[0], y0 = p[1], xe = p[3 * m - 3], ye = p[3 * m - 2];
+      var C = Math.hypot(xe - x0, ye - y0);
+      if (C * k < 16) return;                                     // 太短：一個點或短短一撇
+      var len = 0, dev = 0, prs = [];
+      for (var i = 0; i < m; i++) {
+        prs.push(p[3 * i + 2]);
+        if (i) len += Math.hypot(p[3 * i] - p[3 * i - 3], p[3 * i + 1] - p[3 * i - 2]);
+        dev = Math.max(dev, distSeg(p[3 * i], p[3 * i + 1], x0, y0, xe, ye));
+      }
+      // 寫字、畫圈、波浪線：路徑比起點到終點的距離長很多，或離那條直線太遠，就不拉直
+      if (len > C * 1.2 || dev > C * 0.15 + 4 / k) return;
+      prs.sort(function (u, v) { return u - v; });
+      a.straight = { x: x0, y: y0, pr: prs[prs.length >> 1] };    // 粗細用這一筆壓力的中位數
+      lineTo(a, p[3 * n - 3], p[3 * n - 2]);
+      self.requestDraw();
+      var seen = pref.snapTip || 0;
+      if (seen < 3) {
+        pref.snapTip = seen + 1; savePref();
+        self.status("拉成直線了：還沒放開前可以拖動調整方向和長度，接近水平、垂直、45° 會自動對齊");
+      }
+    }
+    // 直線的終點跟著筆尖；接近水平、垂直（5° 以內）或 45°（3° 以內）就對齊
+    function lineTo(a, x1, y1) {
+      var st = a.straight, dx = x1 - st.x, dy = y1 - st.y, L = Math.hypot(dx, dy);
+      if (L > 0) {
+        var step = Math.PI / 4, ang = Math.atan2(dy, dx), j = Math.round(ang / step);
+        if (Math.abs(ang - j * step) < (j % 2 === 0 ? 5 : 3) * Math.PI / 180) {
+          dx = L * Math.cos(j * step); dy = L * Math.sin(j * step);
+        }
+      }
+      // 中間每隔約 6 單位放一個點，圈選（看一半以上的點在不在圈裡）和橡皮擦才跟一般筆畫一樣
+      var nSeg = Math.max(1, Math.min(120, Math.ceil(L / 6))), out = [];
+      for (var i = 0; i <= nSeg; i++) out.push(r1(st.x + dx * i / nSeg), r1(st.y + dy * i / nSeg), st.pr);
+      a.s.p = out;
+    }
+
     c.addEventListener("pointerdown", function (e) {
       if (!self.ctx) return;
       var isPen = e.pointerType === "pen";
@@ -683,6 +756,7 @@
         if (touches.size === 2) {
           // 第二根手指：改成縮放／移動紙張。第一根手指如果已經開始畫，那一筆取消
           if (act && act.mode === "draw" && !act.s.pen) {
+            clearTimeout(act.timer);
             var at = self.strokes.lastIndexOf(act.s);
             if (at >= 0) self.strokes.splice(at, 1);
             self.requestDraw();
@@ -735,6 +809,7 @@
       self.strokes.push(s);
       self.busy = true;
       act = { id: e.pointerId, mode: "draw", s: s, pal: palette(false) };
+      holdFrom(act, e);
     });
 
     c.addEventListener("pointermove", function (e) {
@@ -765,6 +840,13 @@
         self.requestDraw();
         return;
       }
+      if (act.mode === "draw" && act.straight) {
+        // 已經拉成直線：終點跟著筆尖，整張重畫（之前一段一段畫上去的彎線要清掉）
+        var qe = pos(e);
+        lineTo(act, qe[0], qe[1]);
+        self.requestDraw();
+        return;
+      }
       var list = (e.getCoalescedEvents && e.getCoalescedEvents()) || [];
       if (!list.length) list = [e];
       for (var i = 0; i < list.length; i++) {
@@ -778,8 +860,11 @@
         seg(self.ctx, act.s, p.length / 3 - 1);
         self.ctx.globalAlpha = 1;
       }
-      // 螢光筆是半透明的整條路徑，邊畫邊整張重畫（才會畫在字的下面、接縫不會變深）
-      if (act.mode === "draw" && act.s.t === "hl") self.requestDraw();
+      if (act.mode === "draw") {
+        if (Math.hypot(e.clientX - act.hx, e.clientY - act.hy) > 4) holdFrom(act, e);
+        // 螢光筆是半透明的整條路徑，邊畫邊整張重畫（才會畫在字的下面、接縫不會變深）
+        if (act.s.t === "hl") self.requestDraw();
+      }
     });
 
     function end(e) {
@@ -791,7 +876,8 @@
       act = null;
       self.busy = false;
       if (a.mode === "draw") {
-        if (a.s.t === "hl") self.requestDraw();
+        clearTimeout(a.timer);
+        if (a.straight || a.s.t === "hl") self.requestDraw();
         else if (a.s.p.length === 3) drawStroke(self.ctx, a.s, a.pal);
         else { setColor(self.ctx, a.s, a.pal); tail(self.ctx, a.s); self.ctx.globalAlpha = 1; }
         self.push({ t: "add", s: a.s });

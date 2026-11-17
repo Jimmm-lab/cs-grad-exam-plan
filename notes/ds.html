@@ -200,6 +200,11 @@ mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width:
 .ink-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; color: var(--muted); }
 .ink-pen { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
 .ink-pen input { width: 18px; height: 18px; margin: 0; accent-color: var(--ex); }
+.ink-snap { display: inline-flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.ink-snap label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.ink-snap input { width: 18px; height: 18px; margin: 0; accent-color: var(--ex); }
+.ink-snap select { min-height: 32px; padding: 0 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; }
+.ink-snap select:disabled { opacity: .45; }
 
 /* 資料結構動畫 */
 .viz { margin: 20px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow: hidden; }
@@ -10416,7 +10421,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </script>
 <script src="assets/icons.js?v=1a5c59ea"></script>
 <script src="assets/inkdb.js?v=b9600460"></script>
-<script src="assets/ink.js?v=4d874f64"></script>
+<script src="assets/ink.js?v=f1a21643"></script>
 <script src="assets/viz.js?v=1e5c289a"></script>
 <script src="assets/glide.js?v=93f8e086"></script>
 <script src="assets/nav.js?v=abbabef4"></script>
