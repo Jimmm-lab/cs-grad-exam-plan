@@ -1016,13 +1016,173 @@ close(fd[1]);  /* 舊號碼用不到了 */
 
     **為什麼只有一行**：echo 的輸出流進 pipe，被父行程讀走了，螢幕上只看得到父行程的 printf。這支程式也實際執行過，輸出就是 `1:hell`。
 
-#### 觀念小考
+### 1.4 練習：簡單觀念題 {#u1-concept}
 
-選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+一兩句話就能回答的題目，確認名詞和觀念有沒有記對。題目照主題分組；選擇題按下選項就會對答案，問答題先寫在手寫板或紙上，再打開參考答案。
 
-<div class="mcq" data-ans="1" markdown="1">
+#### 行程與執行緒
 
-**C-1.** 下面的程式，父行程印出什麼？
+<div class="mcq" data-qid="u1-concept-1" data-ans="2" markdown="1">
+
+**簡單 1.** 一個 running 的行程發出 I/O 請求，它的狀態會變成什麼？
+
+1. ready
+2. waiting
+3. new
+4. terminated
+
+??? quiz "看解析"
+    **B. waiting**。它要等 I/O，不能繼續用 CPU。等 I/O 完成會先回 **ready** 排隊（A 是時間片用完或被搶時的去處）。
+
+</div>
+
+<div class="mcq" data-ans="3" data-qid="u1-bank-s1" markdown="1">
+
+**簡單 2.** 下面哪一個狀態轉換**不可能**直接發生？
+
+1. ready → running
+2. running → waiting
+3. waiting → running
+4. running → ready
+
+??? quiz "看解析"
+    **C**。waiting 的行程等到 I/O 或事件之後，要先回 **ready** 排隊，被排程器選中才能 running，不會直接跳回 CPU。
+
+</div>
+
+<div class="mcq" data-ans="1" data-qid="u1-bank-s8" markdown="1">
+
+**簡單 3.** 哪一個排程器控制 degree of multiprogramming？
+
+1. long-term scheduler
+2. short-term scheduler
+3. dispatcher
+4. 磁碟排程器
+
+??? quiz "看解析"
+    **A**。long-term scheduler 決定讓哪些工作載入記憶體，所以決定記憶體裡有幾個行程。short-term scheduler 只在記憶體裡的 ready 行程之間挑一個給 CPU。
+
+</div>
+
+<div class="mcq" data-qid="u1-concept-4" data-ans="4" markdown="1">
+
+**簡單 4.** 同一個 process 裡的兩個 thread，**共用**下面哪一個？
+
+1. program counter
+2. 暫存器
+3. stack
+4. 全域變數
+
+??? quiz "看解析"
+    **D. 全域變數**（還有程式碼、heap、開啟的檔案）。A、B、C 每個 thread 各有一份，因為它們各自做到不同步驟、各自呼叫不同的函式。
+
+</div>
+
+<div class="mcq" data-ans="3" data-qid="u1-bank-s3" markdown="1">
+
+**簡單 5.** 同一個 process 的 threads，下面哪一個是**每個 thread 各有一份**？
+
+1. heap
+2. 全域變數
+3. stack
+4. 開啟的檔案
+
+??? quiz "看解析"
+    **C. stack**（還有 program counter、暫存器）。每個 thread 各自呼叫不同的函式，區域變數和返回位址要分開放。A、B、D 屬於整個 process，大家共用。
+
+</div>
+
+#### CPU 排程
+
+<div class="mcq" data-ans="2" data-qid="u1-bank-s2" markdown="1">
+
+**簡單 6.** 從行程送進系統，到它**第一次**拿到 CPU 的時間叫什麼？
+
+1. waiting time
+2. response time
+3. turnaround time
+4. burst time
+
+??? quiz "看解析"
+    **B. response time**。turnaround time 是從送進來到**做完**；waiting time 是在 ready queue 等的**總**時間；burst time 是它要用 CPU 多久。
+
+</div>
+
+<div class="mcq" data-qid="u1-concept-2" data-ans="3" markdown="1">
+
+**簡單 7.** 幾個行程都在時間 0 到達，下面哪一種演算法的平均等待時間一定最短？
+
+1. FCFS
+2. Round Robin
+3. SJF
+4. Priority
+
+??? quiz "看解析"
+    **C. SJF**。短的先做，後面的人多等的時間最少（觀念課的例子）。都在時間 0 到達時，SRTF 跟 SJF 一樣，因為沒有新來的可以搶。
+
+</div>
+
+<div class="mcq" data-qid="u1-concept-3" data-ans="1" markdown="1">
+
+**簡單 8.** Round Robin 的 time quantum 設得非常大（比每個行程的 burst 都長），會變成哪一種？
+
+1. FCFS
+2. SJF
+3. SRTF
+4. Priority
+
+??? quiz "看解析"
+    **A. FCFS**。每個行程都在一個 quantum 內做完，不會被換下來，就是照到達順序一個接一個做。反過來 quantum 太小，大部分時間都花在 context switch。
+
+</div>
+
+<div class="mcq" data-ans="3" data-qid="u1-bank-s4" markdown="1">
+
+**簡單 9.** 下面哪一個排程演算法一定是**搶先式**？
+
+1. FCFS
+2. SJF
+3. Round Robin
+4. 不搶先的 Priority
+
+??? quiz "看解析"
+    **C. Round Robin**。quantum 用完，不管做完沒有都要讓出 CPU。FCFS 和 SJF 都是拿到 CPU 就做到完（SJF 會搶的版本叫 SRTF）。
+
+</div>
+
+<div class="mcq" data-qid="u1-concept-5" data-ans="2" markdown="1">
+
+**簡單 10.** priority 排程中，低 priority 的行程一直輪不到（starvation），常用的解法是？
+
+1. 把 quantum 調大
+2. aging：等越久，priority 越高
+3. 改成 FCFS
+4. 增加 CPU 數量
+
+??? quiz "看解析"
+    **B. aging**。等得夠久，priority 總會升到最高，一定輪得到。
+
+</div>
+
+#### fork、thread、pipe
+
+<div class="mcq" data-ans="1" data-qid="u1-bank-s5" markdown="1">
+
+**簡單 11.** `pid = fork();` 之後，**子行程**裡的 pid 是多少？
+
+1. 0
+2. 子行程自己的 PID
+3. 父行程的 PID
+4. −1
+
+??? quiz "看解析"
+    **A. 0**。父行程拿到的才是子行程的 PID（大於 0）；−1 代表 fork 失敗。子行程要知道自己的 PID 用 `getpid()`，父親的用 `getppid()`。
+
+</div>
+
+<div class="mcq" data-qid="u1-fork-1" data-ans="1" markdown="1">
+
+**簡單 12.** 下面的程式，父行程印出什麼？
 
 ```c
 int x = 5;
@@ -1041,9 +1201,9 @@ else { wait(NULL); printf("%d\n", x); }
 
 </div>
 
-<div class="mcq" data-ans="2" markdown="1">
+<div class="mcq" data-qid="u1-fork-2" data-ans="2" markdown="1">
 
-**C-2.** `runner` 會把傳進來的整數加 3。下面印出什麼？
+**簡單 13.** `runner` 會把傳進來的整數加 3。下面印出什麼？
 
 ```c
 int v = 5;
@@ -1062,9 +1222,9 @@ printf("%d\n", v);
 
 </div>
 
-<div class="mcq" data-ans="3" markdown="1">
+<div class="mcq" data-qid="u1-fork-3" data-ans="3" markdown="1">
 
-**C-3.** `fork(); fork(); fork();` 連續三行執行完，總共有幾個行程（含原本的）？
+**簡單 14.** `fork(); fork(); fork();` 連續三行執行完，總共有幾個行程（含原本的）？
 
 1. 3
 2. 6
@@ -1076,9 +1236,23 @@ printf("%d\n", v);
 
 </div>
 
-<div class="mcq" data-ans="2" markdown="1">
+<div class="mcq" data-ans="2" data-qid="u1-bank-s6" markdown="1">
 
-**C-4.** 執行 `close(1); dup(fd[1]);` 之後（fd 是 pipe），`printf` 印的東西會去哪裡？
+**簡單 15.** `pipe(fd)` 之後，要**讀**資料用哪一個？
+
+1. `fd[1]`
+2. `fd[0]`
+3. 0 號（標準輸入）
+4. 1 號（標準輸出）
+
+??? quiz "看解析"
+    **B. `fd[0]`** 是讀端，`fd[1]` 是寫端（記法：0 對應 stdin 讀、1 對應 stdout 寫）。C、D 是標準輸入、輸出，除非用 dup 接過去，不然跟 pipe 沒有關係。
+
+</div>
+
+<div class="mcq" data-qid="u1-fork-4" data-ans="2" markdown="1">
+
+**簡單 16.** 執行 `close(1); dup(fd[1]);` 之後（fd 是 pipe），`printf` 印的東西會去哪裡？
 
 1. 還是螢幕
 2. pipe 的寫端，從讀端讀得到
@@ -1090,9 +1264,9 @@ printf("%d\n", v);
 
 </div>
 
-<div class="mcq" data-ans="2" markdown="1">
+<div class="mcq" data-qid="u1-fork-5" data-ans="2" markdown="1">
 
-**C-5.** 子行程呼叫 `execl("/bin/echo", ...)` 成功之後，execl 下一行的程式碼會怎樣？
+**簡單 17.** 子行程呼叫 `execl("/bin/echo", ...)` 成功之後，execl 下一行的程式碼會怎樣？
 
 1. 等 echo 結束後執行
 2. 不會執行，因為這個行程已經整個換成 echo
@@ -1104,96 +1278,42 @@ printf("%d\n", v);
 
 </div>
 
-**W-1.** 用自己的話說明：為什麼 fork 出來的子行程改變數，父行程看不到；thread 改變數，main 卻看得到？
+<div class="mcq" data-ans="4" data-qid="u1-bank-s7" markdown="1">
+
+**簡單 18.** 子行程已經結束，但父行程還沒呼叫 wait。這個子行程叫什麼？
+
+1. orphan
+2. daemon
+3. thread
+4. zombie
+
+??? quiz "看解析"
+    **D. zombie**。它的 PID 和結束碼還留著，等父行程 wait 來拿。A 的 orphan 剛好相反：父行程先結束，子行程還在跑。
+
+</div>
+
+<div data-qid="u1-fork-6" markdown="1">
+
+**簡單 19.** 用自己的話說明：為什麼 fork 出來的子行程改變數，父行程看不到；thread 改變數，main 卻看得到？
 
 ??? quiz "看參考答案"
     fork 會**複製**整個行程的記憶體，父子各有一份變數，改的是自己那份。thread 是同一個行程裡的另一條執行路線，**共用**同一份記憶體（全域變數、heap、傳進去的指標指到的變數），所以 thread 改了，main 看得到。
 
     **自我檢查**：你有沒有寫出「複製」和「共用」這兩個關鍵字？
 
-**W-2.** 106 Q1 裡，為什麼 B 印 101、C 也印 101？
-
-??? quiz "看參考答案"
-    - **B（P1）**：P1 沒有開 thread，value 一直是 101。`value--` 是先印再減，所以印 101。
-    - **C（P2）**：P2 開的 thread 把 P2 的 value 減成 100。`++value` 先加再印，所以印 101。
-
-    兩個都是 101，但原因不同：一個是「沒被減、先印」，一個是「被減了、又加回來」。
-
-### 1.4 觀念小考 {#u1-concept}
-
-選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
-
-<div class="mcq" data-ans="2" markdown="1">
-
-**C-1.** 一個 running 的行程發出 I/O 請求，它的狀態會變成什麼？
-
-1. ready
-2. waiting
-3. new
-4. terminated
-
-??? quiz "看解析"
-    **B. waiting**。它要等 I/O，不能繼續用 CPU。等 I/O 完成會先回 **ready** 排隊（A 是時間片用完或被搶時的去處）。
-
 </div>
 
-<div class="mcq" data-ans="3" markdown="1">
+### 1.5 練習：基礎題 {#u1-drill}
 
-**C-2.** 幾個行程都在時間 0 到達，下面哪一種演算法的平均等待時間一定最短？
+要動手畫 Gantt chart 或追程式，但每題只用到一個觀念。先自己算，再打開對答案；答案都用程式驗算過。
 
-1. FCFS
-2. Round Robin
-3. SJF
-4. Priority
+#### 排程計算
 
-??? quiz "看解析"
-    **C. SJF**。短的先做，後面的人多等的時間最少（觀念課的例子）。都在時間 0 到達時，SRTF 跟 SJF 一樣，因為沒有新來的可以搶。
+**做法**：先畫 Gantt chart（誰在什麼時候跑），每個行程的等待時間 ＝ 完成 − 到達 − burst，再平均。題目由簡單到複雜：FCFS → SJF、SRTF → Round Robin → Priority。也可以把數字貼進 [1.2 的動畫](#u1-2) 對答案。
 
-</div>
+<div data-qid="u1-concept-6" markdown="1">
 
-<div class="mcq" data-ans="1" markdown="1">
-
-**C-3.** Round Robin 的 time quantum 設得非常大（比每個行程的 burst 都長），會變成哪一種？
-
-1. FCFS
-2. SJF
-3. SRTF
-4. Priority
-
-??? quiz "看解析"
-    **A. FCFS**。每個行程都在一個 quantum 內做完，不會被換下來，就是照到達順序一個接一個做。反過來 quantum 太小，大部分時間都花在 context switch。
-
-</div>
-
-<div class="mcq" data-ans="4" markdown="1">
-
-**C-4.** 同一個 process 裡的兩個 thread，**共用**下面哪一個？
-
-1. program counter
-2. 暫存器
-3. stack
-4. 全域變數
-
-??? quiz "看解析"
-    **D. 全域變數**（還有程式碼、heap、開啟的檔案）。A、B、C 每個 thread 各有一份，因為它們各自做到不同步驟、各自呼叫不同的函式。
-
-</div>
-
-<div class="mcq" data-ans="2" markdown="1">
-
-**C-5.** priority 排程中，低 priority 的行程一直輪不到（starvation），常用的解法是？
-
-1. 把 quantum 調大
-2. aging：等越久，priority 越高
-3. 改成 FCFS
-4. 增加 CPU 數量
-
-??? quiz "看解析"
-    **B. aging**。等得夠久，priority 總會升到最高，一定輪得到。
-
-</div>
-
-**W-1.** P1、P2、P3 在時間 0 依序到達，burst 24、3、3。FCFS 的平均等待時間是多少？如果順序改成 P2、P3、P1 呢？用這個例子說明 convoy effect。
+**基礎 1.** P1、P2、P3 在時間 0 依序到達，burst 24、3、3。FCFS 的平均等待時間是多少？如果順序改成 P2、P3、P1 呢？用這個例子說明 convoy effect。
 
 ??? quiz "看參考答案"
     - **FCFS（P1、P2、P3）（17）**：等待 0、24、27，平均 $\frac{51}{3}=17$。
@@ -1201,26 +1321,40 @@ printf("%d\n", v);
 
     **convoy effect**：一個很長的行程排在前面，後面一群短的都被它卡住（像一台慢車後面跟著一長串車）。短的先做，平均等待從 17 降到 3。
 
-**W-2.** P1、P2、P3、P4 的到達時間 0、1、2、3，burst 8、4、9、5。分別用 SJF（不搶）和 SRTF（會搶）畫 Gantt chart，算平均等待時間。
+</div>
 
-??? quiz "看參考答案"
-    **SRTF（6.5）**：P1 0–1、P2 1–5（P2 到的時候剩 4 ＜ P1 剩 7，搶走）、P4 5–10、P1 10–17、P3 17–26。等待 P1 9、P2 0、P3 15、P4 2，平均 $\frac{26}{4}=6.5$。
-
-    **SJF（7.75）**：P1 0–8（不能被搶）、P2 8–12、P4 12–17、P3 17–26。等待 P1 0、P2 7、P4 9、P3 15，平均 $\frac{31}{4}=7.75$。
-
-    可以把這組數字貼進 [1.2](#u1-2) 的動畫，切換演算法對照。
-
-### 1.5 換數字練習 {#u1-drill}
-
-同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。
-
-#### 題型：排程的平均等待時間
-
-**做法**：先排出 Gantt 圖（誰在什麼時候跑），每個行程的等待時間 ＝ 完成 − 到達 − burst，再平均。
+<div data-qid="u1-bank-b1" markdown="1">
 
 <div markdown="1">
 
-**P-1.** 用 FCFS 排程下面的行程，畫出順序並算平均等待時間。
+**基礎 2.** 用 FCFS 排程，畫 Gantt chart，算平均等待時間和平均 turnaround time。
+
+| 行程 | 到達 | burst |
+|---|---|---|
+| P1 | 0 | 4 |
+| P2 | 1 | 3 |
+| P3 | 2 | 1 |
+
+</div>
+
+??? quiz "看答案"
+    **Gantt chart**：P1 0–4、P2 4–7、P3 7–8。
+
+    | | 完成 | turnaround ＝ 完成 − 到達 | waiting ＝ turnaround − burst |
+    |---|---|---|---|
+    | P1 | 4 | 4 | 0 |
+    | P2 | 7 | 6 | 3 |
+    | P3 | 8 | 6 | 5 |
+
+    平均等待 $\frac{0+3+5}{3}=\frac83\approx$ **2.67**；平均 turnaround $\frac{4+6+6}{3}=\frac{16}3\approx$ **5.33**。
+
+</div>
+
+<div data-qid="u1-drill-1" markdown="1">
+
+<div markdown="1">
+
+**基礎 3.** 用 FCFS 排程下面的行程，畫出順序並算平均等待時間。
 
 | 行程 | 到達 | burst |
 |---|---|---|
@@ -1238,10 +1372,13 @@ printf("%d\n", v);
 
     用動畫對答案：把 `P1 0 5, P2 1 3, P3 2 8, P4 3 6` 貼進 [1.2 的動畫](#u1-2)，演算法選 FCFS。
 
+</div>
+
+<div data-qid="u1-drill-2" markdown="1">
 
 <div markdown="1">
 
-**P-2.** 用 SJF（不搶）排程下面的行程，畫出順序並算平均等待時間。
+**基礎 4.** 用 SJF（不搶）排程下面的行程，畫出順序並算平均等待時間。
 
 | 行程 | 到達 | burst |
 |---|---|---|
@@ -1259,10 +1396,53 @@ printf("%d\n", v);
 
     用動畫對答案：把 `P1 0 5, P2 1 3, P3 2 8, P4 3 6` 貼進 [1.2 的動畫](#u1-2)，演算法選 SJF（不搶）。
 
+</div>
+
+<div data-qid="u1-concept-7" markdown="1">
+
+**基礎 5.** P1、P2、P3、P4 的到達時間 0、1、2、3，burst 8、4、9、5。分別用 SJF（不搶）和 SRTF（會搶）畫 Gantt chart，算平均等待時間。
+
+??? quiz "看參考答案"
+    **SRTF（6.5）**：P1 0–1、P2 1–5（P2 到的時候剩 4 ＜ P1 剩 7，搶走）、P4 5–10、P1 10–17、P3 17–26。等待 P1 9、P2 0、P3 15、P4 2，平均 $\frac{26}{4}=6.5$。
+
+    **SJF（7.75）**：P1 0–8（不能被搶）、P2 8–12、P4 12–17、P3 17–26。等待 P1 0、P2 7、P4 9、P3 15，平均 $\frac{31}{4}=7.75$。
+
+    可以把這組數字貼進 [1.2](#u1-2) 的動畫，切換演算法對照。
+
+</div>
+
+<div data-qid="u1-bank-b2" markdown="1">
 
 <div markdown="1">
 
-**P-3.** 用 SRTF（會搶）排程下面的行程，畫出順序並算平均等待時間。
+**基礎 6.** 用 SRTF（剩餘時間最短的先做，會搶）排程，畫 Gantt chart，算平均等待時間。
+
+| 行程 | 到達 | burst |
+|---|---|---|
+| P1 | 0 | 5 |
+| P2 | 1 | 3 |
+| P3 | 2 | 1 |
+
+</div>
+
+??? quiz "看答案"
+    | 時間 | 發生什麼事 | 執行 |
+    |---|---|---|
+    | 0 | 只有 P1 | P1 |
+    | 1 | P2 到，3 ＜ P1 剩的 4 → 搶走 | P2 |
+    | 2 | P3 到，1 ＜ P2 剩的 2 → 搶走 | P3 |
+    | 3 | P3 做完；P2 剩 2 ＜ P1 剩 4 | P2（到 5） |
+    | 5 | P2 做完 | P1（到 9） |
+
+    等待 ＝ 完成 − 到達 − burst：P1 $9-0-5=4$、P2 $5-1-3=1$、P3 $3-2-1=0$，平均 $\frac53\approx$ **1.67**。
+
+</div>
+
+<div data-qid="u1-drill-3" markdown="1">
+
+<div markdown="1">
+
+**基礎 7.** 用 SRTF（會搶）排程下面的行程，畫出順序並算平均等待時間。
 
 | 行程 | 到達 | burst |
 |---|---|---|
@@ -1280,10 +1460,28 @@ printf("%d\n", v);
 
     用動畫對答案：把 `P1 0 7, P2 2 4, P3 4 1, P4 5 4` 貼進 [1.2 的動畫](#u1-2)，演算法選 SRTF。
 
+</div>
+
+<div data-qid="u1-bank-b3" markdown="1">
+
+**基礎 8.** P1、P2、P3 都在時間 0 到達，burst 是 5、3、1。用 Round Robin（quantum ＝ 2），算平均等待時間和平均 response time。
+
+??? quiz "看答案"
+    **Gantt chart**：P1 0–2、P2 2–4、P3 4–5、P1 5–7、P2 7–8、P1 8–9。
+
+    - 完成：P3 5、P2 8、P1 9。
+    - 等待 ＝ 完成 − burst：P1 $9-5=4$、P2 $8-3=5$、P3 $5-1=4$，平均 $\frac{13}3\approx$ **4.33**。
+    - response（第一次拿到 CPU）：P1 0、P2 2、P3 4，平均 **2**。
+
+    RR 的平均等待不一定比較短，但每個行程很快就第一次拿到 CPU，所以 response time 好。
+
+</div>
+
+<div data-qid="u1-drill-4" markdown="1">
 
 <div markdown="1">
 
-**P-4.** 用 Round Robin（quantum ＝ 2）排程下面的行程，畫出順序並算平均等待時間。
+**基礎 9.** 用 Round Robin（quantum ＝ 2）排程下面的行程，畫出順序並算平均等待時間。
 
 | 行程 | 到達 | burst |
 |---|---|---|
@@ -1302,31 +1500,13 @@ printf("%d\n", v);
 
     用動畫對答案：把 `P1 0 5, P2 1 3, P3 2 1, P4 3 2` 貼進 [1.2 的動畫](#u1-2)，演算法選 Round Robin、quantum 填 2。
 
-
-<div markdown="1">
-
-**P-5.** 用 Priority（數字小的先，不搶）排程下面的行程，畫出順序並算平均等待時間。
-
-| 行程 | 到達 | burst | priority |
-|---|---|---|---|
-| P1 | 0 | 4 | 3 |
-| P2 | 1 | 3 | 1 |
-| P3 | 2 | 1 | 4 |
-| P4 | 3 | 5 | 2 |
-
 </div>
 
-??? quiz "看完整解答"
-    - **排程順序**：P1（0–4） → P2（4–7） → P4（7–12） → P3（12–13）。
-    - **等待時間 ＝ 完成 − 到達 − burst**：P1：4−0−4＝0、P2：7−1−3＝3、P3：13−2−1＝10、P4：12−3−5＝4。
-    - **平均等待時間**：$\frac{0+3+10+4}{4}=$ **4.25**。
-
-    用動畫對答案：把 `P1 0 4 3, P2 1 3 1, P3 2 1 4, P4 3 5 2` 貼進 [1.2 的動畫](#u1-2)，演算法選 Priority（不搶）。
-
+<div data-qid="u1-drill-6" markdown="1">
 
 <div markdown="1">
 
-**P-6.** 用 Round Robin（quantum ＝ 4）排程下面的行程，畫出順序並算平均等待時間。
+**基礎 10.** 用 Round Robin（quantum ＝ 4）排程下面的行程，畫出順序並算平均等待時間。
 
 | 行程 | 到達 | burst |
 |---|---|---|
@@ -1344,142 +1524,157 @@ printf("%d\n", v);
 
     用動畫對答案：把 `P1 0 10, P2 0 4, P3 0 6` 貼進 [1.2 的動畫](#u1-2)，演算法選 Round Robin、quantum 填 4。
 
+</div>
 
-### 1.6 英文作答範例 {#u1-en}
-
-考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把**粗體的關鍵字**記起來。寫法見 [0. 中山 OS 怎麼考](#u0-en)。
+<div data-qid="u1-drill-5" markdown="1">
 
 <div markdown="1">
 
-**E-1.** What is the difference between a program and a process? What does a process contain in memory?
+**基礎 11.** 用 Priority（數字小的先，不搶）排程下面的行程，畫出順序並算平均等待時間。
 
-（中文：程式和行程差在哪？行程在記憶體裡有哪些部分？）
+| 行程 | 到達 | burst | priority |
+|---|---|---|---|
+| P1 | 0 | 4 | 3 |
+| P2 | 1 | 3 | 1 |
+| P3 | 2 | 1 | 4 |
+| P4 | 3 | 5 | 2 |
 
 </div>
 
-??? quiz "看英文參考答案"
-    A **program** is a **passive entity**, such as an executable file stored on disk. A **process** is **a program in execution**, an **active entity**. A program becomes a process when its executable file is loaded into memory.
+??? quiz "看完整解答"
+    - **排程順序**：P1（0–4） → P2（4–7） → P4（7–12） → P3（12–13）。
+    - **等待時間 ＝ 完成 − 到達 − burst**：P1：4−0−4＝0、P2：7−1−3＝3、P3：13−2−1＝10、P4：12−3−5＝4。
+    - **平均等待時間**：$\frac{0+3+10+4}{4}=$ **4.25**。
 
-    A process in memory contains:
+    用動畫對答案：把 `P1 0 4 3, P2 1 3 1, P3 2 1 4, P4 3 5 2` 貼進 [1.2 的動畫](#u1-2)，演算法選 Priority（不搶）。
 
-    1. **Text section**: the executable code.
-    2. **Data section**: global variables.
-    3. **Heap**: memory that is dynamically allocated during run time.
-    4. **Stack**: temporary data such as function parameters, return addresses and local variables.
+</div>
 
-    It also includes the current activity, represented by the **program counter** and the contents of the **registers**.
+#### 程式追蹤：fork、thread、pipe
 
-    寫法提示：關鍵句是 a program in execution，再對比 passive／active。四個區段的英文名稱要會寫（[1.0](#u1-0)）。
+**做法**：畫行程樹、標出誰等誰；thread 改的是同一份變數，fork 之後各改各的（[1.3](#u1-fork)）。
+
+<div data-qid="u1-bank-b4" markdown="1">
 
 <div markdown="1">
 
-**E-2.** Describe the actions taken by the kernel to context-switch between processes.
+**基礎 12.** 下面的程式一共印出幾個 `hi`？畫出行程樹。
 
-（中文：context switch 時 kernel 做了哪些事？）
+```c
+pid_t p = fork();
+if (p == 0)
+    fork();
+printf("hi\n");
+```
 
 </div>
 
-??? quiz "看英文參考答案"
-    1. An interrupt or a system call causes the kernel to take control.
-    2. The kernel **saves the state** of the running process (program counter, CPU registers and memory-management information) **in its PCB**.
-    3. The process is moved to the appropriate queue (the ready queue or a wait queue), and its state is updated.
-    4. The CPU scheduler selects the next process.
-    5. The kernel **restores the state** of the new process **from its PCB** and resumes it.
+??? quiz "看答案"
+    **3 個**。
 
-    Context-switch time is **overhead**, because the system does no useful work while switching.
+    - P0 第一次 fork 出 P1。P0 拿到的 p ＞ 0，不進 if；P1 拿到 0，進 if 再 fork 出 P2。
+    - P2 是 P1 在 if 裡 fork 出來的，從 fork 的下一行繼續，也會跑到 printf。
+    - P0、P1、P2 各印一次：3 個 hi。（我實際執行過，印出 3 行。）
 
-    寫法提示：一定要寫到 save 和 restore、PCB、overhead 三個詞（[1.0](#u1-0)）。
+</div>
+
+<div data-qid="u1-bank-b6" markdown="1">
 
 <div markdown="1">
 
-**E-3.** Under what circumstances does a process give up the CPU? Which queue is it placed in afterwards?
+**基礎 13.** 下面的程式印出什麼？
 
-（中文：115 Q2a：process 什麼時候交出 CPU？之後放到哪個 queue？）
+```c
+int g = 0;
+void *add(void *p) {
+    g += 5;
+    return NULL;
+}
+
+int main(void) {
+    pthread_t t;
+    pthread_create(&t, NULL, add, NULL);
+    pthread_join(t, NULL);
+    if (fork() == 0) {
+        g += 1;
+        printf("child %d\n", g);
+        return 0;
+    }
+    wait(NULL);
+    printf("parent %d\n", g);
+    return 0;
+}
+```
 
 </div>
 
-??? quiz "看英文參考答案"
-    1. The process **issues an I/O request**; it is then placed in an **I/O wait queue**.
-    2. The process **creates a child process and waits for its termination** (or waits for another event); it is placed in a **wait queue**.
-    3. The process is **removed forcibly from the CPU**, because of an **interrupt** or because its **time slice expires**; it is put back in the **ready queue**.
+??? quiz "看答案"
+    ```text
+    child 6
+    parent 5
+    ```
 
-    寫法提示：三種情況各配一個 queue，一個情況寫一點（[1.1](#u1-1)）。
+    - thread 跟 main 共用 g，join 之後 g ＝ 5。
+    - fork 把 g ＝ 5 複製給子行程；子行程把**自己的** g 加成 6。
+    - 父行程的 g 還是 5，等子行程結束才印。我實際執行過，輸出一樣。
+
+</div>
+
+<div data-qid="u1-fork-7" markdown="1">
+
+**基礎 14.** 106 Q1 裡，為什麼 B 印 101、C 也印 101？
+
+??? quiz "看參考答案"
+    - **B（P1）**：P1 沒有開 thread，value 一直是 101。`value--` 是先印再減，所以印 101。
+    - **C（P2）**：P2 開的 thread 把 P2 的 value 減成 100。`++value` 先加再印，所以印 101。
+
+    兩個都是 101，但原因不同：一個是「沒被減、先印」，一個是「被減了、又加回來」。
+
+</div>
+
+<div data-qid="u1-bank-b5" markdown="1">
 
 <div markdown="1">
 
-**E-4.** Explain processor affinity. Why is a warm cache important?
+**基礎 15.** 下面的程式在螢幕上印出什麼？
 
-（中文：115 Q2b：什麼是 processor affinity？為什麼 warm cache 很重要？）
-
-</div>
-
-??? quiz "看英文參考答案"
-    After a process runs on a processor, the data it accessed recently fills that processor's cache; we say the cache is **warm**. If the process **migrates** to another processor, the contents of the first cache must be **invalidated** and the second cache must be **repopulated**, which is expensive.
-
-    Therefore most SMP systems try to **keep a process running on the same processor**. This is called **processor affinity**:
-
-    - **Soft affinity**: the OS tries to keep the process on the same processor but does not guarantee it.
-    - **Hard affinity**: the process can specify the set of processors on which it may run.
-
-    寫法提示：因果順序寫清楚：cache 是熱的 → 換處理器要 invalidate、repopulate，代價大 → 所以盡量不換（[1.1](#u1-1)）。
-
-<div markdown="1">
-
-**E-5.** Compare the two fundamental models of interprocess communication.
-
-（中文：114 Q6b：兩種 IPC 模型的比較。）
+```c
+int fd[2];
+char buf[8] = {0};
+pipe(fd);
+if (fork() == 0) {
+    close(fd[1]);
+    read(fd[0], buf, 7);
+    printf("child got %s\n", buf);
+} else {
+    close(fd[0]);
+    /* 寫 3 個 byte：O、S、\0 */
+    write(fd[1], "OS", 3);
+    close(fd[1]);
+    wait(NULL);
+    printf("parent done\n");
+}
+```
 
 </div>
 
-??? quiz "看英文參考答案"
-    - **Shared memory**: the cooperating processes establish a **region of memory that they share** and exchange information by reading and writing it. It is **faster**, because system calls are needed only to set up the region; after that, no kernel assistance is required. However, the processes themselves must **synchronize** their accesses.
-    - **Message passing**: the processes exchange **messages** through the kernel with **send()** and **receive()**. It is **easier to implement**, there are no conflicts to avoid, and it is well suited to **distributed systems**. However, it is **slower**, because every message requires a system call.
+??? quiz "看答案"
+    ```text
+    child got OS
+    parent done
+    ```
 
-    寫法提示：兩種各寫「怎麼做」和「優點、缺點」，用 whereas 或 however 對比（[1.1](#u1-1)）。
-
-<div markdown="1">
-
-**E-6.** What are the benefits of multithreaded programming? What do threads of the same process share?
-
-（中文：多執行緒有什麼好處？同一個 process 的 thread 共用哪些東西？）
+    - 子行程關掉寫端，從讀端讀；父行程關掉讀端，寫進 3 個 byte 再關掉寫端。
+    - 子行程讀到 `OS`（連同結尾的 `\0`），印出 `child got OS`。
+    - 父行程 `wait` 等子行程結束才印 `parent done`，所以順序固定。我實際執行過，輸出一樣。
 
 </div>
 
-??? quiz "看英文參考答案"
-    Four benefits:
-
-    1. **Responsiveness**: the program can keep running even if part of it is blocked or performing a lengthy operation.
-    2. **Resource sharing**: threads share the memory and the resources of the process to which they belong.
-    3. **Economy**: creating threads and switching between them is much cheaper than for processes.
-    4. **Scalability**: threads can run **in parallel** on multiple processing cores.
-
-    Threads of the same process **share** the code section, the data section and OS resources such as open files. Each thread has **its own** thread ID, program counter, register set and stack.
-
-    寫法提示：四個好處的英文名稱是固定的，背 responsiveness、resource sharing、economy、scalability（[1.0](#u1-0)）。
-
-<div markdown="1">
-
-**E-7.** Distinguish between preemptive and nonpreemptive scheduling.
-
-（中文：搶先式和非搶先式排程的差別。）
-
-</div>
-
-??? quiz "看英文參考答案"
-    CPU-scheduling decisions take place when a process:
-
-    1. switches from running to waiting (for example, an I/O request);
-    2. switches from running to ready (for example, an interrupt);
-    3. switches from waiting to ready (for example, I/O completion);
-    4. terminates.
-
-    Under **nonpreemptive** (cooperative) scheduling, scheduling happens **only in cases 1 and 4**: once a process gets the CPU, it keeps it until it **terminates or switches to the waiting state**. Under **preemptive** scheduling, the OS can also **take the CPU away** from a running process (cases 2 and 3), for example when a higher-priority process becomes ready. Preemptive scheduling gives better response time, but it can cause **race conditions** when processes share data.
-
-    寫法提示：先列出四個排程時機，再說非搶先只在 1、4 發生，這是課本的寫法（[1.2](#u1-2)）。
-
-### 1.7 考古題變化題 {#u1-exam}
+### 1.6 練習：考古題變化題 {#u1-exam}
 
 把考過的題目**換數字、改條件，或反過來問**。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。
+
+<div data-qid="u1-exam-1" markdown="1">
 
 **考古變化 1.**（改自 115 Q2a・換情境）process A 正在 CPU 上跑。依序發生：(1) A 呼叫 `read()` 讀磁碟 (2) 磁碟讀完，發出中斷 (3) A 又跑了一陣子，time slice 用完 (4) A 再次被排到、呼叫 `wait()` 等它的子行程 (5) 子行程結束。每一步之後，A 在哪個狀態、哪個 queue？
 
@@ -1492,6 +1687,9 @@ printf("%d\n", v);
     - **(5)**：子行程結束（OS 通知父行程），A 從 waiting → **ready**，回到 **ready queue**。
     - **規律**：離開 running 只有三條路（等 I/O、等事件、被搶走），等待結束一律先回 ready。
 
+</div>
+
+<div data-qid="u1-exam-2" markdown="1">
 
 **考古變化 2.**（改自 115 Q2b・延伸）多核心的排程器常做 load balancing（把忙的 core 上的 process 搬到閒的 core）。它跟 processor affinity 有什麼衝突？push migration 和 pull migration 是什麼？
 
@@ -1502,6 +1700,9 @@ printf("%d\n", v);
     - **pull migration**：閒下來的 core 主動到忙的 core 的佇列**拉**一個 process 過來跑。
     - **折衷**：負載差很多時才搬（設門檻），或優先搬剛開始跑、cache 還沒熱起來的 process。
 
+</div>
+
+<div data-qid="u1-exam-3" markdown="1">
 
 **考古變化 3.**（改自 114 Q6b・應用）下面三種情況，各比較適合用 shared memory 還是 message passing？說明理由。(a) 同一台電腦上，影像處理的兩個 process 每秒要交換好幾張大圖 (b) 兩台不同的電腦要合作 (c) 兩個 process 只是偶爾傳一個很小的控制訊息
 
@@ -1511,6 +1712,9 @@ printf("%d\n", v);
     - **(b) message passing**：兩台電腦沒有共用的記憶體，只能透過網路傳訊息。
     - **(c) message passing**：訊息很小、很少，用 send／receive 簡單，不用另外建共享區、也不用處理同步。
 
+</div>
+
+<div data-qid="u1-exam-4" markdown="1">
 
 **考古變化 4.**（改自 113 Q6a・換數字）五個 process 都在時間 0 到達，burst 是 8、4、2、6、3，priority 是 2、4、1、3、5（數字小優先）。求 SJF、non-preemptive priority、RR（q＝2）的平均等待時間。
 
@@ -1526,6 +1730,9 @@ printf("%d\n", v);
 
     我用程式模擬過三種排程，答案一樣。
 
+</div>
+
+<div data-qid="u1-exam-5" markdown="1">
 
 <div markdown="1">
 
@@ -1577,6 +1784,9 @@ int main(void) {
 
     這支程式用 gcc 實際編譯執行過，輸出跟上面一樣。
 
+</div>
+
+<div data-qid="u1-exam-6" markdown="1">
 
 <div markdown="1">
 
@@ -1627,305 +1837,11 @@ int main(void) {
 
     這支程式用 gcc 實際編譯執行過，輸出跟上面一樣。
 
-
-### 1.8 題庫：簡單觀念題、基礎題、猜題 {#u1-bank}
-
-三種題目，由淺到深：
-
-- **簡單觀念題**：一句話就能回答，確認名詞和觀念有沒有記對。
-- **基礎題**：要動手畫 Gantt chart 或追程式，但只用到一個觀念。
-- **猜題**：考古題還沒考過、但恐龍書第 3～5 章（行程、執行緒、CPU 排程）的重點，我猜比較可能出現的題型，包含 115 年那種英文名詞填空。
-
-#### 簡單觀念題
-
-<div class="mcq" data-ans="3" data-qid="u1-bank-s1" markdown="1">
-
-**簡單 1.** 下面哪一個狀態轉換**不可能**直接發生？
-
-1. ready → running
-2. running → waiting
-3. waiting → running
-4. running → ready
-
-??? quiz "看解析"
-    **C**。waiting 的行程等到 I/O 或事件之後，要先回 **ready** 排隊，被排程器選中才能 running，不會直接跳回 CPU。
-
 </div>
 
-<div class="mcq" data-ans="2" data-qid="u1-bank-s2" markdown="1">
+### 1.7 練習：猜題 {#u1-bank}
 
-**簡單 2.** 從行程送進系統，到它**第一次**拿到 CPU 的時間叫什麼？
-
-1. waiting time
-2. response time
-3. turnaround time
-4. burst time
-
-??? quiz "看解析"
-    **B. response time**。turnaround time 是從送進來到**做完**；waiting time 是在 ready queue 等的**總**時間；burst time 是它要用 CPU 多久。
-
-</div>
-
-<div class="mcq" data-ans="3" data-qid="u1-bank-s3" markdown="1">
-
-**簡單 3.** 同一個 process 的 threads，下面哪一個是**每個 thread 各有一份**？
-
-1. heap
-2. 全域變數
-3. stack
-4. 開啟的檔案
-
-??? quiz "看解析"
-    **C. stack**（還有 program counter、暫存器）。每個 thread 各自呼叫不同的函式，區域變數和返回位址要分開放。A、B、D 屬於整個 process，大家共用。
-
-</div>
-
-<div class="mcq" data-ans="3" data-qid="u1-bank-s4" markdown="1">
-
-**簡單 4.** 下面哪一個排程演算法一定是**搶先式**？
-
-1. FCFS
-2. SJF
-3. Round Robin
-4. 不搶先的 Priority
-
-??? quiz "看解析"
-    **C. Round Robin**。quantum 用完，不管做完沒有都要讓出 CPU。FCFS 和 SJF 都是拿到 CPU 就做到完（SJF 會搶的版本叫 SRTF）。
-
-</div>
-
-<div class="mcq" data-ans="1" data-qid="u1-bank-s5" markdown="1">
-
-**簡單 5.** `pid = fork();` 之後，**子行程**裡的 pid 是多少？
-
-1. 0
-2. 子行程自己的 PID
-3. 父行程的 PID
-4. −1
-
-??? quiz "看解析"
-    **A. 0**。父行程拿到的才是子行程的 PID（大於 0）；−1 代表 fork 失敗。子行程要知道自己的 PID 用 `getpid()`，父親的用 `getppid()`。
-
-</div>
-
-<div class="mcq" data-ans="2" data-qid="u1-bank-s6" markdown="1">
-
-**簡單 6.** `pipe(fd)` 之後，要**讀**資料用哪一個？
-
-1. `fd[1]`
-2. `fd[0]`
-3. 0 號（標準輸入）
-4. 1 號（標準輸出）
-
-??? quiz "看解析"
-    **B. `fd[0]`** 是讀端，`fd[1]` 是寫端（記法：0 對應 stdin 讀、1 對應 stdout 寫）。C、D 是標準輸入、輸出，除非用 dup 接過去，不然跟 pipe 沒有關係。
-
-</div>
-
-<div class="mcq" data-ans="4" data-qid="u1-bank-s7" markdown="1">
-
-**簡單 7.** 子行程已經結束，但父行程還沒呼叫 wait。這個子行程叫什麼？
-
-1. orphan
-2. daemon
-3. thread
-4. zombie
-
-??? quiz "看解析"
-    **D. zombie**。它的 PID 和結束碼還留著，等父行程 wait 來拿。A 的 orphan 剛好相反：父行程先結束，子行程還在跑。
-
-</div>
-
-<div class="mcq" data-ans="1" data-qid="u1-bank-s8" markdown="1">
-
-**簡單 8.** 哪一個排程器控制 degree of multiprogramming？
-
-1. long-term scheduler
-2. short-term scheduler
-3. dispatcher
-4. 磁碟排程器
-
-??? quiz "看解析"
-    **A**。long-term scheduler 決定讓哪些工作載入記憶體，所以決定記憶體裡有幾個行程。short-term scheduler 只在記憶體裡的 ready 行程之間挑一個給 CPU。
-
-</div>
-
-#### 基礎題
-
-<div data-qid="u1-bank-b1" markdown="1">
-
-<div markdown="1">
-
-**基礎 1.** 用 FCFS 排程，畫 Gantt chart，算平均等待時間和平均 turnaround time。
-
-| 行程 | 到達 | burst |
-|---|---|---|
-| P1 | 0 | 4 |
-| P2 | 1 | 3 |
-| P3 | 2 | 1 |
-
-</div>
-
-??? quiz "看答案"
-    **Gantt chart**：P1 0–4、P2 4–7、P3 7–8。
-
-    | | 完成 | turnaround ＝ 完成 − 到達 | waiting ＝ turnaround − burst |
-    |---|---|---|---|
-    | P1 | 4 | 4 | 0 |
-    | P2 | 7 | 6 | 3 |
-    | P3 | 8 | 6 | 5 |
-
-    平均等待 $\frac{0+3+5}{3}=\frac83\approx$ **2.67**；平均 turnaround $\frac{4+6+6}{3}=\frac{16}3\approx$ **5.33**。
-
-</div>
-
-<div data-qid="u1-bank-b2" markdown="1">
-
-<div markdown="1">
-
-**基礎 2.** 用 SRTF（剩餘時間最短的先做，會搶）排程，畫 Gantt chart，算平均等待時間。
-
-| 行程 | 到達 | burst |
-|---|---|---|
-| P1 | 0 | 5 |
-| P2 | 1 | 3 |
-| P3 | 2 | 1 |
-
-</div>
-
-??? quiz "看答案"
-    | 時間 | 發生什麼事 | 執行 |
-    |---|---|---|
-    | 0 | 只有 P1 | P1 |
-    | 1 | P2 到，3 ＜ P1 剩的 4 → 搶走 | P2 |
-    | 2 | P3 到，1 ＜ P2 剩的 2 → 搶走 | P3 |
-    | 3 | P3 做完；P2 剩 2 ＜ P1 剩 4 | P2（到 5） |
-    | 5 | P2 做完 | P1（到 9） |
-
-    等待 ＝ 完成 − 到達 − burst：P1 $9-0-5=4$、P2 $5-1-3=1$、P3 $3-2-1=0$，平均 $\frac53\approx$ **1.67**。
-
-</div>
-
-<div data-qid="u1-bank-b3" markdown="1">
-
-**基礎 3.** P1、P2、P3 都在時間 0 到達，burst 是 5、3、1。用 Round Robin（quantum ＝ 2），算平均等待時間和平均 response time。
-
-??? quiz "看答案"
-    **Gantt chart**：P1 0–2、P2 2–4、P3 4–5、P1 5–7、P2 7–8、P1 8–9。
-
-    - 完成：P3 5、P2 8、P1 9。
-    - 等待 ＝ 完成 − burst：P1 $9-5=4$、P2 $8-3=5$、P3 $5-1=4$，平均 $\frac{13}3\approx$ **4.33**。
-    - response（第一次拿到 CPU）：P1 0、P2 2、P3 4，平均 **2**。
-
-    RR 的平均等待不一定比較短，但每個行程很快就第一次拿到 CPU，所以 response time 好。
-
-</div>
-
-<div data-qid="u1-bank-b4" markdown="1">
-
-<div markdown="1">
-
-**基礎 4.** 下面的程式一共印出幾個 `hi`？畫出行程樹。
-
-```c
-pid_t p = fork();
-if (p == 0)
-    fork();
-printf("hi\n");
-```
-
-</div>
-
-??? quiz "看答案"
-    **3 個**。
-
-    - P0 第一次 fork 出 P1。P0 拿到的 p ＞ 0，不進 if；P1 拿到 0，進 if 再 fork 出 P2。
-    - P2 是 P1 在 if 裡 fork 出來的，從 fork 的下一行繼續，也會跑到 printf。
-    - P0、P1、P2 各印一次：3 個 hi。（我實際執行過，印出 3 行。）
-
-</div>
-
-<div data-qid="u1-bank-b5" markdown="1">
-
-<div markdown="1">
-
-**基礎 5.** 下面的程式在螢幕上印出什麼？
-
-```c
-int fd[2];
-char buf[8] = {0};
-pipe(fd);
-if (fork() == 0) {
-    close(fd[1]);
-    read(fd[0], buf, 7);
-    printf("child got %s\n", buf);
-} else {
-    close(fd[0]);
-    /* 寫 3 個 byte：O、S、\0 */
-    write(fd[1], "OS", 3);
-    close(fd[1]);
-    wait(NULL);
-    printf("parent done\n");
-}
-```
-
-</div>
-
-??? quiz "看答案"
-    ```text
-    child got OS
-    parent done
-    ```
-
-    - 子行程關掉寫端，從讀端讀；父行程關掉讀端，寫進 3 個 byte 再關掉寫端。
-    - 子行程讀到 `OS`（連同結尾的 `\0`），印出 `child got OS`。
-    - 父行程 `wait` 等子行程結束才印 `parent done`，所以順序固定。我實際執行過，輸出一樣。
-
-</div>
-
-<div data-qid="u1-bank-b6" markdown="1">
-
-<div markdown="1">
-
-**基礎 6.** 下面的程式印出什麼？
-
-```c
-int g = 0;
-void *add(void *p) {
-    g += 5;
-    return NULL;
-}
-
-int main(void) {
-    pthread_t t;
-    pthread_create(&t, NULL, add, NULL);
-    pthread_join(t, NULL);
-    if (fork() == 0) {
-        g += 1;
-        printf("child %d\n", g);
-        return 0;
-    }
-    wait(NULL);
-    printf("parent %d\n", g);
-    return 0;
-}
-```
-
-</div>
-
-??? quiz "看答案"
-    ```text
-    child 6
-    parent 5
-    ```
-
-    - thread 跟 main 共用 g，join 之後 g ＝ 5。
-    - fork 把 g ＝ 5 複製給子行程；子行程把**自己的** g 加成 6。
-    - 父行程的 g 還是 5，等子行程結束才印。我實際執行過，輸出一樣。
-
-</div>
-
-#### 猜題：可能會考的題型
+考古題還沒考過、但恐龍書第 3～5 章（行程、執行緒、CPU 排程）的重點，我猜比較可能出現的題型，包含 115 年那種英文名詞填空。
 
 <div data-qid="u1-bank-g1" markdown="1">
 
@@ -2083,6 +1999,138 @@ for (int i = 0; i < 3; i++) {
     $n=5\times3=$ **15** 個。直覺：每秒進來 5 個、每個待 3 秒，任何時刻 queue 裡大約有最近 3 秒進來的那 15 個。這個式子不管用哪種排程、行程怎麼到達都成立（系統穩定時）。
 
 </div>
+
+### 1.8 英文作答範例 {#u1-en}
+
+考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把**粗體的關鍵字**記起來。寫法見 [0. 中山 OS 怎麼考](#u0-en)。
+
+<div markdown="1">
+
+**E-1.** What is the difference between a program and a process? What does a process contain in memory?
+
+（中文：程式和行程差在哪？行程在記憶體裡有哪些部分？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    A **program** is a **passive entity**, such as an executable file stored on disk. A **process** is **a program in execution**, an **active entity**. A program becomes a process when its executable file is loaded into memory.
+
+    A process in memory contains:
+
+    1. **Text section**: the executable code.
+    2. **Data section**: global variables.
+    3. **Heap**: memory that is dynamically allocated during run time.
+    4. **Stack**: temporary data such as function parameters, return addresses and local variables.
+
+    It also includes the current activity, represented by the **program counter** and the contents of the **registers**.
+
+    寫法提示：關鍵句是 a program in execution，再對比 passive／active。四個區段的英文名稱要會寫（[1.0](#u1-0)）。
+
+<div markdown="1">
+
+**E-2.** Describe the actions taken by the kernel to context-switch between processes.
+
+（中文：context switch 時 kernel 做了哪些事？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. An interrupt or a system call causes the kernel to take control.
+    2. The kernel **saves the state** of the running process (program counter, CPU registers and memory-management information) **in its PCB**.
+    3. The process is moved to the appropriate queue (the ready queue or a wait queue), and its state is updated.
+    4. The CPU scheduler selects the next process.
+    5. The kernel **restores the state** of the new process **from its PCB** and resumes it.
+
+    Context-switch time is **overhead**, because the system does no useful work while switching.
+
+    寫法提示：一定要寫到 save 和 restore、PCB、overhead 三個詞（[1.0](#u1-0)）。
+
+<div markdown="1">
+
+**E-3.** Under what circumstances does a process give up the CPU? Which queue is it placed in afterwards?
+
+（中文：115 Q2a：process 什麼時候交出 CPU？之後放到哪個 queue？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    1. The process **issues an I/O request**; it is then placed in an **I/O wait queue**.
+    2. The process **creates a child process and waits for its termination** (or waits for another event); it is placed in a **wait queue**.
+    3. The process is **removed forcibly from the CPU**, because of an **interrupt** or because its **time slice expires**; it is put back in the **ready queue**.
+
+    寫法提示：三種情況各配一個 queue，一個情況寫一點（[1.1](#u1-1)）。
+
+<div markdown="1">
+
+**E-4.** Explain processor affinity. Why is a warm cache important?
+
+（中文：115 Q2b：什麼是 processor affinity？為什麼 warm cache 很重要？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    After a process runs on a processor, the data it accessed recently fills that processor's cache; we say the cache is **warm**. If the process **migrates** to another processor, the contents of the first cache must be **invalidated** and the second cache must be **repopulated**, which is expensive.
+
+    Therefore most SMP systems try to **keep a process running on the same processor**. This is called **processor affinity**:
+
+    - **Soft affinity**: the OS tries to keep the process on the same processor but does not guarantee it.
+    - **Hard affinity**: the process can specify the set of processors on which it may run.
+
+    寫法提示：因果順序寫清楚：cache 是熱的 → 換處理器要 invalidate、repopulate，代價大 → 所以盡量不換（[1.1](#u1-1)）。
+
+<div markdown="1">
+
+**E-5.** Compare the two fundamental models of interprocess communication.
+
+（中文：114 Q6b：兩種 IPC 模型的比較。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    - **Shared memory**: the cooperating processes establish a **region of memory that they share** and exchange information by reading and writing it. It is **faster**, because system calls are needed only to set up the region; after that, no kernel assistance is required. However, the processes themselves must **synchronize** their accesses.
+    - **Message passing**: the processes exchange **messages** through the kernel with **send()** and **receive()**. It is **easier to implement**, there are no conflicts to avoid, and it is well suited to **distributed systems**. However, it is **slower**, because every message requires a system call.
+
+    寫法提示：兩種各寫「怎麼做」和「優點、缺點」，用 whereas 或 however 對比（[1.1](#u1-1)）。
+
+<div markdown="1">
+
+**E-6.** What are the benefits of multithreaded programming? What do threads of the same process share?
+
+（中文：多執行緒有什麼好處？同一個 process 的 thread 共用哪些東西？）
+
+</div>
+
+??? quiz "看英文參考答案"
+    Four benefits:
+
+    1. **Responsiveness**: the program can keep running even if part of it is blocked or performing a lengthy operation.
+    2. **Resource sharing**: threads share the memory and the resources of the process to which they belong.
+    3. **Economy**: creating threads and switching between them is much cheaper than for processes.
+    4. **Scalability**: threads can run **in parallel** on multiple processing cores.
+
+    Threads of the same process **share** the code section, the data section and OS resources such as open files. Each thread has **its own** thread ID, program counter, register set and stack.
+
+    寫法提示：四個好處的英文名稱是固定的，背 responsiveness、resource sharing、economy、scalability（[1.0](#u1-0)）。
+
+<div markdown="1">
+
+**E-7.** Distinguish between preemptive and nonpreemptive scheduling.
+
+（中文：搶先式和非搶先式排程的差別。）
+
+</div>
+
+??? quiz "看英文參考答案"
+    CPU-scheduling decisions take place when a process:
+
+    1. switches from running to waiting (for example, an I/O request);
+    2. switches from running to ready (for example, an interrupt);
+    3. switches from waiting to ready (for example, I/O completion);
+    4. terminates.
+
+    Under **nonpreemptive** (cooperative) scheduling, scheduling happens **only in cases 1 and 4**: once a process gets the CPU, it keeps it until it **terminates or switches to the waiting state**. Under **preemptive** scheduling, the OS can also **take the CPU away** from a running process (cases 2 and 3), for example when a higher-priority process becomes ready. Preemptive scheduling gives better response time, but it can cause **race conditions** when processes share data.
+
+    寫法提示：先列出四個排程時機，再說非搶先只在 1、4 發生，這是課本的寫法（[1.2](#u1-2)）。
 
 ### 單元 1 小考 {#u1-quiz}
 
