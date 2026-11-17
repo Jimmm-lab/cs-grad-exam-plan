@@ -9453,6 +9453,8 @@ for i = 1 to 12
 <li><strong>連通、沒有環、n−1 條邊</strong>：三個條件任兩個成立，第三個就成立。</li>
 <li>任兩點之間<strong>剛好一條</strong>路徑；拿掉任何一條邊就不連通；加上任何一條邊就有環。</li>
 </ul>
+<p><strong>為什麼是 n−1 條邊</strong>：樹（至少 2 個點）一定有葉子（<a href="#u10-1">10.1</a> 證明至少有 2 片）。拿掉一片葉子和連著它的那條邊，剩下的還是連通、沒有環，還是一棵樹，點和邊各少 1。一直拿到剩 1 個點、0 條邊，所以邊數一直都是點數 − 1。</p>
+<p><strong>為什麼剛好一條路徑</strong>：連通，所以至少有一條。如果 x 到 y 有兩條不同的路徑，它們會在某個點分開、之後又在某個點會合，中間這兩段接起來就是一個環，跟「沒有環」矛盾。</p>
 <h4 id="_87">證明的三種套路</h4>
 <ol>
 <li><strong>看最長的路徑</strong>：最長路徑的端點，鄰居一定都在這條路徑上，不然路徑還可以再延長。（100 Q6、101 Q4）</li>
@@ -9602,12 +9604,14 @@ for i = 1 to 12
 <p>連通的平面圖：</p>
 <div class="arithmatex">\[v-e+f=2\]</div>
 <p><strong>驗算</strong>：三角形 <span class="arithmatex">\(v=3\)</span>、<span class="arithmatex">\(e=3\)</span>、<span class="arithmatex">\(f=2\)</span>（裡面、外面）；樹沒有環，只有外面一個面，<span class="arithmatex">\(v-(v-1)+1=2\)</span>；上面的 <span class="arithmatex">\(K_4\)</span>：<span class="arithmatex">\(4-6+4=2\)</span>。</p>
+<p><strong>為什麼一定是 2</strong>：先在圖裡挑一棵包含所有點的樹（生成樹，spanning tree），它符合公式（就是上面的「樹」）。再把其他的邊一條一條加回來：每加一條邊，它的兩端原本就連通，所以這條邊會把它所在的那個面切成兩個，<span class="arithmatex">\(e\)</span> 加 1、<span class="arithmatex">\(f\)</span> 也加 1，<span class="arithmatex">\(v-e+f\)</span> 不變。加完就是原本的圖，所以還是 2。</p>
 <h4 id="ele3v-6">邊數上限：<span class="arithmatex">\(e\le3v-6\)</span></h4>
-<p><strong>為什麼</strong>（簡單圖、<span class="arithmatex">\(v\ge3\)</span>）：每個面至少被 3 條邊圍住（簡單圖沒有兩條邊圍成的面），每條邊最多碰到 2 個面，所以 <span class="arithmatex">\(3f\le2e\)</span>。代進 Euler 公式：</p>
+<p><strong>為什麼</strong>（簡單圖、<span class="arithmatex">\(v\ge3\)</span>）：每個面至少被 3 條邊圍住（簡單圖沒有兩條邊圍成的面），每條邊最多碰到 2 個面，所以 <span class="arithmatex">\(3f\le2e\)</span>。（把「每個面的邊數」全部加起來：每個面至少 3，總和 <span class="arithmatex">\(\ge3f\)</span>；每條邊最多被它兩側的面各算一次，總和 <span class="arithmatex">\(\le2e\)</span>。）代進 Euler 公式：</p>
 <div class="arithmatex">\[2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6\]</div>
+<p>（中間那步：<span class="arithmatex">\(2\le v-\frac e3\)</span>，移項 <span class="arithmatex">\(\frac e3\le v-2\)</span>，乘 3 得 <span class="arithmatex">\(e\le3v-6\)</span>。）</p>
 <ul>
 <li><strong>沒有三角形</strong>（例如二分圖，最短的環至少 4）：每個面至少 4 條邊，<span class="arithmatex">\(4f\le2e\)</span>，得到 <span class="arithmatex">\(e\le2v-4\)</span>。</li>
-<li><strong>一般化</strong>：最短的環長度叫 <strong>girth</strong>，記作 g。每個面至少 g 條邊，<span class="arithmatex">\(gf\le2e\)</span>，得到 <span class="arithmatex">\(e\le\frac{g}{g-2}(v-2)\)</span>（105 Q6 直接給這個公式）。</li>
+<li><strong>一般化</strong>：最短的環長度叫 <strong>girth</strong>，記作 g。每個面至少 g 條邊，<span class="arithmatex">\(gf\le2e\)</span>，<span class="arithmatex">\(f\le\frac{2e}g\)</span>；代進 Euler 公式 <span class="arithmatex">\(2\le v-e+\frac{2e}g\)</span>，整理成 <span class="arithmatex">\(e\left(1-\frac2g\right)\le v-2\)</span>，也就是 <span class="arithmatex">\(e\le\frac{g}{g-2}(v-2)\)</span>（105 Q6 直接給這個公式）。<span class="arithmatex">\(g=3\)</span> 就是 <span class="arithmatex">\(3v-6\)</span>，<span class="arithmatex">\(g=4\)</span> 就是 <span class="arithmatex">\(2v-4\)</span>。</li>
 </ul>
 <h4 id="k_5-k_33"><span class="arithmatex">\(K_5\)</span> 和 <span class="arithmatex">\(K_{3,3}\)</span> 不是平面圖</h4>
 <div class="viz" data-viz="graph" data-edges="A-B, A-C, A-D, A-E, B-C, B-D, B-E, C-D, C-E, D-E" data-algo="show" data-static data-title="K₅：5 個點、10 條邊"></div>
@@ -9625,6 +9629,7 @@ for i = 1 to 12
 <p>G 不連通時，在不同的連通分量之間加邊把它們連起來，仍然是簡單平面圖，邊只變多；加邊後的圖符合 <span class="arithmatex">\(m'\le3n-6\)</span>，原本的 <span class="arithmatex">\(m\le m'\)</span> 也符合。∎</p>
 <p><strong>(b)</strong> 反證：假設 G 和 <span class="arithmatex">\(\bar G\)</span> 都是平面圖。兩個的邊數加起來是 <span class="arithmatex">\(\binom n2\)</span>，各自又不超過 <span class="arithmatex">\(3n-6\)</span>：</p>
 <div class="arithmatex">\[\frac{n(n-1)}2=m+\bar m\le2(3n-6)\ \Rightarrow\ n^2-13n+24\le0\]</div>
+<p>（兩邊乘 2：<span class="arithmatex">\(n^2-n\le12n-24\)</span>，移項得 <span class="arithmatex">\(n^2-13n+24\le0\)</span>。）</p>
 <p><span class="arithmatex">\(n=11\)</span> 時 <span class="arithmatex">\(121-143+24=2&gt;0\)</span>；這個二次式的對稱軸在 <span class="arithmatex">\(n=6.5\)</span>，<span class="arithmatex">\(n\ge11\)</span> 之後只會越來越大，一直大於 0。所以 <span class="arithmatex">\(n\ge11\)</span> 時不可能兩個都是平面圖，<span class="arithmatex">\(\bar G\)</span> 不是平面圖。∎</p>
 </div>
 <div class="admonition example">
@@ -9669,6 +9674,7 @@ for i = 1 to 12
 </tbody>
 </table>
 <p><strong>為什麼</strong>：路上每經過一個點（不是起點、終點），都是「進來一條、出去一條」，一次用掉 2 條邊，所以中間的點度數一定是偶數。只有起點和終點可以是奇數。</p>
+<p>反過來「連通、奇數度的點 0 個或 2 個，就一定畫得完」也成立（證明比較長：先走出一圈，沒走到的邊再從圈上的點繞出小圈接進去），考試直接引用就可以。</p>
 <figure class="fig">
 <svg viewBox="0 0 360 214" role="img" aria-label="「房子」圖：A 左下、B 右下、C 右上、D 左上、E 是屋頂。邊有 AB、BC、CD、DA、AC、BD、DE、CE。度數 A 3、B 3、C 4、D 4、E 2，只有 A、B 是奇數，所以可以從 A 一筆畫到 B，例如 A B C A D C E D B。">
 <line class="ln" x1="122" y1="180" x2="218" y2="180"/>
@@ -9799,7 +9805,7 @@ for i = 1 to 12
 <li><strong>設葉子有 <span class="arithmatex">\(L\)</span> 個</strong>：點數 <span class="arithmatex">\(n=3+2+L=5+L\)</span>，邊數 <span class="arithmatex">\(n-1=4+L\)</span>。</li>
 <li><strong>握手定理</strong>：度數和 ＝ 2 × 邊數：<span class="arithmatex">\(3\times3+2\times2+L=2(4+L)\)</span>，即 <span class="arithmatex">\(13+L=8+2L\)</span>，<span class="arithmatex">\(L=5\)</span>。</li>
 <li><strong>答案</strong>：<span class="arithmatex">\(n=5+5=\)</span> <strong>10</strong> 個點。</li>
-<li><strong>一般公式</strong>：葉子數 <span class="arithmatex">\(=2+\sum_{k\ge3}(k-2)\,n_k\)</span>（<span class="arithmatex">\(n_k\)</span> 是度數 <span class="arithmatex">\(k\)</span> 的點數）。這題 <span class="arithmatex">\(2+1\times3=5\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。度數 2 的點不影響葉子數。</li>
+<li><strong>一般公式</strong>：葉子數 <span class="arithmatex">\(=2+\sum_{k\ge3}(k-2)\,n_k\)</span>（<span class="arithmatex">\(n_k\)</span> 是度數 <span class="arithmatex">\(k\)</span> 的點數）。這題 <span class="arithmatex">\(2+1\times3=5\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。度數 2 的點不影響葉子數。推法跟上面一樣：點數 <span class="arithmatex">\(n=L+n_2+\sum_{k\ge3}n_k\)</span>，握手定理 <span class="arithmatex">\(L+2n_2+\sum_{k\ge3}k\,n_k=2(n-1)\)</span>，把 <span class="arithmatex">\(n\)</span> 代進去，<span class="arithmatex">\(n_2\)</span> 兩邊消掉，整理就得到這個式子。</li>
 </ul>
 <p>我用程式依這組度數真的建出一棵樹（10 個點、9 條邊），度數跟題目一樣。</p>
 </details>
@@ -10034,16 +10040,19 @@ for i = 1 to 12
 <h4 id="euler-varphin1n-n">Euler 函數 <span class="arithmatex">\(\varphi(n)\)</span>：1～n 裡跟 n 互質的有幾個</h4>
 <ul>
 <li>質數：<span class="arithmatex">\(\varphi(p)=p-1\)</span></li>
-<li>質數的次方：<span class="arithmatex">\(\varphi(p^k)=p^k-p^{k-1}\)</span>（扣掉 p 的倍數）</li>
-<li>互質的兩數相乘：<span class="arithmatex">\(\varphi(mn)=\varphi(m)\varphi(n)\)</span></li>
+<li>質數的次方：<span class="arithmatex">\(\varphi(p^k)=p^k-p^{k-1}\)</span>（1～<span class="arithmatex">\(p^k\)</span> 裡跟 <span class="arithmatex">\(p^k\)</span> 不互質的，就是 p 的倍數 <span class="arithmatex">\(p,2p,\dots,p^{k-1}\cdot p\)</span>，共 <span class="arithmatex">\(p^{k-1}\)</span> 個，扣掉）</li>
+<li>互質的兩數相乘：<span class="arithmatex">\(\varphi(mn)=\varphi(m)\varphi(n)\)</span>（理由是中國剩餘定理：跟 mn 互質的數，剛好對應到「除以 m 的餘數跟 m 互質、除以 n 的餘數跟 n 互質」的一組餘數，見 <a href="#u11-1">11.1</a> 的 103 Q8）</li>
 </ul>
-<p>合起來：<span class="arithmatex">\(\varphi(n)=n\prod_{p\mid n}\left(1-\frac1p\right)\)</span>。例：<span class="arithmatex">\(\varphi(8)=4\)</span>（1、3、5、7）；<span class="arithmatex">\(\varphi(196)=196\cdot\frac12\cdot\frac67=84\)</span>；<span class="arithmatex">\(\varphi(385)=\varphi(5)\varphi(7)\varphi(11)=4\cdot6\cdot10=240\)</span>。</p>
+<p>合起來：<span class="arithmatex">\(\varphi(n)=n\prod_{p\mid n}\left(1-\frac1p\right)\)</span>（每個質因數那一塊 <span class="arithmatex">\(p^k-p^{k-1}=p^k\left(1-\frac1p\right)\)</span>，再全部乘起來）。例：<span class="arithmatex">\(\varphi(8)=4\)</span>（1、3、5、7）；<span class="arithmatex">\(\varphi(196)=196\cdot\frac12\cdot\frac67=84\)</span>；<span class="arithmatex">\(\varphi(385)=\varphi(5)\varphi(7)\varphi(11)=4\cdot6\cdot10=240\)</span>。</p>
 <h4 id="order-generator">元素的 order 和生成元（generator）</h4>
 <ul>
 <li><strong>a 的 order</strong>：最小的 <span class="arithmatex">\(k\ge1\)</span> 使得 a 自己運算 k 次回到單位元素。加法裡就是 <span class="arithmatex">\(ka\equiv0\)</span>；乘法裡就是 <span class="arithmatex">\(a^k\equiv1\)</span>。</li>
-<li>在 <span class="arithmatex">\((\mathbb Z_n,+)\)</span> 裡，<strong>a 的 order ＝ <span class="arithmatex">\(\frac{n}{\gcd(a,n)}\)</span></strong>。例：<span class="arithmatex">\(\mathbb Z_8\)</span> 裡的 6：6、12≡4、18≡2、24≡0，order 是 4 ＝ <span class="arithmatex">\(\frac{8}{\gcd(6,8)}\)</span>。</li>
+<li>在 <span class="arithmatex">\((\mathbb Z_n,+)\)</span> 裡，<strong>a 的 order ＝ <span class="arithmatex">\(\frac{n}{\gcd(a,n)}\)</span></strong>。例：<span class="arithmatex">\(\mathbb Z_8\)</span> 裡的 6：6、12≡4、18≡2、24≡0，order 是 4 ＝ <span class="arithmatex">\(\frac{8}{\gcd(6,8)}\)</span>。<ul>
+<li><strong>為什麼</strong>：令 <span class="arithmatex">\(d=\gcd(a,n)\)</span>。<span class="arithmatex">\(ka\equiv0\)</span> 就是 <span class="arithmatex">\(n\mid ka\)</span>，兩邊同除以 d：<span class="arithmatex">\(\frac nd\mid k\cdot\frac ad\)</span>。<span class="arithmatex">\(\frac nd\)</span> 和 <span class="arithmatex">\(\frac ad\)</span> 已經互質，所以 <span class="arithmatex">\(\frac nd\)</span> 一定整除 k，最小的 k 就是 <span class="arithmatex">\(\frac nd\)</span>。例：<span class="arithmatex">\(8\mid6k\)</span> ⇔ <span class="arithmatex">\(4\mid3k\)</span> ⇔ <span class="arithmatex">\(4\mid k\)</span>，最小是 4。</li>
+</ul>
+</li>
 <li><strong>生成元</strong>：一直運算下去能得到群裡<strong>每一個</strong>元素，也就是 order 等於群的大小。有生成元的群叫<strong>循環群</strong>（cyclic group）。</li>
-<li><span class="arithmatex">\((\mathbb Z_n,+)\)</span> 裡，a 是生成元 ⇔ <span class="arithmatex">\(\gcd(a,n)=1\)</span>，所以有 <span class="arithmatex">\(\varphi(n)\)</span> 個生成元。<strong>任何 n 個元素的循環群都有 <span class="arithmatex">\(\varphi(n)\)</span> 個生成元。</strong></li>
+<li><span class="arithmatex">\((\mathbb Z_n,+)\)</span> 裡，a 是生成元 ⇔ <span class="arithmatex">\(\gcd(a,n)=1\)</span>（order <span class="arithmatex">\(\frac{n}{\gcd(a,n)}\)</span> 等於 n，就是 gcd ＝ 1），所以有 <span class="arithmatex">\(\varphi(n)\)</span> 個生成元。<strong>任何 n 個元素的循環群都有 <span class="arithmatex">\(\varphi(n)\)</span> 個生成元。</strong></li>
 <li><span class="arithmatex">\(\mathbb Z_p^*\)</span>（p 是質數）一定是循環群，它的生成元叫<strong>原根</strong>（primitive root），要一個一個試：例如 <span class="arithmatex">\(\mathbb Z_5^*\)</span> 裡 2 的次方是 2、4、3、1，全部都有，所以 2 是生成元。</li>
 </ul>
 <figure class="fig">
@@ -10136,8 +10145,13 @@ for i = 1 to 12
 <ul>
 <li><strong>子群</strong>（subgroup）H：G 的子集合，自己也是一個群。</li>
 <li><strong>陪集</strong>（coset）：<span class="arithmatex">\(aH=\{a*h: h\in H\}\)</span>（左陪集）。例：<span class="arithmatex">\(G=\mathbb Z_8\)</span>、<span class="arithmatex">\(H=\{0,4\}\)</span>，陪集是 <span class="arithmatex">\(\{0,4\}\)</span>、<span class="arithmatex">\(\{1,5\}\)</span>、<span class="arithmatex">\(\{2,6\}\)</span>、<span class="arithmatex">\(\{3,7\}\)</span>。</li>
-<li>陪集把 G <strong>切成大小一樣的幾塊</strong>（每塊都有 <span class="arithmatex">\(|H|\)</span> 個），所以 <strong><span class="arithmatex">\(|H|\)</span> 整除 <span class="arithmatex">\(|G|\)</span></strong>，這就是 <strong>Lagrange 定理</strong>。元素 a 能生成一個大小 ＝ order(a) 的子群，所以 <strong>order(a) 整除 <span class="arithmatex">\(|G|\)</span></strong>。</li>
-<li>套到 <span class="arithmatex">\(\mathbb Z_n^*\)</span>（大小 <span class="arithmatex">\(\varphi(n)\)</span>）：<strong>Euler 定理</strong> <span class="arithmatex">\(\gcd(a,n)=1\Rightarrow a^{\varphi(n)}\equiv1\pmod n\)</span>。n 是質數時就是 Fermat 小定理（<a href="#u5-3">5.3</a>）。</li>
+<li>陪集把 G <strong>切成大小一樣的幾塊</strong>（每塊都有 <span class="arithmatex">\(|H|\)</span> 個），所以 <strong><span class="arithmatex">\(|H|\)</span> 整除 <span class="arithmatex">\(|G|\)</span></strong>，這就是 <strong>Lagrange 定理</strong>。<ul>
+<li><strong>每塊一樣大</strong>：<span class="arithmatex">\(aH\)</span> 的元素是 <span class="arithmatex">\(a*h\)</span>，不同的 h 得到不同的 <span class="arithmatex">\(a*h\)</span>（<span class="arithmatex">\(a*h_1=a*h_2\)</span> 兩邊左邊乘 <span class="arithmatex">\(a^{-1}\)</span>，得 <span class="arithmatex">\(h_1=h_2\)</span>），所以 <span class="arithmatex">\(|aH|=|H|\)</span>。</li>
+<li><strong>不會部分重疊</strong>：如果 <span class="arithmatex">\(a*h_1=b*h_2\)</span>，則 <span class="arithmatex">\(a=b*(h_2*h_1^{-1})\)</span>，而 <span class="arithmatex">\(h_2*h_1^{-1}\)</span> 在 H 裡，所以 <span class="arithmatex">\(aH\)</span> 的每個元素 <span class="arithmatex">\(a*h=b*(h_2*h_1^{-1}*h)\)</span> 都在 <span class="arithmatex">\(bH\)</span> 裡；反過來也一樣，兩個陪集完全相同。每個元素 a 都在自己的 <span class="arithmatex">\(aH\)</span> 裡，所以這些陪集剛好把 G 分完。</li>
+</ul>
+</li>
+<li>元素 a 能生成一個大小 ＝ order(a) 的子群 <span class="arithmatex">\(\{e,a,a^2,\dots,a^{k-1}\}\)</span>（k 是 order），所以 <strong>order(a) 整除 <span class="arithmatex">\(|G|\)</span></strong>。</li>
+<li>套到 <span class="arithmatex">\(\mathbb Z_n^*\)</span>（大小 <span class="arithmatex">\(\varphi(n)\)</span>）：<strong>Euler 定理</strong> <span class="arithmatex">\(\gcd(a,n)=1\Rightarrow a^{\varphi(n)}\equiv1\pmod n\)</span>。理由：a 的 order k 整除 <span class="arithmatex">\(\varphi(n)\)</span>，<span class="arithmatex">\(a^{\varphi(n)}=(a^k)^{\varphi(n)/k}=1\)</span>。n 是質數時就是 Fermat 小定理（<a href="#u5-3">5.3</a>）。</li>
 </ul>
 <figure class="fig">
 <svg viewBox="0 0 360 214" role="img" aria-label="Z8 的 8 個元素排成一圈，子群 H = {0, 4}。陪集 {0,4}、{1,5}、{2,6}、{3,7} 用四種顏色表示，每一組都是 2 個，把 8 個元素平均切成 4 組。">
@@ -10177,19 +10191,20 @@ for i = 1 to 12
 <p><strong>算很大的次方 <span class="arithmatex">\(a^e\bmod n\)</span></strong>：</p>
 <ol>
 <li>先把 a 換成 <span class="arithmatex">\(a\bmod n\)</span>。</li>
-<li>如果 <span class="arithmatex">\(\gcd(a,n)=1\)</span>，把 e 換成 <span class="arithmatex">\(e\bmod\varphi(n)\)</span>。</li>
+<li>如果 <span class="arithmatex">\(\gcd(a,n)=1\)</span>，把 e 換成 <span class="arithmatex">\(e\bmod\varphi(n)\)</span>：寫成 <span class="arithmatex">\(e=q\varphi(n)+r\)</span>，<span class="arithmatex">\(a^e=(a^{\varphi(n)})^q\cdot a^r\equiv1^q\cdot a^r=a^r\)</span>。</li>
 <li>剩下的用<strong>重複平方</strong>：算 <span class="arithmatex">\(a^2, a^4, a^8,\dots\)</span>，再把 e 拆成 2 的次方相加。</li>
 </ol>
 <h4 id="_90">同態與同構</h4>
 <ul>
-<li><strong>同態</strong>（homomorphism）<span class="arithmatex">\(f:G\to H\)</span>：<span class="arithmatex">\(f(a*b)=f(a)\circ f(b)\)</span>，運算的結果先算再對應、先對應再算都一樣。所以 <span class="arithmatex">\(f(e_G)=e_H\)</span>、<span class="arithmatex">\(f(a^k)=f(a)^k\)</span>。</li>
+<li><strong>同態</strong>（homomorphism）<span class="arithmatex">\(f:G\to H\)</span>：<span class="arithmatex">\(f(a*b)=f(a)\circ f(b)\)</span>，運算的結果先算再對應、先對應再算都一樣。所以 <span class="arithmatex">\(f(e_G)=e_H\)</span>（<span class="arithmatex">\(f(e_G)=f(e_G*e_G)=f(e_G)\circ f(e_G)\)</span>，兩邊消掉一個 <span class="arithmatex">\(f(e_G)\)</span>）、<span class="arithmatex">\(f(a^k)=f(a)^k\)</span>（<span class="arithmatex">\(a^k\)</span> 是 k 個 a 運算，f 一個一個對過去）。</li>
 <li><strong>同構</strong>（isomorphism）：一對一而且映成的同態。兩個群同構，就是「同一個群換了名字」。</li>
 </ul>
 <h4 id="_91">環與體</h4>
 <ul>
 <li><strong>環</strong>（ring）<span class="arithmatex">\((R,+,\cdot)\)</span>：<span class="arithmatex">\((R,+)\)</span> 是交換群，乘法有結合律，而且有分配律。例：整數 <span class="arithmatex">\(\mathbb Z\)</span>、<span class="arithmatex">\(\mathbb Z_n\)</span>。</li>
 <li><strong>整環</strong>（integral domain）：有乘法單位 1 的交換環，而且<strong>沒有零因子</strong>（<span class="arithmatex">\(ab=0\)</span> 就一定 <span class="arithmatex">\(a=0\)</span> 或 <span class="arithmatex">\(b=0\)</span>）。<span class="arithmatex">\(\mathbb Z_6\)</span> 不是：<span class="arithmatex">\(2\cdot3=0\)</span>。</li>
-<li><strong>體</strong>（field）：每個不是 0 的元素都有乘法反元素。例：有理數 <span class="arithmatex">\(\mathbb Q\)</span>、<span class="arithmatex">\(\mathbb Z_p\)</span>（p 是質數）。<span class="arithmatex">\(\mathbb Z\)</span> 是整環但不是體（2 沒有整數的倒數）。</li>
+<li><strong>體</strong>（field）：每個不是 0 的元素都有乘法反元素。例：有理數 <span class="arithmatex">\(\mathbb Q\)</span>、<span class="arithmatex">\(\mathbb Z_p\)</span>（p 是質數：1～p−1 都跟 p 互質，都有模反元素）。<span class="arithmatex">\(\mathbb Z\)</span> 是整環但不是體（2 沒有整數的倒數）。</li>
+<li><strong><span class="arithmatex">\(\mathbb Z_n\)</span> 是體 ⇔ n 是質數</strong>：n 是合數時寫成 <span class="arithmatex">\(n=ab\)</span>（<span class="arithmatex">\(1&lt;a,b&lt;n\)</span>），<span class="arithmatex">\(a\cdot b\equiv0\)</span>，有零因子。a 如果有反元素 c，<span class="arithmatex">\(b=(ca)b=c(ab)=c\cdot0=0\)</span>，矛盾，所以不是體。</li>
 </ul>
 <div class="admonition key">
 <p class="admonition-title">群、環、體題要做什麼</p>
@@ -10307,7 +10322,7 @@ for i = 1 to 12
 </div>
 <div class="admonition example">
 <p class="admonition-title">103 Q7（10%）：算 <span class="arithmatex">\(w=995^{1010}\bmod97\)</span>、<span class="arithmatex">\(x=3866^{2402}\bmod385\)</span>、<span class="arithmatex">\(y=(w-x)\bmod17\)</span>，輸出 (w, x, y)</p>
-<p><strong>w（43）</strong>：97 是質數，<span class="arithmatex">\(995\equiv25\pmod{97}\)</span>。Fermat：<span class="arithmatex">\(25^{96}\equiv1\)</span>，<span class="arithmatex">\(1010=96\times10+50\)</span>，所以只要算 <span class="arithmatex">\(25^{50}\)</span>。重複平方（mod 97）：</p>
+<p><strong>w（43）</strong>：97 是質數，<span class="arithmatex">\(995\equiv25\pmod{97}\)</span>（<span class="arithmatex">\(995-10\times97=25\)</span>）。Fermat：<span class="arithmatex">\(25^{96}\equiv1\)</span>，<span class="arithmatex">\(1010=96\times10+50\)</span>，所以只要算 <span class="arithmatex">\(25^{50}\)</span>。重複平方（mod 97）：</p>
 <table>
 <thead>
 <tr>
@@ -10332,8 +10347,9 @@ for i = 1 to 12
 </tr>
 </tbody>
 </table>
-<p><span class="arithmatex">\(50=32+16+2\)</span>：<span class="arithmatex">\(25^{50}\equiv61\times35\times43\)</span>。<span class="arithmatex">\(61\times35=2135=22\times97+1\equiv1\)</span>，所以 <span class="arithmatex">\(w=43\)</span>。</p>
-<p><strong>x（256）</strong>：<span class="arithmatex">\(385=5\cdot7\cdot11\)</span>，<span class="arithmatex">\(3866\equiv16\pmod{385}\)</span>，<span class="arithmatex">\(\gcd(16,385)=1\)</span>。<span class="arithmatex">\(\varphi(385)=240\)</span>，<span class="arithmatex">\(2402=240\times10+2\)</span>，所以 <span class="arithmatex">\(x=16^2=256\)</span>。</p>
+<p>（每一格是前一格平方再除以 97 取餘數：<span class="arithmatex">\(625=6\times97+43\)</span>、<span class="arithmatex">\(43^2=1849=19\times97+6\)</span>、<span class="arithmatex">\(6^2=36\)</span>、<span class="arithmatex">\(36^2=1296=13\times97+35\)</span>、<span class="arithmatex">\(35^2=1225=12\times97+61\)</span>。）</p>
+<p><span class="arithmatex">\(50=32+16+2\)</span>：<span class="arithmatex">\(25^{50}=25^{32}\cdot25^{16}\cdot25^2\equiv61\times35\times43\)</span>。<span class="arithmatex">\(61\times35=2135=22\times97+1\equiv1\)</span>，所以 <span class="arithmatex">\(w=43\)</span>。</p>
+<p><strong>x（256）</strong>：<span class="arithmatex">\(385=5\cdot7\cdot11\)</span>，<span class="arithmatex">\(3866\equiv16\pmod{385}\)</span>（<span class="arithmatex">\(3866-10\times385=16\)</span>），<span class="arithmatex">\(\gcd(16,385)=1\)</span>。<span class="arithmatex">\(\varphi(385)=240\)</span>，<span class="arithmatex">\(2402=240\times10+2\)</span>，所以 <span class="arithmatex">\(x=16^2=256\)</span>。</p>
 <p><strong>y（8）</strong>：<span class="arithmatex">\(43-256=-213=-13\times17+8\)</span>，<span class="arithmatex">\(y=8\)</span>。</p>
 <p><strong>答案 (w, x, y) ＝ (43, 256, 8)</strong>。用程式直接算大次方驗算過。</p>
 </div>
