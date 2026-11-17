@@ -219,6 +219,49 @@
     }
     return inside;
   }
+  // 圈選規則：筆畫有一半以上的點在圈裡就算圈到（邊圈邊預覽和放開時選取都用這個）
+  function lassoHits(strokes, L) {
+    var lx0 = Infinity, ly0 = Infinity, lx1 = -Infinity, ly1 = -Infinity, out = [];
+    for (var i = 0; i < L.length; i += 2) {
+      lx0 = Math.min(lx0, L[i]); lx1 = Math.max(lx1, L[i]);
+      ly0 = Math.min(ly0, L[i + 1]); ly1 = Math.max(ly1, L[i + 1]);
+    }
+    strokes.forEach(function (st) {
+      var p = st.p, n = p.length / 3, need = n / 2, k = 0, miss = 0;
+      for (var j = 0; j < p.length; j += 3) {
+        var x = p[j], y = p[j + 1];
+        if (x >= lx0 && x <= lx1 && y >= ly0 && y <= ly1 && inPoly(x, y, L)) { if (++k >= need) break; }
+        else if (++miss > n - need) break;
+      }
+      if (k && k >= need) out.push(st);
+    });
+    return out;
+  }
+  // 圈到的筆跡底下墊一層半透明的強調色光暈，看得出選到哪些字。
+  // 同樣粗細的筆畫合成一條路徑一次畫，交叉的地方才不會疊得比較深
+  function drawHalo(ctx, strokes, color, u) {
+    var groups = {}, keys = [];
+    strokes.forEach(function (s) {
+      var w = Math.round((baseW(s) + 12 * u) * 2) / 2;
+      if (!groups[w]) { groups[w] = []; keys.push(w); }
+      groups[w].push(s);
+    });
+    ctx.save();
+    ctx.globalAlpha = darkNow ? 0.45 : 0.32;
+    ctx.strokeStyle = color; ctx.lineCap = "round"; ctx.lineJoin = "round";
+    keys.forEach(function (w) {
+      ctx.beginPath();
+      groups[w].forEach(function (s) {
+        var p = s.p;
+        ctx.moveTo(p[0], p[1]);
+        if (p.length === 3) ctx.lineTo(p[0] + 0.01, p[1]);
+        for (var i = 3; i < p.length; i += 3) ctx.lineTo(p[i], p[i + 1]);
+      });
+      ctx.lineWidth = w;
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
   function el(tag, cls, html) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -383,14 +426,21 @@
     ctx.lineWidth = 1 / (this.scale * this.z);
     ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim() || "#e9ecf2";
     ctx.stroke();
-    var pal = palette(false), sel = this.sel, xf = this.xf;
+    var pal = palette(false), sel = this.sel, xf = this.xf, u = 1 / (this.scale * this.z);
+    // 正在圈：預覽會圈到的筆畫；圈好了：標出選到的筆畫
+    var hot = this.lasso ? this.lassoPreview() : sel;
+    var glow = hot.length ? getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#c42f3d" : "";
     if (sel.length && xf) {
       drawAll(ctx, this.strokes.filter(function (st) { return sel.indexOf(st) < 0; }), pal);
       ctx.save();
       ctx.translate(xf.ox + xf.dx, xf.oy + xf.dy); ctx.scale(xf.s, xf.s); ctx.translate(-xf.ox, -xf.oy);
+      drawHalo(ctx, sel, glow, u / xf.s);
       drawAll(ctx, sel, pal);
       ctx.restore();
-    } else drawAll(ctx, this.strokes, pal);
+    } else {
+      if (hot.length) drawHalo(ctx, hot, glow, u);
+      drawAll(ctx, this.strokes, pal);
+    }
     this.drawOverlay(ctx);
     if (this.sel.length) this.placeSelBar();
   };
@@ -454,10 +504,31 @@
     bar.style.left = clamp(left, 4, Math.max(4, sw - bw - 4)) + "px";
     bar.style.top = clamp(top, 4, Math.max(4, sh - bh - 4)) + "px";
   };
+  // 邊圈邊預覽圈到哪些筆畫。筆跡很多時重算比較花時間，所以最多每 40ms 算一次
+  // （算一次很久的話，間隔拉長成花費時間的 4 倍，畫面才不會卡）；
+  // 筆停下來時補算最後一次，預覽才會跟放開時選到的一樣
+  Pad.prototype.lassoPreview = function () {
+    var L = this.lasso, self = this, now = Date.now(), gap = this.hitGap || 40;
+    if (!L || L.length < 6) return [];
+    if (this.hitLen !== L.length) {
+      if (now - (this.hitAt || 0) >= gap) {
+        this.hits = lassoHits(this.strokes, L); this.hitLen = L.length;
+        this.hitAt = Date.now(); this.hitGap = Math.max(40, (this.hitAt - now) * 4);
+        if (this.hits.length !== this.hitShown) {
+          this.hitShown = this.hits.length;
+          this.status(this.hits.length ? "圈到 " + this.hits.length + " 筆（有光暈的），放開就選取" : "把要選的字圈起來：一筆有一半以上在圈裡就算圈到");
+        }
+      } else if (!this.hitTimer) {
+        this.hitTimer = setTimeout(function () { self.hitTimer = 0; self.requestDraw(); }, gap - (now - (this.hitAt || 0)) + 5);
+      }
+    }
+    return this.hits || [];
+  };
   // 圈完：筆畫有一半以上的點在圈裡就選進來；圈得太小（等於點一下）就選手指下面最上層的那一筆
   Pad.prototype.finishLasso = function () {
     var L = this.lasso, found = [];
     this.lasso = null;
+    this.hits = null; this.hitLen = 0; this.hitAt = 0; this.hitShown = -1;
     var w = 0, h = 0;
     if (L) {
       var xs = L.filter(function (v, i) { return i % 2 === 0; }), ys = L.filter(function (v, i) { return i % 2 === 1; });
@@ -467,14 +538,10 @@
     if (tiny && L) {
       for (var i = this.strokes.length - 1; i >= 0; i--) if (near(this.strokes[i], L[0], L[1], 10 / this.z + baseW(this.strokes[i]) / 2)) { found = [this.strokes[i]]; break; }
     } else if (L) {
-      this.strokes.forEach(function (st) {
-        var n = st.p.length / 3, k = 0;
-        for (var j = 0; j < st.p.length; j += 3) if (inPoly(st.p[j], st.p[j + 1], L)) k++;
-        if (k && k >= n / 2) found.push(st);
-      });
+      found = lassoHits(this.strokes, L);
     }
     this.setSel(found);
-    this.status(found.length ? "拖框裡面可以移動，拖右下角的圓點可以縮放" : "沒有選到筆跡：用筆把要選的字圈起來，或直接點一下那一筆");
+    this.status(found.length ? "選到 " + found.length + " 筆（有光暈的就是）：拖框裡面可以移動，拖右下角的圓點可以縮放" : "沒有選到筆跡：用筆把要選的字圈起來，或直接點一下那一筆");
   };
   // 放開時把位移、縮放真的寫進筆畫（可以復原）
   Pad.prototype.commitXf = function () {
@@ -790,6 +857,7 @@
         } else {
           self.setSel([]);
           self.lasso = [q[0], q[1]];
+          self.hits = null; self.hitLen = 0; self.hitAt = 0; self.hitShown = -1;
           act = { id: e.pointerId, mode: "lasso" };
           return;
         }
