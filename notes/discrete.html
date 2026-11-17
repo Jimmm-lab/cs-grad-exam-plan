@@ -5874,7 +5874,8 @@ for i = 1 to 12
 <h3 id="u6-0">6.0 觀念課：鴿子比籠子多</h3>
 <h4 id="_48">最基本的形式</h4>
 <p>13 個人裡，一定有 2 個人同一個月生日。<strong>鴿子</strong>是人（13 個），<strong>籠子</strong>是月份（12 個），鴿子比籠子多，一定有一個籠子至少 2 隻。</p>
-<p>推廣：25 個人裡，一定有至少 <span class="arithmatex">\(\lceil25/12\rceil=3\)</span> 個人同一個月生日。如果每個月最多 2 人，全部最多 24 人，不夠 25。</p>
+<p>推廣：25 個人裡，一定有至少 <span class="arithmatex">\(\lceil25/12\rceil=3\)</span> 個人同一個月生日。理由：如果每個月最多 2 人，12 個月全部最多 <span class="arithmatex">\(2\times12=24\)</span> 人，裝不下 25 人。</p>
+<p>（<span class="arithmatex">\(\lceil x\rceil\)</span> 是<strong>無條件進位</strong>：<span class="arithmatex">\(\lceil25/12\rceil=\lceil2.08\rceil=3\)</span>。後面也會用到 <span class="arithmatex">\(\lfloor x\rfloor\)</span>，是<strong>無條件捨去</strong>：<span class="arithmatex">\(\lfloor2.08\rfloor=2\)</span>。）</p>
 <h4 id="_49">真正的難點：設計籠子</h4>
 <p>題目不會告訴你籠子是什麼，要自己找。</p>
 <p>「任選 4 個整數，一定有兩個的差是 3 的倍數。」</p>
@@ -5906,8 +5907,15 @@ for i = 1 to 12
 </tr>
 </tbody>
 </table>
-<p><strong>標籤一定兩兩不同</strong>：前面的數比後面小，後面的遞增長度至少多 1；前面比後面大，後面的遞減長度至少多 1。</p>
-<p>如果兩種長度都不超過 2，標籤只有 <span class="arithmatex">\(2\times2=4\)</span> 種（籠子），所以第 5 個數一定會讓某個長度變成 3。一般化：<span class="arithmatex">\(n^2+1\)</span> 個數一定有長度 <span class="arithmatex">\(n+1\)</span> 的單調子序列。</p>
+<p><strong>標籤怎麼算</strong>：從左到右一個一個算。以某個數結尾的最長遞增，是「前面比它小的數裡，遞增長度最大的那個」再加 1（前面沒有比它小的就是 1）；遞減同理，看前面比它大的。例如 4：前面比它小的有 3、1，遞增長度都是 1，所以 4 是 <span class="arithmatex">\(1+1=2\)</span>；前面沒有比 4 大的，遞減長度是 1，標籤 (2,1)。</p>
+<p><strong>標籤一定兩兩不同</strong>：任取兩個位置，前面的數叫 <span class="arithmatex">\(a\)</span>、後面的叫 <span class="arithmatex">\(b\)</span>（數都不同，所以不是 <span class="arithmatex">\(a&lt;b\)</span> 就是 <span class="arithmatex">\(a&gt;b\)</span>）：</p>
+<ul>
+<li><span class="arithmatex">\(a&lt;b\)</span>：任何以 <span class="arithmatex">\(a\)</span> 結尾的遞增子序列，後面接上 <span class="arithmatex">\(b\)</span> 還是遞增，所以 <span class="arithmatex">\(b\)</span> 的遞增長度至少比 <span class="arithmatex">\(a\)</span> 多 1。</li>
+<li><span class="arithmatex">\(a&gt;b\)</span>：同理，<span class="arithmatex">\(b\)</span> 的遞減長度至少比 <span class="arithmatex">\(a\)</span> 多 1。</li>
+</ul>
+<p>不管哪一種，兩個標籤至少有一個座標不一樣。例：1 和 4（<span class="arithmatex">\(1&lt;4\)</span>），4 的遞增長度 2 比 1 的遞增長度 1 多；3 和 2（<span class="arithmatex">\(3&gt;2\)</span>），2 的遞減長度 2 比 3 的遞減長度 1 多。</p>
+<p><strong>鴿籠登場</strong>：假設沒有長度 3 的遞增，也沒有長度 3 的遞減，標籤的兩個座標都只能是 1 或 2，只有 <span class="arithmatex">\(2\times2=4\)</span> 種（籠子）。5 個數（鴿子）的標籤兩兩不同，卻只有 4 種可以用，不可能。所以 5 個數一定有長度 3 的單調子序列。</p>
+<p><strong>一般化</strong>：標籤的兩個座標都 <span class="arithmatex">\(\le n\)</span> 時只有 <span class="arithmatex">\(n^2\)</span> 種，所以 <span class="arithmatex">\(n^2+1\)</span> 個數一定有長度 <span class="arithmatex">\(n+1\)</span> 的遞增或遞減子序列。</p>
 <div class="admonition key">
 <p class="admonition-title">鴿籠題怎麼寫</p>
 <ol>
@@ -5946,12 +5954,12 @@ for i = 1 to 12
 </details>
 <h3 id="u6-1">6.1 基本鴿籠</h3>
 <p><span class="arithmatex">\(n+1\)</span> 隻鴿子放進 <span class="arithmatex">\(n\)</span> 個籠子，至少一個籠子有 2 隻。推廣：<span class="arithmatex">\(kn+1\)</span> 隻 → 至少一個籠子有 <span class="arithmatex">\(k+1\)</span> 隻。</p>
-<p><strong>推廣版為什麼對</strong>：如果每個籠子最多 <span class="arithmatex">\(k\)</span> 隻，<span class="arithmatex">\(n\)</span> 個籠子最多 <span class="arithmatex">\(kn\)</span> 隻，裝不下 <span class="arithmatex">\(kn+1\)</span> 隻。一般寫法：<span class="arithmatex">\(m\)</span> 隻鴿子、<span class="arithmatex">\(n\)</span> 個籠子，一定有一個籠子至少 <span class="arithmatex">\(\lceil m/n\rceil\)</span> 隻。</p>
+<p><strong>推廣版為什麼對</strong>：如果每個籠子最多 <span class="arithmatex">\(k\)</span> 隻，<span class="arithmatex">\(n\)</span> 個籠子最多 <span class="arithmatex">\(kn\)</span> 隻，裝不下 <span class="arithmatex">\(kn+1\)</span> 隻。一般寫法：<span class="arithmatex">\(m\)</span> 隻鴿子、<span class="arithmatex">\(n\)</span> 個籠子，一定有一個籠子至少 <span class="arithmatex">\(\lceil m/n\rceil\)</span> 隻。理由一樣：如果每個籠子都少於 <span class="arithmatex">\(\frac mn\)</span> 隻，加起來就少於 <span class="arithmatex">\(n\times\frac mn=m\)</span> 隻，不夠放；所以至少有一個籠子 <span class="arithmatex">\(\ge\frac mn\)</span> 隻，而隻數是整數，就是 <span class="arithmatex">\(\ge\lceil m/n\rceil\)</span>。</p>
 <div class="admonition example">
 <p class="admonition-title">111 Q1（10%）：7 個正整數、最大不超過 21，證明所有非空子集的和不可能全部相異</p>
 <ul>
 <li><strong>鴿子</strong>：非空子集，共 <span class="arithmatex">\(2^7-1=127\)</span> 個。</li>
-<li><strong>籠子</strong>：可能的和。最小是 1，最大不超過 <span class="arithmatex">\(21+20+\cdots+15=\frac{(21+15)\times7}{2}=126\)</span>（7 個相異且 <span class="arithmatex">\(\le21\)</span> 的數，和最大就是取最大的 7 個）。所以和只有 1 到 126 共 126 種可能。</li>
+<li><strong>籠子</strong>：可能的和。最小是 1（都是正整數，子集合又不是空的），最大不超過 <span class="arithmatex">\(21+20+\cdots+15=\frac{(21+15)\times7}{2}=126\)</span>（7 個相異且 <span class="arithmatex">\(\le21\)</span> 的數，和最大就是取最大的 7 個；連續整數的和 ＝（頭＋尾）× 個數 ÷ 2，見 <a href="#u3-1">3.1</a>）。所以和只有 1 到 126 共 126 種可能。</li>
 </ul>
 <p>127 個子集、126 種和 → 一定有兩個子集的和相同。∎</p>
 </div>
@@ -5970,7 +5978,7 @@ for i = 1 to 12
 <h3 id="u6-3">6.3 Ramsey：R(3,3)=6</h3>
 <div class="admonition example">
 <p class="admonition-title">115 B3（10 分）：6 個人中，一定有 3 人互相認識或 3 人互不認識</p>
-<p>任取一人 A，其他 5 人跟 A 的關係只有「認識」和「不認識」兩種。由鴿籠，至少 3 人跟 A 同一種關係，假設是認識（不認識的情況對稱），叫他們 B、C、D。</p>
+<p>任取一人 A，其他 5 人跟 A 的關係只有「認識」和「不認識」兩種（2 個籠子）。5 個人放進 2 個籠子，由推廣的鴿籠，至少 <span class="arithmatex">\(\lceil5/2\rceil=3\)</span> 人跟 A 同一種關係。假設是認識，叫他們 B、C、D（如果是不認識，把下面的「認識」和「不認識」全部對調，論證一模一樣，所以只寫一種）。</p>
 <ul>
 <li>如果 B、C、D 中有任兩人認識，這兩人加上 A 就是互相認識的三人組。</li>
 <li>如果 B、C、D 兩兩都不認識，他們就是互不認識的三人組。∎</li>
@@ -6053,7 +6061,12 @@ for i = 1 to 12
 <figcaption>外圈的五邊形是認識、裡面的星形是不認識：沒有三條同一種的線圍成三角形</figcaption>
 </figure>
 
-<p>任挑 3 個人，裡面一定有相鄰的（實線）也有不相鄰的（虛線），所以 6 是<strong>最少</strong>的人數，記作 <span class="arithmatex">\(R(3,3)=6\)</span>。我用程式把 6 個人的 <span class="arithmatex">\(2^{15}\)</span> 種情況全部檢查過，每一種都有同一種的三角形。</p>
+<p>任挑 3 個人，裡面一定有相鄰的（實線）也有不相鄰的（虛線）：</p>
+<ul>
+<li><strong>不會兩兩都相鄰</strong>：每個人只跟左右兩人相鄰，而他左右的兩個人彼此不相鄰（例如 1 的鄰居是 2 和 5，2、5 不相鄰）。</li>
+<li><strong>不會兩兩都不相鄰</strong>：5 個位置的圈上挑 3 個，一定有兩個挨在一起（最多只能隔一個挑兩個）。</li>
+</ul>
+<p>所以 6 是<strong>最少</strong>的人數，記作 <span class="arithmatex">\(R(3,3)=6\)</span>。6 個人兩兩之間有 <span class="arithmatex">\(\binom62=15\)</span> 對，每一對是認識或不認識，一共 <span class="arithmatex">\(2^{15}\)</span> 種情況；我用程式全部檢查過，每一種都有同一種的三角形。</p>
 <p><strong>一般的 Ramsey 數</strong> <span class="arithmatex">\(R(m,n)\)</span>：保證「有 <span class="arithmatex">\(m\)</span> 人互相認識，或有 <span class="arithmatex">\(n\)</span> 人互不認識」的最少人數。已知 <span class="arithmatex">\(R(3,4)=9\)</span>、<span class="arithmatex">\(R(4,4)=18\)</span>，再大一點的，大多連確切的值都還不知道。</p>
 <h3 id="u6-4">6.4 鴿籠的經典構造</h3>
 <p>100、101、105、106、110 年一共考了 7 題（每題 10–20%）。鴿籠原理本身很簡單，難的是<strong>想到籠子是什麼</strong>。下面這幾種構造幾乎涵蓋所有考題，直接背起來。</p>
@@ -6116,9 +6129,10 @@ for i = 1 to 12
 </div>
 <div class="admonition example">
 <p class="admonition-title">100 Q7(c)（10%）、110 Q3（20%）：選出夠多的數，一定有一個整除另一個</p>
-<p>每個正整數都能寫成 <span class="arithmatex">\(2^k\cdot m\)</span>（m 是奇數），m 叫它的<strong>奇數部分</strong>。兩個數的奇數部分一樣，就只差一個 2 的次方，小的整除大的。</p>
+<p>每個正整數都能寫成 <span class="arithmatex">\(2^k\cdot m\)</span>（m 是奇數，把 2 一直除到除不盡為止），m 叫它的<strong>奇數部分</strong>。例：<span class="arithmatex">\(24=2^3\times3\)</span>、<span class="arithmatex">\(12=2^2\times3\)</span>，奇數部分都是 3。</p>
+<p><strong>為什麼奇數部分一樣就會整除</strong>：設 <span class="arithmatex">\(a=2^im\)</span>、<span class="arithmatex">\(b=2^jm\)</span>、<span class="arithmatex">\(i&lt;j\)</span>，則 <span class="arithmatex">\(\frac ba=2^{j-i}\)</span> 是整數，所以 <span class="arithmatex">\(a\mid b\)</span>（例：<span class="arithmatex">\(12\mid24\)</span>）。</p>
 <ul>
-<li><strong>100 Q7(c)</strong>：<span class="arithmatex">\(1\sim n\)</span> 裡的奇數部分只有 <span class="arithmatex">\(\lfloor\frac{n+1}2\rfloor\)</span> 種（就是 <span class="arithmatex">\(1\sim n\)</span> 裡奇數的個數）。選 <span class="arithmatex">\(\lfloor\frac{n+1}2\rfloor+1\)</span> 個，一定有兩個奇數部分相同。∎</li>
+<li><strong>100 Q7(c)</strong>：<span class="arithmatex">\(1\sim n\)</span> 裡每個數的奇數部分都是 <span class="arithmatex">\(\le n\)</span> 的奇數，只有 <span class="arithmatex">\(\lfloor\frac{n+1}2\rfloor\)</span> 種（就是 <span class="arithmatex">\(1\sim n\)</span> 裡奇數的個數，例如 <span class="arithmatex">\(n=10\)</span> 有 1、3、5、7、9 五個，<span class="arithmatex">\(\lfloor\frac{11}2\rfloor=5\)</span>）。選 <span class="arithmatex">\(\lfloor\frac{n+1}2\rfloor+1\)</span> 個，一定有兩個奇數部分相同。∎</li>
 <li><strong>110 Q3(a)</strong>：<span class="arithmatex">\(1\sim336\)</span> 有 168 個奇數，選 169 個就一定有 <span class="arithmatex">\(x\mid y\)</span>。</li>
 <li><strong>110 Q3(b) 推廣</strong>：從 <span class="arithmatex">\(\{1,2,\dots,2n\}\)</span> 任選 <span class="arithmatex">\(n+1\)</span> 個數，一定有一個整除另一個。而且 n 個不夠：選 <span class="arithmatex">\(n+1,n+2,\dots,2n\)</span>，最小的兩倍已經超過 2n，誰都不整除誰。</li>
 </ul>
@@ -6513,7 +6527,8 @@ for i = 1 to 12
 </div>
 <h3 id="u7-0">7.0 觀念課：關係就是一張打勾的表</h3>
 <h4 id="_53">把關係畫成表格</h4>
-<p><span class="arithmatex">\(A=\{1,2\}\)</span>。所有有序對是 (1,1)、(1,2)、(2,1)、(2,2)，排成 <span class="arithmatex">\(2\times2\)</span> 的表格。一個「關係」就是在這張表裡<strong>勾選一些格子</strong>。</p>
+<p><strong>定義</strong>：<span class="arithmatex">\(A\)</span> 上的一個<strong>關係</strong> <span class="arithmatex">\(R\)</span>，就是 <span class="arithmatex">\(A\times A\)</span>（所有有序對）的一個子集合。<span class="arithmatex">\((x,y)\in R\)</span> 也寫成 <span class="arithmatex">\(x\,R\,y\)</span>，讀作「x 跟 y 有這個關係」。例如 <span class="arithmatex">\(A=\{1,2,3\}\)</span> 上的「≤」，就是 (1,1)、(1,2)、(1,3)、(2,2)、(2,3)、(3,3) 這 6 個有序對組成的集合。</p>
+<p><span class="arithmatex">\(A=\{1,2\}\)</span>。所有有序對是 (1,1)、(1,2)、(2,1)、(2,2)，排成 <span class="arithmatex">\(2\times2\)</span> 的表格。一個「關係」就是在這張表裡<strong>勾選一些格子</strong>（第 x 列第 y 欄打勾，就是 <span class="arithmatex">\(x\,R\,y\)</span>）。</p>
 <table>
 <thead>
 <tr>
@@ -6538,10 +6553,12 @@ for i = 1 to 12
 <p>4 個格子各自可勾可不勾 → 關係共 <span class="arithmatex">\(2^4=16\)</span> 種。<span class="arithmatex">\(|A|=n\)</span> 時有 <span class="arithmatex">\(n^2\)</span> 格，所以有 <span class="arithmatex">\(2^{n^2}\)</span> 種。</p>
 <h4 id="_54">每種性質就是「哪些格子被綁住」</h4>
 <ul>
-<li><strong>反身</strong>：對角線 (1,1)、(2,2) 一定要勾 → 只剩 (1,2)、(2,1) 自由 → <span class="arithmatex">\(2^2=4\)</span> 種。</li>
-<li><strong>對稱</strong>：(1,2) 勾了，(2,1) 也一定要勾，兩格綁在一起變成一個選擇 → 自由的是 (1,1)、(2,2)、{(1,2),(2,1)} → <span class="arithmatex">\(2^3=8\)</span> 種。</li>
-<li><strong>反對稱</strong>：(1,2) 和 (2,1) 不能同時勾 → 這一對只有 3 種選法（都不勾、只勾一個、只勾另一個）。</li>
+<li><strong>反身</strong>（每個 <span class="arithmatex">\(x\)</span> 都有 <span class="arithmatex">\(x\,R\,x\)</span>）：對角線 (1,1)、(2,2) 一定要勾 → 只剩 (1,2)、(2,1) 自由 → <span class="arithmatex">\(2^2=4\)</span> 種。</li>
+<li><strong>對稱</strong>（<span class="arithmatex">\(x\,R\,y\)</span> 就一定 <span class="arithmatex">\(y\,R\,x\)</span>）：(1,2) 勾了，(2,1) 也一定要勾，兩格綁在一起變成一個選擇 → 自由的是 (1,1)、(2,2)、{(1,2),(2,1)} → <span class="arithmatex">\(2^3=8\)</span> 種。</li>
+<li><strong>反對稱</strong>（<span class="arithmatex">\(x\,R\,y\)</span> 而且 <span class="arithmatex">\(y\,R\,x\)</span>，就一定 <span class="arithmatex">\(x=y\)</span>）：換句話說，兩個<strong>不同</strong>的元素不能兩個方向都勾，(1,2) 和 (2,1) 不能同時勾 → 這一對只有 3 種選法（都不勾、只勾 (1,2)、只勾 (2,1)）；對角線不受限制。所以一共 <span class="arithmatex">\(2^2\times3=12\)</span> 種。</li>
+<li><strong>遞移</strong>（<span class="arithmatex">\(x\,R\,y\)</span>、<span class="arithmatex">\(y\,R\,z\)</span> 就一定 <span class="arithmatex">\(x\,R\,z\)</span>）：牽涉三個元素，格子之間的限制會連鎖，沒有「每格獨立」的簡單公式，所以考題幾乎不會問遞移關係有幾個。</li>
 </ul>
+<p><strong>注意</strong>：「反對稱」不是「不對稱」的意思。對角線可以隨便勾，例如「≤」是反對稱的（<span class="arithmatex">\(1\le1\)</span> 沒問題）；只勾對角線的 <span class="arithmatex">\(\{(1,1),(2,2)\}\)</span> 甚至同時是對稱又反對稱。</p>
 <figure class="fig">
 <svg viewBox="0 0 360 196" role="img" aria-label="|A| = 3 的關係是一張 3 × 3 的表。反身：對角線 3 格一定要勾，其他 6 格自由，共 2 的 6 次方種。對稱：(1,2) 和 (2,1) 綁在一起，(1,3) 和 (3,1)、(2,3) 和 (3,2) 也是，加上對角線 3 格，共 6 個自由單位，2 的 6 次方種。反對稱：對角線 3 格自由，每一對有 3 種選法，共 2 的 3 次方乘 3 的 3 次方種。">
 <text x="73" y="20" text-anchor="middle" dominant-baseline="central" class="sm">反身</text>
@@ -6628,6 +6645,7 @@ for i = 1 to 12
 </figure>
 
 <p>所以所有關係計數題的做法都一樣：<strong>數「可以自由決定的單位」有幾個、每個單位有幾種選法</strong>，再相乘。</p>
+<p><strong>一般的 <span class="arithmatex">\(n\)</span></strong>：<span class="arithmatex">\(n\times n\)</span> 的表有 <span class="arithmatex">\(n\)</span> 格對角線；對角線以外的 <span class="arithmatex">\(n^2-n\)</span> 格兩兩成對（<span class="arithmatex">\((i,j)\)</span> 和 <span class="arithmatex">\((j,i)\)</span>），共 <span class="arithmatex">\(\frac{n^2-n}{2}=\binom n2\)</span> 對。<a href="#u7-1">7.1</a> 的公式全部從這兩個數字來，例如對稱：<span class="arithmatex">\(n\)</span> 格對角線 ＋ <span class="arithmatex">\(\binom n2\)</span> 對，共 <span class="arithmatex">\(n+\frac{n(n-1)}2=\frac{n(n+1)}2\)</span> 個自由單位，所以是 <span class="arithmatex">\(2^{n(n+1)/2}\)</span> 種。</p>
 <h4 id="_55">函數與逆像</h4>
 <p><span class="arithmatex">\(f^{-1}(S)\)</span> 讀作「<strong>哪些元素被送進 <span class="arithmatex">\(S\)</span></strong>」，不是反函數。題目說 <span class="arithmatex">\(f^{-1}(\{4,6\})=\{1,3,7\}\)</span>，意思是：1、3、7 被送到 4 或 6，而且<strong>其他元素都不能</strong>送到 4 或 6。</p>
 <h4 id="_56">函數的三種性質：一對一、映成、一一對應</h4>
@@ -6669,8 +6687,46 @@ for i = 1 to 12
 </tbody>
 </table>
 <p><strong>數一對一的方法</strong>：<span class="arithmatex">\(A\)</span> 的第一個元素有 <span class="arithmatex">\(n\)</span> 個地方可以去，第二個不能跟第一個一樣，剩 <span class="arithmatex">\(n-1\)</span> 個……就是從 <span class="arithmatex">\(n\)</span> 個裡排 <span class="arithmatex">\(m\)</span> 個。</p>
+<p><strong>最後一欄的理由</strong>：<span class="arithmatex">\(m&gt;n\)</span> 時不可能一對一，這就是鴿籠原理（<span class="arithmatex">\(m\)</span> 隻鴿子放進 <span class="arithmatex">\(n\)</span> 個籠子，一定有兩隻同籠，也就是有兩個元素送到同一個地方）；<span class="arithmatex">\(m&lt;n\)</span> 時不可能映成（<span class="arithmatex">\(A\)</span> 只有 <span class="arithmatex">\(m\)</span> 個元素，最多打到 <span class="arithmatex">\(m\)</span> 個地方，蓋不滿 <span class="arithmatex">\(B\)</span>）。兩個都要成立，就只能 <span class="arithmatex">\(m=n\)</span>。</p>
 <h4 id="_57">邏輯：→ 只有「前真後假」才是假</h4>
 <p><span class="arithmatex">\(p\to q\)</span>（若 <span class="arithmatex">\(p\)</span> 則 <span class="arithmatex">\(q\)</span>）只有在 <span class="arithmatex">\(p\)</span> 真、<span class="arithmatex">\(q\)</span> 假時是假的；<span class="arithmatex">\(p\)</span> 是假的時候，整句一律算真（前提不成立，就沒有違反承諾）。</p>
+<p>把它想成一個承諾：「<strong>如果下雨，我就帶傘</strong>」。</p>
+<table>
+<thead>
+<tr>
+<th>下雨 <span class="arithmatex">\(p\)</span></th>
+<th>帶傘 <span class="arithmatex">\(q\)</span></th>
+<th>有沒有違反承諾</th>
+<th><span class="arithmatex">\(p\to q\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T</td>
+<td>T</td>
+<td>沒有</td>
+<td>T</td>
+</tr>
+<tr>
+<td>T</td>
+<td>F</td>
+<td><strong>違反了</strong></td>
+<td><strong>F</strong></td>
+</tr>
+<tr>
+<td>F</td>
+<td>T</td>
+<td>沒下雨，不算違反</td>
+<td>T</td>
+</tr>
+<tr>
+<td>F</td>
+<td>F</td>
+<td>沒下雨，不算違反</td>
+<td>T</td>
+</tr>
+</tbody>
+</table>
 <table>
 <thead>
 <tr>
@@ -6703,6 +6759,12 @@ for i = 1 to 12
 </tbody>
 </table>
 <p>另外三個常用的等價：<span class="arithmatex">\(p\to q\equiv\neg p\vee q\)</span>；De Morgan：<span class="arithmatex">\(\neg(p\wedge q)\equiv\neg p\vee\neg q\)</span>；量詞的否定：<span class="arithmatex">\(\neg\forall x\,P(x)\equiv\exists x\,\neg P(x)\)</span>（「不是每個都」等於「有一個不」）。</p>
+<ul>
+<li><strong>為什麼 <span class="arithmatex">\(p\to q\equiv\neg p\vee q\)</span></strong>：<span class="arithmatex">\(p\to q\)</span> 只在「<span class="arithmatex">\(p\)</span> 真、<span class="arithmatex">\(q\)</span> 假」那一列是 F；<span class="arithmatex">\(\neg p\vee q\)</span> 也只在「<span class="arithmatex">\(\neg p\)</span> 假、<span class="arithmatex">\(q\)</span> 假」，也就是同一列是 F。兩個式子在每一列都一樣，所以等價。</li>
+<li><strong>為什麼對偶等價</strong>：<span class="arithmatex">\(\neg q\to\neg p\equiv\neg(\neg q)\vee\neg p=q\vee\neg p\)</span>，跟 <span class="arithmatex">\(\neg p\vee q\)</span> 一樣。</li>
+<li><strong>為什麼逆命題不等價</strong>：<span class="arithmatex">\(q\to p\equiv\neg q\vee p\)</span>。沒下雨但帶了傘（<span class="arithmatex">\(p\)</span> 假、<span class="arithmatex">\(q\)</span> 真）時，原命題成立，逆命題「如果帶傘，就是下雨」卻不成立。</li>
+<li><strong>De Morgan 的白話</strong>：「不是（又高又帥）」＝「不高，或不帥」；「不是（高或帥）」＝「不高，而且不帥」。</li>
+</ul>
 <h4 id="_58">二元運算：交換律、結合律</h4>
 <p>把運算想成一張「輸入兩個數、輸出一個數」的表。</p>
 <ul>
@@ -6788,7 +6850,7 @@ for i = 1 to 12
 <tr>
 <td>對稱</td>
 <td><span class="arithmatex">\(2^{n(n+1)/2}\)</span></td>
-<td>對角線 <span class="arithmatex">\(n\)</span> 格＋上三角 <span class="arithmatex">\(\binom n2\)</span> 格自由</td>
+<td>對角線 <span class="arithmatex">\(n\)</span> 格＋上三角 <span class="arithmatex">\(\binom n2\)</span> 格自由，<span class="arithmatex">\(n+\binom n2=\frac{n(n+1)}2\)</span></td>
 </tr>
 <tr>
 <td>反身且對稱</td>
@@ -6804,10 +6866,11 @@ for i = 1 to 12
 </table>
 <div class="admonition example">
 <p class="admonition-title">113 Q7（10%）：<span class="arithmatex">\(|A|=6\)</span>，恰好含 (a) 3 個 (b) 6 個有序對的對稱關係</p>
-<p>對角線上的 <span class="arithmatex">\((i,i)\)</span> 每個算 1 個有序對；非對角的 <span class="arithmatex">\(\{i,j\}\)</span> 要選就是 <span class="arithmatex">\((i,j),(j,i)\)</span> 兩個一起，算 2 個。對角線 6 格、非對角 15 對。</p>
-<p>(a) <span class="arithmatex">\(3=1+1+1\)</span> 或 <span class="arithmatex">\(1+2\)</span>：<span class="arithmatex">\(\binom63+\binom61\binom{15}1=20+90=110\)</span>。</p>
-<p>(b) <span class="arithmatex">\(6\)</span> 的拆法：6 個對角（<span class="arithmatex">\(\binom66\)</span>）、4 對角＋1 對（<span class="arithmatex">\(\binom64\binom{15}1\)</span>）、2 對角＋2 對（<span class="arithmatex">\(\binom62\binom{15}2\)</span>）、3 對（<span class="arithmatex">\(\binom{15}3\)</span>）。
-<span class="arithmatex">\(1+225+1575+455=2256\)</span>。</p>
+<p>對角線上的 <span class="arithmatex">\((i,i)\)</span> 每個算 1 個有序對；非對角的 <span class="arithmatex">\(\{i,j\}\)</span> 要選就是 <span class="arithmatex">\((i,j),(j,i)\)</span> 兩個一起，算 2 個。對角線 6 格、非對角 <span class="arithmatex">\(\binom62=15\)</span> 對。</p>
+<p><strong>拆法</strong>：對角線選 <span class="arithmatex">\(d\)</span> 格、非對角選 <span class="arithmatex">\(p\)</span> 對，有序對一共 <span class="arithmatex">\(d+2p\)</span> 個，選法有 <span class="arithmatex">\(\binom6d\binom{15}p\)</span> 種。把要的個數拆成 <span class="arithmatex">\(d+2p\)</span> 的每一種方式，加起來。</p>
+<p>(a) <span class="arithmatex">\(d+2p=3\)</span>：<span class="arithmatex">\((d,p)=(3,0)\)</span> 或 <span class="arithmatex">\((1,1)\)</span>。<span class="arithmatex">\(\binom63+\binom61\binom{15}1=20+90=110\)</span>。</p>
+<p>(b) <span class="arithmatex">\(d+2p=6\)</span>：<span class="arithmatex">\((d,p)=(6,0)\)</span>、<span class="arithmatex">\((4,1)\)</span>、<span class="arithmatex">\((2,2)\)</span>、<span class="arithmatex">\((0,3)\)</span>，也就是 6 個對角（<span class="arithmatex">\(\binom66\)</span>）、4 對角＋1 對（<span class="arithmatex">\(\binom64\binom{15}1\)</span>）、2 對角＋2 對（<span class="arithmatex">\(\binom62\binom{15}2\)</span>）、3 對（<span class="arithmatex">\(\binom{15}3\)</span>）。
+其中 <span class="arithmatex">\(\binom64=\binom62=15\)</span>、<span class="arithmatex">\(\binom{15}2=\frac{15\times14}2=105\)</span>、<span class="arithmatex">\(\binom{15}3=\frac{15\times14\times13}{6}=455\)</span>，所以是 <span class="arithmatex">\(1+15\times15+15\times105+455=1+225+1575+455=2256\)</span>。</p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">111 Q3（10%）：<span class="arithmatex">\(n=6680\)</span> 的正因數集合上，「<span class="arithmatex">\(x\)</span> 整除 <span class="arithmatex">\(y\)</span>」的有序對有幾個</p>
@@ -6823,7 +6886,7 @@ for i = 1 to 12
 <ul>
 <li>1、3、7 只能送到 4 或 6：<span class="arithmatex">\(2^3\)</span></li>
 <li>8、9 只能送到 7 或 9：<span class="arithmatex">\(2^2\)</span></li>
-<li>剩下 2、4、5、6 不能送到 <span class="arithmatex">\(\{1,3,4,6,7,9\}\)</span>，只能送到 <span class="arithmatex">\(\{2,5,8\}\)</span>：<span class="arithmatex">\(3^4\)</span></li>
+<li>剩下 2、4、5、6：1、3 沒有人能送去（逆像是空的）；能送到 4、6 的只有 1、3、7；能送到 7、9 的只有 8、9。所以它們不能送到 <span class="arithmatex">\(\{1,3,4,6,7,9\}\)</span>，只能送到 <span class="arithmatex">\(\{2,5,8\}\)</span>：<span class="arithmatex">\(3^4\)</span></li>
 </ul>
 <p><strong>答案</strong>：<span class="arithmatex">\(8\times4\times81=2592\)</span>。</p>
 </div>
@@ -7024,7 +7087,7 @@ for i = 1 to 12
 <p>集合 A 上反身、反對稱、遞移的關係 R 叫偏序，<span class="arithmatex">\((A,R)\)</span> 叫偏序集（poset）。例：<span class="arithmatex">\((\mathcal P(S),\subseteq)\)</span>、正整數的整除關係。跟全序不同的地方是，不一定任兩個元素都能比較（例如 {1} 和 {2} 誰也不包含誰）。</p>
 </div>
 <h4 id="_63">觀念小考</h4>
-<div class="mcq" data-ans="3">
+<div class="mcq" data-ans="3" markdown="1">
 <p><strong>C-1.</strong> 整數上的關係「<span class="arithmatex">\(x\sim y\)</span> 若且唯若 <span class="arithmatex">\(x-y\)</span> 是 3 的倍數」有幾個等價類？</p>
 <ol>
 <li>1</li>
@@ -7167,7 +7230,7 @@ for i = 1 to 12
 <li>兩群之間：A 連到 <span class="arithmatex">\(A\cup\{n+1\}\)</span>，每個 <span class="arithmatex">\(A\in\mathcal P(X_n)\)</span> 一條，共 <span class="arithmatex">\(2^n\)</span> 條。</li>
 </ul>
 <p>初始值 <span class="arithmatex">\(e_1=1\)</span>（<span class="arithmatex">\(\emptyset\)</span> 到 <span class="arithmatex">\(\{1\}\)</span>）。</p>
-<p><strong>(a) 解遞迴（<span class="arithmatex">\(e_n=n\cdot2^{n-1}\)</span>）</strong>：兩邊除以 <span class="arithmatex">\(2^{n+1}\)</span>，令 <span class="arithmatex">\(b_n=e_n/2^n\)</span>：</p>
+<p><strong>(a) 解遞迴（<span class="arithmatex">\(e_n=n\cdot2^{n-1}\)</span>）</strong>：<span class="arithmatex">\(e_{n+1}=2e_n+2^n\)</span> 兩邊除以 <span class="arithmatex">\(2^{n+1}\)</span>，得 <span class="arithmatex">\(\frac{e_{n+1}}{2^{n+1}}=\frac{e_n}{2^n}+\frac12\)</span>。令 <span class="arithmatex">\(b_n=e_n/2^n\)</span>（跟 <a href="#u4-dc">4.4</a> 的「兩邊除以 <span class="arithmatex">\(c^k\)</span>」同一招）：</p>
 <div class="arithmatex">\[b_{n+1}=b_n+\frac12,\quad b_1=\frac12\ \Rightarrow\ b_n=\frac n2\ \Rightarrow\ e_n=n\cdot2^{n-1}\]</div>
 <p><strong>驗算</strong>：<span class="arithmatex">\(e_1=1\)</span>、<span class="arithmatex">\(e_2=4\)</span>（正方形）、<span class="arithmatex">\(e_3=12\)</span>（上面那張 3-cube 圖有 12 條線）<svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 <p><strong>直接數也可以（檢查用）</strong>：每條線 ＝「挑一個元素 x」＋「其他 <span class="arithmatex">\(n-1\)</span> 個元素各自要不要放進 A」，<span class="arithmatex">\(n\cdot2^{n-1}\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。我也用程式數過 <span class="arithmatex">\(n=1\)</span> 到 6：1、4、12、32、80、192。</p>
@@ -7315,6 +7378,11 @@ for i = 1 to 12
 </tr>
 </tbody>
 </table>
+<p><strong>兩條「一般代數沒有」的定律為什麼成立</strong>：</p>
+<ul>
+<li><strong>吸收</strong> <span class="arithmatex">\(x+xy=x\)</span>：<span class="arithmatex">\(x+xy=x(1+y)=x\cdot1=x\)</span>（<span class="arithmatex">\(1+y=1\)</span>，支配律）。白話：<span class="arithmatex">\(x=1\)</span> 時整句已經是 1；<span class="arithmatex">\(x=0\)</span> 時 <span class="arithmatex">\(xy\)</span> 也是 0。</li>
+<li><strong>加法形式的分配律</strong> <span class="arithmatex">\(x+yz=(x+y)(x+z)\)</span>：把右邊乘開，<span class="arithmatex">\((x+y)(x+z)=x+xz+xy+yz\)</span>（<span class="arithmatex">\(xx=x\)</span>），前三項 <span class="arithmatex">\(x+xz+xy=x(1+z+y)=x\)</span>，所以等於 <span class="arithmatex">\(x+yz\)</span>。</li>
+</ul>
 <p><strong>最常用的兩個變形</strong>：</p>
 <ul>
 <li><span class="arithmatex">\(x+\bar xy=x+y\)</span>：<span class="arithmatex">\(x+\bar xy=(x+\bar x)(x+y)=1\cdot(x+y)\)</span>（用加法形式的分配律）。</li>
@@ -7326,10 +7394,12 @@ for i = 1 to 12
 <ul>
 <li><strong>最小項</strong> <span class="arithmatex">\(m_i\)</span>：三個變數都出現的乘積，<strong>只在第 i 列是 1</strong>。例：<span class="arithmatex">\(m_3=\bar fgh\)</span>（011）。</li>
 <li><strong>最大項</strong> <span class="arithmatex">\(M_i\)</span>：三個變數都出現的和，<strong>只在第 i 列是 0</strong>。例：<span class="arithmatex">\(M_1=f+g+\bar h\)</span>，只有 <span class="arithmatex">\(f=0\)</span>、<span class="arithmatex">\(g=0\)</span>、<span class="arithmatex">\(h=1\)</span>（001）時三項全是 0。</li>
+<li><strong>寫法口訣</strong>：最小項是「那一列是 1 的變數寫原樣、是 0 的寫補數」，再乘起來（例：011 → <span class="arithmatex">\(\bar fgh\)</span>）；最大項剛好相反，「是 0 的寫原樣、是 1 的寫補數」，再加起來（例：001 → <span class="arithmatex">\(f+g+\bar h\)</span>）。</li>
 </ul>
 <p>任何函數都可以寫成「是 1 的那些列的最小項加起來」（積之和，SOP，<span class="arithmatex">\(\sum m\)</span>），或「是 0 的那些列的最大項乘起來」（和之積，POS，<span class="arithmatex">\(\prod M\)</span>）。三個變數的真值表有 8 列、每列可 0 可 1，所以一共有 <span class="arithmatex">\(2^8=256\)</span> 種布林函數（n 個變數有 <span class="arithmatex">\(2^{2^n}\)</span> 種）。</p>
 <h4 id="_68">卡諾圖：把「只差一個位元」的格子排在一起</h4>
 <p>把真值表排成表格，<strong>相鄰的格子只差一個位元</strong>。三個變數：列是 f，欄是 gh，欄的順序是 <strong>00、01、11、10</strong>（Gray code，不是 00、01、10、11）。</p>
+<p><strong>為什麼要這樣排</strong>：只差一個位元的兩個最小項，加起來可以消掉那個變數。例如 001 和 011（只差 g）：<span class="arithmatex">\(\bar f\bar gh+\bar fgh=\bar fh(\bar g+g)=\bar fh\)</span>。卡諾圖把這種「可以合併」的格子排在隔壁，圈起來就是在做這個化簡，用眼睛就看得出來。如果照 00、01、10、11 排，01 和 10 會變成隔壁，但它們差了兩個位元，不能這樣合併。</p>
 <p><strong>圈的規則</strong>：</p>
 <ol>
 <li>只能圈 1（化成 SOP）；每圈的格數是 1、2、4、8，形狀是長方形。</li>
@@ -7505,7 +7575,7 @@ for i = 1 to 12
 <tr>
 <td>有理數 <span class="arithmatex">\(\mathbb Q\)</span></td>
 <td>可數</td>
-<td>正有理數 <span class="arithmatex">\(p/q\)</span> 對應到 <span class="arithmatex">\((p,q)\)</span>，再沿斜線排，跳過重複的（2/4 跟 1/2 一樣）</td>
+<td>正有理數 <span class="arithmatex">\(p/q\)</span> 對應到 <span class="arithmatex">\((p,q)\)</span>，再沿斜線排，跳過重複的（2/4 跟 1/2 一樣）；0 和負的有理數像 <span class="arithmatex">\(\mathbb Z\)</span> 一樣交錯插進去</td>
 </tr>
 <tr>
 <td>所有有限長度的 0／1 字串</td>
@@ -7564,9 +7634,10 @@ for i = 1 to 12
 <p>造一個新的數 d：<strong>第 i 位故意跟 <span class="arithmatex">\(r_i\)</span> 的第 i 位不一樣</strong>（例如那一位是 5 就填 4，不是 5 就填 5）。上表的 d ＝ 0.455…</p>
 <ul>
 <li>d 跟 <span class="arithmatex">\(r_1\)</span> 第 1 位不一樣，所以 <span class="arithmatex">\(d\ne r_1\)</span>；跟 <span class="arithmatex">\(r_2\)</span> 第 2 位不一樣，所以 <span class="arithmatex">\(d\ne r_2\)</span>；……</li>
-<li>d 不等於表上任何一個數，但 d 在 (0, 1) 之間，跟「全部都排進來了」矛盾。∎</li>
+<li>d 不等於表上任何一個數，但 d 在 (0, 1) 之間（每一位都是 4 或 5，所以 <span class="arithmatex">\(0.444\ldots\le d\le0.555\ldots\)</span>），跟「全部都排進來了」矛盾。∎</li>
 </ul>
 <p>（只用 4 和 5，是為了避開 0.4999… ＝ 0.5 這種一個數兩種寫法的情況。）</p>
+<p><strong><span class="arithmatex">\(\mathcal P(\mathbb N)\)</span> 為什麼也不可數</strong>：每個子集合對應一個無限長的 0／1 序列，第 i 位是 1 代表 i 在子集合裡。例如偶數的集合 ↔ 0101…，<span class="arithmatex">\(\{1,3\}\)</span> ↔ 1010000…。這是一對一而且映成的配對，所以兩者一樣大。對 0／1 序列做同一招：假設排成一列，造一個第 i 位跟第 i 個序列相反（0 變 1、1 變 0）的序列，它不在表上。</p>
 <div class="admonition example">
 <p class="admonition-title">105 Q2（15%）：<span class="arithmatex">\(\mathbb N\)</span> 是正整數，<span class="arithmatex">\(S=\mathbb N\times\mathbb N=\{(x,y)\mid x,y\in\mathbb N\}\)</span>。證明存在 bijection <span class="arithmatex">\(f:S\to\mathbb N\)</span>，或證明不存在</p>
 <p><strong>答案：存在</strong>。給一個明確的公式，再證明它一對一、映成。</p>
@@ -7601,7 +7672,9 @@ for i = 1 to 12
 <p>所以 f 是 bijection，<span class="arithmatex">\(\mathbb N\times\mathbb N\)</span> 跟 <span class="arithmatex">\(\mathbb N\)</span> 一樣大。∎</p>
 <p><strong>另一種寫法（Cantor 的斜線排法）</strong>：把 (x, y) 排成表格，沿著 <span class="arithmatex">\(x+y=2,3,4,\dots\)</span> 的斜線一條一條排：(1,1)、(1,2)、(2,1)、(1,3)、(2,2)、(3,1)、……每條斜線只有有限個點，所以每個點都排得到。寫成公式：</p>
 <div class="arithmatex">\[f(x,y)=\frac{(x+y-1)(x+y-2)}{2}+x\]</div>
-<p>前面那項是「之前的斜線一共有幾個點」，再加上自己在這條斜線上是第幾個。例：<span class="arithmatex">\((2,3)\)</span> 在 <span class="arithmatex">\(x+y=5\)</span> 那條，前面 1＋2＋3 ＝ 6 個，它是第 2 個，<span class="arithmatex">\(f=8\)</span>。兩個公式我都用程式檢查過：不會有兩組 (x, y) 對到同一個數，而且前 500 個正整數都有被對到。</p>
+<p><strong>公式怎麼來</strong>：<span class="arithmatex">\(x+y=s\)</span> 那條斜線上有 <span class="arithmatex">\(s-1\)</span> 個點（<span class="arithmatex">\(x=1,2,\dots,s-1\)</span>），同一條斜線照 x 由小到大排。(x, y) 在第 <span class="arithmatex">\(s=x+y\)</span> 條，它前面的斜線是 <span class="arithmatex">\(s=2,3,\dots,x+y-1\)</span>，點數加起來是</p>
+<div class="arithmatex">\[1+2+\cdots+(x+y-2)=\frac{(x+y-2)(x+y-1)}{2}\]</div>
+<p>（<a href="#u3-1">3.1</a> 的「三個常用的和」），這就是前面那項；再加上自己在這條斜線上是第 x 個。例：<span class="arithmatex">\((2,3)\)</span> 在 <span class="arithmatex">\(x+y=5\)</span> 那條，前面 1＋2＋3 ＝ 6 個，它是第 2 個，<span class="arithmatex">\(f=8\)</span>。兩個公式我都用程式檢查過：不會有兩組 (x, y) 對到同一個數，而且前 500 個正整數都有被對到。</p>
 </div>
 <h4 id="_73">觀念小考</h4>
 <div class="mcq" data-ans="4">
