@@ -764,6 +764,7 @@ window.MathJax = {
 <p><strong>一般化</strong>：<span class="arithmatex">\(n\)</span> 種東西可重複選 <span class="arithmatex">\(r\)</span> 個 → <span class="arithmatex">\(r\)</span> 顆星、<span class="arithmatex">\(n-1\)</span> 根隔板，共 <span class="arithmatex">\(n+r-1\)</span> 個位置，選 <span class="arithmatex">\(r\)</span> 個放星：</p>
 <div class="arithmatex">\[\binom{n+r-1}{r}\]</div>
 <p><strong>這跟「相同的球放進不同的箱子」是同一件事</strong>：球是星星，箱子之間的牆是隔板。113 Q1 的「9 顆相同的球放進 3 個桶子」就是 9 顆星、2 根隔板，沒有限制時有 <span class="arithmatex">\(\binom{11}{2}=55\)</span> 種。</p>
+<p><strong>兩種寫法一樣</strong>：<span class="arithmatex">\(\binom{n+r-1}{r}=\binom{n+r-1}{n-1}\)</span>，一個是選星星的位置，一個是選隔板的位置。<strong>小心字母換人</strong>：這裡 <span class="arithmatex">\(n\)</span> 是「種類數」（＝箱子數）、<span class="arithmatex">\(r\)</span> 是「選幾個」（＝球數）；下面球放箱子的表改用 <span class="arithmatex">\(n\)</span> 個球、<span class="arithmatex">\(k\)</span> 個箱子，同一個公式就寫成 <span class="arithmatex">\(\binom{n+k-1}{k-1}\)</span>。不管字母怎麼取，記住<strong>隔板數 ＝ 箱子數 − 1</strong>、<strong>星星數 ＝ 球數</strong>就不會錯。</p>
 <figure class="fig">
 <svg viewBox="0 0 360 196" role="img" aria-label="上面：9 顆相同的球放進 3 個桶子，桶子裡分別是 3、2、4 顆。下面：同一種放法寫成一列，3 顆星、隔板、2 顆星、隔板、4 顆星。9 顆星和 2 根隔板共 11 個位置，選 2 個放隔板，所以有 C(11, 2) = 55 種。">
 <path class="ln" d="M30,24 L30,84 L110,84 L110,24"/>
@@ -845,6 +846,7 @@ window.MathJax = {
 </tr>
 </tbody>
 </table>
+<p>（<span class="arithmatex">\(S(n,k)\)</span> 是「<span class="arithmatex">\(n\)</span> 個不同的東西分成 <span class="arithmatex">\(k\)</span> 個沒有編號的非空堆」的方法數，叫第二類 Stirling 數；「<span class="arithmatex">\(n\)</span> 的分割數」是把 <span class="arithmatex">\(n\)</span> 寫成正整數相加、不管順序的方法數。兩個都在 <a href="#u1-stirling">Stirling 數那一節</a>完整講，這裡先看小例子。）</p>
 <p><strong>怎麼判斷「相不相同」</strong>：問自己「把兩顆球（或兩個箱子）互換，算不算新的放法？」算新的就是不同，不算就是相同。</p>
 <table>
 <thead>
@@ -881,6 +883,7 @@ window.MathJax = {
 </ol>
 <p>箱子多的時候，「1 號空」和「2 號空」這兩種情況會<strong>重疊</strong>（1、2 號都空），直接相減會扣太多，所以要用排容（單元 2）把扣太多的加回來：</p>
 <div class="arithmatex">\[k^n-\binom k1(k-1)^n+\binom k2(k-2)^n-\cdots\]</div>
+<p>每一項的意思：<span class="arithmatex">\(\binom k1(k-1)^n\)</span> 是「先選 1 個箱子規定它空著，所有球只能放進剩下 <span class="arithmatex">\(k-1\)</span> 個箱子」；<span class="arithmatex">\(\binom k2(k-2)^n\)</span> 是「選 2 個箱子都空著」，這種放法在前一項被扣了兩次，要加回來。檢查 3 顆不同的球放進 3 個箱子、每箱至少一顆：<span class="arithmatex">\(3^3-3\times2^3+3\times1^3=27-24+3=6\)</span>，就是每箱剛好一顆的 <span class="arithmatex">\(3!=6\)</span> 種 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 <p>把上面那 6 種的箱子編號拿掉（變成「分成 2 組」），a｜bc 和 bc｜a 就變成同一種，每種都被數了 <span class="arithmatex">\(2!\)</span> 次，所以 <span class="arithmatex">\(6\div2!=3\)</span>，這就是 <span class="arithmatex">\(S(3,2)\)</span>：{a}{bc}、{b}{ac}、{c}{ab}。</p>
 <p><strong>這就是為什麼 Stirling 數 <span class="arithmatex">\(S(n,k)\)</span> ＝ onto 的個數 ÷ <span class="arithmatex">\(k!\)</span></strong>，跟「組合 ＝ 排列 ÷ <span class="arithmatex">\(r!\)</span>」是同一個道理：拿掉編號，就要除以編號的排法數。</p>
 <h4 id="_4">看到計數題，先問三個問題</h4>
@@ -991,8 +994,8 @@ window.MathJax = {
 <tr>
 <td>相同</td>
 <td>相同</td>
-<td>整數分割</td>
-<td>整數分割</td>
+<td><span class="arithmatex">\(p(n,1)+\cdots+p(n,k)\)</span>（整數分割）</td>
+<td><span class="arithmatex">\(p(n,k)\)</span></td>
 <td>—</td>
 </tr>
 </tbody>
@@ -1004,7 +1007,7 @@ window.MathJax = {
 <li><strong>相同球、不同箱、不可空</strong>：<strong>先每箱放一顆</strong>，剩下 <span class="arithmatex">\(n-k\)</span> 顆隨便放 → <span class="arithmatex">\(\binom{(n-k)+k-1}{k-1}=\binom{n-1}{k-1}\)</span>。也可以想成 <span class="arithmatex">\(n\)</span> 顆星排一列有 <span class="arithmatex">\(n-1\)</span> 個空隙，挑 <span class="arithmatex">\(k-1\)</span> 個空隙插隔板（同一個空隙不能插兩根，所以每箱至少一顆）。</li>
 <li><strong>不同球、相同箱</strong>：就是下面的 Stirling 數 <span class="arithmatex">\(S(n,k)\)</span>，<a href="#u1-stirling">下一節</a>完整講。可以空箱時，依「實際用了幾個箱子」分類相加。</li>
 <li><strong>不同球、不同箱、不可空</strong>：先分成 <span class="arithmatex">\(k\)</span> 組（<span class="arithmatex">\(S(n,k)\)</span> 種），再把 <span class="arithmatex">\(k\)</span> 組分給 <span class="arithmatex">\(k\)</span> 個有編號的箱子（<span class="arithmatex">\(k!\)</span> 種）。</li>
-<li><strong>相同球、相同箱</strong>：只看「每箱幾顆」，就是整數分割，<a href="#u1-stirling">下一節最後</a>有。</li>
+<li><strong>相同球、相同箱</strong>：只看「每箱幾顆」，就是整數分割，<a href="#u1-stirling">下一節最後</a>有。<span class="arithmatex">\(p(n,k)\)</span> 是把 <span class="arithmatex">\(n\)</span> 拆成剛好 <span class="arithmatex">\(k\)</span> 個正整數相加的方法數；可以空箱時，依「實際用了幾個箱子」把 <span class="arithmatex">\(p(n,1)\)</span> 到 <span class="arithmatex">\(p(n,k)\)</span> 加起來。</li>
 </ul>
 <p><span class="arithmatex">\(S(n,k)\)</span> 是<strong>第二類 Stirling 數</strong>：把 <span class="arithmatex">\(n\)</span> 個不同的東西分成 <span class="arithmatex">\(k\)</span> 個<strong>沒有編號</strong>的非空群組。常用值：<span class="arithmatex">\(S(n,2)=2^{n-1}-1\)</span>、<span class="arithmatex">\(S(4,2)=7\)</span>、<span class="arithmatex">\(S(5,3)=25\)</span>、<span class="arithmatex">\(S(6,3)=90\)</span>。這些數怎麼算出來的，看<a href="#u1-stirling">Stirling 數這一節</a>。</p>
 <p>onto 函數數（<span class="arithmatex">\(|A|=n\)</span> 映到 <span class="arithmatex">\(|B|=k\)</span> 且每個 <span class="arithmatex">\(B\)</span> 元素都被用到）用排容算：</p>
@@ -1018,15 +1021,15 @@ window.MathJax = {
 <div class="admonition example">
 <p class="admonition-title">113 Q1（10%）：9 顆相同白球放進 3 個不同桶子，第 3 桶要偶數顆</p>
 <p><strong>判斷</strong>：球相同、箱子不同 → 重複組合。第 3 桶的限制用分情況處理。</p>
-<p>第 3 桶放 <span class="arithmatex">\(0,2,4,6,8\)</span> 顆時，剩下 <span class="arithmatex">\(9,7,5,3,1\)</span> 顆放進前兩桶，各有 <span class="arithmatex">\(m+1\)</span> 種：</p>
+<p>第 3 桶放 <span class="arithmatex">\(0,2,4,6,8\)</span> 顆時，剩下 <span class="arithmatex">\(9,7,5,3,1\)</span> 顆放進前兩桶。剩 <span class="arithmatex">\(m\)</span> 顆放進 2 個桶有 <span class="arithmatex">\(m+1\)</span> 種（第 1 桶放 0 到 <span class="arithmatex">\(m\)</span> 顆，第 2 桶拿剩下的），所以分別是 10、8、6、4、2 種：</p>
 <div class="arithmatex">\[10+8+6+4+2=30\]</div>
 <p>（單元 3 會教用生成函數一行算完：<span class="arithmatex">\(x^9\)</span> 在 <span class="arithmatex">\(\frac{1}{(1-x)^2}\cdot\frac{1}{1-x^2}\)</span> 的係數。）</p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">113 Q5（10%）：389,298 分解成 3 個大於 1 的因數（不計順序）有幾種</p>
-<p><strong>第一步</strong>：質因數分解 <span class="arithmatex">\(389298=2\times3\times7\times13\times23\times31\)</span>，剛好 6 個<strong>不同</strong>質數。</p>
+<p><strong>第一步</strong>：質因數分解 <span class="arithmatex">\(389298=2\times3\times7\times13\times23\times31\)</span>，剛好 6 個<strong>不同</strong>質數。不能用計算機時，從小的質數一個一個試：是偶數，<span class="arithmatex">\(\div2=194649\)</span>；數字和 <span class="arithmatex">\(1+9+4+6+4+9=33\)</span> 是 3 的倍數，<span class="arithmatex">\(\div3=64883\)</span>；<span class="arithmatex">\(64883=7\times9269\)</span>；<span class="arithmatex">\(9269=13\times713\)</span>；<span class="arithmatex">\(713=23\times31\)</span>。</p>
 <p><strong>判斷</strong>：每個質數是「不同的球」，3 個因數「沒有順序」→ 箱子相同；每個因數大於 1 → 不可空箱。</p>
-<p><strong>答案</strong>：<span class="arithmatex">\(S(6,3)=90\)</span>。</p>
+<p><strong>答案</strong>：<span class="arithmatex">\(S(6,3)=90\)</span>。每一種分組對應一種分解：同一組的質數乘起來就是一個因數，例如 {2,3}{7,13}{23,31} → <span class="arithmatex">\(6\times91\times713\)</span>。質數都不同，不同的分組乘出來一定不同。</p>
 <p><span class="arithmatex">\(S(6,3)\)</span> 用遞迴 <span class="arithmatex">\(S(n,k)=S(n-1,k-1)+k\,S(n-1,k)\)</span> 算：<span class="arithmatex">\(S(5,2)=15\)</span>、<span class="arithmatex">\(S(5,3)=25\)</span>，所以 <span class="arithmatex">\(S(6,3)=15+3\times25=90\)</span>。</p>
 </div>
 <div class="admonition example">
@@ -1280,10 +1283,10 @@ window.MathJax = {
 </div>
 <div class="admonition example">
 <p class="admonition-title">113 Q2（10%）：200–999 中所有三位數回文的和（不能列舉）</p>
-<p>回文 <span class="arithmatex">\(\overline{aba}=101a+10b\)</span>，<span class="arithmatex">\(a\in\{2,\dots,9\}\)</span>（8 種）、<span class="arithmatex">\(b\in\{0,\dots,9\}\)</span>（10 種），共 80 個。</p>
+<p>回文 <span class="arithmatex">\(\overline{aba}=100a+10b+a=101a+10b\)</span>，<span class="arithmatex">\(a\in\{2,\dots,9\}\)</span>（8 種）、<span class="arithmatex">\(b\in\{0,\dots,9\}\)</span>（10 種），共 80 個。全部的和 ＝ 每個回文的 <span class="arithmatex">\(101a\)</span> 加起來 ＋ 每個回文的 <span class="arithmatex">\(10b\)</span> 加起來：</p>
 <ul>
-<li>每個 <span class="arithmatex">\(a\)</span> 出現 10 次：<span class="arithmatex">\(101\times10\times(2+\cdots+9)=101\times10\times44=44440\)</span></li>
-<li>每個 <span class="arithmatex">\(b\)</span> 出現 8 次：<span class="arithmatex">\(10\times8\times(0+\cdots+9)=3600\)</span></li>
+<li>每個 <span class="arithmatex">\(a\)</span> 出現 10 次（配上 10 種 <span class="arithmatex">\(b\)</span>）：<span class="arithmatex">\(101\times10\times(2+\cdots+9)=101\times10\times44=44440\)</span></li>
+<li>每個 <span class="arithmatex">\(b\)</span> 出現 8 次（配上 8 種 <span class="arithmatex">\(a\)</span>）：<span class="arithmatex">\(10\times8\times(0+\cdots+9)=10\times8\times45=3600\)</span></li>
 </ul>
 <p><strong>答案</strong>：<span class="arithmatex">\(48040\)</span>。</p>
 </div>
@@ -1294,10 +1297,11 @@ window.MathJax = {
 <p><strong>引理</strong>：<span class="arithmatex">\(m\ge1\)</span> 的回文組合有 <span class="arithmatex">\(2^{\lfloor m/2\rfloor}\)</span> 個。</p>
 <p>理由（插棒法）：<span class="arithmatex">\(m\)</span> 個點排一列有 <span class="arithmatex">\(m-1\)</span> 個空隙，每個空隙放不放隔板決定一個組合。回文 ＝ 隔板位置左右對稱，所以空隙兩兩配對（第 <span class="arithmatex">\(i\)</span> 個和第 <span class="arithmatex">\(m-i\)</span> 個）。<span class="arithmatex">\(m\)</span> 是奇數時有 <span class="arithmatex">\(\frac{m-1}{2}\)</span> 對；<span class="arithmatex">\(m\)</span> 是偶數時有 <span class="arithmatex">\(\frac{m-2}{2}\)</span> 對再加正中間 1 個空隙。兩種情況可自由決定的都是 <span class="arithmatex">\(\lfloor m/2\rfloor\)</span> 個，所以有 <span class="arithmatex">\(2^{\lfloor m/2\rfloor}\)</span> 種。</p>
 <p><strong>答案</strong>：<span class="arithmatex">\(2^{\lfloor (n-2t)/2\rfloor}\)</span>。<span class="arithmatex">\(n=2t\)</span> 時只有 <span class="arithmatex">\(t+t\)</span> 一種，公式剛好也給 <span class="arithmatex">\(2^0=1\)</span>。</p>
+<p><strong>小例子</strong>：<span class="arithmatex">\(n=6\)</span>、<span class="arithmatex">\(t=1\)</span>：中間剩 4，4 的回文組合有 <span class="arithmatex">\(2^2=4\)</span> 個（4、1+2+1、2+2、1+1+1+1），所以是 1+4+1、1+1+2+1+1、1+2+2+1、1+1+1+1+1+1，共 4 個 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </div>
 <div class="admonition example">
 <p class="admonition-title">114 Q1（10%）：三層迴圈 <span class="arithmatex">\(i=1..12\)</span>、<span class="arithmatex">\(j=1..i\)</span>、<span class="arithmatex">\(k=1..j\)</span> 中每次 increment 加 1、sum 加 increment，最後 sum 是多少</p>
-<p><strong>先算迴圈總共跑幾次</strong>：<span class="arithmatex">\((i,j,k)\)</span> 滿足 <span class="arithmatex">\(1\le k\le j\le i\le12\)</span>，就是從 <span class="arithmatex">\(\{1,\dots,12\}\)</span> 中可重複選 3 個並排序：</p>
+<p><strong>先算迴圈總共跑幾次</strong>：<span class="arithmatex">\((i,j,k)\)</span> 滿足 <span class="arithmatex">\(1\le k\le j\le i\le12\)</span>，就是從 <span class="arithmatex">\(\{1,\dots,12\}\)</span> 中可重複選 3 個並排序：可重複地選出 3 個數，由大到小排好，就是唯一的一組 <span class="arithmatex">\((i,j,k)\)</span>；反過來每一組 <span class="arithmatex">\((i,j,k)\)</span> 也是一種選法。小例子：上限改成 2，迴圈跑 (1,1,1)、(2,1,1)、(2,2,1)、(2,2,2) 共 4 次 ＝ <span class="arithmatex">\(\binom{2+3-1}{3}=4\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 <div class="arithmatex">\[\binom{12+3-1}{3}=\binom{14}{3}=364\]</div>
 <p><span class="arithmatex">\(\binom{14}{3}=\frac{14\times13\times12}{3\times2\times1}=364\)</span>。</p>
 <p>increment 依序是 <span class="arithmatex">\(1,2,\dots,364\)</span>，所以 <span class="arithmatex">\(\text{sum}=1+2+\cdots+364=\dfrac{364\times365}{2}=66430\)</span>（<span class="arithmatex">\(1+\cdots+m=\frac{m(m+1)}{2}\)</span>：頭尾配對，每對和是 <span class="arithmatex">\(m+1\)</span>，共 <span class="arithmatex">\(\frac m2\)</span> 對）。</p>
@@ -1449,6 +1453,11 @@ window.MathJax = {
 </tbody>
 </table>
 <p>曲棍球棒就是 <a href="#u1-5">1.5</a> 迴圈計數題（114 Q1）背後的公式：<span class="arithmatex">\(\sum_{i=1}^{n}i=\sum_{i=1}^{n}\binom i1=\binom{n+1}2\)</span>。</p>
+<p><strong>最後兩個故事展開來講</strong>：</p>
+<ul>
+<li><strong>曲棍球棒</strong>：從 <span class="arithmatex">\(1,\dots,n+1\)</span> 選 <span class="arithmatex">\(k+1\)</span> 個數，共 <span class="arithmatex">\(\binom{n+1}{k+1}\)</span> 種。換個數法：最大的數是 <span class="arithmatex">\(i+1\)</span> 時，其他 <span class="arithmatex">\(k\)</span> 個要從 <span class="arithmatex">\(1,\dots,i\)</span> 裡選，有 <span class="arithmatex">\(\binom ik\)</span> 種；最大的數可以是 <span class="arithmatex">\(k+1\)</span> 到 <span class="arithmatex">\(n+1\)</span>，也就是 <span class="arithmatex">\(i=k,\dots,n\)</span>，加起來就是左邊。例：<span class="arithmatex">\(\binom22+\binom32+\binom42=1+3+6=10=\binom53\)</span>。</li>
+<li><strong>Vandermonde</strong>：男生 <span class="arithmatex">\(m\)</span> 人、女生 <span class="arithmatex">\(n\)</span> 人，選 <span class="arithmatex">\(k\)</span> 人共 <span class="arithmatex">\(\binom{m+n}k\)</span> 種。換個數法：男生選 <span class="arithmatex">\(i\)</span> 個（<span class="arithmatex">\(\binom mi\)</span>）、女生選剩下的 <span class="arithmatex">\(k-i\)</span> 個（<span class="arithmatex">\(\binom n{k-i}\)</span>），<span class="arithmatex">\(i\)</span> 從 0 加到 <span class="arithmatex">\(k\)</span>。例：<span class="arithmatex">\(m=2\)</span>、<span class="arithmatex">\(n=3\)</span>、<span class="arithmatex">\(k=2\)</span>：<span class="arithmatex">\(\binom20\binom32+\binom21\binom31+\binom22\binom30=3+6+1=10=\binom52\)</span>。</li>
+</ul>
 <div class="admonition example">
 <p class="admonition-title">106 Q3（10%）：證明 <span class="arithmatex">\(\binom nk=\binom{n-1}k+\binom{n-1}{k-1}\)</span>，並給組合解釋</p>
 <p>寫上面的代數證明，再加上「小明被選、沒被選」的組合解釋。兩個都寫最保險：題目要求 show that 和 combinatorial explanation 兩件事。</p>
@@ -1660,11 +1669,15 @@ window.MathJax = {
 <p>從 (0, 0) 走到 (n, n)，每步 R 或 U，<strong>任何時候 U 都不能比 R 多</strong>（不能走到對角線 <span class="arithmatex">\(y=x\)</span> 的上面）。</p>
 <ul>
 <li><strong>全部</strong>：<span class="arithmatex">\(\binom{2n}{n}\)</span>。</li>
-<li><strong>壞的</strong>（某個時候 U 比 R 多，碰到 <span class="arithmatex">\(y=x+1\)</span> 這條線）：把第一次碰到之後的那段翻過來（R、U 互換），終點變成 <span class="arithmatex">\((n-1,n+1)\)</span>，有 <span class="arithmatex">\(\binom{2n}{n+1}\)</span> 條。</li>
+<li><strong>壞的</strong>（某個時候 U 比 R 多，碰到 <span class="arithmatex">\(y=x+1\)</span> 這條線）：把第一次碰到之後的那段翻過來（R、U 互換），終點變成 <span class="arithmatex">\((n-1,n+1)\)</span>，有 <span class="arithmatex">\(\binom{2n}{n+1}\)</span> 條。<ul>
+<li><strong>終點為什麼是 <span class="arithmatex">\((n-1,n+1)\)</span></strong>：第一次碰到線時在某點 <span class="arithmatex">\((j,j+1)\)</span>，之後還要走 <span class="arithmatex">\(n-j\)</span> 個 R、<span class="arithmatex">\(n-j-1\)</span> 個 U 才到 <span class="arithmatex">\((n,n)\)</span>。R、U 互換後變成 <span class="arithmatex">\(n-j-1\)</span> 個 R、<span class="arithmatex">\(n-j\)</span> 個 U，終點是 <span class="arithmatex">\((j+n-j-1,\ j+1+n-j)=(n-1,n+1)\)</span>。</li>
+<li><strong>反過來</strong>：走到 <span class="arithmatex">\((n-1,n+1)\)</span> 的路徑，終點在線的上面，一定會碰到 <span class="arithmatex">\(y=x+1\)</span>；把第一次碰到之後的那段翻回來，就回到原本的壞路徑。所以是一一對應，<span class="arithmatex">\(2n\)</span> 步裡挑 <span class="arithmatex">\(n+1\)</span> 步往上：<span class="arithmatex">\(\binom{2n}{n+1}\)</span>。</li>
+</ul>
+</li>
 <li><strong>好的</strong>：</li>
 </ul>
 <div class="arithmatex">\[C_n=\binom{2n}{n}-\binom{2n}{n+1}=\frac{1}{n+1}\binom{2n}{n}\]</div>
-<p>例：<span class="arithmatex">\(n=4\)</span>，<span class="arithmatex">\(\binom84-\binom85=70-56=14=C_4\)</span>。前幾項 <span class="arithmatex">\(C_1,\dots,C_7=1,2,5,14,42,132,429\)</span>（程式逐條列舉驗證過）。</p>
+<p>化簡：<span class="arithmatex">\(\binom{2n}{n+1}=\binom{2n}{n}\cdot\frac{n}{n+1}\)</span>（分母的 <span class="arithmatex">\(n!\,n!\)</span> 換成 <span class="arithmatex">\((n+1)!\,(n-1)!\)</span>），所以差是 <span class="arithmatex">\(\binom{2n}n\left(1-\frac n{n+1}\right)=\frac1{n+1}\binom{2n}n\)</span>。例：<span class="arithmatex">\(n=4\)</span>，<span class="arithmatex">\(\binom84-\binom85=70-56=14=C_4\)</span>。前幾項 <span class="arithmatex">\(C_1,\dots,C_7=1,2,5,14,42,132,429\)</span>（程式逐條列舉驗證過）。</p>
 <p>括號配對、stack 的合法輸出、二元樹的形狀數都是 Catalan 數，原因是它們都能寫成「左括號（R）任何時候都不少於右括號（U）」的序列。</p>
 <div class="admonition example">
 <p class="admonition-title">101 Q5（15%）：每一步 <span class="arithmatex">\(x_{i+1}=x_i+1\)</span>、<span class="arithmatex">\(y_{i+1}=y_i\pm1\)</span>。從 (0, 1) 走到 (10, 3) 有幾條路徑？其中不碰到也不穿過 x 軸的有幾條？</p>
@@ -2284,7 +2297,7 @@ for i = 1 to 12
 <h4 id="_20">「都不是」為什麼用補集算比較快？</h4>
 <p>「1 到 30 中，<strong>不能</strong>被 2 也不能被 3 整除的有幾個？」</p>
 <ol>
-<li><strong>先算「能被 2 或 3 整除」（20）</strong>：<span class="arithmatex">\(15+10-5=20\)</span>。同時被 2 和 3 整除，就是被 6 整除，有 5 個。</li>
+<li><strong>先算「能被 2 或 3 整除」（20）</strong>：2 的倍數 <span class="arithmatex">\(\lfloor30/2\rfloor=15\)</span> 個、3 的倍數 <span class="arithmatex">\(\lfloor30/3\rfloor=10\)</span> 個；同時被 2 和 3 整除，就是被 6 整除，有 <span class="arithmatex">\(\lfloor30/6\rfloor=5\)</span> 個。<span class="arithmatex">\(15+10-5=20\)</span>。（<span class="arithmatex">\(\lfloor\ \rfloor\)</span> 是無條件捨去，例如 <span class="arithmatex">\(\lfloor20/3\rfloor=6\)</span>：1 到 20 裡 3 的倍數是 3、6、…、18，共 6 個。）</li>
 <li><strong>再用全部扣掉（10）</strong>：<span class="arithmatex">\(30-20=10\)</span>。</li>
 </ol>
 <p>列出來檢查：1、5、7、11、13、17、19、23、25、29 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
@@ -2409,11 +2422,11 @@ for i = 1 to 12
 </details>
 <h3 id="u2-1">2.1 公式</h3>
 <div class="arithmatex">\[|A_1\cup\cdots\cup A_n|=\sum|A_i|-\sum|A_i\cap A_j|+\sum|A_i\cap A_j\cap A_k|-\cdots\]</div>
-<p><strong>一般式怎麼讀</strong>：第一個 <span class="arithmatex">\(\sum\)</span> 把每個集合加一次，第二個 <span class="arithmatex">\(\sum\)</span> 扣掉所有兩兩交集，第三個加回所有三個的交集……正負交替。剛好屬於 <span class="arithmatex">\(k\)</span> 個集合的元素被算了 <span class="arithmatex">\(\binom k1-\binom k2+\binom k3-\cdots=1\)</span> 次（觀念課那張表就是 <span class="arithmatex">\(k=1,2,3\)</span>），所以每個元素都剛好算一次。</p>
+<p><strong>一般式怎麼讀</strong>：第一個 <span class="arithmatex">\(\sum\)</span> 把每個集合加一次，第二個 <span class="arithmatex">\(\sum\)</span> 扣掉所有兩兩交集，第三個加回所有三個的交集……正負交替。剛好屬於 <span class="arithmatex">\(k\)</span> 個集合的元素被算了 <span class="arithmatex">\(\binom k1-\binom k2+\binom k3-\cdots=1\)</span> 次（觀念課那張表就是 <span class="arithmatex">\(k=1,2,3\)</span>），所以每個元素都剛好算一次。為什麼一定是 1：二項式定理 <span class="arithmatex">\((1-1)^k=\binom k0-\binom k1+\binom k2-\cdots=0\)</span>，而 <span class="arithmatex">\(\binom k0=1\)</span>，移項就得到 <span class="arithmatex">\(\binom k1-\binom k2+\binom k3-\cdots=1\)</span>。</p>
 <p><strong>算「都不是」</strong>：<span class="arithmatex">\(|\overline{A_1}\cap\cdots\cap\overline{A_n}|=|U|-|A_1\cup\cdots\cup A_n|\)</span>，全部減掉「至少一個」。</p>
 <p><strong>對稱的時候最好算</strong>：如果任選 <span class="arithmatex">\(j\)</span> 個集合的交集大小都一樣（記作 <span class="arithmatex">\(N_j\)</span>），選法有 <span class="arithmatex">\(\binom nj\)</span> 種，公式變成</p>
 <div class="arithmatex">\[|\overline{A_1}\cap\cdots\cap\overline{A_n}|=\sum_{j=0}^{n}(-1)^j\binom nj N_j\]</div>
-<p>有上限的整數解、錯排、映成函數，全都是這個形狀，只是 <span class="arithmatex">\(N_j\)</span> 不一樣：</p>
+<p>（<span class="arithmatex">\(j=0\)</span> 那一項的 <span class="arithmatex">\(N_0\)</span> 就是全部 <span class="arithmatex">\(|U|\)</span>。）有上限的整數解、錯排、映成函數，全都是這個形狀，只是 <span class="arithmatex">\(N_j\)</span> 不一樣：</p>
 <table>
 <thead>
 <tr>
@@ -2507,7 +2520,7 @@ for i = 1 to 12
 <p><span class="arithmatex">\(x_1+\cdots+x_k=n\)</span>、<span class="arithmatex">\(0\le x_i\le u\)</span> 的解數：</p>
 <div class="arithmatex">\[\sum_{j\ge0}(-1)^j\binom{k}{j}\binom{n-j(u+1)+k-1}{k-1}\]</div>
 <p><strong>式子的每一部分</strong>：<span class="arithmatex">\(j\)</span> 是「指定哪 <span class="arithmatex">\(j\)</span> 個變數超過上限」。<span class="arithmatex">\(\binom kj\)</span> 是選哪 <span class="arithmatex">\(j\)</span> 個；這 <span class="arithmatex">\(j\)</span> 個先各塞 <span class="arithmatex">\(u+1\)</span> 個，剩下 <span class="arithmatex">\(n-j(u+1)\)</span> 個再用星星與隔板分給 <span class="arithmatex">\(k\)</span> 個變數，就是 <span class="arithmatex">\(\binom{n-j(u+1)+k-1}{k-1}\)</span>；正負交替是排容。剩下的數變成負的，那一項就是 0，算到那裡停。</p>
-<p><strong>下限不是 0 時</strong>：先把下限「預先發掉」。例如 <span class="arithmatex">\(x_i\ge1\)</span>，令 <span class="arithmatex">\(x_i'=x_i-1\ge0\)</span>，總數跟上限都減 1。</p>
+<p><strong>下限不是 0 時</strong>：先把下限「預先發掉」。例如每個 <span class="arithmatex">\(x_i\ge1\)</span>：令 <span class="arithmatex">\(x_i'=x_i-1\ge0\)</span>，等於每個變數先發 1 個，所以<strong>每個變數的上限減 1、總和減 <span class="arithmatex">\(k\)</span></strong>（<span class="arithmatex">\(k\)</span> 個變數各發 1 個）。下面的 115 A2 就是這樣：<span class="arithmatex">\(x+y+z=10\)</span>、<span class="arithmatex">\(1\le x,y,z\le5\)</span> 變成總和 <span class="arithmatex">\(10-3=7\)</span>、上限 4。</p>
 <div class="admonition example">
 <p class="admonition-title">113 Q8（10%）：2800 本書以 50 本為一包，分給 5 組，每組 200–600 本，有幾種分法</p>
 <p><strong>題目條件</strong>：書一包一包發（包和包沒有區別），組有區別；每組 200–600 本。</p>
@@ -2563,13 +2576,14 @@ for i = 1 to 12
 </table>
 <p><strong>公式怎麼來的（排容）</strong>：令 <span class="arithmatex">\(A_i\)</span> ＝「第 <span class="arithmatex">\(i\)</span> 個在原位」。指定某 <span class="arithmatex">\(j\)</span> 個在原位，其他 <span class="arithmatex">\(n-j\)</span> 個隨便排，有 <span class="arithmatex">\((n-j)!\)</span> 種；選哪 <span class="arithmatex">\(j\)</span> 個有 <span class="arithmatex">\(\binom nj\)</span> 種。套 <a href="#u2-1">2.1</a> 的對稱形式：</p>
 <div class="arithmatex">\[D_n=\sum_{j=0}^{n}(-1)^j\binom nj(n-j)!=\sum_{j=0}^{n}(-1)^j\frac{n!}{j!}\]</div>
-<p>把 <span class="arithmatex">\(n!\)</span> 提出來就是上面的式子。例：<span class="arithmatex">\(D_4=24-24+12-4+1=9\)</span>。</p>
+<p>（第二個等號：<span class="arithmatex">\(\binom nj(n-j)!=\frac{n!}{j!\,(n-j)!}\cdot(n-j)!=\frac{n!}{j!}\)</span>。）把 <span class="arithmatex">\(n!\)</span> 提出來就是上面的式子。例：<span class="arithmatex">\(D_4=\frac{24}{0!}-\frac{24}{1!}+\frac{24}{2!}-\frac{24}{3!}+\frac{24}{4!}=24-24+12-4+1=9\)</span>。</p>
 <p><strong>遞迴 <span class="arithmatex">\(D_n=(n-1)(D_{n-1}+D_{n-2})\)</span> 怎麼來的</strong>：看第 1 個東西被放到哪個位置 <span class="arithmatex">\(p\)</span>（<span class="arithmatex">\(p\ne1\)</span>，有 <span class="arithmatex">\(n-1\)</span> 種）。再看第 <span class="arithmatex">\(p\)</span> 個東西：</p>
 <ul>
 <li><strong>它放到位置 1</strong>（兩個剛好互換）：剩下 <span class="arithmatex">\(n-2\)</span> 個自己錯排 → <span class="arithmatex">\(D_{n-2}\)</span>。</li>
-<li><strong>它不放位置 1</strong>：把「位置 1」當成它的新禁區，剩下 <span class="arithmatex">\(n-1\)</span> 個東西各有一個不能去的位置 → <span class="arithmatex">\(D_{n-1}\)</span>。</li>
+<li><strong>它不放位置 1</strong>：剩下的是 <span class="arithmatex">\(n-1\)</span> 個東西（第 1 個以外）和 <span class="arithmatex">\(n-1\)</span> 個位置（位置 <span class="arithmatex">\(p\)</span> 以外）。第 <span class="arithmatex">\(p\)</span> 個東西不能去位置 1（這種情況的條件），其他第 <span class="arithmatex">\(i\)</span> 個東西不能去位置 <span class="arithmatex">\(i\)</span>。每個東西剛好一個禁區、禁區都不一樣，就跟 <span class="arithmatex">\(n-1\)</span> 個東西的錯排一模一樣（把位置 1 想成第 <span class="arithmatex">\(p\)</span> 個東西的新原位）→ <span class="arithmatex">\(D_{n-1}\)</span>。</li>
 </ul>
-<p>例：<span class="arithmatex">\(D_5=4\times(9+2)=44\)</span>。<span class="arithmatex">\(n\)</span> 很大時 <span class="arithmatex">\(D_n\approx\frac{n!}{e}\)</span>：隨便亂放，全部放錯的機率大約 <span class="arithmatex">\(\frac1e\approx0.37\)</span>。</p>
+<p>兩種情況加起來是 <span class="arithmatex">\(D_{n-1}+D_{n-2}\)</span>；<span class="arithmatex">\(p\)</span> 有 <span class="arithmatex">\(n-1\)</span> 種選法，每一種都一樣，所以乘 <span class="arithmatex">\(n-1\)</span>。</p>
+<p>例：<span class="arithmatex">\(D_5=4\times(9+2)=44\)</span>。<span class="arithmatex">\(n\)</span> 很大時 <span class="arithmatex">\(D_n\approx\frac{n!}{e}\)</span>：公式括號裡的 <span class="arithmatex">\(1-\frac1{1!}+\frac1{2!}-\cdots\)</span> 就是 <span class="arithmatex">\(e^{-1}=\sum_k\frac{(-1)^k}{k!}\)</span> 的前幾項，所以隨便亂放，全部放錯的機率大約 <span class="arithmatex">\(\frac1e\approx0.37\)</span>。例：<span class="arithmatex">\(\frac{D_6}{6!}=\frac{265}{720}\approx0.368\)</span>。</p>
 <h3 id="u2-5">2.5 字串裡含有某個子字串</h3>
 <p><strong>做法</strong>：令 <span class="arithmatex">\(A_i\)</span> ＝「子字串從第 <span class="arithmatex">\(i\)</span> 位開始出現」，「含有」就是 <span class="arithmatex">\(A_1\cup A_2\cup\cdots\)</span>。交集要看兩個位置的出現會不會打架：子字串<strong>跟自己重疊</strong>時（例如 aba 的頭尾都是 a），交集才可能不是 0。</p>
 <div class="admonition example">
