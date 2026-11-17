@@ -102,6 +102,8 @@ details.quiz[open] > summary { margin-bottom: 8px; }
 .arithmatex { overflow-x: auto; max-width: 100%; overflow-wrap: anywhere; }
 div.arithmatex { padding: 4px 0; }
 mjx-container[display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; }
+/* 放得進一行的行內公式不在中間換行（nav.js 的 keepShortMath 加上 mj-keep） */
+mjx-container.mj-keep[jax] mjx-break { white-space: nowrap !important; }
 /* 手寫作答板 */
 /* 選擇題：選項是一顆顆按鈕，選了馬上顯示對錯 */
 .mcq { margin: 18px 0; padding: 14px 16px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
@@ -1034,7 +1036,7 @@ window.MathJax = {
 <div class="admonition example">
 <p class="admonition-title">114 Q3（10%）：<span class="arithmatex">\(A=\{1,\dots,9\}\)</span>、<span class="arithmatex">\(B=\{a,\dots,h\}\)</span>，(a) <span class="arithmatex">\(f(A)=\{a,b,c\}\)</span> (b) <span class="arithmatex">\(|f(A)|=3\)</span> 的函數數</p>
 <p>(a) 9 個元素映到 <span class="arithmatex">\(\{a,b,c\}\)</span> 且三個都要用到 → onto：</p>
-<div class="arithmatex">\[3^9-\binom31 2^9+\binom32 1^9=19683-1536+3=18150\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;3^9-\binom31 2^9+\binom32 1^9\\&amp;=19683-1536+3\\&amp;=18150\end{aligned}\]</div>
 <p>(b) 先從 8 個裡選 3 個當像集，再 onto：<span class="arithmatex">\(\binom83\times18150=56\times18150=1016400\)</span>。</p>
 </div>
 <h3 id="u1-stirling">Stirling 數：定義、公式、遞迴、查表</h3>
@@ -1072,9 +1074,9 @@ window.MathJax = {
 <li><strong>除以 <span class="arithmatex">\(k!\)</span></strong>：把箱子的編號拿掉。同一種分組，給 <span class="arithmatex">\(k\)</span> 組貼上 1 到 <span class="arithmatex">\(k\)</span> 號有 <span class="arithmatex">\(k!\)</span> 種貼法，onto 把它們當成不同的，所以要除掉。跟「組合 ＝ 排列 ÷ <span class="arithmatex">\(r!\)</span>」是同一個道理。</li>
 </ul>
 <p>例：</p>
-<div class="arithmatex">\[\begin{aligned}S(4,2)&amp;=\frac{1}{2!}\left(2^4-\binom21\cdot1^4+\binom22\cdot0^4\right)\\&amp;=\frac{16-2+0}{2}=7\ \checkmark\end{aligned}\]</div>
+<div class="arithmatex">\[\begin{aligned}S(4,2)&amp;=\frac{1}{2!}\Big(2^4-\binom21\cdot1^4\\&amp;\qquad+\binom22\cdot0^4\Big)\\&amp;=\frac{16-2+0}{2}=7\ \checkmark\end{aligned}\]</div>
 <h4 id="_7">公式二：遞迴（看最後一個東西）</h4>
-<div class="arithmatex">\[S(n,k)=S(n-1,k-1)+k\cdot S(n-1,k)\]</div>
+<div class="arithmatex">\[\begin{aligned}S(n,k)&amp;=S(n-1,k-1)\\&amp;\quad+k\cdot S(n-1,k)\end{aligned}\]</div>
 <p>看第 <span class="arithmatex">\(n\)</span> 個東西（叫它 <svg class="ico ico-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 9.7l5.4-.8z" fill="currentColor" stroke-width="1.2"/></svg>）怎麼放，只有兩種情況：</p>
 <ul>
 <li><strong><svg class="ico ico-star" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 9.7l5.4-.8z" fill="currentColor" stroke-width="1.2"/></svg> 自己一組</strong>：其他 <span class="arithmatex">\(n-1\)</span> 個要分成剩下的 <span class="arithmatex">\(k-1\)</span> 組 → <span class="arithmatex">\(S(n-1,k-1)\)</span>。</li>
@@ -1266,7 +1268,7 @@ window.MathJax = {
 <div class="admonition example">
 <p class="admonition-title">112 Q1（10%）：<span class="arithmatex">\((3a-b+5c+3d-8)^{25}\)</span> 中 <span class="arithmatex">\(ab^6c^8d^5\)</span> 的係數</p>
 <p>次方加起來 <span class="arithmatex">\(1+6+8+5=20\)</span>，所以常數項 <span class="arithmatex">\(-8\)</span> 用了 <span class="arithmatex">\(25-20=5\)</span> 次。</p>
-<div class="arithmatex">\[\frac{25!}{1!\,6!\,8!\,5!\,5!}\cdot 3^1\cdot(-1)^6\cdot5^8\cdot3^5\cdot(-8)^5\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\frac{25!}{1!\,6!\,8!\,5!\,5!}\\&amp;\cdot3^1\cdot(-1)^6\cdot5^8\cdot3^5\cdot(-8)^5\end{aligned}\]</div>
 <p>考試不能用計算機，<strong>寫到這一步就是答案</strong>。正負號要判斷：<span class="arithmatex">\((-8)^5&lt;0\)</span>，所以整體是負的。</p>
 </div>
 <div class="admonition trap">
@@ -1277,7 +1279,7 @@ window.MathJax = {
 <div class="admonition example">
 <p class="admonition-title">112 Q4（10%）：<span class="arithmatex">\(\Sigma=\{t,v,w,x,y,z\}\)</span>，長度 1 到 11 的字串中，以 <span class="arithmatex">\(xyz\)</span> 為 proper prefix 的有幾個</p>
 <p>proper prefix 代表字串比 <span class="arithmatex">\(xyz\)</span> 長，所以長度 <span class="arithmatex">\(n=4,\dots,11\)</span>，後面 <span class="arithmatex">\(n-3\)</span> 位任意：</p>
-<div class="arithmatex">\[\sum_{n=4}^{11}6^{n-3}=6+6^2+\cdots+6^8=\frac{6^9-6}{5}=2015538\]</div>
+<div class="arithmatex">\[\begin{aligned}\sum_{n=4}^{11}6^{n-3}&amp;=6+6^2+\cdots+6^8\\&amp;=\frac{6^9-6}{5}=2015538\end{aligned}\]</div>
 <p><strong>等比級數怎麼加</strong>：令 <span class="arithmatex">\(S=6+6^2+\cdots+6^8\)</span>，則 <span class="arithmatex">\(6S=6^2+\cdots+6^8+6^9\)</span>。兩式相減，中間全部消掉：<span class="arithmatex">\(5S=6^9-6\)</span>，所以 <span class="arithmatex">\(S=\frac{6^9-6}{5}=\frac{10077696-6}{5}=2015538\)</span>。</p>
 </div>
 <div class="admonition example">
@@ -1418,7 +1420,7 @@ window.MathJax = {
 </ul>
 <p>兩種情況不重疊、合起來是全部，相加就是 <span class="arithmatex">\(\binom nk\)</span>。</p>
 <p><strong>代數證明</strong>：</p>
-<div class="arithmatex">\[\binom{n-1}{k}+\binom{n-1}{k-1}=\frac{(n-1)!}{k!\,(n-1-k)!}+\frac{(n-1)!}{(k-1)!\,(n-k)!}=\frac{(n-1)!}{k!\,(n-k)!}\big[(n-k)+k\big]=\binom nk\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\binom{n-1}{k}+\binom{n-1}{k-1}\\&amp;=\frac{(n-1)!}{k!\,(n-1-k)!}\\&amp;\quad+\frac{(n-1)!}{(k-1)!\,(n-k)!}\\&amp;=\frac{(n-1)!}{k!\,(n-k)!}\big[(n-k)+k\big]\\&amp;=\binom nk\end{aligned}\]</div>
 <p>這就是 Pascal 三角形「每個數等於左上和右上相加」的原因。</p>
 <h4 id="_15">常用的恆等式和它們的故事</h4>
 <table>
@@ -1467,7 +1469,7 @@ window.MathJax = {
 <div class="arithmatex">\[i!\,(n-i)!\,\binom ni=n!\]</div>
 <p>n 整除右邊的 <span class="arithmatex">\(n!\)</span>。左邊的 <span class="arithmatex">\(i!\)</span> 和 <span class="arithmatex">\((n-i)!\)</span> 裡每個因數都 <span class="arithmatex">\(\le n-1\)</span>（因為 <span class="arithmatex">\(1\le i\le n-1\)</span>），質數 n 不整除其中任何一個，所以 n 不整除 <span class="arithmatex">\(i!\,(n-i)!\)</span>。質數整除一個乘積，就一定整除其中一個因數，所以 n 整除 <span class="arithmatex">\(\binom ni\)</span>。∎</p>
 <p><strong>(b)</strong> 取 n 的一個質因數 p（n 是合數，所以 <span class="arithmatex">\(p&lt;n\)</span>）。設 n 裡剛好有 a 個 p（<span class="arithmatex">\(p^a\mid n\)</span>、<span class="arithmatex">\(p^{a+1}\nmid n\)</span>）。看 <span class="arithmatex">\(i=p\)</span>：</p>
-<div class="arithmatex">\[\binom np=\frac{n(n-1)(n-2)\cdots(n-p+1)}{p!}\]</div>
+<div class="arithmatex">\[\binom np=\frac{n(n-1)\cdots(n-p+1)}{p!}\]</div>
 <ul>
 <li><strong>分子有幾個 p</strong>：n 有 a 個；<span class="arithmatex">\(n-1,\dots,n-p+1\)</span> 都不是 p 的倍數（n 是 p 的倍數，往下減 1 到 <span class="arithmatex">\(p-1\)</span> 就不是了）。共 a 個。</li>
 <li><strong>分母有幾個 p</strong>：<span class="arithmatex">\(p!\)</span> 裡只有 p 本身，1 個。</li>
@@ -1608,7 +1610,7 @@ window.MathJax = {
 <p>不碰的有 2 條，碰到的有 4 條。數字一大就不可能這樣列，需要一個公式算「碰到的有幾條」。</p>
 <h4 id="x_1">為什麼碰到 x 軸的路徑可以「鏡射」？</h4>
 <p><strong>反射原理</strong>：起點 <span class="arithmatex">\(A=(0,a)\)</span>、終點 <span class="arithmatex">\(B=(n,b)\)</span>，<span class="arithmatex">\(a,b&gt;0\)</span>。</p>
-<div class="arithmatex">\[\text{從 }A\text{ 到 }B\text{、碰到 x 軸的路徑數}=\text{從 }A'=(0,-a)\text{ 到 }B\text{ 的路徑數}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\text{從 }A\text{ 到 }B\text{、碰到 x 軸的路徑數}\\&amp;=\text{從 }A'=(0,-a)\text{ 到 }B\text{ 的路徑數}\end{aligned}\]</div>
 <p><strong>做法</strong>：拿一條碰到 x 軸的路徑，找它<strong>第一次</strong>碰到 x 軸的地方，把<strong>這之前的那一段</strong>上下翻過來（U 換 D、D 換 U），後面不動。起點就從 <span class="arithmatex">\(a\)</span> 變成 <span class="arithmatex">\(-a\)</span>。</p>
 <p>例：UDDU 第一次碰到 x 軸是第 3 步。把前 3 步 UDD 翻成 DUU，得到 DUUU：從 −1 出發，高度 −1→−2→−1→0→1，終點一樣是 1。</p>
 <figure class="fig">
@@ -2114,7 +2116,7 @@ for i = 1 to 12
 <details class="quiz">
 <summary>看答案</summary>
 <p>球相同、箱子不同、不可空。每箱先放一顆，剩 <span class="arithmatex">\(12-4=8\)</span> 顆隨便放進 4 個箱子：8 顆星、3 根隔板。</p>
-<div class="arithmatex">\[\binom{8+4-1}{3}=\binom{11}{3}=\frac{11\times10\times9}{3\times2\times1}=165\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\binom{8+4-1}{3}=\binom{11}{3}\\&amp;=\frac{11\times10\times9}{3\times2\times1}=165\end{aligned}\]</div>
 <p>也可以直接套 <span class="arithmatex">\(\binom{n-1}{k-1}=\binom{11}{3}\)</span>，答案 <strong>165</strong>。</p>
 </details>
 <p><strong>1-2.</strong> 10 顆不同的球放進 3 個不同的箱子，每箱至少一顆？</p>
@@ -2236,7 +2238,7 @@ for i = 1 to 12
 </table>
 <p>也就是 <span class="arithmatex">\(|A\cup B|=|A|+|B|-|A\cap B|=6+5-3=8\)</span>。<strong>加起來，再把重複數的扣掉</strong>，這就是排容原理（inclusion–exclusion principle）。</p>
 <h4 id="_19">三個集合時，為什麼最後要加回來？</h4>
-<div class="arithmatex">\[|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|A\cap C|-|B\cap C|+|A\cap B\cap C|\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;|A\cup B\cup C|\\&amp;=|A|+|B|+|C|\\&amp;\quad-|A\cap B|-|A\cap C|-|B\cap C|\\&amp;\quad+|A\cap B\cap C|\end{aligned}\]</div>
 <p>三個圓把平面切成 7 塊，下圖每一塊的數字是「<strong>這一塊屬於幾個集合</strong>」：</p>
 <figure class="fig">
 <svg viewBox="0 0 360 260" role="img" aria-label="三個集合的文氏圖：只屬於一個集合的三塊標 1，屬於兩個集合的三塊標 2，正中間屬於三個集合的一塊標 3">
@@ -2420,7 +2422,7 @@ for i = 1 to 12
 <p>沒有人坐回原位的是 <strong>BCA、CAB 兩種</strong>。這就是錯排 <span class="arithmatex">\(D_3=2\)</span>。</p>
 </details>
 <h3 id="u2-1">2.1 公式</h3>
-<div class="arithmatex">\[|A_1\cup\cdots\cup A_n|=\sum|A_i|-\sum|A_i\cap A_j|+\sum|A_i\cap A_j\cap A_k|-\cdots\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;|A_1\cup\cdots\cup A_n|\\&amp;=\sum|A_i|-\sum|A_i\cap A_j|\\&amp;\quad+\sum|A_i\cap A_j\cap A_k|-\cdots\end{aligned}\]</div>
 <p><strong>一般式怎麼讀</strong>：第一個 <span class="arithmatex">\(\sum\)</span> 把每個集合加一次，第二個 <span class="arithmatex">\(\sum\)</span> 扣掉所有兩兩交集，第三個加回所有三個的交集……正負交替。剛好屬於 <span class="arithmatex">\(k\)</span> 個集合的元素被算了 <span class="arithmatex">\(\binom k1-\binom k2+\binom k3-\cdots=1\)</span> 次（觀念課那張表就是 <span class="arithmatex">\(k=1,2,3\)</span>），所以每個元素都剛好算一次。為什麼一定是 1：二項式定理 <span class="arithmatex">\((1-1)^k=\binom k0-\binom k1+\binom k2-\cdots=0\)</span>，而 <span class="arithmatex">\(\binom k0=1\)</span>，移項就得到 <span class="arithmatex">\(\binom k1-\binom k2+\binom k3-\cdots=1\)</span>。</p>
 <p><strong>算「都不是」</strong>：<span class="arithmatex">\(|\overline{A_1}\cap\cdots\cap\overline{A_n}|=|U|-|A_1\cup\cdots\cup A_n|\)</span>，全部減掉「至少一個」。</p>
 <p><strong>對稱的時候最好算</strong>：如果任選 <span class="arithmatex">\(j\)</span> 個集合的交集大小都一樣（記作 <span class="arithmatex">\(N_j\)</span>），選法有 <span class="arithmatex">\(\binom nj\)</span> 種，公式變成</p>
@@ -2574,7 +2576,7 @@ for i = 1 to 12
 </tbody>
 </table>
 <p><strong>公式怎麼來的（排容）</strong>：令 <span class="arithmatex">\(A_i\)</span> ＝「第 <span class="arithmatex">\(i\)</span> 個在原位」。指定某 <span class="arithmatex">\(j\)</span> 個在原位，其他 <span class="arithmatex">\(n-j\)</span> 個隨便排，有 <span class="arithmatex">\((n-j)!\)</span> 種；選哪 <span class="arithmatex">\(j\)</span> 個有 <span class="arithmatex">\(\binom nj\)</span> 種。套 <a href="#u2-1">2.1</a> 的對稱形式：</p>
-<div class="arithmatex">\[D_n=\sum_{j=0}^{n}(-1)^j\binom nj(n-j)!=\sum_{j=0}^{n}(-1)^j\frac{n!}{j!}\]</div>
+<div class="arithmatex">\[\begin{aligned}D_n&amp;=\sum_{j=0}^{n}(-1)^j\binom nj(n-j)!\\&amp;=\sum_{j=0}^{n}(-1)^j\frac{n!}{j!}\end{aligned}\]</div>
 <p>（第二個等號：<span class="arithmatex">\(\binom nj(n-j)!=\frac{n!}{j!\,(n-j)!}\cdot(n-j)!=\frac{n!}{j!}\)</span>。）把 <span class="arithmatex">\(n!\)</span> 提出來就是上面的式子。例：<span class="arithmatex">\(D_4=\frac{24}{0!}-\frac{24}{1!}+\frac{24}{2!}-\frac{24}{3!}+\frac{24}{4!}=24-24+12-4+1=9\)</span>。</p>
 <p><strong>遞迴 <span class="arithmatex">\(D_n=(n-1)(D_{n-1}+D_{n-2})\)</span> 怎麼來的</strong>：看第 1 個東西被放到哪個位置 <span class="arithmatex">\(p\)</span>（<span class="arithmatex">\(p\ne1\)</span>，有 <span class="arithmatex">\(n-1\)</span> 種）。再看第 <span class="arithmatex">\(p\)</span> 個東西：</p>
 <ul>
@@ -2967,7 +2969,7 @@ for i = 1 to 12
 <li>香蕉：<span class="arithmatex">\(1+x\)</span>（拿 0、1 個）</li>
 </ul>
 <p>相乘：</p>
-<div class="arithmatex">\[(1+x+x^2)(1+x)=1+2x+2x^2+x^3\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;(1+x+x^2)(1+x)\\&amp;=1+2x+2x^2+x^3\end{aligned}\]</div>
 <p><span class="arithmatex">\(x^2\)</span> 的係數是 2，<strong>就是答案</strong>：(蘋果 2、香蕉 0)、(蘋果 1、香蕉 1)。</p>
 <p>把乘法排成格子就看得出來：每一格是「蘋果選一項 × 香蕉選一項」，同一種顏色的格子次方一樣，有幾格就是有幾種拿法。</p>
 <figure class="fig">
@@ -3028,8 +3030,10 @@ for i = 1 to 12
 </table>
 <p><strong><span class="arithmatex">\(\frac{1}{1-x}\)</span> 是怎麼來的</strong>：它就是無限長的 <span class="arithmatex">\(1+x+x^2+\cdots\)</span> 換一個寫法。檢查方法很簡單：乘上 <span class="arithmatex">\(1-x\)</span> 看看。</p>
 <p>先看有限長的版本。乘開之後上下對齊，中間的項一正一負全部抵消：</p>
-<div class="arithmatex">\[\begin{aligned}(1-x)(1+x+x^2+x^3)&amp;=(1+x+x^2+x^3)-(x+x^2+x^3+x^4)\\&amp;=1-x^4\end{aligned}\]</div>
-<p>同樣的道理，<span class="arithmatex">\((1-x)(1+x+\cdots+x^m)=1-x^{m+1}\)</span>，所以</p>
+<div class="arithmatex">\[\begin{aligned}&amp;(1-x)(1+x+x^2+x^3)\\&amp;=(1+x+x^2+x^3)\\&amp;\quad-(x+x^2+x^3+x^4)\\&amp;=1-x^4\end{aligned}\]</div>
+<p>同樣的道理：</p>
+<div class="arithmatex">\[(1-x)(1+x+\cdots+x^m)=1-x^{m+1}\]</div>
+<p>兩邊除以 <span class="arithmatex">\(1-x\)</span>：</p>
 <div class="arithmatex">\[1+x+x^2+\cdots+x^m=\frac{1-x^{m+1}}{1-x}\]</div>
 <p>這就是表格最後一列「0 到 <span class="arithmatex">\(m\)</span> 個」的化簡。</p>
 <p>項數變成無限多的時候，沒有「最後一項」可以剩下來，只剩開頭的 1：</p>
@@ -3063,7 +3067,7 @@ for i = 1 to 12
 <li>相減除以 2：偶數項抵消，只剩奇數項，<span class="arithmatex">\(\frac{e^x-e^{-x}}{2}=x+\frac{x^3}{3!}+\frac{x^5}{5!}+\cdots\)</span> → <span class="arithmatex">\(\sinh x\)</span> ＝「出現<strong>奇數</strong>次」</li>
 </ul>
 <p>最後展開成 <span class="arithmatex">\(e^{ax}\)</span> 的和。<strong><span class="arithmatex">\(e^{ax}\)</span> 的係數為什麼是 <span class="arithmatex">\(a^n\)</span></strong>：把 <span class="arithmatex">\(e^x\)</span> 展開式裡的 <span class="arithmatex">\(x\)</span> 換成 <span class="arithmatex">\(ax\)</span>，</p>
-<div class="arithmatex">\[e^{ax}=1+ax+\frac{(ax)^2}{2!}+\frac{(ax)^3}{3!}+\cdots=\sum_n a^n\,\frac{x^n}{n!}\]</div>
+<div class="arithmatex">\[\begin{aligned}e^{ax}&amp;=1+ax+\frac{(ax)^2}{2!}+\frac{(ax)^3}{3!}+\cdots\\&amp;=\sum_n a^n\,\frac{x^n}{n!}\end{aligned}\]</div>
 <p>所以 <span class="arithmatex">\(\frac{x^n}{n!}\)</span> 的係數就是 <span class="arithmatex">\(a^n\)</span>。用計數的話說：<span class="arithmatex">\(e^{3x}=e^x\cdot e^x\cdot e^x\)</span> 是「3 個字母都不限次數」，長度 <span class="arithmatex">\(n\)</span> 的字串本來就有 <span class="arithmatex">\(3^n\)</span> 個。</p>
 <p><strong>常數只影響 <span class="arithmatex">\(n=0\)</span></strong>：常數 <span class="arithmatex">\(c=c\cdot\frac{x^0}{0!}\)</span>，只貢獻到 <span class="arithmatex">\(n=0\)</span> 那一項。算 <span class="arithmatex">\(n\ge1\)</span> 的答案時，展開後的常數可以直接不管。</p>
 <p><strong>驗證一個小例子</strong>：長度 3 的二進位字串，1 出現偶數次：</p>
@@ -3096,7 +3100,7 @@ for i = 1 to 12
 <details class="quiz">
 <summary>看答案</summary>
 <p>0 用 <span class="arithmatex">\(\cosh x\)</span>（偶數次），1、2 各用 <span class="arithmatex">\(e^x\)</span>（任意次）：</p>
-<div class="arithmatex">\[\cosh x\cdot e^x\cdot e^x=\frac{e^x+e^{-x}}{2}\cdot e^{2x}=\frac{e^{3x}+e^{x}}{2}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\cosh x\cdot e^x\cdot e^x\\&amp;=\frac{e^x+e^{-x}}{2}\cdot e^{2x}\\&amp;=\frac{e^{3x}+e^{x}}{2}\end{aligned}\]</div>
 <p><span class="arithmatex">\(e^{ax}\)</span> 的 <span class="arithmatex">\(\frac{x^n}{n!}\)</span> 係數是 <span class="arithmatex">\(a^n\)</span>，所以長度 <span class="arithmatex">\(n\)</span> 有 <span class="arithmatex">\(\frac{3^n+1}{2}\)</span> 個；<span class="arithmatex">\(n=2\)</span>：<span class="arithmatex">\(\frac{9+1}{2}=\)</span> <strong>5</strong>。列出：00、11、12、21、22 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>（0 出現 0 次或 2 次）。</p>
 </details>
 <p><strong>T-3.</strong> 「至少拿 1 個、最多拿 3 個」的生成函數因子怎麼寫？</p>
@@ -3173,7 +3177,7 @@ for i = 1 to 12
 </ul>
 <p><strong>建模流程</strong>：每個變數寫一個因子，例如「偶數個」寫 <span class="arithmatex">\(1+x^2+x^4+\cdots=\frac1{1-x^2}\)</span>，「0 到 3 個」寫 <span class="arithmatex">\(1+x+x^2+x^3\)</span>，然後全部相乘取係數。</p>
 <h4 id="frac11-xk">必背：<span class="arithmatex">\(\frac1{(1-x)^k}\)</span> 的展開</h4>
-<div class="arithmatex">\[\frac1{(1-x)^k}=\sum_{n\ge0}\binom{n+k-1}{n}x^n=1+kx+\binom{k+1}{2}x^2+\binom{k+2}{3}x^3+\cdots\]</div>
+<div class="arithmatex">\[\begin{aligned}\frac1{(1-x)^k}&amp;=\sum_{n\ge0}\binom{n+k-1}{n}x^n\\&amp;=1+kx+\binom{k+1}{2}x^2\\&amp;\quad+\binom{k+2}{3}x^3+\cdots\end{aligned}\]</div>
 <p><strong>為什麼（星星與隔板）</strong>：<span class="arithmatex">\(\frac1{(1-x)^k}\)</span> 是 <span class="arithmatex">\(k\)</span> 個 <span class="arithmatex">\((1+x+x^2+\cdots)\)</span> 相乘。第 <span class="arithmatex">\(i\)</span> 個因子挑 <span class="arithmatex">\(x^{e_i}\)</span>，要湊出 <span class="arithmatex">\(x^n\)</span>，就是要</p>
 <div class="arithmatex">\[e_1+e_2+\cdots+e_k=n,\qquad e_i\ge0\]</div>
 <p>這個方程式的非負整數解有幾組，也就是 <a href="#u1-2">1.2</a> 的「相同的球放進不同的箱子、可以空」：<span class="arithmatex">\(n\)</span> 顆星、<span class="arithmatex">\(k-1\)</span> 根隔板排成一列，選隔板的位置，</p>
@@ -3241,7 +3245,7 @@ for i = 1 to 12
 <h4 id="_26">三個常用的和</h4>
 <p>取係數時常常要把一串數加起來。這三個要會推，不要只背：</p>
 <p><strong>1. 連續整數：<span class="arithmatex">\(1+2+\cdots+m=\frac{m(m+1)}{2}\)</span></strong>。正著寫一次、倒著寫一次，上下對齊相加，每一對都是 <span class="arithmatex">\(m+1\)</span>：</p>
-<div class="arithmatex">\[\begin{aligned}S&amp;=1+2+\cdots+m\\S&amp;=m+(m-1)+\cdots+1\\2S&amp;=(m+1)+(m+1)+\cdots+(m+1)=m(m+1)\end{aligned}\]</div>
+<div class="arithmatex">\[\begin{aligned}S&amp;=1+2+\cdots+m\\S&amp;=m+(m-1)+\cdots+1\\2S&amp;=\underbrace{(m+1)+\cdots+(m+1)}_{m\text{ 個}}\\&amp;=m(m+1)\end{aligned}\]</div>
 <p><strong>2. 奇數：<span class="arithmatex">\(1+3+5+\cdots+(2m-1)=m^2\)</span></strong>。把方格排成正方形，一層一層往外包 L 形：</p>
 <p><figure class="fig">
 <svg viewBox="0 0 360 184" role="img" aria-label="4 × 4 的方格依 L 形分成四層：左上角 1 格；外面一圈 L 形 3 格，合起來 2 × 2；再一圈 5 格，合起來 3 × 3；最外面 7 格，合起來 4 × 4。所以 1＋3＋5＋7＝4²＝16。">
@@ -3293,7 +3297,7 @@ for i = 1 to 12
 <div class="arithmatex">\[\frac1{1+x}\cdot\frac1{1+x}\cdot\frac1{1-x}\]</div>
 <p>先算 <span class="arithmatex">\(\frac1{(1+x)^2}\)</span>：把 <span class="arithmatex">\(\frac1{(1-x)^2}=\sum(n+1)x^n\)</span> 的 <span class="arithmatex">\(x\)</span> 換成 <span class="arithmatex">\(-x\)</span>，得 <span class="arithmatex">\(\sum(n+1)(-1)^nx^n\)</span>。</p>
 <p>再乘 <span class="arithmatex">\(\frac1{1-x}=1+x+x^2+\cdots\)</span>。<strong>乘 <span class="arithmatex">\(\frac1{1-x}\)</span> 就是取前綴和</strong>：<span class="arithmatex">\((c_0+c_1x+c_2x^2+\cdots)(1+x+x^2+\cdots)\)</span> 的 <span class="arithmatex">\(x^n\)</span>，是 <span class="arithmatex">\(c_k\)</span> 配上 <span class="arithmatex">\(x^{n-k}\)</span>（係數都是 1），<span class="arithmatex">\(k=0\)</span> 到 <span class="arithmatex">\(n\)</span> 全部加起來，也就是 <span class="arithmatex">\(c_0+c_1+\cdots+c_n\)</span>：</p>
-<div class="arithmatex">\[d_n=\sum_{k=0}^{n}(k+1)(-1)^k=1-2+3-4+\cdots\]</div>
+<div class="arithmatex">\[\begin{aligned}d_n&amp;=\sum_{k=0}^{n}(k+1)(-1)^k\\&amp;=1-2+3-4+\cdots\end{aligned}\]</div>
 <p>兩兩一組，每組 <span class="arithmatex">\((2j+1)-(2j+2)=-1\)</span>：</p>
 <ul>
 <li><span class="arithmatex">\(n\)</span> 奇數：剛好 <span class="arithmatex">\(\frac{n+1}{2}\)</span> 組，<span class="arithmatex">\(d_n=-\frac{n+1}{2}\)</span></li>
@@ -3334,7 +3338,7 @@ for i = 1 to 12
 <div class="admonition example">
 <p class="admonition-title">114 Q8（10%）：隨機 28 位八進位數字串，3 和 7 都出現偶數次的機率</p>
 <p>3 和 7 各用 <span class="arithmatex">\(\cosh x\)</span>，其他 6 個數字用 <span class="arithmatex">\(e^x\)</span>：</p>
-<div class="arithmatex">\[\left(\frac{e^x+e^{-x}}2\right)^2e^{6x}=\frac{e^{2x}+2+e^{-2x}}{4}\cdot e^{6x}=\frac{e^{8x}+2e^{6x}+e^{4x}}{4}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\left(\frac{e^x+e^{-x}}2\right)^2e^{6x}\\&amp;=\frac{e^{2x}+2+e^{-2x}}{4}\cdot e^{6x}\\&amp;=\frac{e^{8x}+2e^{6x}+e^{4x}}{4}\end{aligned}\]</div>
 <ul>
 <li><strong>平方展開</strong>：<span class="arithmatex">\((e^x+e^{-x})^2=e^{2x}+2e^x e^{-x}+e^{-2x}=e^{2x}+2+e^{-2x}\)</span>（<span class="arithmatex">\(e^x\cdot e^{-x}=e^0=1\)</span>）。</li>
 <li><strong>乘 <span class="arithmatex">\(e^{6x}\)</span></strong>：指數相加，<span class="arithmatex">\(e^{2x}e^{6x}=e^{8x}\)</span>、<span class="arithmatex">\(2\cdot e^{6x}\)</span>、<span class="arithmatex">\(e^{-2x}e^{6x}=e^{4x}\)</span>。</li>
@@ -3378,7 +3382,7 @@ for i = 1 to 12
 <li><strong>驗算</strong>：直接乘開 <span class="arithmatex">\((1+2x+4x^2+\cdots)(1+3x+9x^2+\cdots)\)</span>，前三項是 1、5、19；公式給 <span class="arithmatex">\(3-2=1\)</span>、<span class="arithmatex">\(9-4=5\)</span>、<span class="arithmatex">\(27-8=19\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
 </ol>
 <p><strong>分母寫成 <span class="arithmatex">\((x-a)\)</span> 的形式時</strong>：先把 <span class="arithmatex">\(-a\)</span> 提出來，湊成 <span class="arithmatex">\(\frac1{1-\text{某某}}\)</span> 的樣子：</p>
-<div class="arithmatex">\[\frac1{x-a}=\frac{1}{-a\left(1-\frac xa\right)}=-\frac1a\cdot\frac1{1-\frac xa}=-\frac1a\left(1+\frac xa+\frac{x^2}{a^2}+\cdots\right)\]</div>
+<div class="arithmatex">\[\begin{aligned}\frac1{x-a}&amp;=\frac{1}{-a\left(1-\frac xa\right)}\\&amp;=-\frac1a\cdot\frac1{1-\frac xa}\\&amp;=-\frac1a\left(1+\frac xa+\frac{x^2}{a^2}+\cdots\right)\end{aligned}\]</div>
 <p>所以 <span class="arithmatex">\(x^n\)</span> 的係數是 <span class="arithmatex">\(-\frac1{a^{n+1}}\)</span>。例：<span class="arithmatex">\(\frac1{x-2}=-\frac12-\frac x4-\frac{x^2}8-\cdots\)</span>。</p>
 <p><strong>重根</strong>：<span class="arithmatex">\(\frac1{(1-ax)^2}\)</span> 的 <span class="arithmatex">\(x^n\)</span> 係數是 <span class="arithmatex">\((n+1)a^n\)</span>；一般 <span class="arithmatex">\(\frac1{(1-ax)^k}\)</span> 是 <span class="arithmatex">\(\binom{n+k-1}{k-1}a^n\)</span>（星星與隔板再乘 <span class="arithmatex">\(a^n\)</span>，推導見 <a href="#u3-1">3.1 的必背展開</a>）。例：<span class="arithmatex">\(\frac1{(1-2x)^2}=1+4x+12x^2+32x^3+\cdots\)</span>。</p>
 <p><strong>分子的次方 ≥ 分母</strong>：先做多項式除法，把多項式的部分分出來（它只影響前幾項）。如果分子只是 <span class="arithmatex">\(x^m\)</span>，用平移更快：例如 <span class="arithmatex">\(\frac{x^2}{(1-x)(1-2x)}\)</span>，先算 <span class="arithmatex">\(\frac1{(1-x)(1-2x)}\)</span> 的係數 <span class="arithmatex">\(2^{n+1}-1\)</span>，再往後移 2 格，<span class="arithmatex">\(x^n\)</span> 的係數是 <span class="arithmatex">\(2^{n-1}-1\)</span>（<span class="arithmatex">\(n\ge2\)</span>；<span class="arithmatex">\(n&lt;2\)</span> 時是 0）。</p>
@@ -3417,7 +3421,7 @@ for i = 1 to 12
 <p class="admonition-title">113 Q10（10%）：用生成函數解 <span class="arithmatex">\(a_{n+2}-8a_{n+1}+15a_n=0\)</span>，<span class="arithmatex">\(a_0=1\)</span>、<span class="arithmatex">\(a_1=6\)</span></p>
 <p>設 <span class="arithmatex">\(A(x)=\sum_{n\ge0}a_nx^n=a_0+a_1x+a_2x^2+\cdots\)</span>。</p>
 <p><strong>1. 每一條式子乘 <span class="arithmatex">\(x^{n+2}\)</span>，再全部加起來</strong>（<span class="arithmatex">\(n=0,1,2,\dots\)</span>）。乘 <span class="arithmatex">\(x^{n+2}\)</span> 是為了讓 <span class="arithmatex">\(a_{n+2}\)</span> 配上 <span class="arithmatex">\(x^{n+2}\)</span>：下標跟次方一樣，加起來才會是 <span class="arithmatex">\(A\)</span> 的一部分。</p>
-<div class="arithmatex">\[\sum_{n\ge0}a_{n+2}x^{n+2}-8\sum_{n\ge0}a_{n+1}x^{n+2}+15\sum_{n\ge0}a_nx^{n+2}=0\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\sum_{n\ge0}a_{n+2}x^{n+2}-8\sum_{n\ge0}a_{n+1}x^{n+2}\\&amp;\quad+15\sum_{n\ge0}a_nx^{n+2}=0\end{aligned}\]</div>
 <p><strong>2. 三個和都換成 <span class="arithmatex">\(A\)</span></strong>：</p>
 <ul>
 <li><span class="arithmatex">\(\sum a_{n+2}x^{n+2}=a_2x^2+a_3x^3+\cdots=A-a_0-a_1x\)</span>（<span class="arithmatex">\(A\)</span> 少了前兩項）</li>
@@ -3425,10 +3429,10 @@ for i = 1 to 12
 <li><span class="arithmatex">\(\sum a_nx^{n+2}=x^2(a_0+a_1x+\cdots)=x^2A\)</span></li>
 </ul>
 <p><strong>3. 代入 <span class="arithmatex">\(a_0=1\)</span>、<span class="arithmatex">\(a_1=6\)</span>，把有 <span class="arithmatex">\(A\)</span> 的項集中</strong>：</p>
-<div class="arithmatex">\[(A-1-6x)-8x(A-1)+15x^2A=0\]</div>
-<div class="arithmatex">\[A(1-8x+15x^2)=1+6x-8x=1-2x\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;(A-1-6x)-8x(A-1)\\&amp;\quad+15x^2A=0\end{aligned}\]</div>
+<div class="arithmatex">\[\begin{aligned}A(1-8x+15x^2)&amp;=1+6x-8x\\&amp;=1-2x\end{aligned}\]</div>
 <p><strong>4. 分母分解、部分分式</strong>（<span class="arithmatex">\(1-8x+15x^2=(1-3x)(1-5x)\)</span>，對應特徵根 3 和 5）：</p>
-<div class="arithmatex">\[A=\frac{1-2x}{(1-3x)(1-5x)}=\frac{-1/2}{1-3x}+\frac{3/2}{1-5x}\]</div>
+<div class="arithmatex">\[\begin{aligned}A&amp;=\frac{1-2x}{(1-3x)(1-5x)}\\&amp;=\frac{-1/2}{1-3x}+\frac{3/2}{1-5x}\end{aligned}\]</div>
 <p>部分分式的係數：令 <span class="arithmatex">\(1-2x=\alpha(1-5x)+\beta(1-3x)\)</span>，<span class="arithmatex">\(x=\frac13\)</span> 得 <span class="arithmatex">\(\alpha=-\frac12\)</span>，<span class="arithmatex">\(x=\frac15\)</span> 得 <span class="arithmatex">\(\beta=\frac32\)</span>。</p>
 <p><strong>答案</strong>：<span class="arithmatex">\(a_n=\frac{3\cdot5^n-3^n}{2}\)</span>。驗算 <span class="arithmatex">\(a_1=\frac{15-3}2=6\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </div>
@@ -3541,12 +3545,12 @@ for i = 1 to 12
 </table>
 <p><strong>有用的化簡</strong>：<span class="arithmatex">\(1+x^k+x^{2k}=\dfrac{1-x^{3k}}{1-x^k}\)</span>（有限等比級數），<span class="arithmatex">\(1+x^k=\dfrac{1-x^{2k}}{1-x^k}\)</span>。</p>
 <p><strong>Euler 的定理：「加數都不一樣」和「加數都是奇數」的分割一樣多。</strong></p>
-<div class="arithmatex">\[\begin{aligned}\prod_{k\ge1}(1+x^k)&amp;=\prod_{k\ge1}\frac{1-x^{2k}}{1-x^k}\\&amp;=\frac{(1-x^2)(1-x^4)(1-x^6)\cdots}{(1-x)(1-x^2)(1-x^3)\cdots}\\&amp;=\frac{1}{(1-x)(1-x^3)(1-x^5)\cdots}\end{aligned}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\prod_{k\ge1}(1+x^k)=\prod_{k\ge1}\frac{1-x^{2k}}{1-x^k}\\&amp;=\frac{(1-x^2)(1-x^4)(1-x^6)\cdots}{(1-x)(1-x^2)(1-x^3)\cdots}\\&amp;=\frac{1}{(1-x)(1-x^3)(1-x^5)\cdots}\end{aligned}\]</div>
 <p>分子的偶數次方跟分母的偶數次方全部消掉，只剩分母的奇數次方，正好是「加數都是奇數」的生成函數。例：6 的分割，加數都不一樣的有 6、5＋1、4＋2、3＋2＋1，加數都是奇數的有 5＋1、3＋3、3＋1＋1＋1、1＋1＋1＋1＋1＋1，各 4 種 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 <div class="admonition example">
 <p class="admonition-title">103 Q6（8%）：整數分割，每個加數在一種分割裡最多出現兩次。寫出生成函數的封閉形式，並說明怎麼從它得到 n 的分割數</p>
 <p><strong>生成函數</strong>：每個加數 k 可以用 0、1、2 次，因子是 <span class="arithmatex">\(1+x^k+x^{2k}\)</span>：</p>
-<div class="arithmatex">\[G(x)=\prod_{k=1}^{\infty}(1+x^k+x^{2k})=\prod_{k=1}^{\infty}\frac{1-x^{3k}}{1-x^k}\]</div>
+<div class="arithmatex">\[\begin{aligned}G(x)&amp;=\prod_{k=1}^{\infty}(1+x^k+x^{2k})\\&amp;=\prod_{k=1}^{\infty}\frac{1-x^{3k}}{1-x^k}\end{aligned}\]</div>
 <p><strong>再化簡（加分）</strong>：分子的 <span class="arithmatex">\(1-x^{3k}\)</span> 跟分母 k 是 3 的倍數的因子消掉，只剩分母裡 k <strong>不是 3 的倍數</strong>的因子：</p>
 <div class="arithmatex">\[G(x)=\prod_{3\nmid k}\frac{1}{1-x^k}\]</div>
 <p>也就是 <span class="arithmatex">\(k=1,2,4,5,7,\dots\)</span> 這些因子乘起來。</p>
@@ -3599,7 +3603,7 @@ for i = 1 to 12
 <details class="quiz">
 <summary>看參考答案</summary>
 <p><strong>生成函數相等</strong>：</p>
-<div class="arithmatex">\[\begin{aligned}\prod_{k\ge1}(1+x^k+x^{2k})&amp;=\prod_{k\ge1}\frac{1-x^{3k}}{1-x^k}\\&amp;=\frac{(1-x^3)(1-x^6)\cdots}{(1-x)(1-x^2)(1-x^3)\cdots}\\&amp;=\prod_{3\nmid k}\frac1{1-x^k}\end{aligned}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\prod_{k\ge1}(1+x^k+x^{2k})\\&amp;=\prod_{k\ge1}\frac{1-x^{3k}}{1-x^k}\\&amp;=\frac{(1-x^3)(1-x^6)\cdots}{(1-x)(1-x^2)(1-x^3)\cdots}\\&amp;=\prod_{3\nmid k}\frac1{1-x^k}\end{aligned}\]</div>
 <p>左邊是「每個加數最多兩次」，右邊是「加數不是 3 的倍數」。兩個生成函數一樣，每一項的係數就一樣。</p>
 <p><strong>n＝5 列出來（各 5 種）</strong>：</p>
 <ul>
@@ -3822,7 +3826,7 @@ for i = 1 to 12
 <details class="quiz">
 <summary>看答案</summary>
 <p><strong>式子</strong>：<span class="arithmatex">\(x_1\)</span> 偶數 → <span class="arithmatex">\(\frac1{1-x^2}\)</span>；<span class="arithmatex">\(0\le x_2\le3\)</span> → <span class="arithmatex">\(1+x+x^2+x^3\)</span>；<span class="arithmatex">\(x_3\)</span> 不限 → <span class="arithmatex">\(\frac1{1-x}\)</span>。答案是</p>
-<div class="arithmatex">\[[x^{10}]\ \frac{1}{1-x^2}\cdot(1+x+x^2+x^3)\cdot\frac{1}{1-x}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;[x^{10}]\ \frac{1}{1-x^2}\\&amp;\quad\cdot(1+x+x^2+x^3)\cdot\frac{1}{1-x}\end{aligned}\]</div>
 <p><strong>求係數</strong>（直接數比展開快）：<span class="arithmatex">\(x_1\)</span> 決定後，<span class="arithmatex">\(x_2\)</span> 可以是 0 到 <span class="arithmatex">\(\min(3,\,10-x_1)\)</span>，<span class="arithmatex">\(x_3\)</span> 就是剩下的，所以有 <span class="arithmatex">\(\min(3,10-x_1)+1\)</span> 種。</p>
 <table>
 <thead>
@@ -3854,7 +3858,7 @@ for i = 1 to 12
 <details class="quiz">
 <summary>看答案</summary>
 <p>0 用 <span class="arithmatex">\(\cosh x\)</span>（偶數次）、1 用 <span class="arithmatex">\(\sinh x\)</span>（奇數次）、2 和 3 各用 <span class="arithmatex">\(e^x\)</span>：</p>
-<div class="arithmatex">\[\cosh x\sinh x\cdot e^{2x}=\frac{e^{2x}-e^{-2x}}{4}\cdot e^{2x}=\frac{e^{4x}-1}{4}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\cosh x\sinh x\cdot e^{2x}\\&amp;=\frac{e^{2x}-e^{-2x}}{4}\cdot e^{2x}\\&amp;=\frac{e^{4x}-1}{4}\end{aligned}\]</div>
 <p><span class="arithmatex">\(\frac{x^n}{n!}\)</span> 的係數：<span class="arithmatex">\(e^{4x}\)</span> 給 <span class="arithmatex">\(\frac{4^n}{4}\)</span>；<span class="arithmatex">\(-\frac14\)</span> 是常數，只在 <span class="arithmatex">\(n=0\)</span> 有。所以 <span class="arithmatex">\(n\ge1\)</span> 時有 <strong><span class="arithmatex">\(4^{n-1}\)</span></strong> 個（<span class="arithmatex">\(n=1\)</span>：只有「1」一個 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>）。</p>
 </details>
 <p><strong>3-3.</strong> <span class="arithmatex">\(\frac{1}{(1-x)^3}\)</span> 中 <span class="arithmatex">\(x^n\)</span> 的係數？</p>
@@ -3931,7 +3935,7 @@ for i = 1 to 12
 <div class="arithmatex">\[r^2=r+1\]</div>
 <p>這就是<strong>特徵方程</strong>。寫法的規律：<span class="arithmatex">\(a_n\)</span> 換成 <span class="arithmatex">\(r^2\)</span>、<span class="arithmatex">\(a_{n-1}\)</span> 換成 <span class="arithmatex">\(r\)</span>、<span class="arithmatex">\(a_{n-2}\)</span> 換成 1。它的兩個根是 <span class="arithmatex">\(\frac{1\pm\sqrt5}{2}\approx1.618,\ -0.618\)</span>，正好解釋了上面那個比值。</p>
 <p><strong>兩個根為什麼可以加在一起</strong>：設 <span class="arithmatex">\(r_1\)</span>、<span class="arithmatex">\(r_2\)</span> 都是根，把 <span class="arithmatex">\(a_n=Ar_1^n+Br_2^n\)</span> 代進遞迴的右邊：</p>
-<div class="arithmatex">\[\begin{aligned}a_{n-1}+a_{n-2}&amp;=A\,(r_1^{n-1}+r_1^{n-2})+B\,(r_2^{n-1}+r_2^{n-2})\\&amp;=A\,r_1^n+B\,r_2^n=a_n\end{aligned}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;a_{n-1}+a_{n-2}\\&amp;=A\,(r_1^{n-1}+r_1^{n-2})\\&amp;\quad+B\,(r_2^{n-1}+r_2^{n-2})\\&amp;=A\,r_1^n+B\,r_2^n=a_n\end{aligned}\]</div>
 <p>（第二行用了 <span class="arithmatex">\(r^2=r+1\)</span> 兩邊乘 <span class="arithmatex">\(r^{n-2}\)</span> 得到的 <span class="arithmatex">\(r^{n-1}+r^{n-2}=r^n\)</span>。）所以不管 <span class="arithmatex">\(A\)</span>、<span class="arithmatex">\(B\)</span> 是多少都滿足遞迴，這叫<strong>線性疊加</strong>。</p>
 <p><strong>為什麼這樣就是全部的答案</strong>：二階遞迴只要知道 <span class="arithmatex">\(a_0\)</span>、<span class="arithmatex">\(a_1\)</span>，後面每一項都被決定了。<span class="arithmatex">\(A\)</span>、<span class="arithmatex">\(B\)</span> 兩個未知數剛好用兩個初始值解出來（兩根不同時一定解得出來）。前兩項對上了、遞迴又一樣，整個數列就一樣。</p>
 <p><strong>完整做一次</strong>：<span class="arithmatex">\(a_n=3a_{n-1}+4a_{n-2}\)</span>，<span class="arithmatex">\(a_0=2\)</span>、<span class="arithmatex">\(a_1=3\)</span>。</p>
@@ -3944,7 +3948,7 @@ for i = 1 to 12
 <h4 id="n_1">重根時為什麼要乘 <span class="arithmatex">\(n\)</span></h4>
 <p><span class="arithmatex">\(a_n=4a_{n-1}-4a_{n-2}\)</span> 的特徵方程是 <span class="arithmatex">\((r-2)^2=0\)</span>，只有一個根 2。只有 <span class="arithmatex">\(A\cdot2^n\)</span> 一個式子，配不出兩個初始值，需要第二個解。</p>
 <p>試 <span class="arithmatex">\(n\cdot2^n\)</span>，代進右邊的 <span class="arithmatex">\(4a_{n-1}-4a_{n-2}\)</span>：</p>
-<div class="arithmatex">\[\begin{aligned}4(n-1)2^{n-1}-4(n-2)2^{n-2}&amp;=2(n-1)\cdot2^n-(n-2)\cdot2^n\\&amp;=2^n\,[\,2(n-1)-(n-2)\,]=n\cdot2^n\end{aligned}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;4(n-1)2^{n-1}-4(n-2)2^{n-2}\\&amp;=2(n-1)\cdot2^n-(n-2)\cdot2^n\\&amp;=2^n\,[\,2(n-1)-(n-2)\,]\\&amp;=n\cdot2^n\end{aligned}\]</div>
 <p>（第一步用 <span class="arithmatex">\(4\cdot2^{n-1}=2\cdot2^n\)</span>、<span class="arithmatex">\(4\cdot2^{n-2}=2^n\)</span>。）剛好等於左邊的 <span class="arithmatex">\(a_n=n\cdot2^n\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>，所以它也是解。重根時通解是 <span class="arithmatex">\((A+Bn)r^n\)</span>，兩個係數配兩個初始值。</p>
 <p><strong>直覺</strong>：兩個根很接近時（例如 2 和 2.001），<span class="arithmatex">\(\frac{r_1^n-r_2^n}{r_1-r_2}\)</span> 也是一個解（兩個解相減再除以常數）；兩根合在一起時，它變成 <span class="arithmatex">\(n\,r^{n-1}\)</span>（就是 <span class="arithmatex">\(r^n\)</span> 對 <span class="arithmatex">\(r\)</span> 微分），所以多出來的那個解帶一個 <span class="arithmatex">\(n\)</span>。</p>
 <h4 id="_35">右邊多一項（非齊次）：河內塔</h4>
@@ -4221,7 +4225,7 @@ for i = 1 to 12
 <p><strong>換元</strong>：令 <span class="arithmatex">\(b_n=a_n^2\)</span>，變成線性：<span class="arithmatex">\(b_{n+2}-7b_{n+1}+12b_n=9n\)</span>。</p>
 <p>齊次：<span class="arithmatex">\(r^2-7r+12=0\)</span>，<span class="arithmatex">\(r=3,4\)</span>。</p>
 <p>特解猜 <span class="arithmatex">\(An+B\)</span>（右邊是 <span class="arithmatex">\(9n\)</span>，而 1 不是特徵根），代入：</p>
-<div class="arithmatex">\[\begin{aligned}&amp;[A(n+2)+B]-7[A(n+1)+B]+12[An+B]\\&amp;=(A-7A+12A)\,n+(2A+B-7A-7B+12B)\\&amp;=6An+(-5A+6B)\end{aligned}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;[A(n+2)+B]\\&amp;\quad-7[A(n+1)+B]\\&amp;\quad+12[An+B]\\&amp;=(A-7A+12A)\,n\\&amp;\quad+(2A+B-7A-7B+12B)\\&amp;=6An+(-5A+6B)\end{aligned}\]</div>
 <p>要等於 <span class="arithmatex">\(9n\)</span>：<span class="arithmatex">\(6A=9\)</span>、<span class="arithmatex">\(-5A+6B=0\)</span>，得 <span class="arithmatex">\(A=\frac32\)</span>、<span class="arithmatex">\(B=\frac54\)</span>。</p>
 <p><span class="arithmatex">\(b_n=c_13^n+c_24^n+\frac32n+\frac54\)</span>。代初始值（<span class="arithmatex">\(b_0=a_0^2=1\)</span>、<span class="arithmatex">\(b_1=a_1^2=1\)</span>）：</p>
 <ul>
@@ -4401,7 +4405,7 @@ for i = 1 to 12
 <p><span class="arithmatex">\(a_k=3a_{k-1}+2^k\)</span>，兩邊除以 <span class="arithmatex">\(3^k\)</span>：<span class="arithmatex">\(b_k=b_{k-1}+(2/3)^k\)</span>，<span class="arithmatex">\(b_0=0\)</span>。</p>
 <p><span class="arithmatex">\(b_k=\sum_{i=1}^{k}(2/3)^i=\dfrac{\frac23\left(1-(2/3)^k\right)}{1-\frac23}=2\left(1-(2/3)^k\right)\)</span></p>
 <p><span class="arithmatex">\(a_k=3^kb_k=2\cdot3^k-2\cdot2^k\)</span>。換回 n（<span class="arithmatex">\(3^k=3^{\lg n}=n^{\lg3}\)</span>）：</p>
-<div class="arithmatex">\[T(n)=2n^{\lg3}-2n=\Theta(n^{\lg3})\approx\Theta(n^{1.585})\]</div>
+<div class="arithmatex">\[\begin{aligned}T(n)&amp;=2n^{\lg3}-2n\\&amp;=\Theta(n^{\lg3})\approx\Theta(n^{1.585})\end{aligned}\]</div>
 <p>驗算：<span class="arithmatex">\(T(2)=0+2=2=2\cdot3-2\cdot2\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>，<span class="arithmatex">\(T(4)=3\times2+4=10=18-8\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </details>
 <h3 id="u4-concept">4.5 觀念小考</h3>
@@ -4989,7 +4993,7 @@ for i = 1 to 12
 </tbody>
 </table>
 <p>下面那一列還是 1～6，只是順序打亂。兩列各自乘起來，結果在 mod 7 下相等：</p>
-<div class="arithmatex">\[(3\cdot1)(3\cdot2)\cdots(3\cdot6)\equiv1\cdot2\cdots6\pmod7\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;(3\cdot1)(3\cdot2)\cdots(3\cdot6)\\&amp;\equiv1\cdot2\cdots6\pmod7\end{aligned}\]</div>
 <p>左邊是 <span class="arithmatex">\(3^6\cdot6!\)</span>，右邊是 <span class="arithmatex">\(6!\)</span>。<span class="arithmatex">\(6!\)</span> 跟 7 互質，有反元素，兩邊可以消掉，得到 <span class="arithmatex">\(3^6\equiv1\pmod7\)</span>。</p>
 <p><strong>一般的 <span class="arithmatex">\(p\)</span> 也一樣</strong>：<span class="arithmatex">\(a,2a,\dots,(p-1)a\)</span> 除以 <span class="arithmatex">\(p\)</span> 的餘數兩兩不同（如果 <span class="arithmatex">\(ia\equiv ja\)</span>，兩邊乘 <span class="arithmatex">\(a^{-1}\)</span> 得 <span class="arithmatex">\(i\equiv j\)</span>），也都不是 0（<span class="arithmatex">\(p\)</span> 是質數，不整除 <span class="arithmatex">\(i\)</span> 也不整除 <span class="arithmatex">\(a\)</span>，就不整除 <span class="arithmatex">\(ia\)</span>），所以剛好是 <span class="arithmatex">\(1,\dots,p-1\)</span> 重新排列。兩邊相乘再消掉 <span class="arithmatex">\((p-1)!\)</span>，就是 <span class="arithmatex">\(a^{p-1}\equiv1\)</span>。</p>
 <p><strong>週期不一定剛好是 <span class="arithmatex">\(p-1\)</span></strong>：2 的次方 mod 7 是 2、4、1，週期 3。Fermat 只保證乘到第 <span class="arithmatex">\(p-1\)</span> 次一定回到 1，所以週期一定<strong>整除</strong> <span class="arithmatex">\(p-1\)</span>（115 A7 會用到）。</p>
@@ -5198,7 +5202,7 @@ for i = 1 to 12
 <p><strong>為什麼 <span class="arithmatex">\(d\nmid b\)</span> 就無解</strong>：<span class="arithmatex">\(ax\equiv b\)</span> 表示 <span class="arithmatex">\(ax-b=kn\)</span>，也就是 <span class="arithmatex">\(b=ax-kn\)</span> 是 <span class="arithmatex">\(a,n\)</span> 的線性組合，一定是 <span class="arithmatex">\(d\)</span> 的倍數（<a href="#u5-0">5.0</a> 的關鍵事實）。</p>
 <h4 id="_46">中國剩餘定理（延伸）</h4>
 <p>《孫子算經》：「今有物不知其數，三三數之剩二，五五數之剩三，七七數之剩二，問物幾何？」也就是</p>
-<div class="arithmatex">\[x\equiv2\pmod3,\quad x\equiv3\pmod5,\quad x\equiv2\pmod7\]</div>
+<div class="arithmatex">\[\begin{aligned}x&amp;\equiv2\pmod3\\x&amp;\equiv3\pmod5\\x&amp;\equiv2\pmod7\end{aligned}\]</div>
 <p>模數兩兩互質時，mod <span class="arithmatex">\(M=3\times5\times7=105\)</span> 剛好一個解。<strong>做法</strong>：每個條件做一項，讓它只在自己的模數下有作用，在其他模數下都是 0：</p>
 <table>
 <thead>
@@ -5861,7 +5865,7 @@ for i = 1 to 12
 <details class="quiz">
 <summary>看答案</summary>
 <p>想辦法消掉 <span class="arithmatex">\(n\)</span>（<span class="arithmatex">\(n\)</span> 的係數 3 和 5，交叉相乘）：</p>
-<div class="arithmatex">\[5(3n+2)-3(5n+3)=15n+10-15n-9=1\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;5(3n+2)-3(5n+3)\\&amp;=15n+10-15n-9=1\end{aligned}\]</div>
 <p>設 <span class="arithmatex">\(d=\gcd(3n+2,5n+3)\)</span>。<span class="arithmatex">\(d\)</span> 整除兩者，就整除它們的任何線性組合，所以 <span class="arithmatex">\(d\mid1\)</span>，<span class="arithmatex">\(d=1\)</span>，互質。∎</p>
 </details>
 <p><strong>5-3.</strong> <span class="arithmatex">\(3^x\equiv1\pmod7\)</span> 的最小正整數 <span class="arithmatex">\(x\)</span>？</p>
@@ -6135,7 +6139,7 @@ for i = 1 to 12
 <div class="admonition example">
 <p class="admonition-title">100 Q2、106 Q1（各 10%）：整數數列 <span class="arithmatex">\(x_1,\dots,x_n\)</span>。證明對任何 <span class="arithmatex">\(1\le k\le n\)</span>，都有一段連續的子數列，和是 k 的倍數</p>
 <p>令 <span class="arithmatex">\(S_0=0\)</span>、<span class="arithmatex">\(S_j=x_1+x_2+\cdots+x_j\)</span>。<span class="arithmatex">\(S_0,S_1,\dots,S_k\)</span> 共 <span class="arithmatex">\(k+1\)</span> 個（<span class="arithmatex">\(k\le n\)</span>，所以 <span class="arithmatex">\(S_k\)</span> 存在），除以 k 的餘數只有 k 種。由鴿籠，有 <span class="arithmatex">\(i&lt;j\)</span> 使 <span class="arithmatex">\(S_i\equiv S_j\pmod k\)</span>，相減：</p>
-<div class="arithmatex">\[S_j-S_i=x_{i+1}+x_{i+2}+\cdots+x_j\equiv0\pmod k\]</div>
+<div class="arithmatex">\[\begin{aligned}S_j-S_i&amp;=x_{i+1}+x_{i+2}+\cdots+x_j\\&amp;\equiv0\pmod k\end{aligned}\]</div>
 <p>這段連續的子數列就是答案。∎</p>
 <p><strong>為什麼要加 <span class="arithmatex">\(S_0=0\)</span></strong>：只有 <span class="arithmatex">\(S_1,\dots,S_k\)</span> 的話是 k 個數、k 種餘數，不一定重複。加了 <span class="arithmatex">\(S_0\)</span> 才有 <span class="arithmatex">\(k+1\)</span> 個；而且如果某個 <span class="arithmatex">\(S_j\)</span> 本身就是 k 的倍數，它就跟 <span class="arithmatex">\(S_0\)</span> 同餘，答案是從頭到 <span class="arithmatex">\(x_j\)</span>。</p>
 <p><strong>小例子</strong>：3, 5, 2, 7、<span class="arithmatex">\(k=4\)</span>。前綴和 0, 3, 8, 10, 17，除以 4 的餘數 0, 3, 0, 2, 1。<span class="arithmatex">\(S_0\equiv S_2\)</span>，所以 <span class="arithmatex">\(x_1+x_2=8\)</span> 是 4 的倍數。</p>
@@ -7244,7 +7248,7 @@ for i = 1 to 12
 </ul>
 <p>初始值 <span class="arithmatex">\(e_1=1\)</span>（<span class="arithmatex">\(\emptyset\)</span> 到 <span class="arithmatex">\(\{1\}\)</span>）。</p>
 <p><strong>(a) 解遞迴（<span class="arithmatex">\(e_n=n\cdot2^{n-1}\)</span>）</strong>：<span class="arithmatex">\(e_{n+1}=2e_n+2^n\)</span> 兩邊除以 <span class="arithmatex">\(2^{n+1}\)</span>，得 <span class="arithmatex">\(\frac{e_{n+1}}{2^{n+1}}=\frac{e_n}{2^n}+\frac12\)</span>。令 <span class="arithmatex">\(b_n=e_n/2^n\)</span>（跟 <a href="#u4-dc">4.4</a> 的「兩邊除以 <span class="arithmatex">\(c^k\)</span>」同一招）：</p>
-<div class="arithmatex">\[b_{n+1}=b_n+\frac12,\quad b_1=\frac12\ \Rightarrow\ b_n=\frac n2\ \Rightarrow\ e_n=n\cdot2^{n-1}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;b_{n+1}=b_n+\frac12,\quad b_1=\frac12\\&amp;\Rightarrow\ b_n=\frac n2\\&amp;\Rightarrow\ e_n=n\cdot2^{n-1}\end{aligned}\]</div>
 <p><strong>驗算</strong>：<span class="arithmatex">\(e_1=1\)</span>、<span class="arithmatex">\(e_2=4\)</span>（正方形）、<span class="arithmatex">\(e_3=12\)</span>（上面那張 3-cube 圖有 12 條線）<svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 <p><strong>直接數也可以（檢查用）</strong>：每條線 ＝「挑一個元素 x」＋「其他 <span class="arithmatex">\(n-1\)</span> 個元素各自要不要放進 A」，<span class="arithmatex">\(n\cdot2^{n-1}\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。我也用程式數過 <span class="arithmatex">\(n=1\)</span> 到 6：1、4、12、32、80、192。</p>
 <p><strong>(b) 頂點數（<span class="arithmatex">\(v_n=2^n\)</span>）</strong>：每個子集合是一個點，共 <span class="arithmatex">\(2^n\)</span> 個。</p>
@@ -7684,9 +7688,9 @@ for i = 1 to 12
 <p><strong>映成</strong>：任給正整數 m，把 2 一直除到變奇數：<span class="arithmatex">\(m=2^a\cdot o\)</span>，o 是奇數。取 <span class="arithmatex">\(x=a+1\)</span>、<span class="arithmatex">\(y=\frac{o+1}2\)</span>（o 是奇數，所以 y 是正整數），就有 <span class="arithmatex">\(f(x,y)=m\)</span>。例：<span class="arithmatex">\(m=40=2^3\times5\)</span> → <span class="arithmatex">\((4,3)\)</span>；<span class="arithmatex">\(m=7=2^0\times7\)</span> → <span class="arithmatex">\((1,4)\)</span>。</p>
 <p>所以 f 是 bijection，<span class="arithmatex">\(\mathbb N\times\mathbb N\)</span> 跟 <span class="arithmatex">\(\mathbb N\)</span> 一樣大。∎</p>
 <p><strong>另一種寫法（Cantor 的斜線排法）</strong>：把 (x, y) 排成表格，沿著 <span class="arithmatex">\(x+y=2,3,4,\dots\)</span> 的斜線一條一條排：(1,1)、(1,2)、(2,1)、(1,3)、(2,2)、(3,1)、……每條斜線只有有限個點，所以每個點都排得到。寫成公式：</p>
-<div class="arithmatex">\[f(x,y)=\frac{(x+y-1)(x+y-2)}{2}+x\]</div>
+<div class="arithmatex">\[\begin{aligned}f(x,y)&amp;=\frac{(x+y-1)(x+y-2)}{2}\\&amp;\quad+x\end{aligned}\]</div>
 <p><strong>公式怎麼來</strong>：<span class="arithmatex">\(x+y=s\)</span> 那條斜線上有 <span class="arithmatex">\(s-1\)</span> 個點（<span class="arithmatex">\(x=1,2,\dots,s-1\)</span>），同一條斜線照 x 由小到大排。(x, y) 在第 <span class="arithmatex">\(s=x+y\)</span> 條，它前面的斜線是 <span class="arithmatex">\(s=2,3,\dots,x+y-1\)</span>，點數加起來是</p>
-<div class="arithmatex">\[1+2+\cdots+(x+y-2)=\frac{(x+y-2)(x+y-1)}{2}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;1+2+\cdots+(x+y-2)\\&amp;=\frac{(x+y-2)(x+y-1)}{2}\end{aligned}\]</div>
 <p>（<a href="#u3-1">3.1</a> 的「三個常用的和」），這就是前面那項；再加上自己在這條斜線上是第 x 個。例：<span class="arithmatex">\((2,3)\)</span> 在 <span class="arithmatex">\(x+y=5\)</span> 那條，前面 1＋2＋3 ＝ 6 個，它是第 2 個，<span class="arithmatex">\(f=8\)</span>。兩個公式我都用程式檢查過：不會有兩組 (x, y) 對到同一個數，而且前 500 個正整數都有被對到。</p>
 </div>
 <h4 id="_73">觀念小考</h4>
@@ -7820,7 +7824,7 @@ for i = 1 to 12
 <summary>看參考答案</summary>
 <p><strong>交換律成立</strong>：<span class="arithmatex">\(f(y,x)=y+x-yx=f(x,y)\)</span>。</p>
 <p><strong>結合律成立</strong>：</p>
-<div class="arithmatex">\[f(f(x,y),z)=(x+y-xy)+z-(x+y-xy)z=x+y+z-xy-xz-yz+xyz\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;f(f(x,y),z)\\&amp;=(x+y-xy)+z\\&amp;\quad-(x+y-xy)z\\&amp;=x+y+z-xy\\&amp;\quad-xz-yz+xyz\end{aligned}\]</div>
 <p>這個式子對 <span class="arithmatex">\(x,y,z\)</span> 完全對稱，所以 <span class="arithmatex">\(f(x,f(y,z))\)</span> 展開也一樣。</p>
 <p><strong>更快的看法</strong>：<span class="arithmatex">\(1-f(x,y)=1-x-y+xy=(1-x)(1-y)\)</span>，<span class="arithmatex">\(f\)</span> 其實是把 <span class="arithmatex">\(1-x\)</span> 和 <span class="arithmatex">\(1-y\)</span> 相乘，乘法有交換律、結合律，<span class="arithmatex">\(f\)</span> 也就有。</p>
 </details>
@@ -8958,7 +8962,7 @@ for i = 1 to 12
 <p><strong>為什麼兩顆骰子長得一樣，還要分「第一顆」「第二顆」？</strong> 因為 (3,4) 和 (4,3) 是兩種不同的結果，各有 <span class="arithmatex">\(\frac1{36}\)</span> 的機率。如果把它們當成同一種，各種情況就不再一樣可能，機率會算錯。所以機率題的分母，通常用「有順序、東西都不同」的方式數。</p>
 <h4 id="_79">期望值：加權平均</h4>
 <p><strong>定義</strong>：<span class="arithmatex">\(E[X]=\sum_x x\cdot P(X=x)\)</span>，每個可能的值乘上它的機率，全部加起來。擲一顆骰子，每個點數的機率都是 <span class="arithmatex">\(\frac16\)</span>：</p>
-<div class="arithmatex">\[E[X]=1\cdot\tfrac16+2\cdot\tfrac16+\cdots+6\cdot\tfrac16=\frac{1+2+3+4+5+6}{6}=3.5\]</div>
+<div class="arithmatex">\[\begin{aligned}E[X]&amp;=1\cdot\tfrac16+\cdots+6\cdot\tfrac16\\&amp;=\frac{1+2+3+4+5+6}{6}\\&amp;=3.5\end{aligned}\]</div>
 <p>機率不一樣時，就是<strong>加權平均</strong>：例如擲一枚硬幣，正面得 10 元、反面得 0 元，期望值是 <span class="arithmatex">\(10\times\frac12+0\times\frac12=5\)</span> 元。期望值不一定是真的會出現的值（骰子擲不出 3.5），它是擲很多次以後的平均。</p>
 <p><strong>線性</strong>：<span class="arithmatex">\(E[X+Y]=E[X]+E[Y]\)</span>，就算 <span class="arithmatex">\(X\)</span>、<span class="arithmatex">\(Y\)</span> 不獨立也成立。擲兩顆骰子總和的期望值直接是 <span class="arithmatex">\(3.5+3.5=7\)</span>。</p>
 <p><strong>為什麼不用獨立</strong>：用上面 36 格的表來想，每格機率 <span class="arithmatex">\(\frac1{36}\)</span>。<span class="arithmatex">\(E[X+Y]\)</span> 是把每一格的「<span class="arithmatex">\(X+Y\)</span>」乘 <span class="arithmatex">\(\frac1{36}\)</span> 加起來，可以拆成「每一格的 <span class="arithmatex">\(X\)</span>」加起來，再加上「每一格的 <span class="arithmatex">\(Y\)</span>」加起來，就是 <span class="arithmatex">\(E[X]+E[Y]\)</span>。整個過程只是把加法拆開，沒用到 <span class="arithmatex">\(X\)</span>、<span class="arithmatex">\(Y\)</span> 有沒有關係。例如 <span class="arithmatex">\(Y=X\)</span>（完全相關）：<span class="arithmatex">\(E[2X]=7=3.5+3.5\)</span>，一樣對。</p>
@@ -8980,7 +8984,7 @@ for i = 1 to 12
 <p>這些 <span class="arithmatex">\(I_j\)</span> 不獨立（前 <span class="arithmatex">\(n-1\)</span> 封都放對，最後一封一定也對），但線性不在乎。直接算「恰好 <span class="arithmatex">\(k\)</span> 封放對」的機率要用錯排，很麻煩；指示變數完全跳過這一步。</p>
 <h4 id="_82">賭徒破產：用遞迴算期望值</h4>
 <p>一共 <span class="arithmatex">\(N\)</span> 元，你有 <span class="arithmatex">\(k\)</span> 元，每局公平地贏 1 元或輸 1 元，到 0 或 <span class="arithmatex">\(N\)</span> 停止。令 <span class="arithmatex">\(E_k\)</span> 為還要玩幾局的期望值：</p>
-<div class="arithmatex">\[E_k=1+\frac12E_{k-1}+\frac12E_{k+1},\quad E_0=E_N=0\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;E_k=1+\frac12E_{k-1}+\frac12E_{k+1}\\&amp;E_0=E_N=0\end{aligned}\]</div>
 <p>意思是：先玩 1 局，之後一半機會變成 <span class="arithmatex">\(k-1\)</span> 元、一半變成 <span class="arithmatex">\(k+1\)</span> 元。</p>
 <p><strong>小例子</strong>：兩人各 1 元（<span class="arithmatex">\(N=2\)</span>）：<span class="arithmatex">\(E_1=1+\frac12\times0+\frac12\times0=1\)</span>，一局就結束 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 <p>你 1 元、對方 2 元（<span class="arithmatex">\(N=3\)</span>）：<span class="arithmatex">\(E_1=1+\frac12E_2\)</span>、<span class="arithmatex">\(E_2=1+\frac12E_1\)</span>（<span class="arithmatex">\(E_0=E_3=0\)</span> 的那一項不見了）。把第二式代進第一式：<span class="arithmatex">\(E_1=1+\frac12\left(1+\frac12E_1\right)=\frac32+\frac14E_1\)</span>，所以 <span class="arithmatex">\(\frac34E_1=\frac32\)</span>，<span class="arithmatex">\(E_1=2=1\times2\)</span>。</p>
@@ -9026,7 +9030,7 @@ for i = 1 to 12
 <li><strong>看相鄰的差</strong>：遞迴兩邊乘 2，<span class="arithmatex">\(2E_k=2+E_{k-1}+E_{k+1}\)</span>，移項得 <span class="arithmatex">\(E_{k+1}-E_k=(E_k-E_{k-1})-2\)</span>。也就是相鄰兩項的差，每往右一格就少 2。上圖 <span class="arithmatex">\(N=5\)</span>：<span class="arithmatex">\(E\)</span> 是 0、4、6、6、4、0，差是 4、2、0、−2、−4 <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
 <li>
 <p><strong>把差加起來</strong>：令第一個差 <span class="arithmatex">\(d=E_1-E_0\)</span>，之後的差是 <span class="arithmatex">\(d,\ d-2,\ d-4,\dots\)</span>，第 <span class="arithmatex">\(i\)</span> 個差是 <span class="arithmatex">\(d-2(i-1)\)</span>。<span class="arithmatex">\(E_0=0\)</span>，所以 <span class="arithmatex">\(E_k\)</span> 就是前 <span class="arithmatex">\(k\)</span> 個差的和（<span class="arithmatex">\(0+1+\cdots+(k-1)\)</span> 用 <a href="#u3-1">3.1</a> 的公式）：</p>
-<div class="arithmatex">\[E_k=kd-2\big(0+1+\cdots+(k-1)\big)=kd-k(k-1)\]</div>
+<div class="arithmatex">\[\begin{aligned}E_k&amp;=kd\\&amp;\quad-2\big(0+1+\cdots+(k-1)\big)\\&amp;=kd-k(k-1)\end{aligned}\]</div>
 </li>
 <li>
 <p><strong>用另一端定出 d</strong>：<span class="arithmatex">\(E_N=0\)</span>，<span class="arithmatex">\(Nd-N(N-1)=0\)</span>，<span class="arithmatex">\(d=N-1\)</span>。代回：<span class="arithmatex">\(E_k=k(N-1)-k(k-1)=k(N-k)\)</span>。</p>
@@ -9572,7 +9576,7 @@ for i = 1 to 12
 <p class="admonition-title">104 Q6（10%）：loop-free 圖，<span class="arithmatex">\(|V|=n\ge2\)</span>，任兩個不同的點都有 <span class="arithmatex">\(\deg(x)+\deg(y)\ge n-1\)</span>。證明 G 連通</p>
 <p><strong>假設</strong>：題目只說沒有 loop，答案要補上「兩點之間最多一條邊」。不然一對點之間畫很多條邊，度數可以很大，圖卻不連通。</p>
 <p><strong>反證</strong>：假設 G 不連通，取 x、y 在不同的連通分量（connected component），兩個分量的點數是 a、b，<span class="arithmatex">\(a+b\le n\)</span>。x 的鄰居只能在自己的分量裡，最多 <span class="arithmatex">\(a-1\)</span> 個；y 最多 <span class="arithmatex">\(b-1\)</span> 個。</p>
-<div class="arithmatex">\[\deg(x)+\deg(y)\le(a-1)+(b-1)\le n-2&lt;n-1\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\deg(x)+\deg(y)\\&amp;\le(a-1)+(b-1)\\&amp;\le n-2&lt;n-1\end{aligned}\]</div>
 <p>跟題目矛盾，所以 G 連通。∎</p>
 </div>
 <div class="admonition example">
@@ -9606,7 +9610,7 @@ for i = 1 to 12
 <p><strong>為什麼一定是 2</strong>：先在圖裡挑一棵包含所有點的樹（生成樹，spanning tree），它符合公式（就是上面的「樹」）。再把其他的邊一條一條加回來：每加一條邊，它的兩端原本就連通，所以這條邊會把它所在的那個面切成兩個，<span class="arithmatex">\(e\)</span> 加 1、<span class="arithmatex">\(f\)</span> 也加 1，<span class="arithmatex">\(v-e+f\)</span> 不變。加完就是原本的圖，所以還是 2。</p>
 <h4 id="ele3v-6">邊數上限：<span class="arithmatex">\(e\le3v-6\)</span></h4>
 <p><strong>為什麼</strong>（簡單圖、<span class="arithmatex">\(v\ge3\)</span>）：每個面至少被 3 條邊圍住（簡單圖沒有兩條邊圍成的面），每條邊最多碰到 2 個面，所以 <span class="arithmatex">\(3f\le2e\)</span>。（把「每個面的邊數」全部加起來：每個面至少 3，總和 <span class="arithmatex">\(\ge3f\)</span>；每條邊最多被它兩側的面各算一次，總和 <span class="arithmatex">\(\le2e\)</span>。）代進 Euler 公式：</p>
-<div class="arithmatex">\[2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6\]</div>
+<div class="arithmatex">\[\begin{aligned}2=v-e+f&amp;\le v-e+\frac{2e}3\\\Rightarrow\ e&amp;\le3v-6\end{aligned}\]</div>
 <p>（中間那步：<span class="arithmatex">\(2\le v-\frac e3\)</span>，移項 <span class="arithmatex">\(\frac e3\le v-2\)</span>，乘 3 得 <span class="arithmatex">\(e\le3v-6\)</span>。）</p>
 <ul>
 <li><strong>沒有三角形</strong>（例如二分圖，最短的環至少 4）：每個面至少 4 條邊，<span class="arithmatex">\(4f\le2e\)</span>，得到 <span class="arithmatex">\(e\le2v-4\)</span>。</li>
@@ -9627,7 +9631,7 @@ for i = 1 to 12
 <p><strong>(a)</strong> 如果 <span class="arithmatex">\(m&lt;3\)</span>，<span class="arithmatex">\(3n-6\ge3&gt;m\)</span>，直接成立。<span class="arithmatex">\(m\ge3\)</span> 時，先處理連通的情況：每個面至少被 3 條邊圍住、每條邊最多碰到 2 個面，所以 <span class="arithmatex">\(3f\le2m\)</span>；代進 Euler 公式 <span class="arithmatex">\(n-m+f=2\)</span>，得 <span class="arithmatex">\(2\le n-m+\frac{2m}3\)</span>，也就是 <span class="arithmatex">\(m\le3n-6\)</span>。</p>
 <p>G 不連通時，在不同的連通分量之間加邊把它們連起來，仍然是簡單平面圖，邊只變多；加邊後的圖符合 <span class="arithmatex">\(m'\le3n-6\)</span>，原本的 <span class="arithmatex">\(m\le m'\)</span> 也符合。∎</p>
 <p><strong>(b)</strong> 反證：假設 G 和 <span class="arithmatex">\(\bar G\)</span> 都是平面圖。兩個的邊數加起來是 <span class="arithmatex">\(\binom n2\)</span>，各自又不超過 <span class="arithmatex">\(3n-6\)</span>：</p>
-<div class="arithmatex">\[\frac{n(n-1)}2=m+\bar m\le2(3n-6)\ \Rightarrow\ n^2-13n+24\le0\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\frac{n(n-1)}2=m+\bar m\le2(3n-6)\\&amp;\Rightarrow\ n^2-13n+24\le0\end{aligned}\]</div>
 <p>（兩邊乘 2：<span class="arithmatex">\(n^2-n\le12n-24\)</span>，移項得 <span class="arithmatex">\(n^2-13n+24\le0\)</span>。）</p>
 <p><span class="arithmatex">\(n=11\)</span> 時 <span class="arithmatex">\(121-143+24=2&gt;0\)</span>；這個二次式的對稱軸在 <span class="arithmatex">\(n=6.5\)</span>，<span class="arithmatex">\(n\ge11\)</span> 之後只會越來越大，一直大於 0。所以 <span class="arithmatex">\(n\ge11\)</span> 時不可能兩個都是平面圖，<span class="arithmatex">\(\bar G\)</span> 不是平面圖。∎</p>
 </div>
@@ -10743,14 +10747,14 @@ for i = 1 to 12
 <summary>看答案</summary>
 <p>人不同（球不同）、組沒有名字（箱子相同）、每組至少 1 人（不空）→ <span class="arithmatex">\(S(8,3)\)</span>。</p>
 <p>用 Stirling 的公式一：先算 onto 到 3 個有編號的組，再除以 <span class="arithmatex">\(3!\)</span>：</p>
-<div class="arithmatex">\[S(8,3)=\frac{3^8-3\cdot2^8+3\cdot1^8}{3!}=\frac{6561-768+3}{6}=\frac{5796}{6}=966\]</div>
+<div class="arithmatex">\[\begin{aligned}S(8,3)&amp;=\frac{3^8-3\cdot2^8+3\cdot1^8}{3!}\\&amp;=\frac{6561-768+3}{6}\\&amp;=\frac{5796}{6}=966\end{aligned}\]</div>
 <p>答案 <strong>966</strong>（也可以把 Stirling 表多填一列：<span class="arithmatex">\(S(8,3)=S(7,2)+3S(7,3)=63+903=966\)</span>）。</p>
 </details>
 <p><strong>M-2.</strong> 長度 10 的二進位字串中，1 出現偶數次的機率？</p>
 <details class="quiz">
 <summary>看答案</summary>
 <p>字串（有順序）→ EGF。1 出現偶數次用 <span class="arithmatex">\(\cosh x\)</span>，0 不限用 <span class="arithmatex">\(e^x\)</span>：</p>
-<div class="arithmatex">\[\cosh x\cdot e^x=\frac{e^x+e^{-x}}{2}\cdot e^x=\frac{e^{2x}+1}{2}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;\cosh x\cdot e^x\\&amp;=\frac{e^x+e^{-x}}{2}\cdot e^x\\&amp;=\frac{e^{2x}+1}{2}\end{aligned}\]</div>
 <p><span class="arithmatex">\(n=10\)</span>：個數 <span class="arithmatex">\(\frac{2^{10}+0}{2}=512\)</span>（常數 <span class="arithmatex">\(\frac12\)</span> 只影響 <span class="arithmatex">\(n=0\)</span>），全部 <span class="arithmatex">\(2^{10}=1024\)</span> 個，機率 <strong><span class="arithmatex">\(\frac12\)</span></strong>。</p>
 </details>
 <p><strong>M-3.</strong> 買 12 顆糖，口味有 4 種，每種至多 5 顆？</p>
@@ -10910,7 +10914,7 @@ for i = 1 to 12
 <script src="assets/ink.js?v=3b8c85a7"></script>
 <script src="assets/viz.js?v=1e5c289a"></script>
 <script src="assets/glide.js?v=93f8e086"></script>
-<script src="assets/nav.js?v=abbabef4"></script>
+<script src="assets/nav.js?v=b9cd7533"></script>
 <script src="assets/avatars.js?v=9ec06a79"></script>
 <script src="assets/supabase-config.js?v=c59adce0"></script>
 <script src="assets/sync.js?v=bf6786cd"></script>

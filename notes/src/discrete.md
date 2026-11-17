@@ -293,7 +293,7 @@ $$k!\,S(n,k)=\sum_{i=0}^{k}(-1)^i\binom{k}{i}(k-i)^n$$
 
 !!! example "114 Q3（10%）：$A=\{1,\dots,9\}$、$B=\{a,\dots,h\}$，(a) $f(A)=\{a,b,c\}$ (b) $|f(A)|=3$ 的函數數"
     (a) 9 個元素映到 $\{a,b,c\}$ 且三個都要用到 → onto：
-    $$3^9-\binom31 2^9+\binom32 1^9=19683-1536+3=18150$$
+    $$\begin{aligned}&3^9-\binom31 2^9+\binom32 1^9\\&=19683-1536+3\\&=18150\end{aligned}$$
 
     (b) 先從 8 個裡選 3 個當像集，再 onto：$\binom83\times18150=56\times18150=1016400$。
 
@@ -324,11 +324,11 @@ $$S(n,k)=\frac{1}{k!}\sum_{i=0}^{k}(-1)^i\binom{k}{i}(k-i)^n$$
 
 例：
 
-$$\begin{aligned}S(4,2)&=\frac{1}{2!}\left(2^4-\binom21\cdot1^4+\binom22\cdot0^4\right)\\&=\frac{16-2+0}{2}=7\ \checkmark\end{aligned}$$
+$$\begin{aligned}S(4,2)&=\frac{1}{2!}\Big(2^4-\binom21\cdot1^4\\&\qquad+\binom22\cdot0^4\Big)\\&=\frac{16-2+0}{2}=7\ \checkmark\end{aligned}$$
 
 #### 公式二：遞迴（看最後一個東西）
 
-$$S(n,k)=S(n-1,k-1)+k\cdot S(n-1,k)$$
+$$\begin{aligned}S(n,k)&=S(n-1,k-1)\\&\quad+k\cdot S(n-1,k)\end{aligned}$$
 
 看第 $n$ 個東西（叫它 ★）怎麼放，只有兩種情況：
 
@@ -450,7 +450,7 @@ $(x_1+\cdots+x_m)^n$ 中 $x_1^{k_1}\cdots x_m^{k_m}$ 的係數是 $\dfrac{n!}{k_
 !!! example "112 Q1（10%）：$(3a-b+5c+3d-8)^{25}$ 中 $ab^6c^8d^5$ 的係數"
     次方加起來 $1+6+8+5=20$，所以常數項 $-8$ 用了 $25-20=5$ 次。
 
-    $$\frac{25!}{1!\,6!\,8!\,5!\,5!}\cdot 3^1\cdot(-1)^6\cdot5^8\cdot3^5\cdot(-8)^5$$
+    $$\begin{aligned}&\frac{25!}{1!\,6!\,8!\,5!\,5!}\\&\cdot3^1\cdot(-1)^6\cdot5^8\cdot3^5\cdot(-8)^5\end{aligned}$$
 
     考試不能用計算機，**寫到這一步就是答案**。正負號要判斷：$(-8)^5<0$，所以整體是負的。
 
@@ -461,7 +461,7 @@ $(x_1+\cdots+x_m)^n$ 中 $x_1^{k_1}\cdots x_m^{k_m}$ 的係數是 $\dfrac{n!}{k_
 
 !!! example "112 Q4（10%）：$\Sigma=\{t,v,w,x,y,z\}$，長度 1 到 11 的字串中，以 $xyz$ 為 proper prefix 的有幾個"
     proper prefix 代表字串比 $xyz$ 長，所以長度 $n=4,\dots,11$，後面 $n-3$ 位任意：
-    $$\sum_{n=4}^{11}6^{n-3}=6+6^2+\cdots+6^8=\frac{6^9-6}{5}=2015538$$
+    $$\begin{aligned}\sum_{n=4}^{11}6^{n-3}&=6+6^2+\cdots+6^8\\&=\frac{6^9-6}{5}=2015538\end{aligned}$$
 
     **等比級數怎麼加**：令 $S=6+6^2+\cdots+6^8$，則 $6S=6^2+\cdots+6^8+6^9$。兩式相減，中間全部消掉：$5S=6^9-6$，所以 $S=\frac{6^9-6}{5}=\frac{10077696-6}{5}=2015538$。
 
@@ -541,7 +541,7 @@ $(x_1+\cdots+x_m)^n$ 中 $x_1^{k_1}\cdots x_m^{k_m}$ 的係數是 $\dfrac{n!}{k_
 
 **代數證明**：
 
-$$\binom{n-1}{k}+\binom{n-1}{k-1}=\frac{(n-1)!}{k!\,(n-1-k)!}+\frac{(n-1)!}{(k-1)!\,(n-k)!}=\frac{(n-1)!}{k!\,(n-k)!}\big[(n-k)+k\big]=\binom nk$$
+$$\begin{aligned}&\binom{n-1}{k}+\binom{n-1}{k-1}\\&=\frac{(n-1)!}{k!\,(n-1-k)!}\\&\quad+\frac{(n-1)!}{(k-1)!\,(n-k)!}\\&=\frac{(n-1)!}{k!\,(n-k)!}\big[(n-k)+k\big]\\&=\binom nk\end{aligned}$$
 
 這就是 Pascal 三角形「每個數等於左上和右上相加」的原因。
 
@@ -574,7 +574,7 @@ $$\binom{n-1}{k}+\binom{n-1}{k-1}=\frac{(n-1)!}{k!\,(n-1-k)!}+\frac{(n-1)!}{(k-1
 
     **(b)** 取 n 的一個質因數 p（n 是合數，所以 $p<n$）。設 n 裡剛好有 a 個 p（$p^a\mid n$、$p^{a+1}\nmid n$）。看 $i=p$：
 
-    $$\binom np=\frac{n(n-1)(n-2)\cdots(n-p+1)}{p!}$$
+    $$\binom np=\frac{n(n-1)\cdots(n-p+1)}{p!}$$
 
     - **分子有幾個 p**：n 有 a 個；$n-1,\dots,n-p+1$ 都不是 p 的倍數（n 是 p 的倍數，往下減 1 到 $p-1$ 就不是了）。共 a 個。
     - **分母有幾個 p**：$p!$ 裡只有 p 本身，1 個。
@@ -680,7 +680,7 @@ $$\binom{n-1}{k}+\binom{n-1}{k-1}=\frac{(n-1)!}{k!\,(n-1-k)!}+\frac{(n-1)!}{(k-1
 
 **反射原理**：起點 $A=(0,a)$、終點 $B=(n,b)$，$a,b>0$。
 
-$$\text{從 }A\text{ 到 }B\text{、碰到 x 軸的路徑數}=\text{從 }A'=(0,-a)\text{ 到 }B\text{ 的路徑數}$$
+$$\begin{aligned}&\text{從 }A\text{ 到 }B\text{、碰到 x 軸的路徑數}\\&=\text{從 }A'=(0,-a)\text{ 到 }B\text{ 的路徑數}\end{aligned}$$
 
 **做法**：拿一條碰到 x 軸的路徑，找它**第一次**碰到 x 軸的地方，把**這之前的那一段**上下翻過來（U 換 D、D 換 U），後面不動。起點就從 $a$ 變成 $-a$。
 
@@ -1217,7 +1217,7 @@ for i = 1 to 12
 ??? quiz "看答案"
     球相同、箱子不同、不可空。每箱先放一顆，剩 $12-4=8$ 顆隨便放進 4 個箱子：8 顆星、3 根隔板。
 
-    $$\binom{8+4-1}{3}=\binom{11}{3}=\frac{11\times10\times9}{3\times2\times1}=165$$
+    $$\begin{aligned}&\binom{8+4-1}{3}=\binom{11}{3}\\&=\frac{11\times10\times9}{3\times2\times1}=165\end{aligned}$$
 
     也可以直接套 $\binom{n-1}{k-1}=\binom{11}{3}$，答案 **165**。
 
@@ -1313,7 +1313,7 @@ for i = 1 to 12
 
 #### 三個集合時，為什麼最後要加回來？
 
-$$|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|A\cap C|-|B\cap C|+|A\cap B\cap C|$$
+$$\begin{aligned}&|A\cup B\cup C|\\&=|A|+|B|+|C|\\&\quad-|A\cap B|-|A\cap C|-|B\cap C|\\&\quad+|A\cap B\cap C|\end{aligned}$$
 
 三個圓把平面切成 7 塊，下圖每一塊的數字是「**這一塊屬於幾個集合**」：
 
@@ -1419,7 +1419,7 @@ $$|A\cup B\cup C|=|A|+|B|+|C|-|A\cap B|-|A\cap C|-|B\cap C|+|A\cap B\cap C|$$
 
 ### 2.1 公式 {#u2-1}
 
-$$|A_1\cup\cdots\cup A_n|=\sum|A_i|-\sum|A_i\cap A_j|+\sum|A_i\cap A_j\cap A_k|-\cdots$$
+$$\begin{aligned}&|A_1\cup\cdots\cup A_n|\\&=\sum|A_i|-\sum|A_i\cap A_j|\\&\quad+\sum|A_i\cap A_j\cap A_k|-\cdots\end{aligned}$$
 
 **一般式怎麼讀**：第一個 $\sum$ 把每個集合加一次，第二個 $\sum$ 扣掉所有兩兩交集，第三個加回所有三個的交集……正負交替。剛好屬於 $k$ 個集合的元素被算了 $\binom k1-\binom k2+\binom k3-\cdots=1$ 次（觀念課那張表就是 $k=1,2,3$），所以每個元素都剛好算一次。為什麼一定是 1：二項式定理 $(1-1)^k=\binom k0-\binom k1+\binom k2-\cdots=0$，而 $\binom k0=1$，移項就得到 $\binom k1-\binom k2+\binom k3-\cdots=1$。
 
@@ -1519,7 +1519,7 @@ $$D_n=n!\left(1-\frac1{1!}+\frac1{2!}-\cdots+\frac{(-1)^n}{n!}\right)$$
 
 **公式怎麼來的（排容）**：令 $A_i$ ＝「第 $i$ 個在原位」。指定某 $j$ 個在原位，其他 $n-j$ 個隨便排，有 $(n-j)!$ 種；選哪 $j$ 個有 $\binom nj$ 種。套 [2.1](#u2-1) 的對稱形式：
 
-$$D_n=\sum_{j=0}^{n}(-1)^j\binom nj(n-j)!=\sum_{j=0}^{n}(-1)^j\frac{n!}{j!}$$
+$$\begin{aligned}D_n&=\sum_{j=0}^{n}(-1)^j\binom nj(n-j)!\\&=\sum_{j=0}^{n}(-1)^j\frac{n!}{j!}\end{aligned}$$
 
 （第二個等號：$\binom nj(n-j)!=\frac{n!}{j!\,(n-j)!}\cdot(n-j)!=\frac{n!}{j!}$。）把 $n!$ 提出來就是上面的式子。例：$D_4=\frac{24}{0!}-\frac{24}{1!}+\frac{24}{2!}-\frac{24}{3!}+\frac{24}{4!}=24-24+12-4+1=9$。
 
@@ -1875,7 +1875,7 @@ $$D_n=\sum_{j=0}^{n}(-1)^j\binom nj(n-j)!=\sum_{j=0}^{n}(-1)^j\frac{n!}{j!}$$
 - 香蕉：$1+x$（拿 0、1 個）
 
 相乘：
-$$(1+x+x^2)(1+x)=1+2x+2x^2+x^3$$
+$$\begin{aligned}&(1+x+x^2)(1+x)\\&=1+2x+2x^2+x^3\end{aligned}$$
 
 $x^2$ 的係數是 2，**就是答案**：(蘋果 2、香蕉 0)、(蘋果 1、香蕉 1)。
 
@@ -1919,9 +1919,14 @@ $x^2$ 的係數是 2，**就是答案**：(蘋果 2、香蕉 0)、(蘋果 1、�
 
 先看有限長的版本。乘開之後上下對齊，中間的項一正一負全部抵消：
 
-$$\begin{aligned}(1-x)(1+x+x^2+x^3)&=(1+x+x^2+x^3)-(x+x^2+x^3+x^4)\\&=1-x^4\end{aligned}$$
+$$\begin{aligned}&(1-x)(1+x+x^2+x^3)\\&=(1+x+x^2+x^3)\\&\quad-(x+x^2+x^3+x^4)\\&=1-x^4\end{aligned}$$
 
-同樣的道理，$(1-x)(1+x+\cdots+x^m)=1-x^{m+1}$，所以
+同樣的道理：
+
+$$(1-x)(1+x+\cdots+x^m)=1-x^{m+1}$$
+
+兩邊除以 $1-x$：
+
 $$1+x+x^2+\cdots+x^m=\frac{1-x^{m+1}}{1-x}$$
 這就是表格最後一列「0 到 $m$ 個」的化簡。
 
@@ -1969,7 +1974,7 @@ $e^{-x}=1-x+\frac{x^2}{2!}-\frac{x^3}{3!}+\cdots$，奇數次方變成負號。
 
 最後展開成 $e^{ax}$ 的和。**$e^{ax}$ 的係數為什麼是 $a^n$**：把 $e^x$ 展開式裡的 $x$ 換成 $ax$，
 
-$$e^{ax}=1+ax+\frac{(ax)^2}{2!}+\frac{(ax)^3}{3!}+\cdots=\sum_n a^n\,\frac{x^n}{n!}$$
+$$\begin{aligned}e^{ax}&=1+ax+\frac{(ax)^2}{2!}+\frac{(ax)^3}{3!}+\cdots\\&=\sum_n a^n\,\frac{x^n}{n!}\end{aligned}$$
 
 所以 $\frac{x^n}{n!}$ 的係數就是 $a^n$。用計數的話說：$e^{3x}=e^x\cdot e^x\cdot e^x$ 是「3 個字母都不限次數」，長度 $n$ 的字串本來就有 $3^n$ 個。
 
@@ -2003,7 +2008,7 @@ $$e^{ax}=1+ax+\frac{(ax)^2}{2!}+\frac{(ax)^3}{3!}+\cdots=\sum_n a^n\,\frac{x^n}{
 ??? quiz "看答案"
     0 用 $\cosh x$（偶數次），1、2 各用 $e^x$（任意次）：
 
-    $$\cosh x\cdot e^x\cdot e^x=\frac{e^x+e^{-x}}{2}\cdot e^{2x}=\frac{e^{3x}+e^{x}}{2}$$
+    $$\begin{aligned}&\cosh x\cdot e^x\cdot e^x\\&=\frac{e^x+e^{-x}}{2}\cdot e^{2x}\\&=\frac{e^{3x}+e^{x}}{2}\end{aligned}$$
 
     $e^{ax}$ 的 $\frac{x^n}{n!}$ 係數是 $a^n$，所以長度 $n$ 有 $\frac{3^n+1}{2}$ 個；$n=2$：$\frac{9+1}{2}=$ **5**。列出：00、11、12、21、22 ✓（0 出現 0 次或 2 次）。
 
@@ -2042,7 +2047,7 @@ $$e^{ax}=1+ax+\frac{(ax)^2}{2!}+\frac{(ax)^3}{3!}+\cdots=\sum_n a^n\,\frac{x^n}{
 
 #### 必背：$\frac1{(1-x)^k}$ 的展開
 
-$$\frac1{(1-x)^k}=\sum_{n\ge0}\binom{n+k-1}{n}x^n=1+kx+\binom{k+1}{2}x^2+\binom{k+2}{3}x^3+\cdots$$
+$$\begin{aligned}\frac1{(1-x)^k}&=\sum_{n\ge0}\binom{n+k-1}{n}x^n\\&=1+kx+\binom{k+1}{2}x^2\\&\quad+\binom{k+2}{3}x^3+\cdots\end{aligned}$$
 
 **為什麼（星星與隔板）**：$\frac1{(1-x)^k}$ 是 $k$ 個 $(1+x+x^2+\cdots)$ 相乘。第 $i$ 個因子挑 $x^{e_i}$，要湊出 $x^n$，就是要
 
@@ -2080,7 +2085,7 @@ $$\binom{n+k-1}{k-1}=\binom{n+k-1}{n}$$
 
 **1. 連續整數：$1+2+\cdots+m=\frac{m(m+1)}{2}$**。正著寫一次、倒著寫一次，上下對齊相加，每一對都是 $m+1$：
 
-$$\begin{aligned}S&=1+2+\cdots+m\\S&=m+(m-1)+\cdots+1\\2S&=(m+1)+(m+1)+\cdots+(m+1)=m(m+1)\end{aligned}$$
+$$\begin{aligned}S&=1+2+\cdots+m\\S&=m+(m-1)+\cdots+1\\2S&=\underbrace{(m+1)+\cdots+(m+1)}_{m\text{ 個}}\\&=m(m+1)\end{aligned}$$
 
 **2. 奇數：$1+3+5+\cdots+(2m-1)=m^2$**。把方格排成正方形，一層一層往外包 L 形：
 
@@ -2142,7 +2147,7 @@ $$\begin{aligned}S&=1+2+\cdots+m\\S&=m+(m-1)+\cdots+1\\2S&=(m+1)+(m+1)+\cdots+(m
     先算 $\frac1{(1+x)^2}$：把 $\frac1{(1-x)^2}=\sum(n+1)x^n$ 的 $x$ 換成 $-x$，得 $\sum(n+1)(-1)^nx^n$。
 
     再乘 $\frac1{1-x}=1+x+x^2+\cdots$。**乘 $\frac1{1-x}$ 就是取前綴和**：$(c_0+c_1x+c_2x^2+\cdots)(1+x+x^2+\cdots)$ 的 $x^n$，是 $c_k$ 配上 $x^{n-k}$（係數都是 1），$k=0$ 到 $n$ 全部加起來，也就是 $c_0+c_1+\cdots+c_n$：
-    $$d_n=\sum_{k=0}^{n}(k+1)(-1)^k=1-2+3-4+\cdots$$
+    $$\begin{aligned}d_n&=\sum_{k=0}^{n}(k+1)(-1)^k\\&=1-2+3-4+\cdots\end{aligned}$$
 
     兩兩一組，每組 $(2j+1)-(2j+2)=-1$：
 
@@ -2168,7 +2173,7 @@ $$\begin{aligned}S&=1+2+\cdots+m\\S&=m+(m-1)+\cdots+1\\2S&=(m+1)+(m+1)+\cdots+(m
 
 !!! example "114 Q8（10%）：隨機 28 位八進位數字串，3 和 7 都出現偶數次的機率"
     3 和 7 各用 $\cosh x$，其他 6 個數字用 $e^x$：
-    $$\left(\frac{e^x+e^{-x}}2\right)^2e^{6x}=\frac{e^{2x}+2+e^{-2x}}{4}\cdot e^{6x}=\frac{e^{8x}+2e^{6x}+e^{4x}}{4}$$
+    $$\begin{aligned}&\left(\frac{e^x+e^{-x}}2\right)^2e^{6x}\\&=\frac{e^{2x}+2+e^{-2x}}{4}\cdot e^{6x}\\&=\frac{e^{8x}+2e^{6x}+e^{4x}}{4}\end{aligned}$$
 
     - **平方展開**：$(e^x+e^{-x})^2=e^{2x}+2e^x e^{-x}+e^{-2x}=e^{2x}+2+e^{-2x}$（$e^x\cdot e^{-x}=e^0=1$）。
     - **乘 $e^{6x}$**：指數相加，$e^{2x}e^{6x}=e^{8x}$、$2\cdot e^{6x}$、$e^{-2x}e^{6x}=e^{4x}$。
@@ -2219,7 +2224,7 @@ $x^k\cdot F(x)$ 的 $x^n$ 係數，就是 $F(x)$ 的 $x^{n-k}$ 係數（$n<k$ �
 
 **分母寫成 $(x-a)$ 的形式時**：先把 $-a$ 提出來，湊成 $\frac1{1-\text{某某}}$ 的樣子：
 
-$$\frac1{x-a}=\frac{1}{-a\left(1-\frac xa\right)}=-\frac1a\cdot\frac1{1-\frac xa}=-\frac1a\left(1+\frac xa+\frac{x^2}{a^2}+\cdots\right)$$
+$$\begin{aligned}\frac1{x-a}&=\frac{1}{-a\left(1-\frac xa\right)}\\&=-\frac1a\cdot\frac1{1-\frac xa}\\&=-\frac1a\left(1+\frac xa+\frac{x^2}{a^2}+\cdots\right)\end{aligned}$$
 
 所以 $x^n$ 的係數是 $-\frac1{a^{n+1}}$。例：$\frac1{x-2}=-\frac12-\frac x4-\frac{x^2}8-\cdots$。
 
@@ -2263,7 +2268,7 @@ $$\frac1{x-a}=\frac{1}{-a\left(1-\frac xa\right)}=-\frac1a\cdot\frac1{1-\frac xa
     設 $A(x)=\sum_{n\ge0}a_nx^n=a_0+a_1x+a_2x^2+\cdots$。
 
     **1. 每一條式子乘 $x^{n+2}$，再全部加起來**（$n=0,1,2,\dots$）。乘 $x^{n+2}$ 是為了讓 $a_{n+2}$ 配上 $x^{n+2}$：下標跟次方一樣，加起來才會是 $A$ 的一部分。
-    $$\sum_{n\ge0}a_{n+2}x^{n+2}-8\sum_{n\ge0}a_{n+1}x^{n+2}+15\sum_{n\ge0}a_nx^{n+2}=0$$
+    $$\begin{aligned}&\sum_{n\ge0}a_{n+2}x^{n+2}-8\sum_{n\ge0}a_{n+1}x^{n+2}\\&\quad+15\sum_{n\ge0}a_nx^{n+2}=0\end{aligned}$$
 
     **2. 三個和都換成 $A$**：
 
@@ -2272,11 +2277,11 @@ $$\frac1{x-a}=\frac{1}{-a\left(1-\frac xa\right)}=-\frac1a\cdot\frac1{1-\frac xa
     - $\sum a_nx^{n+2}=x^2(a_0+a_1x+\cdots)=x^2A$
 
     **3. 代入 $a_0=1$、$a_1=6$，把有 $A$ 的項集中**：
-    $$(A-1-6x)-8x(A-1)+15x^2A=0$$
-    $$A(1-8x+15x^2)=1+6x-8x=1-2x$$
+    $$\begin{aligned}&(A-1-6x)-8x(A-1)\\&\quad+15x^2A=0\end{aligned}$$
+    $$\begin{aligned}A(1-8x+15x^2)&=1+6x-8x\\&=1-2x\end{aligned}$$
 
     **4. 分母分解、部分分式**（$1-8x+15x^2=(1-3x)(1-5x)$，對應特徵根 3 和 5）：
-    $$A=\frac{1-2x}{(1-3x)(1-5x)}=\frac{-1/2}{1-3x}+\frac{3/2}{1-5x}$$
+    $$\begin{aligned}A&=\frac{1-2x}{(1-3x)(1-5x)}\\&=\frac{-1/2}{1-3x}+\frac{3/2}{1-5x}\end{aligned}$$
 
     部分分式的係數：令 $1-2x=\alpha(1-5x)+\beta(1-3x)$，$x=\frac13$ 得 $\alpha=-\frac12$，$x=\frac15$ 得 $\beta=\frac32$。
 
@@ -2329,14 +2334,14 @@ $$P(x)=\prod_{k=1}^{\infty}\frac{1}{1-x^k}$$
 
 **Euler 的定理：「加數都不一樣」和「加數都是奇數」的分割一樣多。**
 
-$$\begin{aligned}\prod_{k\ge1}(1+x^k)&=\prod_{k\ge1}\frac{1-x^{2k}}{1-x^k}\\&=\frac{(1-x^2)(1-x^4)(1-x^6)\cdots}{(1-x)(1-x^2)(1-x^3)\cdots}\\&=\frac{1}{(1-x)(1-x^3)(1-x^5)\cdots}\end{aligned}$$
+$$\begin{aligned}&\prod_{k\ge1}(1+x^k)=\prod_{k\ge1}\frac{1-x^{2k}}{1-x^k}\\&=\frac{(1-x^2)(1-x^4)(1-x^6)\cdots}{(1-x)(1-x^2)(1-x^3)\cdots}\\&=\frac{1}{(1-x)(1-x^3)(1-x^5)\cdots}\end{aligned}$$
 
 分子的偶數次方跟分母的偶數次方全部消掉，只剩分母的奇數次方，正好是「加數都是奇數」的生成函數。例：6 的分割，加數都不一樣的有 6、5＋1、4＋2、3＋2＋1，加數都是奇數的有 5＋1、3＋3、3＋1＋1＋1、1＋1＋1＋1＋1＋1，各 4 種 ✓。
 
 !!! example "103 Q6（8%）：整數分割，每個加數在一種分割裡最多出現兩次。寫出生成函數的封閉形式，並說明怎麼從它得到 n 的分割數"
     **生成函數**：每個加數 k 可以用 0、1、2 次，因子是 $1+x^k+x^{2k}$：
 
-    $$G(x)=\prod_{k=1}^{\infty}(1+x^k+x^{2k})=\prod_{k=1}^{\infty}\frac{1-x^{3k}}{1-x^k}$$
+    $$\begin{aligned}G(x)&=\prod_{k=1}^{\infty}(1+x^k+x^{2k})\\&=\prod_{k=1}^{\infty}\frac{1-x^{3k}}{1-x^k}\end{aligned}$$
 
     **再化簡（加分）**：分子的 $1-x^{3k}$ 跟分母 k 是 3 的倍數的因子消掉，只剩分母裡 k **不是 3 的倍數**的因子：
 
@@ -2401,7 +2406,7 @@ $$\begin{aligned}\prod_{k\ge1}(1+x^k)&=\prod_{k\ge1}\frac{1-x^{2k}}{1-x^k}\\&=\f
 ??? quiz "看參考答案"
     **生成函數相等**：
 
-    $$\begin{aligned}\prod_{k\ge1}(1+x^k+x^{2k})&=\prod_{k\ge1}\frac{1-x^{3k}}{1-x^k}\\&=\frac{(1-x^3)(1-x^6)\cdots}{(1-x)(1-x^2)(1-x^3)\cdots}\\&=\prod_{3\nmid k}\frac1{1-x^k}\end{aligned}$$
+    $$\begin{aligned}&\prod_{k\ge1}(1+x^k+x^{2k})\\&=\prod_{k\ge1}\frac{1-x^{3k}}{1-x^k}\\&=\frac{(1-x^3)(1-x^6)\cdots}{(1-x)(1-x^2)(1-x^3)\cdots}\\&=\prod_{3\nmid k}\frac1{1-x^k}\end{aligned}$$
 
     左邊是「每個加數最多兩次」，右邊是「加數不是 3 的倍數」。兩個生成函數一樣，每一項的係數就一樣。
 
@@ -2626,7 +2631,7 @@ $$\begin{aligned}\prod_{k\ge1}(1+x^k)&=\prod_{k\ge1}\frac{1-x^{2k}}{1-x^k}\\&=\f
 ??? quiz "看答案"
     **式子**：$x_1$ 偶數 → $\frac1{1-x^2}$；$0\le x_2\le3$ → $1+x+x^2+x^3$；$x_3$ 不限 → $\frac1{1-x}$。答案是
 
-    $$[x^{10}]\ \frac{1}{1-x^2}\cdot(1+x+x^2+x^3)\cdot\frac{1}{1-x}$$
+    $$\begin{aligned}&[x^{10}]\ \frac{1}{1-x^2}\\&\quad\cdot(1+x+x^2+x^3)\cdot\frac{1}{1-x}\end{aligned}$$
 
     **求係數**（直接數比展開快）：$x_1$ 決定後，$x_2$ 可以是 0 到 $\min(3,\,10-x_1)$，$x_3$ 就是剩下的，所以有 $\min(3,10-x_1)+1$ 種。
 
@@ -2641,7 +2646,7 @@ $$\begin{aligned}\prod_{k\ge1}(1+x^k)&=\prod_{k\ge1}\frac{1-x^{2k}}{1-x^k}\\&=\f
 ??? quiz "看答案"
     0 用 $\cosh x$（偶數次）、1 用 $\sinh x$（奇數次）、2 和 3 各用 $e^x$：
 
-    $$\cosh x\sinh x\cdot e^{2x}=\frac{e^{2x}-e^{-2x}}{4}\cdot e^{2x}=\frac{e^{4x}-1}{4}$$
+    $$\begin{aligned}&\cosh x\sinh x\cdot e^{2x}\\&=\frac{e^{2x}-e^{-2x}}{4}\cdot e^{2x}\\&=\frac{e^{4x}-1}{4}\end{aligned}$$
 
     $\frac{x^n}{n!}$ 的係數：$e^{4x}$ 給 $\frac{4^n}{4}$；$-\frac14$ 是常數，只在 $n=0$ 有。所以 $n\ge1$ 時有 **$4^{n-1}$** 個（$n=1$：只有「1」一個 ✓）。
 
@@ -2712,7 +2717,7 @@ $$r^2=r+1$$
 這就是**特徵方程**。寫法的規律：$a_n$ 換成 $r^2$、$a_{n-1}$ 換成 $r$、$a_{n-2}$ 換成 1。它的兩個根是 $\frac{1\pm\sqrt5}{2}\approx1.618,\ -0.618$，正好解釋了上面那個比值。
 
 **兩個根為什麼可以加在一起**：設 $r_1$、$r_2$ 都是根，把 $a_n=Ar_1^n+Br_2^n$ 代進遞迴的右邊：
-$$\begin{aligned}a_{n-1}+a_{n-2}&=A\,(r_1^{n-1}+r_1^{n-2})+B\,(r_2^{n-1}+r_2^{n-2})\\&=A\,r_1^n+B\,r_2^n=a_n\end{aligned}$$
+$$\begin{aligned}&a_{n-1}+a_{n-2}\\&=A\,(r_1^{n-1}+r_1^{n-2})\\&\quad+B\,(r_2^{n-1}+r_2^{n-2})\\&=A\,r_1^n+B\,r_2^n=a_n\end{aligned}$$
 （第二行用了 $r^2=r+1$ 兩邊乘 $r^{n-2}$ 得到的 $r^{n-1}+r^{n-2}=r^n$。）所以不管 $A$、$B$ 是多少都滿足遞迴，這叫**線性疊加**。
 
 **為什麼這樣就是全部的答案**：二階遞迴只要知道 $a_0$、$a_1$，後面每一項都被決定了。$A$、$B$ 兩個未知數剛好用兩個初始值解出來（兩根不同時一定解得出來）。前兩項對上了、遞迴又一樣，整個數列就一樣。
@@ -2729,7 +2734,7 @@ $$\begin{aligned}a_{n-1}+a_{n-2}&=A\,(r_1^{n-1}+r_1^{n-2})+B\,(r_2^{n-1}+r_2^{n-
 $a_n=4a_{n-1}-4a_{n-2}$ 的特徵方程是 $(r-2)^2=0$，只有一個根 2。只有 $A\cdot2^n$ 一個式子，配不出兩個初始值，需要第二個解。
 
 試 $n\cdot2^n$，代進右邊的 $4a_{n-1}-4a_{n-2}$：
-$$\begin{aligned}4(n-1)2^{n-1}-4(n-2)2^{n-2}&=2(n-1)\cdot2^n-(n-2)\cdot2^n\\&=2^n\,[\,2(n-1)-(n-2)\,]=n\cdot2^n\end{aligned}$$
+$$\begin{aligned}&4(n-1)2^{n-1}-4(n-2)2^{n-2}\\&=2(n-1)\cdot2^n-(n-2)\cdot2^n\\&=2^n\,[\,2(n-1)-(n-2)\,]\\&=n\cdot2^n\end{aligned}$$
 （第一步用 $4\cdot2^{n-1}=2\cdot2^n$、$4\cdot2^{n-2}=2^n$。）剛好等於左邊的 $a_n=n\cdot2^n$ ✓，所以它也是解。重根時通解是 $(A+Bn)r^n$，兩個係數配兩個初始值。
 
 **直覺**：兩個根很接近時（例如 2 和 2.001），$\frac{r_1^n-r_2^n}{r_1-r_2}$ 也是一個解（兩個解相減再除以常數）；兩根合在一起時，它變成 $n\,r^{n-1}$（就是 $r^n$ 對 $r$ 微分），所以多出來的那個解帶一個 $n$。
@@ -2921,7 +2926,7 @@ $a_n=c_1a_{n-1}+c_2a_{n-2}+f(n)$ → 通解 ＝ 齊次解 ＋ 一個特解。
 
     特解猜 $An+B$（右邊是 $9n$，而 1 不是特徵根），代入：
 
-    $$\begin{aligned}&[A(n+2)+B]-7[A(n+1)+B]+12[An+B]\\&=(A-7A+12A)\,n+(2A+B-7A-7B+12B)\\&=6An+(-5A+6B)\end{aligned}$$
+    $$\begin{aligned}&[A(n+2)+B]\\&\quad-7[A(n+1)+B]\\&\quad+12[An+B]\\&=(A-7A+12A)\,n\\&\quad+(2A+B-7A-7B+12B)\\&=6An+(-5A+6B)\end{aligned}$$
 
     要等於 $9n$：$6A=9$、$-5A+6B=0$，得 $A=\frac32$、$B=\frac54$。
 
@@ -3072,7 +3077,7 @@ $T(n)=aT(n/b)+f(n)$：每個問題分成 $a$ 個子問題，每個大小 $\frac 
 
     $a_k=3^kb_k=2\cdot3^k-2\cdot2^k$。換回 n（$3^k=3^{\lg n}=n^{\lg3}$）：
 
-    $$T(n)=2n^{\lg3}-2n=\Theta(n^{\lg3})\approx\Theta(n^{1.585})$$
+    $$\begin{aligned}T(n)&=2n^{\lg3}-2n\\&=\Theta(n^{\lg3})\approx\Theta(n^{1.585})\end{aligned}$$
 
     驗算：$T(2)=0+2=2=2\cdot3-2\cdot2$ ✓，$T(4)=3\times2+4=10=18-8$ ✓。
 
@@ -3572,7 +3577,7 @@ $a\equiv b\pmod n$ 就是「$a$ 和 $b$ 除以 $n$ 餘數一樣」，像時鐘�
 | $3k\bmod7$ | 3 | 6 | 2 | 5 | 1 | 4 |
 
 下面那一列還是 1～6，只是順序打亂。兩列各自乘起來，結果在 mod 7 下相等：
-$$(3\cdot1)(3\cdot2)\cdots(3\cdot6)\equiv1\cdot2\cdots6\pmod7$$
+$$\begin{aligned}&(3\cdot1)(3\cdot2)\cdots(3\cdot6)\\&\equiv1\cdot2\cdots6\pmod7\end{aligned}$$
 左邊是 $3^6\cdot6!$，右邊是 $6!$。$6!$ 跟 7 互質，有反元素，兩邊可以消掉，得到 $3^6\equiv1\pmod7$。
 
 **一般的 $p$ 也一樣**：$a,2a,\dots,(p-1)a$ 除以 $p$ 的餘數兩兩不同（如果 $ia\equiv ja$，兩邊乘 $a^{-1}$ 得 $i\equiv j$），也都不是 0（$p$ 是質數，不整除 $i$ 也不整除 $a$，就不整除 $ia$），所以剛好是 $1,\dots,p-1$ 重新排列。兩邊相乘再消掉 $(p-1)!$，就是 $a^{p-1}\equiv1$。
@@ -3705,7 +3710,7 @@ $r=1$ 那一列：$1=43\times2+17\times(-5)$，所以 $17^{-1}\equiv-5\equiv38$�
 
 《孫子算經》：「今有物不知其數，三三數之剩二，五五數之剩三，七七數之剩二，問物幾何？」也就是
 
-$$x\equiv2\pmod3,\quad x\equiv3\pmod5,\quad x\equiv2\pmod7$$
+$$\begin{aligned}x&\equiv2\pmod3\\x&\equiv3\pmod5\\x&\equiv2\pmod7\end{aligned}$$
 
 模數兩兩互質時，mod $M=3\times5\times7=105$ 剛好一個解。**做法**：每個條件做一項，讓它只在自己的模數下有作用，在其他模數下都是 0：
 
@@ -4103,7 +4108,7 @@ $$x\equiv2\pmod3,\quad x\equiv3\pmod5,\quad x\equiv2\pmod7$$
 ??? quiz "看答案"
     想辦法消掉 $n$（$n$ 的係數 3 和 5，交叉相乘）：
 
-    $$5(3n+2)-3(5n+3)=15n+10-15n-9=1$$
+    $$\begin{aligned}&5(3n+2)-3(5n+3)\\&=15n+10-15n-9=1\end{aligned}$$
 
     設 $d=\gcd(3n+2,5n+3)$。$d$ 整除兩者，就整除它們的任何線性組合，所以 $d\mid1$，$d=1$，互質。∎
 
@@ -4344,7 +4349,7 @@ $n+1$ 隻鴿子放進 $n$ 個籠子，至少一個籠子有 2 隻。推廣：$kn
 !!! example "100 Q2、106 Q1（各 10%）：整數數列 $x_1,\dots,x_n$。證明對任何 $1\le k\le n$，都有一段連續的子數列，和是 k 的倍數"
     令 $S_0=0$、$S_j=x_1+x_2+\cdots+x_j$。$S_0,S_1,\dots,S_k$ 共 $k+1$ 個（$k\le n$，所以 $S_k$ 存在），除以 k 的餘數只有 k 種。由鴿籠，有 $i<j$ 使 $S_i\equiv S_j\pmod k$，相減：
 
-    $$S_j-S_i=x_{i+1}+x_{i+2}+\cdots+x_j\equiv0\pmod k$$
+    $$\begin{aligned}S_j-S_i&=x_{i+1}+x_{i+2}+\cdots+x_j\\&\equiv0\pmod k\end{aligned}$$
 
     這段連續的子數列就是答案。∎
 
@@ -5175,7 +5180,7 @@ $(\mathcal P(\{a,b,c\}),\subseteq)$：8 個子集合，A 被 B 蓋住 ⇔ B 比 
 
     **(a) 解遞迴（$e_n=n\cdot2^{n-1}$）**：$e_{n+1}=2e_n+2^n$ 兩邊除以 $2^{n+1}$，得 $\frac{e_{n+1}}{2^{n+1}}=\frac{e_n}{2^n}+\frac12$。令 $b_n=e_n/2^n$（跟 [4.4](#u4-dc) 的「兩邊除以 $c^k$」同一招）：
 
-    $$b_{n+1}=b_n+\frac12,\quad b_1=\frac12\ \Rightarrow\ b_n=\frac n2\ \Rightarrow\ e_n=n\cdot2^{n-1}$$
+    $$\begin{aligned}&b_{n+1}=b_n+\frac12,\quad b_1=\frac12\\&\Rightarrow\ b_n=\frac n2\\&\Rightarrow\ e_n=n\cdot2^{n-1}\end{aligned}$$
 
     **驗算**：$e_1=1$、$e_2=4$（正方形）、$e_3=12$（上面那張 3-cube 圖有 12 條線）✓。
 
@@ -5472,11 +5477,11 @@ $(\mathcal P(\{a,b,c\}),\subseteq)$：8 個子集合，A 被 B 蓋住 ⇔ B 比 
 
     **另一種寫法（Cantor 的斜線排法）**：把 (x, y) 排成表格，沿著 $x+y=2,3,4,\dots$ 的斜線一條一條排：(1,1)、(1,2)、(2,1)、(1,3)、(2,2)、(3,1)、……每條斜線只有有限個點，所以每個點都排得到。寫成公式：
 
-    $$f(x,y)=\frac{(x+y-1)(x+y-2)}{2}+x$$
+    $$\begin{aligned}f(x,y)&=\frac{(x+y-1)(x+y-2)}{2}\\&\quad+x\end{aligned}$$
 
     **公式怎麼來**：$x+y=s$ 那條斜線上有 $s-1$ 個點（$x=1,2,\dots,s-1$），同一條斜線照 x 由小到大排。(x, y) 在第 $s=x+y$ 條，它前面的斜線是 $s=2,3,\dots,x+y-1$，點數加起來是
 
-    $$1+2+\cdots+(x+y-2)=\frac{(x+y-2)(x+y-1)}{2}$$
+    $$\begin{aligned}&1+2+\cdots+(x+y-2)\\&=\frac{(x+y-2)(x+y-1)}{2}\end{aligned}$$
 
     （[3.1](#u3-1) 的「三個常用的和」），這就是前面那項；再加上自己在這條斜線上是第 x 個。例：$(2,3)$ 在 $x+y=5$ 那條，前面 1＋2＋3 ＝ 6 個，它是第 2 個，$f=8$。兩個公式我都用程式檢查過：不會有兩組 (x, y) 對到同一個數，而且前 500 個正整數都有被對到。
 
@@ -5623,7 +5628,7 @@ $(\mathcal P(\{a,b,c\}),\subseteq)$：8 個子集合，A 被 B 蓋住 ⇔ B 比 
 
     **結合律成立**：
 
-    $$f(f(x,y),z)=(x+y-xy)+z-(x+y-xy)z=x+y+z-xy-xz-yz+xyz$$
+    $$\begin{aligned}&f(f(x,y),z)\\&=(x+y-xy)+z\\&\quad-(x+y-xy)z\\&=x+y+z-xy\\&\quad-xz-yz+xyz\end{aligned}$$
 
     這個式子對 $x,y,z$ 完全對稱，所以 $f(x,f(y,z))$ 展開也一樣。
 
@@ -6390,7 +6395,7 @@ Grimaldi 的 FSM 是 Mealy 型：每條邊標「輸入／輸出」，輸出 1 �
 
 **定義**：$E[X]=\sum_x x\cdot P(X=x)$，每個可能的值乘上它的機率，全部加起來。擲一顆骰子，每個點數的機率都是 $\frac16$：
 
-$$E[X]=1\cdot\tfrac16+2\cdot\tfrac16+\cdots+6\cdot\tfrac16=\frac{1+2+3+4+5+6}{6}=3.5$$
+$$\begin{aligned}E[X]&=1\cdot\tfrac16+\cdots+6\cdot\tfrac16\\&=\frac{1+2+3+4+5+6}{6}\\&=3.5\end{aligned}$$
 
 機率不一樣時，就是**加權平均**：例如擲一枚硬幣，正面得 10 元、反面得 0 元，期望值是 $10\times\frac12+0\times\frac12=5$ 元。期望值不一定是真的會出現的值（骰子擲不出 3.5），它是擲很多次以後的平均。
 
@@ -6424,7 +6429,7 @@ $$P(A\mid B)=\frac{P(A\cap B)}{P(B)}$$
 
 一共 $N$ 元，你有 $k$ 元，每局公平地贏 1 元或輸 1 元，到 0 或 $N$ 停止。令 $E_k$ 為還要玩幾局的期望值：
 
-$$E_k=1+\frac12E_{k-1}+\frac12E_{k+1},\quad E_0=E_N=0$$
+$$\begin{aligned}&E_k=1+\frac12E_{k-1}+\frac12E_{k+1}\\&E_0=E_N=0\end{aligned}$$
 
 意思是：先玩 1 局，之後一半機會變成 $k-1$ 元、一半變成 $k+1$ 元。
 
@@ -6476,7 +6481,7 @@ $$E_k=1+\frac12E_{k-1}+\frac12E_{k+1},\quad E_0=E_N=0$$
 1. **看相鄰的差**：遞迴兩邊乘 2，$2E_k=2+E_{k-1}+E_{k+1}$，移項得 $E_{k+1}-E_k=(E_k-E_{k-1})-2$。也就是相鄰兩項的差，每往右一格就少 2。上圖 $N=5$：$E$ 是 0、4、6、6、4、0，差是 4、2、0、−2、−4 ✓。
 2. **把差加起來**：令第一個差 $d=E_1-E_0$，之後的差是 $d,\ d-2,\ d-4,\dots$，第 $i$ 個差是 $d-2(i-1)$。$E_0=0$，所以 $E_k$ 就是前 $k$ 個差的和（$0+1+\cdots+(k-1)$ 用 [3.1](#u3-1) 的公式）：
 
-    $$E_k=kd-2\big(0+1+\cdots+(k-1)\big)=kd-k(k-1)$$
+    $$\begin{aligned}E_k&=kd\\&\quad-2\big(0+1+\cdots+(k-1)\big)\\&=kd-k(k-1)\end{aligned}$$
 
 3. **用另一端定出 d**：$E_N=0$，$Nd-N(N-1)=0$，$d=N-1$。代回：$E_k=k(N-1)-k(k-1)=k(N-k)$。
 
@@ -6936,7 +6941,7 @@ $$\sum_{v\in V}\deg(v)=2|E|$$
 
     **反證**：假設 G 不連通，取 x、y 在不同的連通分量（connected component），兩個分量的點數是 a、b，$a+b\le n$。x 的鄰居只能在自己的分量裡，最多 $a-1$ 個；y 最多 $b-1$ 個。
 
-    $$\deg(x)+\deg(y)\le(a-1)+(b-1)\le n-2<n-1$$
+    $$\begin{aligned}&\deg(x)+\deg(y)\\&\le(a-1)+(b-1)\\&\le n-2<n-1\end{aligned}$$
 
     跟題目矛盾，所以 G 連通。∎
 
@@ -6988,7 +6993,7 @@ $$v-e+f=2$$
 
 **為什麼**（簡單圖、$v\ge3$）：每個面至少被 3 條邊圍住（簡單圖沒有兩條邊圍成的面），每條邊最多碰到 2 個面，所以 $3f\le2e$。（把「每個面的邊數」全部加起來：每個面至少 3，總和 $\ge3f$；每條邊最多被它兩側的面各算一次，總和 $\le2e$。）代進 Euler 公式：
 
-$$2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6$$
+$$\begin{aligned}2=v-e+f&\le v-e+\frac{2e}3\\\Rightarrow\ e&\le3v-6\end{aligned}$$
 
 （中間那步：$2\le v-\frac e3$，移項 $\frac e3\le v-2$，乘 3 得 $e\le3v-6$。）
 
@@ -7013,7 +7018,7 @@ $$2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6$$
 
     **(b)** 反證：假設 G 和 $\bar G$ 都是平面圖。兩個的邊數加起來是 $\binom n2$，各自又不超過 $3n-6$：
 
-    $$\frac{n(n-1)}2=m+\bar m\le2(3n-6)\ \Rightarrow\ n^2-13n+24\le0$$
+    $$\begin{aligned}&\frac{n(n-1)}2=m+\bar m\le2(3n-6)\\&\Rightarrow\ n^2-13n+24\le0\end{aligned}$$
 
     （兩邊乘 2：$n^2-n\le12n-24$，移項得 $n^2-13n+24\le0$。）
 
@@ -7967,7 +7972,7 @@ $$2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6$$
 
     用 Stirling 的公式一：先算 onto 到 3 個有編號的組，再除以 $3!$：
 
-    $$S(8,3)=\frac{3^8-3\cdot2^8+3\cdot1^8}{3!}=\frac{6561-768+3}{6}=\frac{5796}{6}=966$$
+    $$\begin{aligned}S(8,3)&=\frac{3^8-3\cdot2^8+3\cdot1^8}{3!}\\&=\frac{6561-768+3}{6}\\&=\frac{5796}{6}=966\end{aligned}$$
 
     答案 **966**（也可以把 Stirling 表多填一列：$S(8,3)=S(7,2)+3S(7,3)=63+903=966$）。
 
@@ -7976,7 +7981,7 @@ $$2=v-e+f\le v-e+\frac{2e}3\ \Rightarrow\ e\le3v-6$$
 ??? quiz "看答案"
     字串（有順序）→ EGF。1 出現偶數次用 $\cosh x$，0 不限用 $e^x$：
 
-    $$\cosh x\cdot e^x=\frac{e^x+e^{-x}}{2}\cdot e^x=\frac{e^{2x}+1}{2}$$
+    $$\begin{aligned}&\cosh x\cdot e^x\\&=\frac{e^x+e^{-x}}{2}\cdot e^x\\&=\frac{e^{2x}+1}{2}\end{aligned}$$
 
     $n=10$：個數 $\frac{2^{10}+0}{2}=512$（常數 $\frac12$ 只影響 $n=0$），全部 $2^{10}=1024$ 個，機率 **$\frac12$**。
 

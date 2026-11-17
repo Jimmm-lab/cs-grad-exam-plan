@@ -202,7 +202,26 @@
     el.dataset.mj = "1";
     return mj.typesetPromise([el]).then(function () { return true; }, function () { return true; });
   }
-  function prepare(el) { return typeset(el).then(function (ok) { if (ok) fitTables(el); return ok; }); }
+  function prepare(el) { return typeset(el).then(function (ok) { if (ok) { keepShortMath(el); fitTables(el); } return ok; }); }
+  // MathJax 會在行內公式的運算符號後面留換行點，短短的「1 − x」也可能被拆成行尾「1 −」、下一行「x」。
+  // 短的公式（不到一行寬度的六成）就不讓它在中間換行，整個公式一起移到下一行；
+  // 長的公式和表格格子裡的公式照舊可以換行，不然會超出畫面或把表格撐開。
+  // 寬度看 svg 的 width 屬性（ex），收起來的解答裡也量得到。
+  function keepShortMath(el) {
+    var t = document.createElement("span");
+    t.style.cssText = "position:absolute;visibility:hidden;width:10ex";
+    el.appendChild(t);
+    var ex = t.getBoundingClientRect().width / 10 || 8;
+    el.removeChild(t);
+    var limit = 0.6 * (Math.min(document.documentElement.clientWidth, 820) - 32) / ex;
+    var cell = 80 / ex;     // 表格格子裡只保護很短的（像 n − k），長一點的照舊換行，表格才不會被撐開
+    el.querySelectorAll('mjx-container:not([display="true"])').forEach(function (c) {
+      if (!c.querySelector("mjx-break")) return;
+      var w = 0;
+      for (var k = c.firstElementChild; k; k = k.nextElementSibling) if (k.tagName.toLowerCase() === "svg") w += parseFloat(k.getAttribute("width")) || 0;
+      if (w < (c.closest("td, th") ? cell : limit)) c.classList.add("mj-keep");
+    });
+  }
   // 收起來的解答（details）裡的表，打開後才量得到寬度；單元還沒排版好就等排版完再一起處理
   document.addEventListener("toggle", function (e) {
     var d = e.target;
