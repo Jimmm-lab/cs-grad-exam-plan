@@ -31,6 +31,7 @@
   var LIGHT = ["#1a2130", "#d0343f", "#2d5fd3", "#2f7d3b"];   // 存成圖片時用白底配色
   var PREF_KEY = "cgep:ink:pref";
   var SNAP_MS = [400, 600, 1000, 1500];   // 筆停住多久拉成直線（毫秒），預設 600
+  var SAVED_LATER = "已存在這台裝置，稍後同步到雲端";   // 同步完成時把這句收掉
   // 筆的種類。粗細範圍是紙寬 1000 時的單位
   var PENS = {
     fountain: { name: "鋼筆", icon: "penFountain", min: 1, max: 20, step: 0.5 },
@@ -312,7 +313,6 @@
         '<span class="ink-snap"><label><input type="checkbox" aria-label="畫線時筆停住一下會拉成直線"> 畫線時筆停住</label>' +
           '<select aria-label="筆要停多久才拉成直線">' + SNAP_MS.map(function (ms) { return '<option value="' + ms + '">' + ms / 1000 + " 秒</option>"; }).join("") + "</select>" +
           "<span>會拉成直線</span></span>" +
-        '<span class="ink-hint">兩指捏合可以縮放、移動紙張；電腦用 Ctrl＋滾輪</span>' +
         '<span class="ink-status" aria-live="polite"></span>' +
       "</div>";
     wrap.appendChild(panel);
@@ -1053,7 +1053,7 @@
       var job = self.strokes.length
         ? store.put(self.key, { v: 1, H: self.H, s: self.strokes, t: Date.now() })
         : store.del(self.key);
-      job.then(function () { self.status(window.CGEP_SYNC && CGEP_SYNC.signedIn() ? "已存在這台裝置，稍後同步到雲端" : "已存在這台裝置"); askPersist(); })
+      job.then(function () { self.status(window.CGEP_SYNC && CGEP_SYNC.signedIn() ? SAVED_LATER : "已存在這台裝置"); askPersist(); })
          .catch(function () { self.status("儲存失敗：瀏覽器的儲存空間可能滿了"); });
     }, 400);
   };
@@ -1185,8 +1185,12 @@
       remap().then(function (moved) { if (moved.length) refresh(moved, "筆跡已搬回正確的題目"); });
     }
   });
+  // 同步完成不另外顯示訊息，只把「稍後同步到雲端」那句收掉，免得一直掛在紙的下面
   document.addEventListener("cgep:synced", function (e) {
-    (e.detail.pushed || []).forEach(function (k) { if (padsByKey[k]) padsByKey[k].status("已同步到雲端"); });
+    (e.detail.pushed || []).forEach(function (k) {
+      var p = padsByKey[k];
+      if (p && p.statusEl.textContent === SAVED_LATER) p.status("");
+    });
   });
 
   if (window.matchMedia) {

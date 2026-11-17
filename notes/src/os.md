@@ -196,7 +196,21 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
 
 ### 1.1 行程 {#u1-1}
 
-#### 一個行程在記憶體裡長什麼樣子？
+考古題考過的行程觀念，這一節一個一個講清楚。每個觀念後面都接一題**觀念題**：先自己想、寫在手寫板上，再打開答案。
+
+| 觀念 | 考過的題目 |
+|---|---|
+| 記憶體配置（text、data、heap、stack） | 114 Q8b 填空 |
+| PCB 的七個欄位 | 112 Q5a |
+| degree of multiprogramming | 115 Q1a 填空 |
+| dispatcher | 115 Q1c 填空 |
+| 每個 thread 自己的 program counter | 113 Q8a 填空 |
+| Pthreads、POSIX | 114 Q8i 填空 |
+| 交出 CPU 之後放到哪個 queue | 115 Q2a |
+| warm cache、processor affinity | 115 Q2b |
+| 兩種 IPC 模型 | 114 Q6b |
+
+#### 記憶體配置：一個行程在記憶體裡長什麼樣子？（114 Q8b）
 
 <figure class="fig">
 <svg viewBox="0 0 360 270" role="img" aria-label="行程在記憶體裡的配置：由低位址往高位址依序是 text（程式碼）、data（全域變數）、heap（malloc 動態配置，往上長）、中間空的、stack（區域變數和函式呼叫，往下長）。">
@@ -227,20 +241,234 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
 <figcaption>heap 往上長、stack 往下長，中間空著，兩邊都有空間可以長大</figcaption>
 </figure>
 
-- **記憶體配置**：text（程式碼）、data（全域變數）、**heap**（動態配置）、stack（函式呼叫）。（114 Q8b 填空）
-- **PCB 的七個欄位**（112 Q5a）：process state、program counter、CPU registers、CPU-scheduling information、memory-management information、accounting information、I/O status information。
-- **degree of multiprogramming**：目前在記憶體中的 process 數量。（115 Q1a）
-- **dispatcher**：把 CPU 控制權交給排程器選中的 process 的模組，負責 context switch、切換到 user mode、跳到正確位置。（115 Q1c）
-- 每個 thread 有自己的 **program counter**，記錄下一條要執行的指令。（113 Q8a）
-- **Pthreads** 是 **POSIX** 標準定義的 thread API。（114 Q8i）
+一個行程的記憶體分成四塊。用一段程式對照最清楚：
+
+```c
+int total = 0;          /* data */
+
+int main(void) {
+    int n = 5;          /* stack */
+    int *p = malloc(20);
+    /* p 本身在 stack */
+    /* 它指到的 20 bytes 在 heap */
+    total = add(n, 1);
+    /* 呼叫 add：參數進 stack */
+    free(p);            /* 還給 heap */
+    return 0;
+}
+/* main、add 的機器碼都在 text */
+```
+
+| 區塊 | 放什麼 | 大小會變嗎 | 什麼時候產生、消失 |
+|---|---|---|---|
+| **text** | 程式碼（編譯好的機器指令） | 不變 | 程式載入時放進來；通常是唯讀的 |
+| **data** | 全域變數、`static` 變數 | 不變（編譯時就知道要多大） | 整個程式執行期間都在 |
+| **heap** | 執行時用 `malloc`／`new` 要來的記憶體 | 會長大、縮小 | `malloc` 時配置，`free` 時歸還 |
+| **stack** | 函式的參數、區域變數、返回位址 | 會長大、縮小 | 呼叫函式時推進一層（activation record），函式返回時彈出 |
+
+- **為什麼 heap 往上長、stack 往下長**：這兩塊在執行前都不知道要多大，從兩端往中間長，中間的空間誰需要誰用。作業系統要保證兩塊不會撞在一起；無窮遞迴讓 stack 一直長，最後就是 **stack overflow**。
+- **data 再細分**：恐龍書的圖把 data 分成 initialized data（有給初值的全域變數）和 uninitialized data（沒給初值的，常叫 bss）。
+- **114 Q8b 考的是 heap**：填空問「程式執行時動態配置的記憶體」叫什麼，答案是 **heap**。英文定義背這句：the heap is memory that is dynamically allocated during program run time。
+
+<div data-qid="u1-1-mem" markdown="1">
+
+<div markdown="1">
+
+**觀念題 1.** 下面標出的 (a)～(e) 各放在 text、data、heap、stack 哪一塊？(a) hits　(b) square 的機器碼　(c) y　(d) buf 這個指標　(e) malloc 拿到的 64 bytes
+
+```c
+static int hits;        /* (a) */
+int square(int x) {     /* (b) */
+    int y = x * x;      /* (c) */
+    return y;
+}
+int main(void) {
+    /* (d) buf  (e) 那 64 bytes */
+    char *buf = malloc(64);
+    hits = square(3);
+    return 0;
+}
+```
+
+</div>
+
+??? quiz "看答案"
+    | | 東西 | 放在 | 理由 |
+    |---|---|---|---|
+    | (a) | `static int hits` | **data** | 全域（static）變數，整個程式執行期間都在 |
+    | (b) | `square` 的機器碼 | **text** | 程式碼 |
+    | (c) | `y` | **stack** | 區域變數，square 返回就消失 |
+    | (d) | `buf` 這個指標 | **stack** | 它是 main 的區域變數 |
+    | (e) | `malloc(64)` 的 64 bytes | **heap** | 執行時動態要來的 |
+
+    最容易錯的是 (d)、(e)：**指標本身**在 stack，**它指到的那塊**在 heap。
+
+</div>
+
+#### PCB：作業系統替每個行程記的一張表（112 Q5a）
+
+**PCB（process control block）** 是作業系統替每個行程準備的一筆資料。行程被換下 CPU 時，「跑到哪裡、手上有什麼」全部存進它的 PCB；輪到它時再從 PCB 拿出來，就能從上次停下的地方繼續。所以 PCB 要記的，就是「**之後要接著跑、要排程、要管理它**」需要的所有東西：
+
+| 欄位（英文要會寫） | 記什麼 | 為什麼需要 |
+|---|---|---|
+| **process state** | new、ready、running、waiting、terminated | 排程器只挑 ready 的 |
+| **program counter** | 下一條要執行的指令位址 | 回來時從這裡接著跑 |
+| **CPU registers** | 累加器、index 暫存器、stack pointer、一般暫存器、condition code | 中斷時跟 PC 一起存，回來才算得對 |
+| **CPU-scheduling information** | priority、指向排程佇列的指標、其他排程參數 | 排程器靠它決定誰先跑 |
+| **memory-management information** | base／limit 暫存器的值、page table 或 segment table | 換回這個行程時，要換成它的位址空間（[單元 4](#u4)） |
+| **accounting information** | 用了多少 CPU 時間和實際時間、時間上限、帳號、process ID | 統計、計費、限制用量 |
+| **I/O status information** | 分配給它的 I/O 裝置、開啟的檔案 | 結束時要歸還，I/O 完成時要找到在等的人 |
+
+**記法**：前三個是「跑到哪」（state、PC、registers），中間兩個是「怎麼排、住哪裡」（scheduling、memory），最後兩個是「記帳和 I/O」（accounting、I/O status）。
+
+<div class="mcq" data-ans="3" data-qid="u1-1-pcb" markdown="1">
+
+**觀念題 2.** 一個行程打開了 3 個檔案，又被分配了一台印表機。這些資訊記在 PCB 的哪個欄位？
+
+1. CPU registers
+2. accounting information
+3. I/O status information
+4. memory-management information
+
+??? quiz "看解析"
+    **C. I/O status information**：記「分配給這個行程的 I/O 裝置、開啟的檔案」。B 記的是用了多少 CPU 時間、時間上限這類統計；D 記的是 base／limit、page table 這類位址空間的資料；A 是暫存器的內容。
+
+</div>
+
+#### context switch：換人時 PCB 怎麼用
+
+CPU 從行程 P0 換到 P1 的過程：
+
+1. 中斷或 system call 發生，CPU 交給 kernel。
+2. 把 P0 的狀態（PC、暫存器……）**存進 PCB0**；P0 的 state 改成 ready 或 waiting，放進對應的 queue。
+3. 排程器選出 P1。
+4. 從 **PCB1 載入** P1 的狀態，P1 從上次停下的地方繼續跑。
+
+這段時間 CPU 沒有在跑任何使用者的程式，所以 context switch 是**純粹的額外開銷（overhead）**。換得越頻繁（例如 Round Robin 的 quantum 很小），浪費的比例越高。
+
+<div data-qid="u1-1-cs" markdown="1">
+
+**觀念題 3.** Round Robin 的 quantum 是 10 ms，每次 context switch 要 1 ms。所有行程都很長，每次都把 quantum 用完。CPU 有多少比例的時間花在 context switch？quantum 改成 2 ms 呢？
+
+??? quiz "看答案"
+    每一輪是「跑 10 ms ＋ 換 1 ms」＝ 11 ms，浪費 $\frac1{11}\approx$ **9.1%**。
+
+    quantum 改成 2 ms：每一輪 $2+1=3$ ms，浪費 $\frac13\approx$ **33%**。quantum 越小，context switch 佔的比例越高，這就是「quantum 不能太小」的原因。
+
+</div>
+
+#### degree of multiprogramming：記憶體裡有幾個行程（115 Q1a）
+
+**multiprogramming** 的想法：記憶體裡同時放好幾個行程，一個去等 I/O，CPU 就換另一個跑，CPU 不會閒著。**記憶體裡目前有幾個行程，就叫 degree of multiprogramming**（the number of processes currently in memory is known as the degree of multiprogramming）。不管它們是 running、ready 還是 waiting，只要在記憶體裡就算。
+
+誰在控制這個數字？恐龍書把排程器分成三種：
+
+| 排程器 | 做什麼 | 多久執行一次 | 跟 degree 的關係 |
+|---|---|---|---|
+| **long-term scheduler**（job scheduler） | 從磁碟上等著的工作裡，挑哪些載入記憶體 | 很久一次（可能隔幾分鐘） | **控制 degree of multiprogramming** |
+| **short-term scheduler**（CPU scheduler） | 從 ready queue 挑一個給 CPU 跑 | 很頻繁（常常不到 100 ms 就一次），所以要很快 | 不影響 |
+| **medium-term scheduler** | 記憶體太擠時，把一些行程暫時搬到磁碟（swap out），之後再搬回來 | 需要時 | **降低** degree |
+
+- **穩定的時候**：新行程進來的速度 ＝ 行程結束離開的速度，degree 就維持不變。
+- **degree 太低**：大家都在等 I/O 時，CPU 沒事做。
+- **degree 太高**：每個行程分到的記憶體太少，一直 page fault，CPU 反而都在等換頁，這就是 **thrashing**（[4.3](#u4-3)）。
+- long-term scheduler 最好挑 **I/O-bound** 和 **CPU-bound** 混在一起的組合，CPU 和 I/O 裝置才都有事做。
+
+<div class="mcq" data-ans="4" data-qid="u1-1-dom" markdown="1">
+
+**觀念題 4.** 記憶體裡現在有 6 個行程：1 個 running、3 個 ready、2 個 waiting（在等磁碟）。磁碟上還有 4 個工作等著被載入。degree of multiprogramming 是多少？
+
+1. 1
+2. 4
+3. 10
+4. 6
+
+??? quiz "看解析"
+    **D. 6**。degree 數的是「**在記憶體裡**」的行程，不管 running、ready 還是 waiting。磁碟上還沒載入的 4 個不算（C 把它們算進去了）；A 只算 running、B 只算 running 和 ready。決定要不要再多載入幾個的，是 long-term scheduler。
+
+</div>
+
+#### dispatcher：把 CPU 真正交出去的模組（115 Q1c）
+
+排程器（scheduler）**決定**下一個給誰；**dispatcher** 負責**動手交接**。恐龍書的定義：the dispatcher is the module that gives control of the CPU to the process selected by the CPU scheduler。它做三件事：
+
+1. **switching context**：存舊行程的狀態、載入新行程的狀態（就是上面的 context switch）。
+2. **switching to user mode**：kernel 做完交接，切回 user mode 讓程式跑。
+3. **jumping to the proper location**：跳到新行程上次停下的那條指令，接著跑。
+
+每次切換都要用到 dispatcher，所以它要越快越好。**dispatch latency**：dispatcher 停下一個行程、讓另一個開始跑所花的時間。
+
+<div class="mcq" data-ans="2" data-qid="u1-1-disp" markdown="1">
+
+**觀念題 5.** 下面哪一件事**不是** dispatcher 做的？
+
+1. 把舊行程的暫存器存進它的 PCB
+2. 從 ready queue 決定下一個要跑誰
+3. 切換回 user mode
+4. 跳到新行程上次停下的位置
+
+??? quiz "看解析"
+    **B**。「決定給誰」是 **short-term scheduler（CPU scheduler）** 的工作；dispatcher 只負責把 CPU 交給已經選好的那一個：context switch（A）、切到 user mode（C）、跳到正確位置（D）。記法：scheduler 選人，dispatcher 交棒。
+
+</div>
+
+#### 每個 thread 都有自己的 program counter（113 Q8a）
+
+**program counter（PC）** 是 CPU 裡的一個暫存器，存「**下一條要執行的指令在哪裡**」。同一個 process 裡的 threads 各自在做不同的事（一個在算、一個在等網路），做到的指令位置不一樣，所以**每個 thread 都要有自己的 PC**，還有自己的暫存器和 stack（各自呼叫不同的函式）。程式碼、全域變數、heap、開啟的檔案則是大家共用（[1.0 的表](#u1-0)）。
+
+<div data-qid="u1-1-pc" markdown="1">
+
+**觀念題 6.** 一個 process 有 4 個 thread（含 main）。這個 process 一共有幾個 program counter？幾個 stack？幾份全域變數？幾個 heap？
+
+??? quiz "看答案"
+    **4 個 PC、4 個 stack、1 份全域變數、1 個 heap**。
+
+    每個 thread 各自執行到不同的地方，所以 PC、暫存器、stack 每個 thread 一份；全域變數、heap、程式碼、開啟的檔案屬於整個 process，大家共用一份。113 Q8a 的填空考的就是「每個 thread 自己的那一份」裡的 program counter。
+
+</div>
+
+#### Pthreads 和 POSIX（114 Q8i）
+
+- **POSIX**（Portable Operating System Interface）：IEEE 訂的一套標準，規定 UNIX 類系統要提供哪些函式、怎麼呼叫。照標準寫的程式，換到別的 UNIX 類系統（Linux、macOS）也能編譯。
+- **Pthreads**：POSIX 標準（IEEE 1003.1c）裡**建立和同步 thread 的 API**。它是**規格（specification），不是實作**：只規定 `pthread_create`、`pthread_join`、`pthread_exit`、`pthread_mutex_lock` 這些函式要做什麼，各個作業系統自己去實作。
+- 其他的 thread 函式庫：Windows 有自己的 Windows threads（`CreateThread`），Java 有 `Thread` 類別。
+
+<div class="mcq" data-ans="3" data-qid="u1-1-pthread" markdown="1">
+
+**觀念題 7.** 關於 Pthreads，下面哪一句正確？
+
+1. 它是 Windows 內建的 thread 函式庫
+2. 它是 Linux kernel 裡的一種 kernel thread
+3. 它是 POSIX 標準定義的 thread API，是規格而不是實作
+4. 它規定只能用 many-to-one 模型
+
+??? quiz "看解析"
+    **C**。Pthreads 是 POSIX（IEEE 1003.1c）定義建立、同步 thread 的 **API 規格**，Linux、macOS 等 UNIX 類系統各自實作。A 是 Windows threads；B 錯在它是程式呼叫的 API，不是 kernel 裡的東西；D 錯在規格沒有限定對應模型（Linux 的實作是 one-to-one）。
+
+</div>
 
 #### user thread 和 kernel thread 怎麼對應？
+
+**user thread** 由程式裡的 thread 函式庫管理，kernel 不一定知道它們存在；**kernel thread** 由作業系統直接管理、排程。user thread 最後都要對到 kernel thread，才能真的在 CPU 上跑，對應方式有三種：
 
 | 模型 | 對應方式 | 好處 | 壞處 |
 |---|---|---|---|
 | many-to-one | 很多個 user thread 對到 1 個 kernel thread | 切換不用進 kernel，快 | 一個 thread 呼叫會卡住的 system call，整個 process 都卡住；不能同時用多顆 CPU |
 | one-to-one | 每個 user thread 一個 kernel thread（Linux、Windows） | 真的能平行；一個卡住不影響別人 | 每建一個 thread 就要建 kernel thread，數量受限 |
 | many-to-many | 很多個 user thread 對到較少的 kernel thread | 兼顧兩者 | 實作複雜 |
+
+**many-to-one 的兩個壞處都來自「kernel 只看到一個 thread」**：其中一個 user thread 呼叫會卡住的 system call（例如 `read`），kernel 就把這唯一的 kernel thread 卡住，整個 process 的 thread 都不能動；同一時間也只有一個 thread 能在一顆 CPU 上跑，多核心用不到。
+
+<div data-qid="u1-1-model" markdown="1">
+
+**觀念題 8.** 一個程式用 many-to-one 模型開了 4 個 user thread，跑在 4 核心的電腦上。(a) 同一時間最多幾個 thread 在 CPU 上跑？(b) 其中一個 thread 呼叫會卡住的 `read()`，其他 3 個還能跑嗎？(c) 換成 one-to-one 呢？
+
+??? quiz "看答案"
+    - **(a) 1 個**：4 個 user thread 都對到同一個 kernel thread，kernel 只能把這一個排到一顆 CPU 上。
+    - **(b) 不能**：kernel thread 被 `read()` 卡住，對到它的所有 user thread 一起停。
+    - **(c) one-to-one**：每個 user thread 有自己的 kernel thread，(a) 最多 4 個同時跑；(b) 一個卡住，其他 3 個照跑。代價是每建一個 thread 就要建一個 kernel thread。
+
+</div>
 
 !!! example "115 Q2a（6%）：process 在什麼情況下會交出 CPU？之後會放到哪個 queue？"
     對照上面的狀態圖，從 running 出去的三條路：
@@ -249,14 +477,56 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
     2. **建立子行程並等它結束**（或等其他事件）→ 放進 **wait queue**。
     3. **被中斷強制移走，或 time slice 用完** → 回到 ready，放回 **ready queue**。
 
+<div class="mcq" data-ans="2" data-qid="u1-1-queue" markdown="1">
+
+**觀念題 9.** 下面哪一種情況，行程離開 CPU 之後會直接回到 **ready queue**，而不是進某個 wait queue？
+
+1. 呼叫 `read()` 讀磁碟
+2. time slice 用完，被 timer 中斷
+3. 呼叫 `wait()` 等子行程結束
+4. 等一個 semaphore
+
+??? quiz "看解析"
+    **B**。time slice 用完只是「輪到別人」，它本身還能繼續跑，所以回 ready queue 排隊。A、C、D 都在等某件事發生（磁碟讀完、子行程結束、semaphore 被 signal），事情發生之前不能跑，所以進 wait queue；等到了才回 ready queue。
+
+</div>
+
 !!! example "115 Q2b（4%）：從 processor affinity 的角度解釋 warm cache"
     - **warm cache 是什麼**：process 在某個 core 上跑一段時間後，它的資料已經在那個 core 的 cache 裡（cache 是「熱」的）。
     - **換 core 的代價**：移到別的 core，舊 cache 的資料用不到、新 core 的 cache 要一筆一筆 miss 重新載入，成本很高。
     - **processor affinity**：所以排程器盡量讓 process 留在同一個 core 上跑。
 
+<div class="mcq" data-ans="1" data-qid="u1-1-affinity" markdown="1">
+
+**觀念題 10.** 一個行程從 core 0 被搬到 core 1，剛搬過去的那段時間跑得比較慢。主要原因是？
+
+1. core 1 的 cache 裡沒有它的資料，一開始一直 cache miss
+2. 搬過去要重新編譯程式
+3. core 1 的時脈比較慢
+4. 搬過去之後它的 priority 被降低
+
+??? quiz "看解析"
+    **A**。在 core 0 跑的時候，它的資料已經在 core 0 的 cache 裡（warm cache）；到了 core 1，cache 是冷的，要一筆一筆 miss、從記憶體重新載入。所以排程器盡量讓行程留在同一個 core，這就是 **processor affinity**：soft affinity 是盡量不搬（不保證），hard affinity 是行程自己指定只能在哪些 core 上跑。
+
+</div>
+
 !!! example "114 Q6b（4%）：兩種 IPC 模型"
     - **shared memory**：建立一塊共享記憶體，process 直接讀寫。快（建好之後不用經過 kernel），但要自己做同步。
     - **message passing**：透過 kernel 的 send／receive 傳訊息。較慢（每次都要 system call），但不用處理衝突，也適合分散式系統（[6.3](#u6-dist)）。
+
+<div class="mcq" data-ans="2" data-qid="u1-1-ipc" markdown="1">
+
+**觀念題 11.** 兩個行程要交換資料。哪一種方式在**建好之後**，每次讀寫都不需要 system call？
+
+1. message passing
+2. shared memory
+3. pipe
+4. socket
+
+??? quiz "看解析"
+    **B. shared memory**。只有建立共享區時要呼叫 system call，之後兩個行程直接讀寫同一塊記憶體，kernel 不用插手，所以最快；代價是要自己做同步（[單元 2](#u2)）。message passing、pipe、socket 每次傳資料都要 send／receive 或 write／read，都會進 kernel。
+
+</div>
 
 ### 1.2 CPU 排程計算 {#u1-2}
 
@@ -268,6 +538,34 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
 
 **做法**：畫 Gantt chart，算每個 process 的完成時間，等待時間 ＝ 完成時間 $-$ 到達時間 $-$ burst time。
 
+#### 什麼時候要排程？會搶和不會搶
+
+CPU 排程發生在這四個時機：
+
+1. 行程從 running 變成 waiting（例如發出 I/O 請求、呼叫 `wait()` 等子行程）。
+2. 行程從 running 變成 ready（例如 timer 中斷，時間片用完）。
+3. 行程從 waiting 變成 ready（例如 I/O 完成）。
+4. 行程結束。
+
+- **1 和 4**：目前的行程自己不能（或不需要）再跑，一定要選下一個。
+- **2 和 3**：目前的行程其實還能繼續跑，要不要換人是一種選擇。
+
+**非搶先（nonpreemptive）**：只在 1、4 排程，行程拿到 CPU 之後一直用到結束，或自己去等 I/O。**搶先（preemptive）**：2、3 也可以把 CPU 拿走，例如更高 priority 的行程 I/O 做完回到 ready，就馬上搶過來。搶先的回應比較快，但兩個行程共用資料時，可能做到一半被換下，會有 race condition（[單元 2](#u2)）。
+
+<div class="mcq" data-ans="3" data-qid="u1-2-when" markdown="1">
+
+**觀念題 12.** 在**非搶先**排程下，下面哪一種情況發生時，排程器一定要選下一個行程？
+
+1. 一個高 priority 的行程 I/O 做完，回到 ready
+2. timer 中斷
+3. 正在跑的行程發出 I/O 請求
+4. 有新的行程被建立
+
+??? quiz "看解析"
+    **C**。正在跑的行程去等 I/O（時機 1），CPU 空出來，一定要選人。A（時機 3）和 B（時機 2）在非搶先下都不換人，目前的行程繼續跑；D 的新行程只是進 ready queue 排隊。搶先式才會在 A、B 這種時候把 CPU 拿走。
+
+</div>
+
 #### 五種演算法怎麼選、各有什麼問題？
 
 | 演算法 | 會搶嗎（preemptive） | 每次選誰 | 好處 | 問題 |
@@ -278,7 +576,71 @@ P2 在 7 完成、P1 在 8 完成。等待時間 ＝ 完成時間 − 執行時�
 | Priority | 兩種都有 | priority 最高的（通常數字小） | 照重要性排 | starvation，用 **aging**（等越久 priority 越高）解決 |
 | Round Robin | 會 | 輪流，每人最多一個 quantum | response time 好、公平 | quantum 太大就變 FCFS；太小 context switch 太多 |
 
-**multilevel feedback queue**：好幾個 queue，越上面 priority 越高、quantum 越小。新來的先進最上面；用完整個 quantum 還沒做完就降一級。這樣互動型（常常等 I/O、用不完 quantum）的留在上面，計算型的自動沉下去。
+#### 表裡的三個問題，用例子看
+
+**convoy effect（FCFS）**：P1 要 24、P2 和 P3 各要 3，依序在時間 0 到達。FCFS 的等待是 0、24、27，平均 17；先做短的（P2、P3、P1），等待是 0、3、6，平均 3。一個長的排在前面，後面一串短的全被卡住，像一台慢車後面跟著一長串車。
+
+**starvation 和 aging（Priority）**：只要一直有高 priority 的行程進來，低 priority 的就永遠輪不到，這叫 **starvation**（餓死）。**aging** 的做法是「等越久，priority 越高」：例如 priority 從 0（最高）到 127（最低），每等 1 秒就把數字減 1，最低的 127 最多等 127 秒也會升到 0，一定輪得到。
+
+**SJF 要知道 burst：用過去預測下一次**。真正執行前不知道下一次 CPU burst 多長，常用**指數平均（exponential average）**來預測：
+
+$$\tau_{n+1}=\alpha\,t_n+(1-\alpha)\,\tau_n$$
+
+- $t_n$：第 n 次**實際**的 burst；$\tau_n$：第 n 次的**預測**；$\alpha$ 介於 0 和 1，常用 $\frac12$。
+- 意思：新的預測 ＝「剛剛實際的」和「之前預測的」加權平均。$\alpha=1$ 只看最近一次；$\alpha=0$ 永遠不更新。
+- 例：$\tau_0=10$、$\alpha=\frac12$，實際的 burst 依序是 $t_0=6$、$t_1=4$、$t_2=6$：
+    - $\tau_1=\frac12\times6+\frac12\times10=8$
+    - $\tau_2=\frac12\times4+\frac12\times8=6$
+    - $\tau_3=\frac12\times6+\frac12\times6=6$
+
+<div data-qid="u1-2-exp" markdown="1">
+
+**觀念題 13.** 用指數平均預測 CPU burst，$\alpha=\frac12$、$\tau_0=8$，實際的 burst 依序是 4、12、6。$\tau_1$、$\tau_2$、$\tau_3$ 各是多少？如果 $\alpha=1$，$\tau_3$ 是多少？
+
+??? quiz "看答案"
+    - $\tau_1=\frac12\times4+\frac12\times8=$ **6**
+    - $\tau_2=\frac12\times12+\frac12\times6=$ **9**
+    - $\tau_3=\frac12\times6+\frac12\times9=$ **7.5**
+
+    $\alpha=1$ 時只看最近一次的實際值：$\tau_3=t_2=$ **6**。
+
+</div>
+
+#### multilevel feedback queue：用例子跑一次
+
+好幾個 queue，越上面 priority 越高、quantum 越小。恐龍書的例子是三層：
+
+| queue | 規則 |
+|---|---|
+| Q0（最高） | quantum 8 ms |
+| Q1 | quantum 16 ms，Q0 空了才跑 |
+| Q2（最低） | FCFS，Q0、Q1 都空了才跑 |
+
+- 新行程先進 **Q0**。8 ms 內做完就離開；做不完就**降到 Q1**。
+- 在 Q1 拿到 16 ms，還做不完就**降到 Q2**，在那裡照 FCFS 跑完。
+- 上面的 queue 有人時，下面的不能跑；跑到一半上面來了新行程，就被搶走。
+- 為了不讓下面的餓死，等太久的可以**升級**到上面的 queue（aging）。
+
+**效果**：互動型的行程（常常等 I/O、每次 burst 很短）在 Q0 就做完，一直留在高 priority，回應很快；計算型的（burst 很長）自動沉到下面，用 FCFS 慢慢做。
+
+一個 MLFQ 由五件事決定：幾個 queue、每個 queue 用什麼演算法、什麼時候升級、什麼時候降級、新行程進哪一個 queue。
+
+<div data-qid="u1-2-mlfq" markdown="1">
+
+**觀念題 14.** 在上面三層的 MLFQ 裡，只有一個 burst 30 ms 的行程 A（中間沒有別的行程）。A 在 Q0、Q1、Q2 各跑了幾 ms？另一個 burst 5 ms 的行程 B 呢？
+
+??? quiz "看答案"
+    - **A**：Q0 跑滿 8 ms 沒做完 → 降到 Q1，跑滿 16 ms 還沒做完 → 降到 Q2，剩 $30-8-16=6$ ms 在 Q2 用 FCFS 跑完。所以是 **8、16、6**。
+    - **B**：5 ms ＜ 8 ms，在 **Q0 就做完**，不會降級。
+
+    這就是 MLFQ 的效果：短的留在上面很快做完，長的往下沉。
+
+</div>
+
+#### Round Robin 的兩個細節
+
+- **quantum 怎麼選**：太大就變成 FCFS（每個人都在一個 quantum 內做完）；太小則 context switch 佔太多時間（[觀念題 3](#q-u1-1-cs)）。恐龍書的經驗法則：大約 80% 的 CPU burst 要比 quantum 短。
+- **同一時刻「新來的」和「被切下來的」誰先排**：題目沒說時，常見的約定是**新來的先進 queue**，被切下來的排在它後面（本教材的動畫和練習都用這個約定）。考試時把你的假設寫出來，閱卷就不會誤會。
 
 #### 有到達時間時：搶先和不搶先差在哪？
 
@@ -381,10 +743,163 @@ if (fork() == 0) {            /* 子行程 */
 
 #### 規則 4：pipe、dup、exec 把輸出接到別的行程
 
-- **檔案描述子（file descriptor）**：0 是標準輸入（鍵盤）、1 是標準輸出（螢幕）、2 是標準錯誤。
-- **`pipe(fd)`**：建一條管子，`fd[0]` 是讀端、`fd[1]` 是寫端。記法：0 對應 stdin（讀）、1 對應 stdout（寫）。
-- **`close(1); dup(fd[1]);`**：dup 會用「目前最小的空號碼」複製一份。剛關掉 1，所以新的 1 就是 pipe 的寫端。之後寫到標準輸出的東西都流進 pipe，不會出現在螢幕上。（`dup2(fd[1], 1)` 是一次做完的寫法。）
-- **`execl("/bin/echo", ...)`**：把目前這個行程**換成**另一個程式。execl 成功後，原本程式下面的程式碼**不會再執行**，但已經開好的檔案描述子會留著，所以 echo 的輸出照樣流進 pipe。
+這三個函式都在改同一張表：**檔案描述子表**。先把這張表搞懂，後面就只是在表上改格子。
+
+**檔案描述子表（file descriptor table）**：每個行程都有一張表，號碼是 0、1、2、3……，每一格指向一個打開的東西（檔案、螢幕、鍵盤、pipe 的一端）。程式讀寫時只講號碼，不管它實際接到哪裡：
+
+| 號碼 | 一開始接到 | 誰用這一格 |
+|---|---|---|
+| 0 | 鍵盤（標準輸入 stdin） | `scanf`、`getchar` 讀這一格 |
+| 1 | 螢幕（標準輸出 stdout） | `printf`、`puts` 寫這一格 |
+| 2 | 螢幕（標準錯誤 stderr） | `fprintf(stderr, ...)` 寫這一格 |
+
+**最重要的規則**：`open`、`pipe`、`dup` 要新號碼時，一律拿**目前最小的空號碼**。例如 0、1、2 都在用時，`open` 拿到 3；先 `close(1)` 再 `open`，就拿到 1。（我實際跑過：兩次 open 拿到 3、4；close(1) 之後再 open 拿到 1。）
+
+<div data-qid="u1-fork-fd" markdown="1">
+
+**觀念題 15.** 一個行程剛開始只有 0、1、2。依序執行 `a = open("x.txt", ...)`、`b = open("y.txt", ...)`、`close(0)`、`c = open("z.txt", ...)`。a、b、c 各是幾號？之後 `scanf` 會從哪裡讀？
+
+??? quiz "看答案"
+    - **a ＝ 3**、**b ＝ 4**：0、1、2 都在用，依序拿 3、4。
+    - **c ＝ 0**：`close(0)` 之後，0 是最小的空號碼。
+    - **scanf 讀 z.txt**：scanf 永遠讀 0 號，0 號現在接到 z.txt，所以它讀的是檔案內容，不是鍵盤。這就是 shell「輸入重新導向」（`< z.txt`）的原理。
+
+</div>
+
+#### pipe：kernel 裡的一條單向管子
+
+`pipe(fd)` 在 kernel 裡開一段緩衝區，並在描述子表裡佔兩格：**`fd[0]` 是讀端、`fd[1]` 是寫端**（記法：0 對應 stdin 讀、1 對應 stdout 寫）。從寫端寫進去的資料，照順序（先進先出）從讀端讀出來。
+
+| 情況 | `read(fd[0], ...)` 會怎樣 |
+|---|---|
+| 管子裡有資料 | 讀走資料，回傳讀到幾個 byte |
+| 管子是空的，但還有人開著寫端 | **等**（block），直到有人寫進來 |
+| 管子是空的，而且**所有**寫端都關了 | 回傳 **0**，代表 EOF（不會再有資料了） |
+
+- pipe 是**單向**的：要雙向溝通就開兩條。
+- 這種 pipe（ordinary pipe）沒有名字，只有建立它的行程和它 fork 出來的子孫拿得到（描述子表是 fork 複製過去的）。用 `mkfifo` 建的 **named pipe（FIFO）** 有名字、像檔案一樣，沒有親屬關係的行程也能用，行程結束後它還在。
+
+#### fork 之後，為什麼要關掉用不到的那一端
+
+fork 會把描述子表整張複製給子行程，所以 fork 之後**父子兩邊都同時拿著讀端和寫端**。通常一邊只寫、一邊只讀，就把用不到的那一端關掉：
+
+- 寫的一方：`close(fd[0])`
+- 讀的一方：`close(fd[1])`
+
+**不關會怎樣**：讀的一方要等到「**所有**寫端都關了」才會讀到 EOF。如果讀的一方自己還開著一個寫端，管子永遠不算「沒人寫了」，它讀完資料之後會一直等下去，程式卡住。（我實際跑過：讀的一方忘了關自己的寫端，read 等了 2 秒還沒回來；關掉之後，讀完 3 個 byte 馬上拿到 0。）
+
+<div data-qid="u1-fork-pipe" markdown="1">
+
+<div markdown="1">
+
+**觀念題 16.** 父行程寫、子行程讀。下面的子行程忘了 `close(fd[1])`，會發生什麼事？
+
+```c
+int fd[2];
+pipe(fd);
+if (fork() == 0) { /* 子行程：讀 */
+    char c;
+    while (read(fd[0], &c, 1) > 0)
+        putchar(c);
+    printf("done\n");
+} else {           /* 父行程：寫 */
+    close(fd[0]);
+    write(fd[1], "hi\n", 3);
+    close(fd[1]);
+    wait(NULL);
+}
+```
+
+</div>
+
+??? quiz "看答案"
+    **子行程印出 `hi` 之後就卡住，永遠印不到 `done`；父行程停在 `wait` 等它，整個程式不會結束。**
+
+    父行程已經關了它的寫端，但子行程自己還開著一個寫端（fork 複製來的），所以「所有寫端都關了」一直不成立，`read` 讀完 `hi\n` 之後不會回傳 0，而是一直等。修正：子行程一開始就 `close(fd[1])`。這支程式我實際跑過，結果就是印出 hi 後停住。
+
+</div>
+
+#### dup：讓另一個號碼也指到同一個地方
+
+`dup(old)` 找**最小的空號碼**，讓它也指向 `old` 指的那個東西，回傳新號碼。常見的三行：
+
+```c
+close(1);      /* 1 空出來 */
+dup(fd[1]);    /* 拿最小的空號：1 */
+close(fd[1]);  /* 舊號碼用不到了 */
+```
+
+- `close(1)`：1 空出來，而且是最小的空號碼（0 還在用）。
+- `dup(fd[1])`：拿到 1，1 現在也指向 pipe 的寫端。
+- `close(fd[1])`：原本那個號碼用不到了就關掉；pipe 的寫端還有 1 這個號碼開著，不會被關掉。
+
+之後 `printf` 寫 1 號，資料就進了 pipe，不會出現在螢幕上。`dup2(fd[1], 1)` 是一次做完前兩行的寫法：先把 1 關掉，再讓 1 指向 `fd[1]` 指的東西。
+
+**110 Q1 子行程的描述子表**（fork 之後，pipe 的讀端是 3、寫端是 4）。子行程依序執行：
+
+1. fork 之後（還沒動）
+2. `close(fd[0])`
+3. `close(1)`
+4. `dup(fd[1])`
+5. `close(fd[1])`
+
+| 步驟 | 0 | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|---|
+| 1 | 鍵盤 | 螢幕 | 螢幕 | 讀端 | 寫端 |
+| 2 | 鍵盤 | 螢幕 | 螢幕 | － | 寫端 |
+| 3 | 鍵盤 | － | 螢幕 | － | 寫端 |
+| 4 | 鍵盤 | **寫端** | 螢幕 | － | 寫端 |
+| 5 | 鍵盤 | **寫端** | 螢幕 | － | － |
+
+（「讀端」「寫端」是 pipe 的兩端；「－」是空著的號碼。）
+
+`close(1)` 之後空號碼有 1 和 3，最小的是 1，所以 dup 拿到 1。父行程對稱地把 0 號換成 pipe 的讀端，所以它的 `scanf` 讀的是 pipe。
+
+#### exec：換掉程式，但打開的檔案留著
+
+`execl(path, arg0, arg1, ..., NULL)` 把**目前這個行程**換成另一個程式：
+
+| 被換掉 | 留下來 |
+|---|---|
+| text、data、heap、stack（整個記憶體內容） | **PID**（還是同一個行程） |
+| 原本程式裡 exec 之後的那幾行 | **描述子表**（打開的檔案、pipe、被 dup 過的 0、1、2） |
+
+- 所以 exec 成功之後**不會回來**，下一行只有 exec 失敗時才會執行。
+- 因為描述子表留著，exec 之前把 1 號接到 pipe，新程式（例如 echo）寫標準輸出時，就寫進了 pipe。shell 執行 `ls | wc -l` 就是這樣做的：fork 兩次，一個把 1 號接到 pipe 寫端再 exec `ls`，另一個把 0 號接到讀端再 exec `wc`。
+- 參數：`execl("/bin/echo", "echo", "hello", "world!", (char *)0)`，第一個是程式的路徑，第二個開始是新程式看到的 `argv[0]`、`argv[1]`……，最後用 NULL 結尾。名字裡有 `p` 的（`execlp`）會沿著 PATH 找程式；有 `v` 的（`execv`）把參數放在陣列裡。
+
+<div class="mcq" data-ans="4" data-qid="u1-fork-exec" markdown="1">
+
+**觀念題 17.** 子行程先執行 `dup2(f, 1)`（f 是打開的 out.txt），再 `execl("/bin/echo", "echo", "hi", (char *)0)`。下面哪一句**錯誤**？
+
+1. echo 印的 `hi` 會寫進 out.txt，不會出現在螢幕上
+2. echo 跑起來之後，它的 PID 跟呼叫 execl 的子行程一樣
+3. 如果 execl 成功，它下一行的 `printf` 不會執行
+4. exec 會把描述子表重設回 0、1、2 都接螢幕和鍵盤
+
+??? quiz "看解析"
+    **D 錯**。exec 換掉的是記憶體裡的程式（text、data、heap、stack），**描述子表會留著**，所以 1 號還是接到 out.txt，A 才會成立。B：exec 不建立新行程，PID 不變。C：成功的 exec 不會回來。這三點我都用程式實際跑過。
+
+</div>
+
+#### wait、zombie、orphan
+
+- **`wait(&status)`**：等**任何一個**子行程結束，回傳它的 PID，結束碼放在 status。**`waitpid(pid, &status, 0)`**：等指定的那一個；pid 寫 −1 就是「任何一個」，跟 wait 一樣。
+- **zombie（殭屍行程）**：子行程已經結束，但父行程**還沒呼叫 wait**。它的記憶體已經釋放，但 PID 和結束碼還留在系統裡，等父行程來拿。父行程一 wait，它就真正消失。
+- **orphan（孤兒行程）**：父行程**先結束了**，子行程還在跑。UNIX 會讓 init（PID 1，或 systemd 這類負責收養的行程）當它的新父親，init 會定期呼叫 wait，所以孤兒結束後不會一直留成 zombie。
+
+（我實際跑過：子行程結束、父行程還沒 wait 時，它的狀態是 Z（zombie）；父行程 wait 之後拿到結束碼，它就消失了。父行程先結束時，子行程的父親變成 PID 1。）
+
+<div data-qid="u1-fork-zombie" markdown="1">
+
+**觀念題 18.** 父行程 fork 出子行程之後，自己跑一個 10 分鐘的計算迴圈，完全沒有呼叫 wait；子行程 1 秒就結束了。(a) 這 10 分鐘裡子行程是什麼狀態？(b) 如果父行程一直不 wait、又不停地 fork，會有什麼問題？(c) 如果反過來，父行程 1 秒就結束、子行程跑 10 分鐘呢？
+
+??? quiz "看答案"
+    - **(a) zombie**：已經結束，但父行程沒有 wait，PID 和結束碼還留在系統裡等它來拿。
+    - **(b) PID 被用光**：每個 zombie 都佔著一個 PID 和行程表的一格，一直累積，最後系統沒辦法再建立新行程。
+    - **(c) orphan**：父行程先走了，子行程被 init（PID 1）收養；子行程結束時由 init 來 wait，不會留下 zombie。
+
+</div>
 
 #### 考試的步驟
 
@@ -1112,6 +1627,462 @@ int main(void) {
 
     這支程式用 gcc 實際編譯執行過，輸出跟上面一樣。
 
+
+### 1.8 題庫：簡單觀念題、基礎題、猜題 {#u1-bank}
+
+三種題目，由淺到深：
+
+- **簡單觀念題**：一句話就能回答，確認名詞和觀念有沒有記對。
+- **基礎題**：要動手畫 Gantt chart 或追程式，但只用到一個觀念。
+- **猜題**：考古題還沒考過、但恐龍書第 3～5 章（行程、執行緒、CPU 排程）的重點，我猜比較可能出現的題型，包含 115 年那種英文名詞填空。
+
+#### 簡單觀念題
+
+<div class="mcq" data-ans="3" data-qid="u1-bank-s1" markdown="1">
+
+**簡單 1.** 下面哪一個狀態轉換**不可能**直接發生？
+
+1. ready → running
+2. running → waiting
+3. waiting → running
+4. running → ready
+
+??? quiz "看解析"
+    **C**。waiting 的行程等到 I/O 或事件之後，要先回 **ready** 排隊，被排程器選中才能 running，不會直接跳回 CPU。
+
+</div>
+
+<div class="mcq" data-ans="2" data-qid="u1-bank-s2" markdown="1">
+
+**簡單 2.** 從行程送進系統，到它**第一次**拿到 CPU 的時間叫什麼？
+
+1. waiting time
+2. response time
+3. turnaround time
+4. burst time
+
+??? quiz "看解析"
+    **B. response time**。turnaround time 是從送進來到**做完**；waiting time 是在 ready queue 等的**總**時間；burst time 是它要用 CPU 多久。
+
+</div>
+
+<div class="mcq" data-ans="3" data-qid="u1-bank-s3" markdown="1">
+
+**簡單 3.** 同一個 process 的 threads，下面哪一個是**每個 thread 各有一份**？
+
+1. heap
+2. 全域變數
+3. stack
+4. 開啟的檔案
+
+??? quiz "看解析"
+    **C. stack**（還有 program counter、暫存器）。每個 thread 各自呼叫不同的函式，區域變數和返回位址要分開放。A、B、D 屬於整個 process，大家共用。
+
+</div>
+
+<div class="mcq" data-ans="3" data-qid="u1-bank-s4" markdown="1">
+
+**簡單 4.** 下面哪一個排程演算法一定是**搶先式**？
+
+1. FCFS
+2. SJF
+3. Round Robin
+4. 不搶先的 Priority
+
+??? quiz "看解析"
+    **C. Round Robin**。quantum 用完，不管做完沒有都要讓出 CPU。FCFS 和 SJF 都是拿到 CPU 就做到完（SJF 會搶的版本叫 SRTF）。
+
+</div>
+
+<div class="mcq" data-ans="1" data-qid="u1-bank-s5" markdown="1">
+
+**簡單 5.** `pid = fork();` 之後，**子行程**裡的 pid 是多少？
+
+1. 0
+2. 子行程自己的 PID
+3. 父行程的 PID
+4. −1
+
+??? quiz "看解析"
+    **A. 0**。父行程拿到的才是子行程的 PID（大於 0）；−1 代表 fork 失敗。子行程要知道自己的 PID 用 `getpid()`，父親的用 `getppid()`。
+
+</div>
+
+<div class="mcq" data-ans="2" data-qid="u1-bank-s6" markdown="1">
+
+**簡單 6.** `pipe(fd)` 之後，要**讀**資料用哪一個？
+
+1. `fd[1]`
+2. `fd[0]`
+3. 0 號（標準輸入）
+4. 1 號（標準輸出）
+
+??? quiz "看解析"
+    **B. `fd[0]`** 是讀端，`fd[1]` 是寫端（記法：0 對應 stdin 讀、1 對應 stdout 寫）。C、D 是標準輸入、輸出，除非用 dup 接過去，不然跟 pipe 沒有關係。
+
+</div>
+
+<div class="mcq" data-ans="4" data-qid="u1-bank-s7" markdown="1">
+
+**簡單 7.** 子行程已經結束，但父行程還沒呼叫 wait。這個子行程叫什麼？
+
+1. orphan
+2. daemon
+3. thread
+4. zombie
+
+??? quiz "看解析"
+    **D. zombie**。它的 PID 和結束碼還留著，等父行程 wait 來拿。A 的 orphan 剛好相反：父行程先結束，子行程還在跑。
+
+</div>
+
+<div class="mcq" data-ans="1" data-qid="u1-bank-s8" markdown="1">
+
+**簡單 8.** 哪一個排程器控制 degree of multiprogramming？
+
+1. long-term scheduler
+2. short-term scheduler
+3. dispatcher
+4. 磁碟排程器
+
+??? quiz "看解析"
+    **A**。long-term scheduler 決定讓哪些工作載入記憶體，所以決定記憶體裡有幾個行程。short-term scheduler 只在記憶體裡的 ready 行程之間挑一個給 CPU。
+
+</div>
+
+#### 基礎題
+
+<div data-qid="u1-bank-b1" markdown="1">
+
+<div markdown="1">
+
+**基礎 1.** 用 FCFS 排程，畫 Gantt chart，算平均等待時間和平均 turnaround time。
+
+| 行程 | 到達 | burst |
+|---|---|---|
+| P1 | 0 | 4 |
+| P2 | 1 | 3 |
+| P3 | 2 | 1 |
+
+</div>
+
+??? quiz "看答案"
+    **Gantt chart**：P1 0–4、P2 4–7、P3 7–8。
+
+    | | 完成 | turnaround ＝ 完成 − 到達 | waiting ＝ turnaround − burst |
+    |---|---|---|---|
+    | P1 | 4 | 4 | 0 |
+    | P2 | 7 | 6 | 3 |
+    | P3 | 8 | 6 | 5 |
+
+    平均等待 $\frac{0+3+5}{3}=\frac83\approx$ **2.67**；平均 turnaround $\frac{4+6+6}{3}=\frac{16}3\approx$ **5.33**。
+
+</div>
+
+<div data-qid="u1-bank-b2" markdown="1">
+
+<div markdown="1">
+
+**基礎 2.** 用 SRTF（剩餘時間最短的先做，會搶）排程，畫 Gantt chart，算平均等待時間。
+
+| 行程 | 到達 | burst |
+|---|---|---|
+| P1 | 0 | 5 |
+| P2 | 1 | 3 |
+| P3 | 2 | 1 |
+
+</div>
+
+??? quiz "看答案"
+    | 時間 | 發生什麼事 | 執行 |
+    |---|---|---|
+    | 0 | 只有 P1 | P1 |
+    | 1 | P2 到，3 ＜ P1 剩的 4 → 搶走 | P2 |
+    | 2 | P3 到，1 ＜ P2 剩的 2 → 搶走 | P3 |
+    | 3 | P3 做完；P2 剩 2 ＜ P1 剩 4 | P2（到 5） |
+    | 5 | P2 做完 | P1（到 9） |
+
+    等待 ＝ 完成 − 到達 − burst：P1 $9-0-5=4$、P2 $5-1-3=1$、P3 $3-2-1=0$，平均 $\frac53\approx$ **1.67**。
+
+</div>
+
+<div data-qid="u1-bank-b3" markdown="1">
+
+**基礎 3.** P1、P2、P3 都在時間 0 到達，burst 是 5、3、1。用 Round Robin（quantum ＝ 2），算平均等待時間和平均 response time。
+
+??? quiz "看答案"
+    **Gantt chart**：P1 0–2、P2 2–4、P3 4–5、P1 5–7、P2 7–8、P1 8–9。
+
+    - 完成：P3 5、P2 8、P1 9。
+    - 等待 ＝ 完成 − burst：P1 $9-5=4$、P2 $8-3=5$、P3 $5-1=4$，平均 $\frac{13}3\approx$ **4.33**。
+    - response（第一次拿到 CPU）：P1 0、P2 2、P3 4，平均 **2**。
+
+    RR 的平均等待不一定比較短，但每個行程很快就第一次拿到 CPU，所以 response time 好。
+
+</div>
+
+<div data-qid="u1-bank-b4" markdown="1">
+
+<div markdown="1">
+
+**基礎 4.** 下面的程式一共印出幾個 `hi`？畫出行程樹。
+
+```c
+pid_t p = fork();
+if (p == 0)
+    fork();
+printf("hi\n");
+```
+
+</div>
+
+??? quiz "看答案"
+    **3 個**。
+
+    - P0 第一次 fork 出 P1。P0 拿到的 p ＞ 0，不進 if；P1 拿到 0，進 if 再 fork 出 P2。
+    - P2 是 P1 在 if 裡 fork 出來的，從 fork 的下一行繼續，也會跑到 printf。
+    - P0、P1、P2 各印一次：3 個 hi。（我實際執行過，印出 3 行。）
+
+</div>
+
+<div data-qid="u1-bank-b5" markdown="1">
+
+<div markdown="1">
+
+**基礎 5.** 下面的程式在螢幕上印出什麼？
+
+```c
+int fd[2];
+char buf[8] = {0};
+pipe(fd);
+if (fork() == 0) {
+    close(fd[1]);
+    read(fd[0], buf, 7);
+    printf("child got %s\n", buf);
+} else {
+    close(fd[0]);
+    /* 寫 3 個 byte：O、S、\0 */
+    write(fd[1], "OS", 3);
+    close(fd[1]);
+    wait(NULL);
+    printf("parent done\n");
+}
+```
+
+</div>
+
+??? quiz "看答案"
+    ```text
+    child got OS
+    parent done
+    ```
+
+    - 子行程關掉寫端，從讀端讀；父行程關掉讀端，寫進 3 個 byte 再關掉寫端。
+    - 子行程讀到 `OS`（連同結尾的 `\0`），印出 `child got OS`。
+    - 父行程 `wait` 等子行程結束才印 `parent done`，所以順序固定。我實際執行過，輸出一樣。
+
+</div>
+
+<div data-qid="u1-bank-b6" markdown="1">
+
+<div markdown="1">
+
+**基礎 6.** 下面的程式印出什麼？
+
+```c
+int g = 0;
+void *add(void *p) {
+    g += 5;
+    return NULL;
+}
+
+int main(void) {
+    pthread_t t;
+    pthread_create(&t, NULL, add, NULL);
+    pthread_join(t, NULL);
+    if (fork() == 0) {
+        g += 1;
+        printf("child %d\n", g);
+        return 0;
+    }
+    wait(NULL);
+    printf("parent %d\n", g);
+    return 0;
+}
+```
+
+</div>
+
+??? quiz "看答案"
+    ```text
+    child 6
+    parent 5
+    ```
+
+    - thread 跟 main 共用 g，join 之後 g ＝ 5。
+    - fork 把 g ＝ 5 複製給子行程；子行程把**自己的** g 加成 6。
+    - 父行程的 g 還是 5，等子行程結束才印。我實際執行過，輸出一樣。
+
+</div>
+
+#### 猜題：可能會考的題型
+
+<div data-qid="u1-bank-g1" markdown="1">
+
+<div markdown="1">
+
+**猜題 1.**（英文名詞填空，115 年的格式）
+
+- (a) The ＿＿ scheduler selects processes from the job pool on disk and loads them into memory for execution.
+- (b) A process that has terminated, but whose parent has not yet called wait(), is called a ＿＿ process.
+- (c) ＿＿ is the time from the submission of a request until the first response is produced.
+- (d) In priority scheduling a low-priority process may wait indefinitely. This problem is called ＿＿, and one solution is ＿＿.
+- (e) Unlike an ordinary pipe, a ＿＿ pipe does not require a parent–child relationship and continues to exist after the communicating processes have finished.
+
+</div>
+
+??? quiz "看答案"
+    - (a) **long-term**（job）scheduler
+    - (b) **zombie**
+    - (c) **Response time**
+    - (d) **starvation**（indefinite blocking）；**aging**
+    - (e) **named**（FIFO）
+
+</div>
+
+<div data-qid="u1-bank-g2" markdown="1">
+
+**猜題 2.**（Amdahl's law）一個程式有 25% 只能循序執行，75% 可以平行。用 Amdahl's law 算 2、4、8 核心的加速比上限；核心無限多時，最多快幾倍？
+
+??? quiz "看答案"
+    $$\text{speedup}\le\frac{1}{S+\frac{1-S}{N}}$$
+
+    S 是只能循序的比例（0.25），N 是核心數：
+
+    | N | 計算 | 加速比上限 |
+    |---|---|---|
+    | 2 | $\frac1{0.25+0.375}$ | **1.6** |
+    | 4 | $\frac1{0.25+0.1875}$ | **約 2.29** |
+    | 8 | $\frac1{0.25+0.09375}$ | **約 2.91** |
+    | ∞ | $\frac1{0.25}$ | **4** |
+
+    重點：循序的部分決定上限，核心再多也快不過 $\frac1S$ 倍。
+
+</div>
+
+<div class="mcq" data-ans="2" data-qid="u1-bank-g3" markdown="1">
+
+**猜題 3.** 單核心 CPU 上用 Round Robin 輪流跑兩個 thread，兩個都一直有進度。這叫什麼？
+
+1. 平行（parallelism）
+2. 並行（concurrency），但不是平行
+3. 兩者都是
+4. 兩者都不是
+
+??? quiz "看解析"
+    **B**。**concurrency**：好幾個工作都在前進，可以是輪流跑；**parallelism**：好幾個工作在**同一瞬間**一起跑，要有多個核心。單核心只能輪流，所以有 concurrency 沒有 parallelism。
+
+</div>
+
+<div data-qid="u1-bank-g4" markdown="1">
+
+<div markdown="1">
+
+**猜題 4.**（fork 的陷阱）下面印出什麼？
+
+```c
+printf("A");
+fork();
+printf("B\n");
+```
+
+</div>
+
+??? quiz "看答案"
+    ```text
+    AB
+    AB
+    ```
+
+    **A 印了兩次**。`printf("A")` 沒有換行，`A` 還留在**行程自己記憶體裡的輸出緩衝區**，沒有真的送到螢幕。fork 把整個記憶體（包含這個緩衝區）複製給子行程，兩個行程的緩衝區裡都有 `A`，之後各自接上 `B\n` 再印出。要只印一次 A，在 fork 前呼叫 `fflush(stdout)`。我實際執行過，輸出就是兩行 AB。
+
+</div>
+
+<div data-qid="u1-bank-g5" markdown="1">
+
+<div markdown="1">
+
+**猜題 5.** 假設每次 printf 都立刻印到螢幕。下面一共印出幾個 `x`？最後總共有幾個行程？
+
+```c
+for (int i = 0; i < 3; i++) {
+    fork();
+    printf("x\n");
+}
+```
+
+</div>
+
+??? quiz "看答案"
+    **14 個 x、8 個行程**。
+
+    | i | fork 之後有幾個行程 | 這一輪印幾個 x |
+    |---|---|---|
+    | 0 | 2 | 2 |
+    | 1 | 4 | 4 |
+    | 2 | 8 | 8 |
+
+    每一輪所有行程都 fork 一次，行程數乘 2；每個行程都會印，所以是 $2+4+8=14$。（我實際執行過，加上 fflush 讓每次都立刻印出，剛好 14 行。）
+
+</div>
+
+<div data-qid="u1-bank-g6" markdown="1">
+
+**猜題 6.**（message passing）(a) send 和 receive 都是 blocking 時，叫做什麼？(b) 傳訊息的 link 有哪三種緩衝容量？各在什麼時候讓送的一方等？
+
+??? quiz "看答案"
+    - **(a) rendezvous**：送的一方等到對方收到，收的一方等到有訊息，兩邊在同一刻「會合」。
+    - **(b)**：
+        - **zero capacity**：link 裡不能放任何訊息，送的一方**每次都要等**對方收走。
+        - **bounded capacity**：最多放 n 個，**滿了**才要等。
+        - **unbounded capacity**：可以放無限多個，送的一方**永遠不用等**。
+
+    名詞對照：blocking ＝ synchronous（同步）、nonblocking ＝ asynchronous（非同步）。
+
+</div>
+
+<div data-qid="u1-bank-g7" markdown="1">
+
+**猜題 7.** 一個有 4 個 thread 的 process，其中一個 thread 呼叫 `fork()`。子行程有幾個 thread？如果子行程 fork 完立刻呼叫 `exec()` 呢？
+
+??? quiz "看答案"
+    - **看系統**：有些 UNIX 系統提供兩種 fork，一種複製所有 thread，一種只複製呼叫 fork 的那個 thread。POSIX 的 `fork()` 只複製呼叫它的那個 thread，所以子行程只有 **1 個** thread。
+    - **馬上 exec 的話**：exec 會把整個行程（包含所有 thread）換成新程式，複製其他 thread 是白做工，所以**只複製呼叫的那個 thread** 最適合。
+
+</div>
+
+<div data-qid="u1-bank-g8" markdown="1">
+
+**猜題 8.**（thread cancellation）取消一個 thread 有哪兩種方式？哪一種比較安全？為什麼？
+
+??? quiz "看答案"
+    - **asynchronous cancellation**：一個 thread **立刻**終止目標 thread。
+    - **deferred cancellation**：目標 thread **自己定期檢查**要不要結束（在 cancellation point 檢查），有機會先整理好再結束。
+
+    **deferred 比較安全**：asynchronous 可能在目標 thread 改共用資料改到一半、或還拿著資源時把它砍掉，資料不一致、資源也沒有釋放。Pthreads 預設就是 deferred。
+
+</div>
+
+<div data-qid="u1-bank-g9" markdown="1">
+
+**猜題 9.**（Little's formula）一個系統的 ready queue 平均每秒進來 5 個行程，每個行程平均在 queue 裡等 3 秒。queue 裡平均有幾個行程？
+
+??? quiz "看答案"
+    **Little's formula**：$n=\lambda\times W$。n 是 queue 裡平均的個數、λ 是平均每秒進來幾個、W 是平均等多久。
+
+    $n=5\times3=$ **15** 個。直覺：每秒進來 5 個、每個待 3 秒，任何時刻 queue 裡大約有最近 3 秒進來的那 15 個。這個式子不管用哪種排程、行程怎麼到達都成立（系統穩定時）。
+
+</div>
 
 ### 單元 1 小考 {#u1-quiz}
 
