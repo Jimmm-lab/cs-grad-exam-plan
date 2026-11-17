@@ -1905,6 +1905,198 @@ window.MathJax = {
 </ul>
 <p>我用程式把所有放法列出來數過，答案一樣。</p>
 </details>
+<h3 id="u1-exam">1.10 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 111 Q8・改條件）20 顆<strong>相同</strong>的白色彈珠放進 6 個不同的罐子。(a) 罐子可以空 (b) 每個罐子至少一顆。各有幾種放法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題 20 顆彈珠顏色都不同，每顆各自挑罐子，是 <span class="arithmatex">\(6^{20}\)</span>；這題彈珠都一樣，只看「每個罐子裝幾顆」，變成重複組合（星星與隔板）。</li>
+<li><strong>(a) 可以空</strong>：20 顆星、5 根隔板排成一列，選隔板的位置：<span class="arithmatex">\(\binom{25}{5}=53130\)</span>。</li>
+<li><strong>(b) 每罐至少一顆</strong>：先每罐放 1 顆，剩 14 顆隨便放：<span class="arithmatex">\(\binom{14+5}{5}=\binom{19}{5}=11628\)</span>。</li>
+<li><strong>答案</strong>：(a) <strong>53130</strong> (b) <strong>11628</strong>。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 113 Q1・改條件）10 顆相同的白球放進 3 個不同的桶子，第 1 桶至少 2 顆、第 3 桶要<strong>奇數</strong>顆，有幾種放法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只有「第 3 桶偶數」；這題第 3 桶改成奇數，又多一個下限「第 1 桶至少 2 顆」。</li>
+<li><strong>先處理下限</strong>：第 1 桶先放 2 顆，剩 8 顆，之後第 1 桶就沒有限制了。</li>
+<li><strong>第 3 桶分情況</strong>：第 3 桶放 1、3、5、7 顆，剩下 7、5、3、1 顆放進前兩桶；<span class="arithmatex">\(m\)</span> 顆放進 2 桶有 <span class="arithmatex">\(m+1\)</span> 種：<span class="arithmatex">\(8+6+4+2=20\)</span>。</li>
+<li><strong>答案</strong>：<strong>20</strong>。</li>
+<li>（生成函數寫法：前兩桶 <span class="arithmatex">\(\frac{1}{(1-x)^2}\)</span>、第 3 桶奇數 <span class="arithmatex">\(\frac{x}{1-x^2}\)</span>，取 <span class="arithmatex">\(x^8\)</span> 的係數。單元 3 會教。）</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 113 Q5・改條件）<span class="arithmatex">\(2310=2\times3\times5\times7\times11\)</span>。把 2310 寫成 3 個正整數相乘：(a) 有順序（<span class="arithmatex">\(1\times2\times1155\)</span> 和 <span class="arithmatex">\(2\times1\times1155\)</span> 算不同），因數可以是 1 (b) 不計順序，因數可以是 1 (c) 不計順序，每個因數都大於 1。各有幾種？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題就是 (c) 的情況（6 個質數、3 個大於 1 的因數、不計順序）。這題一次問三種，練習判斷「球、箱子、能不能空」。</li>
+<li><strong>把質數當成球</strong>：5 個質數都不同 → 5 顆不同的球；3 個因數是箱子；因數可以是 1 ＝ 箱子可以空。</li>
+<li><strong>(a) 有順序、可以空</strong>：箱子有編號，每個質數各自挑一個因數：<span class="arithmatex">\(3^5=243\)</span>。</li>
+<li><strong>(b) 不計順序、可以空</strong>：箱子沒有編號、可以空，依「實際用了幾個箱子」相加：<span class="arithmatex">\(S(5,1)+S(5,2)+S(5,3)=1+15+25=41\)</span>。</li>
+<li><strong>(c) 不計順序、都大於 1</strong>：箱子沒有編號、不能空：<span class="arithmatex">\(S(5,3)=25\)</span>。</li>
+<li><strong>答案</strong>：(a) <strong>243</strong> (b) <strong>41</strong> (c) <strong>25</strong>。</li>
+<li><strong>小心</strong>：(b) 不能用 <span class="arithmatex">\(243\div3!\)</span>（不是整數），因為像 <span class="arithmatex">\(1\times1\times2310\)</span> 這種有兩個因數相同的，交換順序不會變出 6 種。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 114 Q3・改數字）<span class="arithmatex">\(A=\{1,\dots,7\}\)</span>、<span class="arithmatex">\(B=\{a,b,c,d,e,f\}\)</span>，函數 <span class="arithmatex">\(f:A\to B\)</span>。(a) <span class="arithmatex">\(f(A)=\{a,b\}\)</span> (b) <span class="arithmatex">\(|f(A)|=2\)</span> (c) <span class="arithmatex">\(|f(A)|\le2\)</span>。各有幾個這樣的函數？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題問像集剛好 3 個元素；這題換成 2 個，還多問「最多 2 個」。</li>
+<li><strong>(a) 映到 {a, b}，兩個都要用到</strong>：7 個元素各選 a 或 b 有 <span class="arithmatex">\(2^7\)</span> 種，扣掉全部是 a、全部是 b：<span class="arithmatex">\(2^7-2=126\)</span>。</li>
+<li><strong>(b) 像集剛好 2 個</strong>：先從 6 個裡選是哪 2 個，再 onto：<span class="arithmatex">\(\binom62\times126=15\times126=1890\)</span>。</li>
+<li><strong>(c) 最多 2 個</strong>：再加上像集只有 1 個的（常數函數）6 個：<span class="arithmatex">\(1890+6=1896\)</span>。</li>
+<li><strong>答案</strong>：(a) <strong>126</strong> (b) <strong>1890</strong> (c) <strong>1896</strong>。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 115 A1・換字）MISSISSIPPI 的所有排列中，4 個 S 都不相鄰的有幾種？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：字母換了，但「某個字母不能相鄰」的做法一樣：先排其他字母，再把它插進空隙。</li>
+<li><strong>字母</strong>：M×1、I×4、S×4、P×2，共 11 個。</li>
+<li><strong>先排 7 個非 S 字母</strong>：<span class="arithmatex">\(\frac{7!}{4!\,2!}=105\)</span>。</li>
+<li><strong>再插 S</strong>：7 個字母有 8 個空隙，選 4 個放 S（S 都一樣，用組合）：<span class="arithmatex">\(\binom84=70\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(105\times70=\)</span> <strong>7350</strong>。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 6.</strong>（改自 115 A6・改條件）從 <span class="arithmatex">\(\{1,\dots,12\}\)</span> 選 3 個數，任兩個數至少差 3（例如 {1, 4, 7} 可以，{1, 3, 8} 不行），有幾種選法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題是「不相鄰」（至少差 2）；這題至少差 3，平移時每一步要多扣一點。</li>
+<li><strong>平移</strong>：選出 <span class="arithmatex">\(a_1&lt;a_2&lt;a_3\)</span>，條件是 <span class="arithmatex">\(a_{i+1}\ge a_i+3\)</span>。令 <span class="arithmatex">\(b_1=a_1\)</span>、<span class="arithmatex">\(b_2=a_2-2\)</span>、<span class="arithmatex">\(b_3=a_3-4\)</span>，條件變成 <span class="arithmatex">\(b_1&lt;b_2&lt;b_3\)</span>（只要嚴格遞增），而且 <span class="arithmatex">\(b_3\le12-4=8\)</span>。</li>
+<li><strong>變成普通的選法</strong>：從 <span class="arithmatex">\(\{1,\dots,8\}\)</span> 任選 3 個，反過來也一一對應：<span class="arithmatex">\(\binom83=56\)</span>。</li>
+<li><strong>一般公式</strong>：從 <span class="arithmatex">\(n\)</span> 個數選 <span class="arithmatex">\(k\)</span> 個、任兩個至少差 <span class="arithmatex">\(d\)</span>：<span class="arithmatex">\(\binom{n-(d-1)(k-1)}{k}\)</span>。<span class="arithmatex">\(d=2\)</span> 就是原題的 <span class="arithmatex">\(\binom{n-k+1}{k}\)</span>。</li>
+<li><strong>答案</strong>：<strong>56</strong>。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 7.</strong>（改自 112 Q1・換數字）<span class="arithmatex">\((2a-b+c+1)^{10}\)</span> 展開後，<span class="arithmatex">\(a^2b^3c^4\)</span> 的係數是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：一樣用多項式定理；這題要自己找出常數項用了幾次，負號來自 <span class="arithmatex">\(-b\)</span>。</li>
+<li><strong>常數項用幾次</strong>：<span class="arithmatex">\(2+3+4=9\)</span>，所以常數 1 用了 <span class="arithmatex">\(10-9=1\)</span> 次。</li>
+<li><strong>多項式係數</strong>：<span class="arithmatex">\(\frac{10!}{2!\,3!\,4!\,1!}=12600\)</span>。</li>
+<li><strong>乘上各項的係數</strong>：<span class="arithmatex">\(2^2\cdot(-1)^3\cdot1^4\cdot1^1=-4\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(12600\times(-4)=\)</span> <strong>−50400</strong>。</li>
+</ul>
+<p>我用程式把整個式子展開過，係數一樣。</p>
+</details>
+<p><strong>考古變化 8.</strong>（改自 112 Q4・改條件）<span class="arithmatex">\(\Sigma=\{0,1,2,3\}\)</span>。(a) 長度 1 到 8 的字串中，以 12 為 proper prefix 的有幾個？(b) 長度剛好 6 的字串中，以 12 開頭<strong>或</strong>以 3 結尾的有幾個？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：(a) 只換了字母數和長度；(b) 多了「或」，要用排容扣掉兩個條件同時成立的。</li>
+<li><strong>(a)</strong>：proper prefix 代表比 12 長，長度 <span class="arithmatex">\(n=3,\dots,8\)</span>，後面 <span class="arithmatex">\(n-2\)</span> 位任意：<span class="arithmatex">\(4+4^2+\cdots+4^6=\frac{4^7-4}{3}=5460\)</span>。</li>
+<li><strong>(b)</strong>：以 12 開頭（後 4 位任意）<span class="arithmatex">\(4^4=256\)</span>；以 3 結尾（前 5 位任意）<span class="arithmatex">\(4^5=1024\)</span>；兩個都成立（中間 3 位任意）<span class="arithmatex">\(4^3=64\)</span>。<span class="arithmatex">\(256+1024-64=1216\)</span>。</li>
+<li><strong>答案</strong>：(a) <strong>5460</strong> (b) <strong>1216</strong>。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 9.</strong>（改自 113 Q2・改位數）1000–9999 中所有四位數回文（例如 1221、9009）的和是多少？（不能列舉）</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：三位數回文 <span class="arithmatex">\(\overline{aba}\)</span> 換成四位數 <span class="arithmatex">\(\overline{abba}\)</span>，位值要重新算。</li>
+<li><strong>寫成式子</strong>：<span class="arithmatex">\(\overline{abba}=1000a+100b+10b+a=1001a+110b\)</span>，<span class="arithmatex">\(a\in\{1,\dots,9\}\)</span>（9 種）、<span class="arithmatex">\(b\in\{0,\dots,9\}\)</span>（10 種），共 90 個。</li>
+<li><strong>每個 <span class="arithmatex">\(a\)</span> 出現 10 次</strong>：<span class="arithmatex">\(1001\times10\times(1+\cdots+9)=1001\times10\times45=450450\)</span>。</li>
+<li><strong>每個 <span class="arithmatex">\(b\)</span> 出現 9 次</strong>：<span class="arithmatex">\(110\times9\times(0+\cdots+9)=110\times9\times45=44550\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(450450+44550=\)</span> <strong>495000</strong>。</li>
+<li>順便發現：每個四位數回文都是 11 的倍數（<span class="arithmatex">\(1001=11\times91\)</span>、<span class="arithmatex">\(110=11\times10\)</span>）。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 10.</strong>（改自 111 Q4・換數字）12 的回文組合（有順序的正整數和、正讀反讀一樣，例如 <span class="arithmatex">\(3+6+3\)</span>）(a) 一共有幾個？(b) 以 3 開頭的有幾個？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只問「以 <span class="arithmatex">\(t\)</span> 開頭」；這題先問全部，再代進原題的公式。</li>
+<li><strong>(a) 全部</strong>：用原題的引理，<span class="arithmatex">\(m\)</span> 的回文組合有 <span class="arithmatex">\(2^{\lfloor m/2\rfloor}\)</span> 個：<span class="arithmatex">\(2^{6}=64\)</span>。</li>
+<li><strong>(b) 以 3 開頭</strong>：結尾也一定是 3，中間剩 <span class="arithmatex">\(12-6=6\)</span>，要是 6 的回文組合：<span class="arithmatex">\(2^{\lfloor 6/2\rfloor}=8\)</span>。</li>
+<li><strong>答案</strong>：(a) <strong>64</strong> (b) <strong>8</strong>。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<div markdown="1">
+<p><strong>考古變化 11.</strong>（改自 114 Q1・改條件）下面的程式跑完後，sum 是多少？（注意 j 只到 i − 1、k 只到 j − 1）</p>
+<pre class="highlight"><code>increment = 0; sum = 0;
+for i = 1 to 12
+    for j = 1 to i - 1
+        for k = 1 to j - 1
+            increment = increment + 1
+            sum = sum + increment</code></pre>
+</div>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題是 <span class="arithmatex">\(k\le j\le i\)</span>（可以相等），這題是 <span class="arithmatex">\(k&lt;j&lt;i\)</span>（不能相等），從「可重複的組合」變成「不可重複的組合」。</li>
+<li><strong>迴圈跑幾次</strong>：<span class="arithmatex">\((i,j,k)\)</span> 滿足 <span class="arithmatex">\(1\le k&lt;j&lt;i\le12\)</span>，就是從 12 個數選 3 個不同的數（選出來排好大小只有一種方式）：<span class="arithmatex">\(\binom{12}{3}=220\)</span>。</li>
+<li><strong>sum</strong>：increment 依序是 <span class="arithmatex">\(1,2,\dots,220\)</span>：<span class="arithmatex">\(\frac{220\times221}{2}=24310\)</span>。</li>
+<li><strong>答案</strong>：<strong>24310</strong>。</li>
+</ul>
+<p>我用程式直接跑過這三層迴圈，答案一樣。</p>
+</details>
+<p><strong>考古變化 12.</strong>（改自 115 A5・改大小）棋子每步可以往右、往上或往右上走一格。從 (1, 1) 走到 (4, 6) 有幾條路徑？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：正方形換成長方形，往右和往上的格數不一樣多。</li>
+<li><strong>想法</strong>：要往右 3 格、往上 5 格。依「右上用了幾步 <span class="arithmatex">\(d\)</span>」分類，剩下右 <span class="arithmatex">\(3-d\)</span> 步、上 <span class="arithmatex">\(5-d\)</span> 步：<span class="arithmatex">\(\frac{(8-d)!}{(3-d)!\,(5-d)!\,d!}\)</span>。</li>
+<li><strong>四種情況</strong>：<span class="arithmatex">\(d=0\)</span>：<span class="arithmatex">\(\frac{8!}{3!\,5!}=56\)</span>；<span class="arithmatex">\(d=1\)</span>：<span class="arithmatex">\(\frac{7!}{2!\,4!\,1!}=105\)</span>；<span class="arithmatex">\(d=2\)</span>：<span class="arithmatex">\(\frac{6!}{1!\,3!\,2!}=60\)</span>；<span class="arithmatex">\(d=3\)</span>：<span class="arithmatex">\(\frac{5!}{0!\,2!\,3!}=10\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(56+105+60+10=\)</span> <strong>231</strong>。</li>
+<li><strong>用填表驗算</strong>：<span class="arithmatex">\(f(i,j)=f(i-1,j)+f(i,j-1)+f(i-1,j-1)\)</span>，第一列、第一行都是 1，填到 (4, 6) 也是 231。</li>
+</ul>
+<p>我用程式填表算過，答案一樣。</p>
+</details>
+<p><strong>考古變化 13.</strong>（改自 101 Q5・換數字）每一步 <span class="arithmatex">\(x\)</span> 加 1、<span class="arithmatex">\(y\)</span> 加 1 或減 1。從 (0, 2) 走到 (12, 4) 有幾條路徑？其中不碰到也不穿過 x 軸的有幾條？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：起點、終點、步數都換了；做法一樣：先算全部，再用反射原理扣掉碰到 x 軸的。</li>
+<li><strong>全部（792）</strong>：<span class="arithmatex">\(U+D=12\)</span>、<span class="arithmatex">\(U-D=4-2=2\)</span>，所以 <span class="arithmatex">\(U=7\)</span>、<span class="arithmatex">\(D=5\)</span>：<span class="arithmatex">\(\binom{12}{5}=792\)</span>。</li>
+<li><strong>碰到 x 軸的（220）</strong>：把起點翻到 (0, −2)，走到 (12, 4)：<span class="arithmatex">\(U-D=6\)</span>，<span class="arithmatex">\(U=9\)</span>、<span class="arithmatex">\(D=3\)</span>：<span class="arithmatex">\(\binom{12}{3}=220\)</span>。</li>
+<li><strong>答案</strong>：全部 <strong>792</strong> 條，不碰 x 軸的 <span class="arithmatex">\(792-220=\)</span> <strong>572</strong> 條。</li>
+</ul>
+<p>我用程式把 <span class="arithmatex">\(2^{12}\)</span> 種走法全部跑過，答案一樣。</p>
+</details>
+<p><strong>考古變化 14.</strong>（改自 106 Q3・換恆等式）證明 <span class="arithmatex">\(k\binom nk=n\binom{n-1}{k-1}\)</span>（<span class="arithmatex">\(1\le k\le n\)</span>），並給一個組合解釋。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題是加法型的 Pascal 恆等式（某人選或不選）；這題是乘法型，組合解釋要用「先選一群人、再選代表」。</li>
+<li><strong>代數證明</strong>：<span class="arithmatex">\(k\binom nk=k\cdot\frac{n!}{k!\,(n-k)!}=\frac{n!}{(k-1)!\,(n-k)!}=n\cdot\frac{(n-1)!}{(k-1)!\,(n-k)!}=n\binom{n-1}{k-1}\)</span>。∎</li>
+<li><strong>組合解釋</strong>：從 <span class="arithmatex">\(n\)</span> 個人選出 <span class="arithmatex">\(k\)</span> 人的委員會，再從委員會裡選一位主席。<ul>
+<li>左邊：先選委員會 <span class="arithmatex">\(\binom nk\)</span> 種，再從 <span class="arithmatex">\(k\)</span> 人裡選主席 <span class="arithmatex">\(k\)</span> 種。</li>
+<li>右邊：先選主席 <span class="arithmatex">\(n\)</span> 種，再從剩下 <span class="arithmatex">\(n-1\)</span> 人選其他 <span class="arithmatex">\(k-1\)</span> 位委員 <span class="arithmatex">\(\binom{n-1}{k-1}\)</span> 種。</li>
+<li>兩邊數的是同一件事，所以相等。∎</li>
+</ul>
+</li>
+</ul>
+<p>我用程式檢查過 <span class="arithmatex">\(n\le30\)</span> 的所有情況，兩邊都相等。</p>
+</details>
+<p><strong>考古變化 15.</strong>（改自 100 Q8、106 Q7・換數字）照原題 (b) 的證明，<span class="arithmatex">\(n=25\)</span> 時取 <span class="arithmatex">\(i=5\)</span>。(a) <span class="arithmatex">\(\binom{25}{5}\)</span> 裡有幾個因數 5？(b) 25 整除 <span class="arithmatex">\(\binom{25}{5}\)</span> 嗎？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題要證明一般的 <span class="arithmatex">\(n\)</span>；這題代一個 <span class="arithmatex">\(p^2\)</span> 型的合數，親手把證明的每一步跑一次。</li>
+<li><strong>找質因數</strong>：<span class="arithmatex">\(n=25=5^2\)</span>，所以 <span class="arithmatex">\(p=5\)</span>、<span class="arithmatex">\(a=2\)</span>。</li>
+<li><strong>分子</strong> <span class="arithmatex">\(25\times24\times23\times22\times21\)</span>：只有 25 是 5 的倍數，有 2 個 5。</li>
+<li><strong>分母</strong> <span class="arithmatex">\(5!=120\)</span>：只有 5 本身，1 個 5。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(\binom{25}{5}\)</span> 裡只剩 <span class="arithmatex">\(2-1=\)</span> <strong>1</strong> 個 5。</li>
+<li><strong>(b)</strong>：要兩個 5 才能被 25 整除，所以<strong>不整除</strong>。實際上 <span class="arithmatex">\(\binom{25}{5}=53130=25\times2125+5\)</span>，餘 5。</li>
+</ul>
+<p>我用程式算過 <span class="arithmatex">\(\binom{25}{5}=53130\)</span>，裡面剛好一個因數 5。</p>
+</details>
 <h3 id="u1-quiz">單元 1 小考</h3>
 <p><strong>1-1.</strong> 12 顆相同的球放進 4 個不同的箱子，每箱至少一顆，有幾種放法？</p>
 <details class="quiz">
@@ -1988,7 +2180,7 @@ window.MathJax = {
 <h4 id="6-5-11">會英文的 6 人、會日文的 5 人，為什麼加起來不是 11 人？</h4>
 <p>班上 10 人，6 人會英文、5 人會日文、3 人兩種都會。<strong>至少會一種的有幾人？</strong></p>
 <p>直接相加 <span class="arithmatex">\(6+5=11\)</span>，比全班還多，一定哪裡錯了。畫成圖就看得出來：兩個圓重疊的那一塊，<strong>在「會英文」裡數了一次，在「會日文」裡又數了一次</strong>。</p>
-<figure class="fig">
+<p><figure class="fig">
 <svg viewBox="0 0 360 210" role="img" aria-label="文氏圖：全班 10 人，只會英文 3 人，兩種都會 3 人，只會日文 2 人，都不會 2 人">
 <rect class="dash" x="8" y="8" width="344" height="194" rx="10"/>
 <circle class="fa" cx="140" cy="112" r="72"/>
@@ -2000,10 +2192,9 @@ window.MathJax = {
 <text x="255" y="112" text-anchor="middle" dominant-baseline="central">只日 2</text>
 <text x="20" y="194" class="sm">全班 10 人</text>
 <text x="340" y="194" text-anchor="end" class="sm">都不會 2</text>
-</svg>
+</svg></p>
 <figcaption>中間那一塊（3 人）在「英文 6」和「日文 5」裡各算了一次</figcaption>
 </figure>
-
 <p>把人分成<strong>不重疊</strong>的幾塊就清楚了：</p>
 <table>
 <thead>
@@ -2563,6 +2754,129 @@ window.MathJax = {
 <li><strong>答案</strong>：<span class="arithmatex">\(1001-1050+150=\)</span> <strong>101</strong>。</li>
 </ul>
 <p>我用程式把所有解列出來數過，答案一樣。</p>
+</details>
+<h3 id="u2-exam">2.8 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 115 A3・改條件）100–999 中能被 4、6 或 9 整除的有幾個？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題的 3、5、7 兩兩互質，交集直接相乘；這題 4、6、9 有公因數，交集要用<strong>最小公倍數</strong>：「是 4 的倍數又是 6 的倍數」等於「是 12 的倍數」，不是 24。</li>
+<li><strong>1. 換成兩段相減</strong>：100–999 裡的個數 ＝ 1–999 的個數 − 1–99 的個數。</li>
+<li>
+<p><strong>2. 每一項的個數</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>除數</th>
+<th>1–999</th>
+<th>1–99</th>
+<th>100–999</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td>249</td>
+<td>24</td>
+<td>225</td>
+</tr>
+<tr>
+<td>6</td>
+<td>166</td>
+<td>16</td>
+<td>150</td>
+</tr>
+<tr>
+<td>9</td>
+<td>111</td>
+<td>11</td>
+<td>100</td>
+</tr>
+<tr>
+<td>lcm(4,6)=12</td>
+<td>83</td>
+<td>8</td>
+<td>75</td>
+</tr>
+<tr>
+<td>lcm(4,9)=36</td>
+<td>27</td>
+<td>2</td>
+<td>25</td>
+</tr>
+<tr>
+<td>lcm(6,9)=18</td>
+<td>55</td>
+<td>5</td>
+<td>50</td>
+</tr>
+<tr>
+<td>lcm(4,6,9)=36</td>
+<td>27</td>
+<td>2</td>
+<td>25</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>3. 排容</strong>：<span class="arithmatex">\((225+150+100)-(75+25+50)+25=350\)</span>。</p>
+</li>
+<li><strong>答案</strong>：<strong>350</strong>。</li>
+<li><strong>常見錯誤</strong>：交集用乘積 24、36、54、216，會算成 400，是錯的。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 113 Q8・換數字）3800 本書以 100 本為一包，分給 4 組，每組 500–1000 本，有幾種分法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字全換了，但一樣是「總數很接近上限的總和」，用「離上限還差多少」最快。</li>
+<li><strong>1. 換成包數</strong>：<span class="arithmatex">\(3800\div100=38\)</span> 包；每組 5–10 包：<span class="arithmatex">\(x_1+\cdots+x_4=38\)</span>、<span class="arithmatex">\(5\le x_i\le10\)</span>。</li>
+<li><strong>2. 離上限還差多少</strong>：令 <span class="arithmatex">\(z_i=10-x_i\)</span>，<span class="arithmatex">\(0\le z_i\le5\)</span>，<span class="arithmatex">\(z_1+\cdots+z_4=40-38=2\)</span>。總和只有 2，上限 5 自動滿足。</li>
+<li><strong>3. 星星與隔板</strong>：<span class="arithmatex">\(\binom{2+3}{3}=10\)</span>。</li>
+<li><strong>答案</strong>：<strong>10</strong>。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 115 A2・改數字）<span class="arithmatex">\(x+y+z+w=12\)</span>、<span class="arithmatex">\(x,y,z,w\in\{1,2,3,4\}\)</span> 的整數解有幾組？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題「兩個同時超過上限」那一項是 0；這題換了數字，那一項不是 0，要記得加回來。</li>
+<li><strong>1. 平移下限</strong>：令 <span class="arithmatex">\(x'=x-1\)</span> 等，<span class="arithmatex">\(x'+y'+z'+w'=8\)</span>、<span class="arithmatex">\(0\le x',y',z',w'\le3\)</span>。</li>
+<li><strong>2. 不管上限</strong>：<span class="arithmatex">\(\binom{8+3}{3}=165\)</span>。</li>
+<li><strong>3. 扣掉某一個 <span class="arithmatex">\(\ge4\)</span> 的</strong>：先塞 4，剩 4 分給 4 個變數 <span class="arithmatex">\(\binom{7}{3}=35\)</span>；選哪一個有 4 種：<span class="arithmatex">\(140\)</span>。</li>
+<li><strong>4. 加回兩個同時 <span class="arithmatex">\(\ge4\)</span> 的</strong>：先塞 8，剩 0，<span class="arithmatex">\(\binom{3}{3}=1\)</span>；選哪兩個 <span class="arithmatex">\(\binom42=6\)</span> 種：<span class="arithmatex">\(6\)</span>。</li>
+<li><strong>5. 三個同時 <span class="arithmatex">\(\ge4\)</span></strong>：至少要 12，超過 8，不可能。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(165-140+6=\)</span> <strong>31</strong>。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 112 Q6(b)・改條件）白、紅、藍、綠旗各 10 面，挑 10 面排成一列當信號。「白旗至少 3 面」<strong>而且</strong>「至少有一面藍旗」的信號有幾種？先寫式子，再算出數值。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題是「或」（聯集）；這題是「而且」（交集）。「至少有一面藍旗」的反面是「沒有藍旗」，所以用 <span class="arithmatex">\(|A|-|A\cap B|\)</span>。</li>
+<li><strong>1. 定集合</strong>：<span class="arithmatex">\(A\)</span> ＝ 白旗 <span class="arithmatex">\(\ge3\)</span>；<span class="arithmatex">\(B\)</span> ＝ 沒有藍旗。要算「在 <span class="arithmatex">\(A\)</span> 裡、不在 <span class="arithmatex">\(B\)</span> 裡」的：<span class="arithmatex">\(|A|-|A\cap B|\)</span>。</li>
+<li><strong>2. <span class="arithmatex">\(|A|\)</span></strong>：全部 <span class="arithmatex">\(4^{10}\)</span>，扣掉白旗只有 0、1、2 面的（選白旗位置，其他位置 3 色任選）：<span class="arithmatex">\(|A|=4^{10}-\sum_{k=0}^{2}\binom{10}{k}3^{10-k}=1048576-551124=497452\)</span>。</li>
+<li><strong>3. <span class="arithmatex">\(|A\cap B|\)</span></strong>：只能用白、紅、綠 3 色、白旗 <span class="arithmatex">\(\ge3\)</span>：<span class="arithmatex">\(3^{10}-\sum_{k=0}^{2}\binom{10}{k}2^{10-k}=59049-17664=41385\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(497452-41385=\)</span> <strong>456067</strong>。</li>
+</ul>
+<p>我用程式把 <span class="arithmatex">\(4^{10}\)</span> 種信號全部列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 115 A9・改字串）<span class="arithmatex">\(\Sigma=\{a,b,x,y\}\)</span>，長度 1 到 5 的所有字串中，有幾個含有子字串 aba？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題的 bay 不會跟自己重疊，排容的交集全是 0；aba 頭尾都是 a，<strong>會重疊</strong>（例如 ababa），交集不是 0。</li>
+<li><strong>長度 3（1）</strong>：只有 aba。</li>
+<li><strong>長度 4（8）</strong>：aba 從第 1 位或第 2 位開始，各剩 1 位任意：<span class="arithmatex">\(4+4\)</span>。兩個同時成立要「aba?」又「?aba」，第 2 位要同時是 b 和 a，不可能，交集 0。</li>
+<li><strong>長度 5（47）</strong>：從第 1、2、3 位開始，各剩 2 位任意 <span class="arithmatex">\(4^2=16\)</span>，共 48。第 1、3 位同時成立就是 ababa，有 1 種，要扣掉；第 1、2 位、第 2、3 位同時成立都會打架，是 0：<span class="arithmatex">\(48-1=47\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(1+8+47=\)</span> <strong>56</strong>。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
 </details>
 <h3 id="u2-quiz">單元 2 小考</h3>
 <p><strong>2-1.</strong> <span class="arithmatex">\(x_1+x_2+x_3+x_4=20\)</span>，<span class="arithmatex">\(0\le x_i\le7\)</span> 的整數解數？</p>
@@ -3203,6 +3517,126 @@ window.MathJax = {
 <li><strong>部分分式</strong>：<span class="arithmatex">\(1-x=\alpha(1-3x)+\beta(1-2x)\)</span>。<span class="arithmatex">\(x=\frac12\)</span>：<span class="arithmatex">\(\frac12=-\frac12\alpha\)</span>，<span class="arithmatex">\(\alpha=-1\)</span>；<span class="arithmatex">\(x=\frac13\)</span>：<span class="arithmatex">\(\frac23=\frac13\beta\)</span>，<span class="arithmatex">\(\beta=2\)</span>。</li>
 <li><strong>答案</strong>：<span class="arithmatex">\(a_n=2\cdot3^n-2^n\)</span>。驗算 <span class="arithmatex">\(a_0=1\)</span>、<span class="arithmatex">\(a_1=6-2=4\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>、<span class="arithmatex">\(a_2=18-4=14=5\times4-6\times1\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
 </ol>
+</details>
+<h3 id="u3-exam">3.6 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 114 Q7・改條件）買 <span class="arithmatex">\(n\)</span> 盒肉（豬、雞、牛），牛肉必須是偶數盒、雞肉最多 2 盒。(a) 寫出生成函數 (b) <span class="arithmatex">\(n=10\)</span> 時有幾種買法？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：多了「雞肉最多 2 盒」，雞肉的因子從 <span class="arithmatex">\(\frac{1}{1-x}\)</span> 變成只有三項的 <span class="arithmatex">\(1+x+x^2\)</span>。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(A(x)=\frac{1}{1-x}\cdot(1+x+x^2)\cdot\frac{1}{1-x^2}\)</span>（依序是豬、雞、牛）。</li>
+<li><strong>(b) 直接數</strong>：雞肉 <span class="arithmatex">\(c=0,1,2\)</span> 盒時，剩 <span class="arithmatex">\(10-c\)</span> 盒給豬和牛；牛是偶數 <span class="arithmatex">\(2k\le10-c\)</span>，有 <span class="arithmatex">\(\lfloor\frac{10-c}{2}\rfloor+1\)</span> 種（豬就是剩下的）：<span class="arithmatex">\(6+5+5=16\)</span>。</li>
+<li><strong>答案</strong>：(b) <strong>16</strong>。</li>
+</ul>
+<p>我用程式把所有買法列出來數過，也把生成函數展開到 <span class="arithmatex">\(x^{12}\)</span> 比對過，都一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 112 Q5・換數列）<span class="arithmatex">\(a_n=2^n\)</span>、<span class="arithmatex">\(b_n=(-1)^n\)</span>，求卷積 <span class="arithmatex">\(c_n=\sum_{k=0}^{n}a_kb_{n-k}\)</span> 的一般式。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題三個數列相乘後化成前綴和；這題是兩個等比數列，用部分分式拆開最快。</li>
+<li><strong>生成函數相乘</strong>：<span class="arithmatex">\(C(x)=\frac{1}{1-2x}\cdot\frac{1}{1+x}\)</span>。</li>
+<li><strong>部分分式</strong>：<span class="arithmatex">\(\frac{1}{(1-2x)(1+x)}=\frac{\alpha}{1-2x}+\frac{\beta}{1+x}\)</span>，<span class="arithmatex">\(1=\alpha(1+x)+\beta(1-2x)\)</span>。代 <span class="arithmatex">\(x=-1\)</span>：<span class="arithmatex">\(1=3\beta\)</span>，<span class="arithmatex">\(\beta=\frac13\)</span>；代 <span class="arithmatex">\(x=\frac12\)</span>：<span class="arithmatex">\(1=\frac32\alpha\)</span>，<span class="arithmatex">\(\alpha=\frac23\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(c_n=\frac23\cdot2^n+\frac13(-1)^n=\frac{2^{n+1}+(-1)^n}{3}\)</span>。</li>
+<li><strong>驗算</strong>：<span class="arithmatex">\(c_0=a_0b_0=1\)</span>，公式 <span class="arithmatex">\(\frac{2+1}{3}=1\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>；<span class="arithmatex">\(c_1=a_0b_1+a_1b_0=-1+2=1\)</span>，公式 <span class="arithmatex">\(\frac{4-1}{3}=1\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式直接算了 <span class="arithmatex">\(n\le20\)</span> 的卷積，跟公式一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 114 Q8・改條件）隨機的 20 位十進位數字串（每位 0–9，可以有前導 0），0 和 1 都出現<strong>奇數</strong>次的機率是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題要「偶數次」用 <span class="arithmatex">\(\cosh x\)</span>；這題要「奇數次」，換成 <span class="arithmatex">\(\sinh x=\frac{e^x-e^{-x}}{2}\)</span>。</li>
+<li><strong>指數生成函數</strong>：0 和 1 各用 <span class="arithmatex">\(\sinh x\)</span>，其他 8 個數字用 <span class="arithmatex">\(e^x\)</span>：</li>
+</ul>
+<p>$<span class="arithmatex">\(\sinh^2x\cdot e^{8x}=\frac{e^{2x}-2+e^{-2x}}{4}\cdot e^{8x}=\frac{e^{10x}-2e^{8x}+e^{6x}}{4}\)</span>$</p>
+<ul>
+<li><strong>長度 <span class="arithmatex">\(n\)</span> 的個數</strong>：<span class="arithmatex">\(\frac{10^n-2\cdot8^n+6^n}{4}\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(\dfrac{10^{20}-2\cdot8^{20}+6^{20}}{4\cdot10^{20}}\)</span>（約 0.2442）。</li>
+<li><strong>小例子驗算</strong>：<span class="arithmatex">\(n=2\)</span>：只有 01、10 兩個，公式 <span class="arithmatex">\(\frac{100-128+36}{4}=2\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式把 <span class="arithmatex">\(n\le5\)</span> 的字串全部列出來數過，也用動態規劃算了 <span class="arithmatex">\(n=20\)</span>，都跟公式一樣。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 111 Q5・改條件）長度 <span class="arithmatex">\(n\)</span> 的三進位序列（由 0、1、2 組成）中，0 出現偶數次、1 出現奇數次（2 不限）的有幾個？寫出一般式，並求 <span class="arithmatex">\(n=26\)</span> 時的機率。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題 (b) 三個數字都有限制；這題只限制兩個，沒有限制的 2 用 <span class="arithmatex">\(e^x\)</span>。</li>
+<li><strong>指數生成函數</strong>：<span class="arithmatex">\(\cosh x\cdot\sinh x\cdot e^x=\frac{e^{2x}-e^{-2x}}{4}\cdot e^x=\frac{e^{3x}-e^{-x}}{4}\)</span>。
+  （<span class="arithmatex">\(\cosh x\sinh x=\frac{(e^x+e^{-x})(e^x-e^{-x})}{4}=\frac{e^{2x}-e^{-2x}}{4}\)</span>。）</li>
+<li><strong>一般式</strong>：<span class="arithmatex">\(\frac{3^n-(-1)^n}{4}\)</span>。</li>
+<li><strong><span class="arithmatex">\(n=26\)</span></strong>：<span class="arithmatex">\((-1)^{26}=1\)</span>，個數 <span class="arithmatex">\(\frac{3^{26}-1}{4}\)</span>，機率 <span class="arithmatex">\(\frac{3^{26}-1}{4\cdot3^{26}}\)</span>（差一點點就是 <span class="arithmatex">\(\frac14\)</span>）。</li>
+<li><strong>小例子</strong>：<span class="arithmatex">\(n=1\)</span>：只有「1」，公式 <span class="arithmatex">\(\frac{3+1}{4}=1\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式把 <span class="arithmatex">\(n\le10\)</span> 的序列全部列出來數過，跟公式一樣。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 112 Q6(a)・改條件）白、紅、黑、綠旗各有很多面，選 15 面排成一列當信號，黑旗和紅旗都要是偶數面（0 也算偶數），有幾種信號？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題黑旗奇數、紅旗偶數，<span class="arithmatex">\(\sinh x\cosh x\)</span> 剛好消成很簡單的式子；這題兩個都是偶數，用 <span class="arithmatex">\(\cosh^2x\)</span>，會多一項。</li>
+<li><strong>指數生成函數</strong>：<span class="arithmatex">\(\cosh^2x\cdot e^{2x}=\frac{e^{2x}+2+e^{-2x}}{4}\cdot e^{2x}=\frac{e^{4x}+2e^{2x}+1}{4}\)</span>。</li>
+<li><strong>取係數</strong>：<span class="arithmatex">\(\frac{x^n}{n!}\)</span> 的係數是 <span class="arithmatex">\(\frac{4^n+2\cdot2^n}{4}\)</span>（<span class="arithmatex">\(n\ge1\)</span> 時常數項 <span class="arithmatex">\(\frac14\)</span> 不影響）。</li>
+<li><strong><span class="arithmatex">\(n=15\)</span></strong>：<span class="arithmatex">\(\frac{4^{15}+2^{16}}{4}=4^{14}+2^{14}=268435456+16384=\)</span> <strong>268451840</strong>。</li>
+</ul>
+<p>我用程式（記錄黑旗、紅旗奇偶的動態規劃）算過 <span class="arithmatex">\(n=15\)</span>，答案一樣。</p>
+</details>
+<p><strong>考古變化 6.</strong>（改自 107 Q1・換數字）求 <span class="arithmatex">\(x^6\)</span> 的係數：(a) <span class="arithmatex">\(\frac{x^3-2x}{(1-x)^4}+2x^6-1\)</span> (b) <span class="arithmatex">\(\frac{3}{(x-1)(x-4)}\)</span></p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：一樣是「平移」和「部分分式」兩個技巧，數字換了；(b) 的分母換成 <span class="arithmatex">\((x-1)(x-4)\)</span>。</li>
+<li><strong>(a) 拆成三部分</strong>（<span class="arithmatex">\(\frac{1}{(1-x)^4}\)</span> 的 <span class="arithmatex">\(x^m\)</span> 係數是 <span class="arithmatex">\(\binom{m+3}{3}\)</span>）：<ul>
+<li><span class="arithmatex">\(\frac{x^3}{(1-x)^4}\)</span>：往後移 3 格 → 取 <span class="arithmatex">\(x^3\)</span> 的係數 <span class="arithmatex">\(\binom63=20\)</span>。</li>
+<li><span class="arithmatex">\(\frac{-2x}{(1-x)^4}\)</span>：往後移 1 格 → <span class="arithmatex">\(-2\times\binom83=-2\times56=-112\)</span>。</li>
+<li><span class="arithmatex">\(2x^6-1\)</span>：<span class="arithmatex">\(x^6\)</span> 的係數是 2，常數 −1 不影響。</li>
+<li>合起來 <span class="arithmatex">\(20-112+2=\)</span> <strong>−90</strong>。</li>
+</ul>
+</li>
+<li><strong>(b) 部分分式</strong>：<span class="arithmatex">\(\frac{3}{(x-1)(x-4)}=\frac{A}{x-1}+\frac{B}{x-4}\)</span>，<span class="arithmatex">\(3=A(x-4)+B(x-1)\)</span>。代 <span class="arithmatex">\(x=1\)</span>：<span class="arithmatex">\(A=-1\)</span>；代 <span class="arithmatex">\(x=4\)</span>：<span class="arithmatex">\(B=1\)</span>。<ul>
+<li><span class="arithmatex">\(\frac{1}{x-a}\)</span> 的 <span class="arithmatex">\(x^n\)</span> 係數是 <span class="arithmatex">\(-\frac{1}{a^{n+1}}\)</span>，所以係數是 <span class="arithmatex">\((-1)\cdot(-1)+1\cdot\left(-\frac{1}{4^{n+1}}\right)=1-\frac{1}{4^{n+1}}\)</span>。</li>
+<li><span class="arithmatex">\(n=6\)</span>：<span class="arithmatex">\(1-\frac{1}{4^7}=\)</span> <strong><span class="arithmatex">\(\frac{16383}{16384}\)</span></strong>。</li>
+<li>驗算 <span class="arithmatex">\(n=0\)</span>：原式在 <span class="arithmatex">\(x=0\)</span> 是 <span class="arithmatex">\(\frac{3}{(-1)(-4)}=\frac34\)</span>，公式給 <span class="arithmatex">\(1-\frac14=\frac34\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+</li>
+</ul>
+<p>我用程式把兩個式子展開到 <span class="arithmatex">\(x^8\)</span> 比對過，答案一樣。</p>
+</details>
+<p><strong>考古變化 7.</strong>（改自 103 Q5・換數字）求 <span class="arithmatex">\(x^n\)</span> 的係數：(a) <span class="arithmatex">\((1-2x)^{50}\)</span> (b) <span class="arithmatex">\((x^3+x^4+x^5+\cdots)^5\)</span> (c) <span class="arithmatex">\(\frac{6}{x^2-5x+6}\)</span></p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：三小題的技巧跟原題一樣（二項式定理、平移、部分分式），數字和符號換了；(a) 有負號要小心。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\((1-2x)^{50}=\sum_k\binom{50}{k}(-2x)^k\)</span>，所以係數是 <span class="arithmatex">\(\binom{50}{n}(-2)^n\)</span>（<span class="arithmatex">\(0\le n\le50\)</span>，其他是 0）。</li>
+<li><strong>(b)</strong>：每個因子提出 <span class="arithmatex">\(x^3\)</span>：<span class="arithmatex">\((x^3+x^4+\cdots)^5=x^{15}\cdot\frac{1}{(1-x)^5}\)</span>。<span class="arithmatex">\(x^n\)</span> 的係數是 <span class="arithmatex">\(\frac{1}{(1-x)^5}\)</span> 的 <span class="arithmatex">\(x^{n-15}\)</span> 係數 <span class="arithmatex">\(\binom{(n-15)+4}{4}=\binom{n-11}{4}\)</span>（<span class="arithmatex">\(n\ge15\)</span>；<span class="arithmatex">\(n&lt;15\)</span> 時是 0）。白話：5 個變數各至少 3、總和 <span class="arithmatex">\(n\)</span> 的整數解數。</li>
+<li><strong>(c)</strong>：<span class="arithmatex">\(x^2-5x+6=(x-2)(x-3)\)</span>。<span class="arithmatex">\(\frac{6}{(x-2)(x-3)}=\frac{A}{x-2}+\frac{B}{x-3}\)</span>，代 <span class="arithmatex">\(x=2\)</span>：<span class="arithmatex">\(6=-A\)</span>，<span class="arithmatex">\(A=-6\)</span>；代 <span class="arithmatex">\(x=3\)</span>：<span class="arithmatex">\(B=6\)</span>。係數是 <span class="arithmatex">\(-6\cdot\left(-\frac{1}{2^{n+1}}\right)+6\cdot\left(-\frac{1}{3^{n+1}}\right)=\frac{3}{2^n}-\frac{2}{3^n}\)</span>。</li>
+<li><strong>驗算 (c) 的 <span class="arithmatex">\(n=0\)</span></strong>：原式在 <span class="arithmatex">\(x=0\)</span> 是 <span class="arithmatex">\(\frac66=1\)</span>，公式給 <span class="arithmatex">\(3-2=1\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式把三個式子都展開到 <span class="arithmatex">\(x^{30}\)</span> 比對過，答案一樣。</p>
+</details>
+<p><strong>考古變化 8.</strong>（改自 113 Q10・換數字）用生成函數解 <span class="arithmatex">\(a_{n+2}-5a_{n+1}+6a_n=0\)</span>，<span class="arithmatex">\(a_0=2\)</span>、<span class="arithmatex">\(a_1=5\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：特徵根換成 2 和 3，初始值也換了；步驟完全一樣。</li>
+<li><strong>兩邊乘 <span class="arithmatex">\(x^{n+2}\)</span> 再加總</strong>：<span class="arithmatex">\((A-a_0-a_1x)-5x(A-a_0)+6x^2A=0\)</span>。</li>
+<li><strong>代初始值</strong>：<span class="arithmatex">\((A-2-5x)-5x(A-2)+6x^2A=0\)</span>，整理成 <span class="arithmatex">\(A(1-5x+6x^2)=2+5x-10x=2-5x\)</span>。</li>
+<li><strong>部分分式</strong>：<span class="arithmatex">\(A=\frac{2-5x}{(1-2x)(1-3x)}=\frac{\alpha}{1-2x}+\frac{\beta}{1-3x}\)</span>，<span class="arithmatex">\(2-5x=\alpha(1-3x)+\beta(1-2x)\)</span>。代 <span class="arithmatex">\(x=\frac12\)</span>：<span class="arithmatex">\(-\frac12=-\frac12\alpha\)</span>，<span class="arithmatex">\(\alpha=1\)</span>；代 <span class="arithmatex">\(x=\frac13\)</span>：<span class="arithmatex">\(\frac13=\frac13\beta\)</span>，<span class="arithmatex">\(\beta=1\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(a_n=2^n+3^n\)</span>。驗算 <span class="arithmatex">\(a_1=2+3=5\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>、<span class="arithmatex">\(a_2=5\cdot5-6\cdot2=13=4+9\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式把遞迴算到 <span class="arithmatex">\(n=24\)</span>，跟公式一樣。</p>
+</details>
+<p><strong>考古變化 9.</strong>（改自 103 Q6・改條件）整數分割中，每個加數<strong>最多出現一次</strong>（加數都不同）。(a) 寫出生成函數 (b) 證明這種分割的個數等於「加數都是奇數」的分割數 (c) 列出 <span class="arithmatex">\(n=8\)</span> 的所有這種分割。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題每個加數最多兩次（因子 <span class="arithmatex">\(1+x^k+x^{2k}\)</span>）；這題最多一次，因子變成 <span class="arithmatex">\(1+x^k\)</span>，就是 Euler 定理本身。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(G(x)=\prod_{k\ge1}(1+x^k)\)</span>。</li>
+<li><strong>(b)</strong>：<span class="arithmatex">\(1+x^k=\frac{1-x^{2k}}{1-x^k}\)</span>，所以 <span class="arithmatex">\(G(x)=\prod_{k\ge1}\frac{1-x^{2k}}{1-x^k}\)</span>。分子的 <span class="arithmatex">\(1-x^{2k}\)</span> 會跟分母裡 <span class="arithmatex">\(k\)</span> 是偶數的因子消掉，只剩 <span class="arithmatex">\(\prod_{k\text{ 是奇數}}\frac{1}{1-x^k}\)</span>，正好是「加數都是奇數」的生成函數。兩個生成函數相同，每一項係數就相同。∎</li>
+<li><strong>(c)</strong>：8、7＋1、6＋2、5＋3、5＋2＋1、4＋3＋1，共 <strong>6</strong> 種。對照「加數都是奇數」的也是 6 種：7＋1、5＋3、5＋1＋1＋1、3＋3＋1＋1、3＋1＋1＋1＋1＋1、八個 1。</li>
+</ul>
+<p>我用程式把 <span class="arithmatex">\(n\le20\)</span> 的分割全部列出來，兩種分割數都一樣。</p>
 </details>
 <h3 id="u3-quiz">單元 3 小考</h3>
 <p><strong>3-1.</strong> <span class="arithmatex">\(x_1+x_2+x_3=10\)</span>，<span class="arithmatex">\(x_1\)</span> 是偶數、<span class="arithmatex">\(0\le x_2\le3\)</span>、<span class="arithmatex">\(x_3\ge0\)</span>，用生成函數寫出式子並求解數。</p>
@@ -3920,6 +4354,179 @@ window.MathJax = {
 <li><strong>答案</strong>：<span class="arithmatex">\(a_n=3^{n+1}-2^n\)</span>。驗算 <span class="arithmatex">\(a_1=4+3=7=9-2\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
 </ul>
 <p>我用程式把遞迴算到第 12 項，跟公式完全一樣。</p>
+</details>
+<h3 id="u4-exam">4.7 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 112 Q7、114 Q6・改條件）<span class="arithmatex">\(n\)</span> 格停車位排成一排，機車佔 1 格、汽車佔 2 格、公車佔 3 格，要把 <span class="arithmatex">\(n\)</span> 格剛好停滿。(a) 寫出停法數 <span class="arithmatex">\(a_n\)</span> 的遞迴式和初始值，並算出 <span class="arithmatex">\(a_6\)</span> (b) 如果汽車有 2 種顏色（機車、公車只有一種），<span class="arithmatex">\(b_6\)</span> 是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只有 1 格、3 格兩種車；這題三種長度，「看最後一台」會分成三種情況。原題筆記也提醒過，可能會換成這種考法。</li>
+<li><strong>(a) 看最後一台車</strong>：機車 → 前面 <span class="arithmatex">\(n-1\)</span> 格任意停滿；汽車 → 前面 <span class="arithmatex">\(n-2\)</span> 格；公車 → 前面 <span class="arithmatex">\(n-3\)</span> 格。<ul>
+<li><span class="arithmatex">\(a_n=a_{n-1}+a_{n-2}+a_{n-3}\)</span>，<span class="arithmatex">\(a_0=1\)</span>（空的也算一種）、<span class="arithmatex">\(a_1=1\)</span>、<span class="arithmatex">\(a_2=2\)</span>。</li>
+<li><span class="arithmatex">\(a_3=4\)</span>、<span class="arithmatex">\(a_4=7\)</span>、<span class="arithmatex">\(a_5=13\)</span>、<span class="arithmatex">\(a_6=\)</span> <strong>24</strong>。</li>
+</ul>
+</li>
+<li><strong>(b) 汽車有 2 色</strong>：最後一台是汽車時有 2 種，那一項乘 2：<span class="arithmatex">\(b_n=b_{n-1}+2b_{n-2}+b_{n-3}\)</span>，<span class="arithmatex">\(b_0=1\)</span>、<span class="arithmatex">\(b_1=1\)</span>、<span class="arithmatex">\(b_2=b_1+2b_0=3\)</span>。<ul>
+<li><span class="arithmatex">\(b_3=3+2+1=6\)</span>、<span class="arithmatex">\(b_4=6+6+1=13\)</span>、<span class="arithmatex">\(b_5=13+12+3=28\)</span>、<span class="arithmatex">\(b_6=28+26+6=\)</span> <strong>60</strong>。</li>
+</ul>
+</li>
+</ul>
+<p>我用程式把所有停法列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 114 Q6・改數字）程式 P1 每次跑 1 秒；P2 每次跑 2 秒，而且有 2 種不同的任務。把 <span class="arithmatex">\(n\)</span> 秒剛好填滿的排法有 <span class="arithmatex">\(a_n\)</span> 種，寫出遞迴式，並解出一般式。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題 P2 跑 4 秒，特徵方程是 4 次、根不好算；這題 P2 跑 2 秒，特徵根是整數，可以一路解到底。</li>
+<li><strong>遞迴</strong>：最後一個是 P1 → <span class="arithmatex">\(a_{n-1}\)</span>；最後一個是 P2（2 種）→ <span class="arithmatex">\(2a_{n-2}\)</span>。<span class="arithmatex">\(a_n=a_{n-1}+2a_{n-2}\)</span>，<span class="arithmatex">\(a_0=1\)</span>、<span class="arithmatex">\(a_1=1\)</span>。</li>
+<li><strong>特徵方程</strong>：<span class="arithmatex">\(r^2-r-2=0\)</span>，<span class="arithmatex">\((r-2)(r+1)=0\)</span>，<span class="arithmatex">\(r=2,-1\)</span>。</li>
+<li><strong>代初始值</strong>：<span class="arithmatex">\(a_n=c_1 2^n+c_2(-1)^n\)</span>；<span class="arithmatex">\(c_1+c_2=1\)</span>、<span class="arithmatex">\(2c_1-c_2=1\)</span>，得 <span class="arithmatex">\(c_1=\frac23\)</span>、<span class="arithmatex">\(c_2=\frac13\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(a_n=\frac{2^{n+1}+(-1)^n}{3}\)</span>。驗算 <span class="arithmatex">\(a_2=a_1+2a_0=3\)</span>，公式 <span class="arithmatex">\(\frac{8+1}{3}=3\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式把 <span class="arithmatex">\(n\le12\)</span> 的排法全部列出來數過，跟公式一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 111 Q6・改條件）長度 <span class="arithmatex">\(n\)</span> 的三進位字串（由 0、1、2 組成）中，沒有兩個 0 相鄰的有 <span class="arithmatex">\(a_n\)</span> 個。寫出遞迴式和初始值，並求 <span class="arithmatex">\(a_6\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：二進位換成三進位，「最後一位不是 0」的情況從 1 種變成 2 種，遞迴的係數會跟著變。</li>
+<li><strong>看最後一位</strong>：<ul>
+<li>最後一位是 1 或 2（2 種）：前面 <span class="arithmatex">\(n-1\)</span> 位任意合法 → <span class="arithmatex">\(2a_{n-1}\)</span>。</li>
+<li>最後一位是 0：倒數第二位只能是 1 或 2（2 種），再前面 <span class="arithmatex">\(n-2\)</span> 位任意合法 → <span class="arithmatex">\(2a_{n-2}\)</span>。</li>
+</ul>
+</li>
+<li><strong>遞迴</strong>：<span class="arithmatex">\(a_n=2a_{n-1}+2a_{n-2}\)</span>，<span class="arithmatex">\(a_1=3\)</span>、<span class="arithmatex">\(a_2=8\)</span>（9 個字串扣掉 00）。</li>
+<li><strong>往下算</strong>：<span class="arithmatex">\(a_3=22\)</span>、<span class="arithmatex">\(a_4=60\)</span>、<span class="arithmatex">\(a_5=164\)</span>、<span class="arithmatex">\(a_6=\)</span> <strong>448</strong>。</li>
+</ul>
+<p>我用程式把所有情況列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 113 Q9・改條件）解 <span class="arithmatex">\(a_{n+2}+4a_n=0\)</span>，<span class="arithmatex">\(a_0=1\)</span>、<span class="arithmatex">\(a_1=2\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題的特徵根 <span class="arithmatex">\(\pm i\)</span> 長度是 1；這題是 <span class="arithmatex">\(\pm2i\)</span>，長度 <span class="arithmatex">\(\rho=2\)</span>，答案要多乘 <span class="arithmatex">\(2^n\)</span>。</li>
+<li><strong>特徵方程</strong>：<span class="arithmatex">\(r^2+4=0\)</span>，<span class="arithmatex">\(r=\pm2i=2e^{\pm i\pi/2}\)</span>，所以 <span class="arithmatex">\(\rho=2\)</span>、<span class="arithmatex">\(\theta=\frac\pi2\)</span>。</li>
+<li><strong>一般式</strong>：<span class="arithmatex">\(a_n=2^n\left(A\cos\frac{n\pi}{2}+B\sin\frac{n\pi}{2}\right)\)</span>。</li>
+<li><strong>代初始值</strong>：<span class="arithmatex">\(a_0=A=1\)</span>；<span class="arithmatex">\(a_1=2B=2\)</span>，<span class="arithmatex">\(B=1\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(a_n=2^n\left(\cos\frac{n\pi}{2}+\sin\frac{n\pi}{2}\right)\)</span>，數列是 <span class="arithmatex">\(1,2,-4,-8,16,32,\dots\)</span>（每兩項變號一次，大小每次乘 2）。</li>
+</ul>
+<p>我用程式把遞迴算到 <span class="arithmatex">\(n=19\)</span>，跟公式一樣。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 111 Q7・改數字）<span class="arithmatex">\(p_n=p_{n-1}-0.2\,p_{n-2}\)</span>，<span class="arithmatex">\(p_0=0\)</span>、<span class="arithmatex">\(p_1=1\)</span>。(a) 特徵根是實數還是複數？(b) 第一個讓 <span class="arithmatex">\(p_n&lt;0.01\)</span> 的 <span class="arithmatex">\(n\)</span> 是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題係數 0.3，判別式 <span class="arithmatex">\(1-1.2&lt;0\)</span>，特徵根是複數；這題係數 0.2，判別式 <span class="arithmatex">\(1-0.8=0.2&gt;0\)</span>，特徵根是兩個實數 <span class="arithmatex">\(\frac{1\pm\sqrt{0.2}}{2}\approx0.724,\ 0.276\)</span>，都在 0 和 1 之間，數列會一路遞減到 0，不會正負震盪。</li>
+<li>
+<p><strong>(b) 直接遞推比解公式快</strong>（每一步 <span class="arithmatex">\(p_n=p_{n-1}-0.2\,p_{n-2}\)</span>）：</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(n\)</span></th>
+<th><span class="arithmatex">\(p_n\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>1.00000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0.80000</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0.60000</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0.44000</td>
+</tr>
+<tr>
+<td>6</td>
+<td>0.32000</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0.23200</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0.16800</td>
+</tr>
+<tr>
+<td>9</td>
+<td>0.12160</td>
+</tr>
+<tr>
+<td>10</td>
+<td>0.08800</td>
+</tr>
+<tr>
+<td>11</td>
+<td>0.06368</td>
+</tr>
+<tr>
+<td>12</td>
+<td>0.04608</td>
+</tr>
+<tr>
+<td>13</td>
+<td>0.03334</td>
+</tr>
+<tr>
+<td>14</td>
+<td>0.02413</td>
+</tr>
+<tr>
+<td>15</td>
+<td>0.01746</td>
+</tr>
+<tr>
+<td>16</td>
+<td>0.01263</td>
+</tr>
+<tr>
+<td>17</td>
+<td>0.00914</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>答案</strong>：(a) 兩個相異實根 (b) <span class="arithmatex">\(n=\)</span> <strong>17</strong>（<span class="arithmatex">\(p_{16}\approx0.0126\)</span> 還沒低於 0.01）。</p>
+</li>
+</ul>
+<p>我用程式以分數精確地遞推過，答案一樣。</p>
+</details>
+<p><strong>考古變化 6.</strong>（改自 114 Q9・換數字）<span class="arithmatex">\(a_n&gt;0\)</span>，<span class="arithmatex">\(a_{n+2}^2-5a_{n+1}^2+6a_n^2=4n\)</span>，<span class="arithmatex">\(a_0=2\)</span>、<span class="arithmatex">\(a_1=3\)</span>。求 <span class="arithmatex">\(a_n\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：一樣先換元 <span class="arithmatex">\(b_n=a_n^2\)</span> 變成線性；特徵根換成 2、3，右邊換成 <span class="arithmatex">\(4n\)</span>。</li>
+<li><strong>換元</strong>：<span class="arithmatex">\(b_{n+2}-5b_{n+1}+6b_n=4n\)</span>，<span class="arithmatex">\(b_0=4\)</span>、<span class="arithmatex">\(b_1=9\)</span>。</li>
+<li><strong>齊次解</strong>：<span class="arithmatex">\(r^2-5r+6=0\)</span>，<span class="arithmatex">\(r=2,3\)</span>。</li>
+<li><strong>特解</strong>：猜 <span class="arithmatex">\(An+B\)</span>（1 不是特徵根）。代入：<span class="arithmatex">\([A(n+2)+B]-5[A(n+1)+B]+6[An+B]=2An+(-3A+2B)\)</span>。對照 <span class="arithmatex">\(4n\)</span>：<span class="arithmatex">\(2A=4\)</span>、<span class="arithmatex">\(-3A+2B=0\)</span>，得 <span class="arithmatex">\(A=2\)</span>、<span class="arithmatex">\(B=3\)</span>。</li>
+<li><strong>一般解</strong>：<span class="arithmatex">\(b_n=c_1 2^n+c_2 3^n+2n+3\)</span>。代 <span class="arithmatex">\(b_0=4\)</span>：<span class="arithmatex">\(c_1+c_2=1\)</span>；代 <span class="arithmatex">\(b_1=9\)</span>：<span class="arithmatex">\(2c_1+3c_2=4\)</span>。解得 <span class="arithmatex">\(c_1=-1\)</span>、<span class="arithmatex">\(c_2=2\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(b_n=2\cdot3^n-2^n+2n+3\)</span>，所以 <span class="arithmatex">\(a_n=\sqrt{2\cdot3^n-2^n+2n+3}\)</span>。</li>
+<li><strong>驗算</strong>：<span class="arithmatex">\(b_2=5\cdot9-6\cdot4+4\cdot0=21\)</span>，公式 <span class="arithmatex">\(18-4+4+3=21\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式把遞迴算到 <span class="arithmatex">\(n=21\)</span>，跟公式一樣。</p>
+</details>
+<p><strong>考古變化 7.</strong>（改自 101 Q2・改遞迴）解 <span class="arithmatex">\(T(1)=1\)</span>、<span class="arithmatex">\(T(n)=4T(n/2)+n^2\)</span>（<span class="arithmatex">\(n=2^k\)</span>）。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題每層只加 <span class="arithmatex">\(\log n\)</span>、只遞迴一次；這題遞迴 4 次又加 <span class="arithmatex">\(n^2\)</span>，要先「除掉 <span class="arithmatex">\(4^k\)</span>」才好一路加下去。</li>
+<li><strong>令 <span class="arithmatex">\(n=2^k\)</span></strong>：<span class="arithmatex">\(a_k=T(2^k)\)</span>，<span class="arithmatex">\(a_k=4a_{k-1}+4^k\)</span>，<span class="arithmatex">\(a_0=1\)</span>。</li>
+<li><strong>兩邊除以 <span class="arithmatex">\(4^k\)</span></strong>：令 <span class="arithmatex">\(c_k=\frac{a_k}{4^k}\)</span>，得 <span class="arithmatex">\(c_k=c_{k-1}+1\)</span>，<span class="arithmatex">\(c_0=1\)</span>，所以 <span class="arithmatex">\(c_k=k+1\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(a_k=4^k(k+1)\)</span>，也就是 <span class="arithmatex">\(T(n)=n^2(\log_2n+1)\)</span>，<span class="arithmatex">\(T(n)=\Theta(n^2\log n)\)</span>。</li>
+<li><strong>驗算</strong>：<span class="arithmatex">\(T(2)=4\cdot1+4=8\)</span>，公式 <span class="arithmatex">\(4\cdot(1+1)=8\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+<li><strong>跟 Master Theorem 對照</strong>：<span class="arithmatex">\(a=4\)</span>、<span class="arithmatex">\(b=2\)</span>，<span class="arithmatex">\(n^{\log_ba}=n^2\)</span> 跟 <span class="arithmatex">\(f(n)=n^2\)</span> 一樣大，屬於「平手」的情況，多一個 <span class="arithmatex">\(\log n\)</span>。</li>
+</ul>
+<p>我用程式把 <span class="arithmatex">\(k\le12\)</span> 都算過，跟公式一樣。</p>
 </details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> 長度 <span class="arithmatex">\(n\)</span> 的三進位字串（0、1、2）中沒有連續兩個 0 的個數，寫出遞迴與初始值。</p>
@@ -4817,6 +5424,128 @@ window.MathJax = {
 </ul>
 <p>我用程式直接算過，答案一樣。</p>
 </details>
+<h3 id="u5-exam">5.6 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 112 Q2・換數字）證明對所有整數 <span class="arithmatex">\(n\)</span>，<span class="arithmatex">\(21n+4\)</span> 與 <span class="arithmatex">\(14n+3\)</span> 互質。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：一樣要找一組係數把 <span class="arithmatex">\(n\)</span> 消掉、剩下 1；這題的係數要自己湊。</li>
+<li><strong>消掉 <span class="arithmatex">\(n\)</span></strong>：<span class="arithmatex">\(21\)</span> 和 <span class="arithmatex">\(14\)</span> 的最小公倍數是 42，所以用 <span class="arithmatex">\(3(14n+3)-2(21n+4)=42n+9-42n-8=1\)</span>。</li>
+<li><strong>證明</strong>：設 <span class="arithmatex">\(d=\gcd(21n+4,\,14n+3)\)</span>。<span class="arithmatex">\(d\)</span> 整除兩者，就整除它們的任何整數線性組合，所以 <span class="arithmatex">\(d\mid1\)</span>，<span class="arithmatex">\(d=1\)</span>。∎</li>
+</ul>
+<p>我用程式檢查過 <span class="arithmatex">\(-2000\le n&lt;2000\)</span>，最大公因數都是 1。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 112 Q8・反過來問）原題證明了 <span class="arithmatex">\(a\equiv b\pmod n\Rightarrow\gcd(a,n)=\gcd(b,n)\)</span>。反過來，如果 <span class="arithmatex">\(\gcd(a,n)=\gcd(b,n)\)</span>，一定有 <span class="arithmatex">\(a\equiv b\pmod n\)</span> 嗎？證明或舉反例。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題證明「同餘 ⇒ 最大公因數相同」；這題問反方向。反方向不成立，<strong>舉一個反例</strong>就夠了。</li>
+<li><strong>反例</strong>：<span class="arithmatex">\(n=4\)</span>、<span class="arithmatex">\(a=1\)</span>、<span class="arithmatex">\(b=3\)</span>。<span class="arithmatex">\(\gcd(1,4)=\gcd(3,4)=1\)</span>，但 <span class="arithmatex">\(1-3=-2\)</span> 不是 4 的倍數，<span class="arithmatex">\(1\not\equiv3\pmod4\)</span>。</li>
+<li><strong>結論</strong>：不一定。「同餘」是「gcd 相同」的充分條件，不是必要條件。</li>
+<li><strong>為什麼會這樣</strong>：跟 <span class="arithmatex">\(n\)</span> 互質的數（gcd 都是 1）在 mod <span class="arithmatex">\(n\)</span> 下通常不只一個，彼此不同餘。</li>
+</ul>
+</details>
+<p><strong>考古變化 3.</strong>（改自 115 A4・換數字）用歐幾里得演算法求 <span class="arithmatex">\(\gcd(985201,\,315588)\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：一樣是輾轉相除，數字換了；每一步寫出商和餘數，餘數變 0 時前一個除數就是答案。</li>
+<li>
+<p><strong>輾轉相除</strong>：</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(a\)</span></th>
+<th><span class="arithmatex">\(b\)</span></th>
+<th>商</th>
+<th><span class="arithmatex">\(a\bmod b\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>985201</td>
+<td>315588</td>
+<td>3</td>
+<td>38437</td>
+</tr>
+<tr>
+<td>315588</td>
+<td>38437</td>
+<td>8</td>
+<td>8092</td>
+</tr>
+<tr>
+<td>38437</td>
+<td>8092</td>
+<td>4</td>
+<td>6069</td>
+</tr>
+<tr>
+<td>8092</td>
+<td>6069</td>
+<td>1</td>
+<td>2023</td>
+</tr>
+<tr>
+<td>6069</td>
+<td>2023</td>
+<td>3</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>答案</strong>：餘數變 0 時的除數，<span class="arithmatex">\(\gcd=\)</span> <strong>2023</strong>。</p>
+</li>
+<li><strong>驗算</strong>：<span class="arithmatex">\(985201=2023\times487\)</span>、<span class="arithmatex">\(315588=2023\times156\)</span>，而 487 是質數、不整除 156，所以 gcd 就是 2023。</li>
+</ul>
+<p>我用程式算過，答案一樣。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 113 Q4・換數字）用擴展歐幾里得演算法求 <span class="arithmatex">\(23^{-1}\pmod{61}\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題要說明方法；這題直接跑一次，練習「往回代」不要代錯。</li>
+<li><strong>輾轉相除</strong>：<span class="arithmatex">\(61=2\times23+15\)</span>；<span class="arithmatex">\(23=1\times15+8\)</span>；<span class="arithmatex">\(15=1\times8+7\)</span>；<span class="arithmatex">\(8=1\times7+1\)</span>。</li>
+<li><strong>往回代</strong>（每一步把餘數換成上一行的式子）：<ul>
+<li><span class="arithmatex">\(1=8-7\)</span></li>
+<li><span class="arithmatex">\(\phantom{1}=8-(15-8)=2\times8-15\)</span></li>
+<li><span class="arithmatex">\(\phantom{1}=2\times(23-15)-15=2\times23-3\times15\)</span></li>
+<li><span class="arithmatex">\(\phantom{1}=2\times23-3\times(61-2\times23)=8\times23-3\times61\)</span></li>
+</ul>
+</li>
+<li><strong>兩邊 mod 61</strong>：<span class="arithmatex">\(8\times23\equiv1\)</span>，所以 <span class="arithmatex">\(23^{-1}\equiv\)</span> <strong>8</strong> <span class="arithmatex">\(\pmod{61}\)</span>。</li>
+<li><strong>驗算</strong>：<span class="arithmatex">\(23\times8=184=3\times61+1\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式算過，答案一樣。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 113 Q3・改條件）證明「除以 4 餘 3」的質數有無限多個。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題用 <span class="arithmatex">\(p_1p_2\cdots p_k+1\)</span>；這題要保證新找到的質數也是「除以 4 餘 3」，所以式子要改成 <span class="arithmatex">\(4p_1\cdots p_k-1\)</span>，還要多一步論證。</li>
+<li><strong>反證</strong>：假設除以 4 餘 3 的質數只有 <span class="arithmatex">\(p_1,\dots,p_k\)</span>。令 <span class="arithmatex">\(N=4p_1p_2\cdots p_k-1\)</span>。</li>
+<li><strong><span class="arithmatex">\(N\)</span> 除以 4 餘 3</strong>：<span class="arithmatex">\(N=4(\cdots)-1\equiv3\pmod4\)</span>，而且 <span class="arithmatex">\(N\)</span> 是奇數，所以質因數都是奇數，每個都是「除以 4 餘 1」或「除以 4 餘 3」。</li>
+<li><strong>一定有一個質因數除以 4 餘 3</strong>：如果全部都餘 1，乘起來也餘 1（<span class="arithmatex">\(1\times1\equiv1\)</span>），但 <span class="arithmatex">\(N\)</span> 餘 3，矛盾。</li>
+<li><strong>這個質因數 <span class="arithmatex">\(q\)</span> 不在名單裡</strong>：<span class="arithmatex">\(N\)</span> 除以任何 <span class="arithmatex">\(p_i\)</span> 都餘 <span class="arithmatex">\(p_i-1\)</span>（不是 0），所以 <span class="arithmatex">\(q\ne p_i\)</span>。跟「只有 <span class="arithmatex">\(p_1,\dots,p_k\)</span>」矛盾。∎</li>
+<li><strong>為什麼不能直接用 <span class="arithmatex">\(4p_1\cdots p_k+3\)</span></strong>：如果名單裡有 3，<span class="arithmatex">\(N\)</span> 會是 3 的倍數，找到的質因數可能就是 3 本身，推不出矛盾。</li>
+</ul>
+<p>我用程式拿前幾個這種質數（3、7、11、19、23、31）實際算過 <span class="arithmatex">\(N\)</span>，每次都找得到不在名單裡、除以 4 餘 3 的質因數。</p>
+</details>
+<p><strong>考古變化 6.</strong>（改自 115 A7・換數字）(a) 最小的正整數 <span class="arithmatex">\(x\)</span> 使 <span class="arithmatex">\(3^x\equiv1\pmod{17}\)</span> 是多少？(b) 換成 <span class="arithmatex">\(2^x\equiv1\pmod{17}\)</span> 呢？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：模數換成 17；而且兩小題的答案不一樣，可以看出「階」不一定是 <span class="arithmatex">\(p-1\)</span>。</li>
+<li><strong>只要試 16 的因數</strong>：Fermat 小定理 <span class="arithmatex">\(a^{16}\equiv1\pmod{17}\)</span>，所以階一定整除 16，只要試 1、2、4、8、16（理由跟原題一樣）。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(3^1=3\)</span>、<span class="arithmatex">\(3^2=9\)</span>、<span class="arithmatex">\(3^4=81\equiv13\)</span>、<span class="arithmatex">\(3^8\equiv13^2=169\equiv16\)</span>，都不是 1，所以答案是 <strong>16</strong>（3 是 mod 17 的原根）。</li>
+<li><strong>(b)</strong>：<span class="arithmatex">\(2^1=2\)</span>、<span class="arithmatex">\(2^2=4\)</span>、<span class="arithmatex">\(2^4=16\)</span>、<span class="arithmatex">\(2^8\equiv16^2=256\equiv1\)</span>，答案是 <strong>8</strong>。</li>
+<li><strong>小技巧</strong>：<span class="arithmatex">\(16\equiv-1\pmod{17}\)</span>，所以 <span class="arithmatex">\((-1)^2=1\)</span>，平方一次就回到 1。</li>
+</ul>
+<p>我用程式把次方一個一個算過，答案一樣。</p>
+</details>
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> <span class="arithmatex">\(\gcd(1071,462)\)</span>？</p>
 <details class="quiz">
@@ -5346,6 +6075,126 @@ window.MathJax = {
 <li><strong>答案</strong>：<strong>16</strong> 個。</li>
 </ul>
 </details>
+<h3 id="u6-exam">6.7 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 111 Q1・換數字・反過來問）(a) 8 個相異正整數、最大不超過 32，證明一定有兩個不同的非空子集合，元素和相同。(b) 如果改成「6 個相異正整數、最大不超過 14」，同樣的鴿籠論證還能用嗎？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：(a) 換數字，練習先數鴿子、再算籠子；(b) 故意讓籠子比鴿子多，看論證在哪裡斷掉。</li>
+<li><strong>(a) 鴿子</strong>：非空子集合有 <span class="arithmatex">\(2^8-1=255\)</span> 個。</li>
+<li><strong>(a) 籠子</strong>：子集合的和最小是 1，最大不超過 <span class="arithmatex">\(32+31+\cdots+25=\frac{(32+25)\times8}{2}=228\)</span>，所以只有 1 到 228 共 228 種可能。</li>
+<li><strong>(a) 結論</strong>：255 個子集合放進 228 種和，一定有兩個子集合的和相同。∎</li>
+<li><strong>(b)</strong>：非空子集合有 <span class="arithmatex">\(2^6-1=63\)</span> 個，和最大可以到 <span class="arithmatex">\(14+13+\cdots+9=69\)</span>。63 隻鴿子、69 個籠子，<strong>鴿籠原理推不出結論</strong>，這個證法不能用。</li>
+<li><strong>注意</strong>：推不出來不代表結論是錯的。我用程式檢查過，1 到 14 裡任選 6 個數，其實都會有兩個子集合的和相同，只是要用別的方法證明。</li>
+</ul>
+</details>
+<p><strong>考古變化 2.</strong>（改自 114 Q4・改條件）(a) 找 9 個相異實數排成一列，沒有長度 4 的遞增子序列，也沒有長度 4 的遞減子序列。(b) 10 個相異實數做得到嗎？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題的 10 個數超過 <span class="arithmatex">\(2^2+1=5\)</span>，是陷阱（不存在）；這題 9 個剛好是 <span class="arithmatex">\(3^2\)</span>，<strong>做得到</strong>，要會構造。</li>
+<li><strong>(a) 構造</strong>：分成 3 組，組內遞增、組和組之間遞減：<span class="arithmatex">\(7,8,9,\ 4,5,6,\ 1,2,3\)</span>。<ul>
+<li>遞增子序列只能在同一組裡（後面的組都比較小），最長 3。</li>
+<li>遞減子序列每組最多拿一個，最長 3。</li>
+</ul>
+</li>
+<li><strong>(b) 做不到</strong>：Erdős–Szekeres 定理，任何 <span class="arithmatex">\(3^2+1=10\)</span> 個相異實數，一定有長度 4 的遞增或遞減子序列（證明跟原題一樣：每個位置記 <span class="arithmatex">\((x_i,y_i)\)</span>，若都 <span class="arithmatex">\(\le3\)</span> 只有 9 種組合，10 個位置一定有兩個相同，矛盾）。</li>
+<li><strong>答案</strong>：(a) 例如 7, 8, 9, 4, 5, 6, 1, 2, 3 (b) 做不到。</li>
+</ul>
+<p>我用程式算過這個數列最長的遞增、遞減子序列都是 3。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 112 Q3・換數字・反過來問）(a) 50 個大小都不同的倉庫排成一列，一定找得到多長的單調（遞增或遞減）子序列？(b) 至少要幾個倉庫，才保證有長度 10 的單調子序列？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：(a) 換數字；(b) 反過來，給長度問最少要幾個。</li>
+<li><strong>定理</strong>：<span class="arithmatex">\(n^2+1\)</span> 個相異的數，一定有長度 <span class="arithmatex">\(n+1\)</span> 的遞增或遞減子序列；<span class="arithmatex">\(n^2\)</span> 個不一定。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(50\ge7^2+1=50\)</span>，所以一定有長度 8 的；<span class="arithmatex">\(50&lt;8^2+1=65\)</span>，不保證長度 9。答案 <strong>8</strong>。</li>
+<li><strong>(b)</strong>：要長度 10，取 <span class="arithmatex">\(n=9\)</span>：<span class="arithmatex">\(9^2+1=\)</span> <strong>82</strong> 個。81 個不夠：把 81 個數分成 9 組，組內遞增、組間遞減（跟上一題同樣的構造），最長的遞增、遞減子序列都只有 9。</li>
+</ul>
+<p>我用程式建了那個 81 個數的反例，最長的單調子序列確實只有 9。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 115 B3・改條件）(a) 5 個人時，「一定有 3 人互相認識或 3 人互不認識」還成立嗎？證明或舉反例。(b) 17 個人，每兩人之間的關係是「朋友、敵人、陌生人」三種之一。證明一定有 3 個人，兩兩之間的關係都一樣。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：(a) 少一個人，結論就不成立，要會舉反例；(b) 關係從兩種變三種，要把原題的論證套兩層。</li>
+<li><strong>(a) 不成立</strong>：5 個人圍成一圈，每個人只認識左右兩邊的人（五邊形）。<ul>
+<li>任 3 個人裡，一定有兩人在圈上不相鄰（5 個位置選 3 個，不可能兩兩相鄰），所以沒有 3 人互相認識。</li>
+<li>不認識的關係是五角星（也是一個 5 圈），同理沒有 3 人互不認識。</li>
+</ul>
+</li>
+<li><strong>(b) 證明</strong>：任取一人 A，其他 16 人跟 A 的關係有三種。<span class="arithmatex">\(16=3\times5+1\)</span>，由鴿籠，至少 6 人跟 A 是同一種關係，假設是朋友，叫他們 <span class="arithmatex">\(B_1,\dots,B_6\)</span>。<ul>
+<li>如果 <span class="arithmatex">\(B_i\)</span> 之中有兩人是朋友，這兩人加上 A 就是三個朋友。</li>
+<li>如果 <span class="arithmatex">\(B_i\)</span> 之中任兩人都不是朋友，這 6 人之間只剩「敵人、陌生人」兩種關係，由原題（6 人兩種關係），一定有 3 人兩兩關係相同。∎</li>
+</ul>
+</li>
+</ul>
+<p>我用程式檢查過五邊形的例子，任 3 個人都不會兩兩認識或兩兩不認識。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 100 Q2、106 Q1・實際操作）數列 <span class="arithmatex">\(3,5,7,2,9,4\)</span>（6 個數），照原題的證明方法，找出一段連續的子數列，和是 6 的倍數。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只證明「一定存在」；這題要照證明的步驟真的找出來，確定自己懂證明在做什麼。</li>
+<li><strong>算前綴和</strong>：<span class="arithmatex">\(S_0=0\)</span>、<span class="arithmatex">\(S_1=3\)</span>、<span class="arithmatex">\(S_2=8\)</span>、<span class="arithmatex">\(S_3=15\)</span>、<span class="arithmatex">\(S_4=17\)</span>、<span class="arithmatex">\(S_5=26\)</span>、<span class="arithmatex">\(S_6=30\)</span>。</li>
+<li><strong>除以 6 的餘數</strong>：<span class="arithmatex">\(0,3,2,3,5,2,0\)</span>。</li>
+<li><strong>找餘數相同的兩個</strong>（7 個前綴和、只有 6 種餘數，一定有）：<ul>
+<li><span class="arithmatex">\(S_1\equiv S_3\equiv3\)</span>：<span class="arithmatex">\(S_3-S_1=x_2+x_3=5+7=12\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+<li><span class="arithmatex">\(S_2\equiv S_5\equiv2\)</span>：<span class="arithmatex">\(S_5-S_2=x_3+x_4+x_5=7+2+9=18\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+<li><span class="arithmatex">\(S_0\equiv S_6\equiv0\)</span>：整個數列 <span class="arithmatex">\(3+5+7+2+9+4=30\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></li>
+</ul>
+</li>
+<li><strong>答案</strong>：例如 <strong>5, 7</strong>（和 12）。</li>
+</ul>
+<p>我用程式算過所有前綴和，這三段的和都是 6 的倍數。</p>
+</details>
+<p><strong>考古變化 6.</strong>（改自 100 Q7(c)、110 Q3・換數字）從 <span class="arithmatex">\(\{1,2,\dots,300\}\)</span> 裡至少要選幾個數，才保證一定有一個數整除另一個？並說明少一個為什麼不行。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題給了選幾個要你證明；這題反過來，要自己算出「最少幾個」，還要舉反例說明少一個不夠。</li>
+<li><strong>籠子</strong>：每個數寫成 <span class="arithmatex">\(2^k\cdot m\)</span>（<span class="arithmatex">\(m\)</span> 是奇數），<span class="arithmatex">\(m\)</span> 只能是 1 到 299 的奇數，共 150 種。</li>
+<li><strong>鴿子</strong>：選 151 個數，一定有兩個的奇數部分相同，它們只差一個 2 的次方，小的整除大的。</li>
+<li><strong>150 個不夠</strong>：選 <span class="arithmatex">\(151,152,\dots,300\)</span>，最小的數的兩倍 <span class="arithmatex">\(302&gt;300\)</span>，誰都不整除誰。</li>
+<li><strong>答案</strong>：<strong>151</strong> 個。</li>
+</ul>
+<p>我用程式數過奇數部分剛好 150 種，也檢查過 151 到 300 裡沒有誰整除誰。</p>
+</details>
+<p><strong>考古變化 7.</strong>（改自 101 Q7・換數字）<span class="arithmatex">\(S=\{1,2,\dots,15\}\)</span>。至少要選幾個數，才保證有兩個數加起來是 16？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題 (a) 是偶數的 <span class="arithmatex">\(n\)</span>；這題 <span class="arithmatex">\(n=15\)</span> 是奇數，要處理「中間那個數沒有伴」。</li>
+<li><strong>籠子</strong>：加起來是 16 的配對 <span class="arithmatex">\(\{1,15\},\{2,14\},\dots,\{7,9\}\)</span> 共 7 對；8 自己一組（要兩個<strong>不同</strong>的數，<span class="arithmatex">\(8+8\)</span> 不算）。共 8 個籠子。</li>
+<li><strong>鴿子</strong>：選 9 個數，一定有兩個在同一對裡，加起來 16。</li>
+<li><strong>8 個不夠</strong>：選 <span class="arithmatex">\(1,2,\dots,8\)</span>，任兩個加起來最多 <span class="arithmatex">\(7+8=15\)</span>。</li>
+<li><strong>答案</strong>：<strong>9</strong> 個（套原題的公式 <span class="arithmatex">\(\lfloor\frac{15+1}{2}\rfloor+1=9\)</span>）。</li>
+</ul>
+<p>我用程式檢查過所有 9 個數的選法都有一對加起來是 16，而 1 到 8 沒有。</p>
+</details>
+<p><strong>考古變化 8.</strong>（改自 105 Q1・換數字）照原題的鴿籠方法，找出只由 0 和 1 組成的 (a) 13 的倍數 (b) 6 的倍數。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：換數字，練習照著證明的步驟算；(b) 會遇到「沒有餘數 0、要用兩個餘數相同的相減」的情況。</li>
+<li><strong>(a) <span class="arithmatex">\(n=13\)</span></strong>：<span class="arithmatex">\(1,11,111,\dots\)</span> 除以 13 的餘數依序是 <span class="arithmatex">\(1,11,7,6,9,0\)</span>。第 6 個 <span class="arithmatex">\(111111\)</span> 的餘數就是 0：<span class="arithmatex">\(111111=13\times8547\)</span>。答案 <strong>111111</strong>。</li>
+<li><strong>(b) <span class="arithmatex">\(n=6\)</span></strong>：<span class="arithmatex">\(1,11,111,1111\)</span> 除以 6 的餘數依序是 <span class="arithmatex">\(1,5,3,1\)</span>。<span class="arithmatex">\(1\)</span> 和 <span class="arithmatex">\(1111\)</span> 的餘數都是 1，相減：<span class="arithmatex">\(1111-1=1110=6\times185\)</span>。答案 <strong>1110</strong>。</li>
+<li><strong>為什麼相減一定只有 0 和 1</strong>：大的 <span class="arithmatex">\(11\cdots1\)</span> 減小的 <span class="arithmatex">\(11\cdots1\)</span>，前面剩下一串 1、後面補 0。</li>
+</ul>
+<p>我用程式算過每個餘數，答案一樣。</p>
+</details>
+<p><strong>考古變化 9.</strong>（改自 106 Q5・改形狀）邊長 2 的正三角形裡（含邊界）放 5 個點，證明一定有兩點的距離不超過 1。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：正方形換成正三角形，切法要跟著換。</li>
+<li><strong>籠子</strong>：連接三邊的中點，把大三角形切成 4 個邊長 1 的小正三角形。</li>
+<li><strong>鴿子</strong>：5 個點放進 4 個小三角形（含邊界），一定有兩個點在同一個小三角形裡。</li>
+<li><strong>距離</strong>：邊長 1 的正三角形裡，最遠的兩點就是兩個頂點，距離是 1。所以這兩點距離 <span class="arithmatex">\(\le1\)</span>。∎</li>
+</ul>
+</details>
 <h3 id="u6-quiz">單元 6 小考</h3>
 <p><strong>6-1.</strong> 至少要幾個相異實數，才保證有長度 4 的遞增或遞減子序列？</p>
 <details class="quiz">
@@ -5401,7 +6250,7 @@ window.MathJax = {
 <li><strong>對稱</strong>：(1,2) 勾了，(2,1) 也一定要勾，兩格綁在一起變成一個選擇 → 自由的是 (1,1)、(2,2)、{(1,2),(2,1)} → <span class="arithmatex">\(2^3=8\)</span> 種。</li>
 <li><strong>反對稱</strong>：(1,2) 和 (2,1) 不能同時勾 → 這一對只有 3 種選法（都不勾、只勾一個、只勾另一個）。</li>
 </ul>
-<p><figure class="fig">
+<figure class="fig">
 <svg viewBox="0 0 360 196" role="img" aria-label="|A| = 3 的關係是一張 3 × 3 的表。反身：對角線 3 格一定要勾，其他 6 格自由，共 2 的 6 次方種。對稱：(1,2) 和 (2,1) 綁在一起，(1,3) 和 (3,1)、(2,3) 和 (3,2) 也是，加上對角線 3 格，共 6 個自由單位，2 的 6 次方種。反對稱：對角線 3 格自由，每一對有 3 種選法，共 2 的 3 次方乘 3 的 3 次方種。">
 <text x="73" y="20" text-anchor="middle" dominant-baseline="central" class="sm">反身</text>
 <text x="47" y="40" text-anchor="middle" dominant-baseline="central" class="sm mono">1</text>
@@ -5482,9 +6331,10 @@ window.MathJax = {
 <text x="337" y="115" text-anchor="middle" dominant-baseline="central" class="sm mono">?</text>
 <text x="311" y="148" text-anchor="middle" dominant-baseline="central" class="sm">2<tspan font-size="10" dy="-6">3</tspan><tspan dy="6">·3</tspan><tspan font-size="10" dy="-6">3</tspan></text>
 <text x="180" y="184" text-anchor="middle" dominant-baseline="central" class="sm">同顏色的兩格綁在一起：對稱要一起勾；反對稱最多勾一格</text>
-</svg></p>
+</svg>
 <figcaption>|A|＝3：對角線的每一格、每一對（同顏色的兩格）各是一個獨立的選擇單位</figcaption>
 </figure>
+
 <p>所以所有關係計數題的做法都一樣：<strong>數「可以自由決定的單位」有幾個、每個單位有幾種選法</strong>，再相乘。</p>
 <h4 id="_53">函數與逆像</h4>
 <p><span class="arithmatex">\(f^{-1}(S)\)</span> 讀作「<strong>哪些元素被送進 <span class="arithmatex">\(S\)</span></strong>」，不是反函數。題目說 <span class="arithmatex">\(f^{-1}(\{4,6\})=\{1,3,7\}\)</span>，意思是：1、3、7 被送到 4 或 6，而且<strong>其他元素都不能</strong>送到 4 或 6。</p>
@@ -6650,6 +7500,266 @@ window.MathJax = {
 <li><strong>只剩對角線 4 格自由</strong>：<span class="arithmatex">\(2^4=\)</span> <strong>16</strong>。</li>
 </ul>
 </details>
+<h3 id="u7-exam">7.10 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 113 Q7・換數字）<span class="arithmatex">\(|A|=5\)</span>，<span class="arithmatex">\(A\)</span> 上恰好含 4 個有序對的對稱關係有幾個？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：集合變小、有序對的個數換成 4；拆法要重新列，別漏掉「全部用對角線」的情況。</li>
+<li><strong>先分清楚兩種格子</strong>：對角線 <span class="arithmatex">\((i,i)\)</span> 有 5 格，每格算 1 個有序對；非對角的 <span class="arithmatex">\(\{i,j\}\)</span> 有 <span class="arithmatex">\(\binom52=10\)</span> 對，對稱關係要選就是 <span class="arithmatex">\((i,j),(j,i)\)</span> 一起選，算 2 個。</li>
+<li><strong>4 的拆法</strong>：<ul>
+<li>4 個對角：<span class="arithmatex">\(\binom54=5\)</span></li>
+<li>2 個對角 ＋ 1 對：<span class="arithmatex">\(\binom52\binom{10}1=10\times10=100\)</span></li>
+<li>0 個對角 ＋ 2 對：<span class="arithmatex">\(\binom{10}{2}=45\)</span></li>
+</ul>
+</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(5+100+45=\)</span> <strong>150</strong>。</li>
+</ul>
+<p>我用程式把所有對稱關係列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 111 Q3・換數字）<span class="arithmatex">\(n=360\)</span> 的正因數集合上，「<span class="arithmatex">\(x\)</span> 整除 <span class="arithmatex">\(y\)</span>」的有序對 <span class="arithmatex">\((x,y)\)</span> 有幾個？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題 <span class="arithmatex">\(6680=2^3\times5\times167\)</span>；這題 <span class="arithmatex">\(360=2^3\times3^2\times5\)</span>，多了一個二次方的質數。</li>
+<li><strong>拆成每個質數</strong>：<span class="arithmatex">\(x\mid y\)</span> 等於每個質數的次方都是 <span class="arithmatex">\(x\)</span> 的 <span class="arithmatex">\(\le\)</span> <span class="arithmatex">\(y\)</span> 的。</li>
+<li><strong>每個質數各自數</strong>：指數上限 <span class="arithmatex">\(e\)</span> 的質數，<span class="arithmatex">\((a,a')\)</span> 滿足 <span class="arithmatex">\(0\le a\le a'\le e\)</span> 有 <span class="arithmatex">\(\binom{e+2}{2}\)</span> 種。<ul>
+<li>2（<span class="arithmatex">\(e=3\)</span>）：<span class="arithmatex">\(\binom52=10\)</span></li>
+<li>3（<span class="arithmatex">\(e=2\)</span>）：<span class="arithmatex">\(\binom42=6\)</span></li>
+<li>5（<span class="arithmatex">\(e=1\)</span>）：<span class="arithmatex">\(\binom32=3\)</span></li>
+</ul>
+</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(10\times6\times3=\)</span> <strong>180</strong>。</li>
+</ul>
+<p>我用程式把 360 的 24 個因數兩兩檢查過，答案一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 115 A8・換條件）<span class="arithmatex">\(A=\{1,\dots,8\}\)</span>，函數 <span class="arithmatex">\(f:A\to A\)</span> 滿足 <span class="arithmatex">\(f^{-1}(\{2,4\})=\emptyset\)</span>、<span class="arithmatex">\(f^{-1}(\{1,3\})=\{5,6,7\}\)</span>、<span class="arithmatex">\(f^{-1}(\{8\})=\{8\}\)</span>。這樣的 <span class="arithmatex">\(f\)</span> 有幾個？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：集合和條件都換了，但想法一樣：逆像說的是「誰會被送到這裡」，每個元素各自決定能去哪裡。</li>
+<li><strong>5、6、7</strong>：只能送到 1 或 3：<span class="arithmatex">\(2^3=8\)</span> 種。</li>
+<li><strong>8</strong>：<span class="arithmatex">\(f^{-1}(\{8\})=\{8\}\)</span>，所以 8 一定送到 8：1 種。</li>
+<li><strong>1、2、3、4</strong>：不能送到 2、4（沒有人會被送去那裡）、不能送到 1、3（只有 5、6、7 會）、不能送到 8（只有 8 會），只剩 <span class="arithmatex">\(\{5,6,7\}\)</span>：<span class="arithmatex">\(3^4=81\)</span> 種。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(8\times1\times81=\)</span> <strong>648</strong>。</li>
+</ul>
+<p>我用程式列出所有符合條件的函數，逐一檢查三個逆像，剛好 648 個。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 113 Q6・換函數）判斷 <span class="arithmatex">\(f:\mathbb Z\times\mathbb Z\to\mathbb Z\)</span> 是否有交換律、結合律：(a) <span class="arithmatex">\(f(x,y)=x+y-3xy\)</span> (b) <span class="arithmatex">\(f(x,y)=x-y+xy\)</span></p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題兩個都不交換；這題 (a) 兩個性質<strong>都成立</strong>，要展開證明，不能只舉例。</li>
+<li><strong>(a) 交換</strong>：<span class="arithmatex">\(x+y-3xy\)</span> 把 <span class="arithmatex">\(x,y\)</span> 對調完全一樣，成立。</li>
+<li><strong>(a) 結合</strong>：展開兩邊——<ul>
+<li><span class="arithmatex">\(f(f(x,y),z)=(x+y-3xy)+z-3(x+y-3xy)z=x+y+z-3xy-3xz-3yz+9xyz\)</span></li>
+<li><span class="arithmatex">\(f(x,f(y,z))=x+(y+z-3yz)-3x(y+z-3yz)=x+y+z-3xy-3xz-3yz+9xyz\)</span></li>
+<li>兩邊相同，成立。</li>
+</ul>
+</li>
+<li><strong>(b) 不交換</strong>：<span class="arithmatex">\(f(1,0)=1\)</span>、<span class="arithmatex">\(f(0,1)=-1\)</span>。</li>
+<li><strong>(b) 不結合</strong>：<span class="arithmatex">\(f(f(0,0),1)=f(0,1)=-1\)</span>，但 <span class="arithmatex">\(f(0,f(0,1))=f(0,-1)=0+1+0=1\)</span>。</li>
+<li><strong>答案</strong>：(a) 交換、結合都成立 (b) 都不成立。</li>
+</ul>
+<p>我用程式在 <span class="arithmatex">\(-6\)</span> 到 6 的範圍內把所有組合檢查過，結果一樣。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 115 B2・換式子）寫出 <span class="arithmatex">\(\neg p\leftrightarrow[(q\vee r)\to(p\wedge\neg r)]\)</span> 的真值表，並說明它什麼時候為真。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：式子換了，但做法一樣：先算中間欄，最後再做 <span class="arithmatex">\(\leftrightarrow\)</span>。注意 <span class="arithmatex">\(\to\)</span> 只有「前真後假」時是假的。</li>
+<li>
+<p><strong>真值表</strong>：</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(p\)</span></th>
+<th><span class="arithmatex">\(q\)</span></th>
+<th><span class="arithmatex">\(r\)</span></th>
+<th><span class="arithmatex">\(q\vee r\)</span></th>
+<th><span class="arithmatex">\(p\wedge\neg r\)</span></th>
+<th><span class="arithmatex">\([\cdots]\)</span></th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T</td>
+<td>T</td>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+</tr>
+<tr>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+</tr>
+<tr>
+<td>T</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+</tr>
+<tr>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+</tr>
+<tr>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+</tr>
+<tr>
+<td>F</td>
+<td>T</td>
+<td>F</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+</tr>
+<tr>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+</tr>
+<tr>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>F</td>
+<td>T</td>
+<td>T</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>什麼時候為真</strong>：<span class="arithmatex">\((p,q,r)=\)</span> (T,T,T)、(T,F,T)、(F,F,F)，共 3 種。</p>
+</li>
+</ul>
+<p>我用程式把 8 種情況都算過，答案一樣。</p>
+</details>
+<p><strong>考古變化 6.</strong>（改自 114 Q2・反過來問）原題用良序原理證明數學歸納法。反過來，用（強）數學歸納法證明良序原理：<span class="arithmatex">\(\mathbb Z^+\)</span> 的每個非空子集合都有最小元素。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：方向反過來。原題假設良序原理成立；這題只能用歸納法。兩題合起來，說明這兩個原理等價。</li>
+<li><strong>反證</strong>：假設 <span class="arithmatex">\(S\subseteq\mathbb Z^+\)</span> 不是空的，但沒有最小元素。</li>
+<li><strong>要證的敘述</strong>：<span class="arithmatex">\(P(n)\)</span>：「<span class="arithmatex">\(1,2,\dots,n\)</span> 都不在 <span class="arithmatex">\(S\)</span> 裡」。</li>
+<li><strong>基底</strong>：如果 <span class="arithmatex">\(1\in S\)</span>，1 就是 <span class="arithmatex">\(S\)</span> 的最小元素（沒有更小的正整數），矛盾。所以 <span class="arithmatex">\(1\notin S\)</span>，<span class="arithmatex">\(P(1)\)</span> 成立。</li>
+<li><strong>歸納步驟</strong>：假設 <span class="arithmatex">\(P(k)\)</span> 成立（<span class="arithmatex">\(1,\dots,k\)</span> 都不在 <span class="arithmatex">\(S\)</span>）。如果 <span class="arithmatex">\(k+1\in S\)</span>，比它小的正整數都不在 <span class="arithmatex">\(S\)</span>，<span class="arithmatex">\(k+1\)</span> 就是最小元素，矛盾。所以 <span class="arithmatex">\(k+1\notin S\)</span>，<span class="arithmatex">\(P(k+1)\)</span> 成立。</li>
+<li><strong>結論</strong>：所有 <span class="arithmatex">\(P(n)\)</span> 都成立，也就是沒有任何正整數在 <span class="arithmatex">\(S\)</span> 裡，<span class="arithmatex">\(S\)</span> 是空集合，跟假設矛盾。∎</li>
+</ul>
+</details>
+<p><strong>考古變化 7.</strong>（改自 100 Q7(a)(b)・換關係）<span class="arithmatex">\(S=\{1,\dots,30\}\)</span>，<span class="arithmatex">\(x\sim y\)</span> 若且唯若 <span class="arithmatex">\(x=3^ky\)</span>（<span class="arithmatex">\(k\)</span> 是整數，可以是負的）。(a) 證明 <span class="arithmatex">\(\sim\)</span> 是等價關係 (b) 一共有幾個等價類？寫出元素超過一個的等價類。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題用 2 的次方，這題換成 3 的次方；等價類的代表元從「奇數部分」變成「拿掉所有因數 3 之後剩下的數」。</li>
+<li><strong>(a)</strong>：反身 <span class="arithmatex">\(x=3^0x\)</span>；對稱 <span class="arithmatex">\(x=3^ky\Rightarrow y=3^{-k}x\)</span>；遞移 <span class="arithmatex">\(x=3^ky\)</span>、<span class="arithmatex">\(y=3^lz\Rightarrow x=3^{k+l}z\)</span>。∎</li>
+<li><strong>(b) 代表元</strong>：每個數寫成 <span class="arithmatex">\(3^a\cdot m\)</span>（<span class="arithmatex">\(3\nmid m\)</span>），同一類的 <span class="arithmatex">\(m\)</span> 相同。1 到 30 裡不是 3 的倍數的有 <span class="arithmatex">\(30-10=20\)</span> 個，所以有 <strong>20</strong> 個等價類。</li>
+<li><strong>元素超過一個的</strong>：{1, 3, 9, 27}、{2, 6, 18}、{4, 12}、{5, 15}、{7, 21}、{8, 24}、{10, 30}。其他 13 類都只有一個元素（例如 {11}、{29}）。</li>
+</ul>
+<p>我用程式把 1 到 30 分好類，答案一樣。</p>
+</details>
+<p><strong>考古變化 8.</strong>（改自 104 Q2・反過來問）<span class="arithmatex">\(A\)</span> 有 7 個元素，<span class="arithmatex">\(R\)</span> 是 <span class="arithmatex">\(A\)</span> 上的等價關係。(a) <span class="arithmatex">\(|R|\)</span> 最少、最多各是多少？(b) 如果 <span class="arithmatex">\(|R|=17\)</span>，<span class="arithmatex">\(R\)</span> 誘導的分割裡，各組的大小是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題給分割求 <span class="arithmatex">\(|R|\)</span>；這題反過來，給 <span class="arithmatex">\(|R|\)</span> 求分割的樣子。</li>
+<li><strong>公式</strong>：分割成大小 <span class="arithmatex">\(a_1,\dots,a_k\)</span> 的組，<span class="arithmatex">\(|R|=a_1^2+\cdots+a_k^2\)</span>（每組內任兩個元素都有關係，包含自己跟自己）。</li>
+<li><strong>(a)</strong>：最少是每個元素自己一組，<span class="arithmatex">\(1^2\times7=7\)</span>；最多是全部一組，<span class="arithmatex">\(7^2=49\)</span>。</li>
+<li><strong>(b)</strong>：要找 <span class="arithmatex">\(a_1+\cdots+a_k=7\)</span> 而且 <span class="arithmatex">\(a_1^2+\cdots+a_k^2=17\)</span>。<ul>
+<li>有 4 的話，<span class="arithmatex">\(16\)</span> 加上剩下 3 個元素至少 <span class="arithmatex">\(1+1+1\)</span>，超過 17，不行。</li>
+<li>試含 3 的：<span class="arithmatex">\(3+2+2\)</span> → <span class="arithmatex">\(9+4+4=17\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>；<span class="arithmatex">\(3+2+1+1\)</span> → <span class="arithmatex">\(15\)</span>；<span class="arithmatex">\(3+3+1\)</span> → <span class="arithmatex">\(19\)</span>；<span class="arithmatex">\(3+1+1+1+1\)</span> → <span class="arithmatex">\(13\)</span>。</li>
+<li>全部 <span class="arithmatex">\(\le2\)</span> 的：最多 <span class="arithmatex">\(2+2+2+1\)</span> → <span class="arithmatex">\(13\)</span>，不夠。</li>
+</ul>
+</li>
+<li><strong>答案</strong>：(a) 最少 <strong>7</strong>、最多 <strong>49</strong> (b) 只有一種：<strong>3、2、2</strong>。</li>
+</ul>
+<p>我用程式把 7 的所有分割列出來，平方和是 17 的只有 3＋2＋2。</p>
+</details>
+<p><strong>考古變化 9.</strong>（改自 104 Q1(a)・延伸判斷）下面哪些是偏序？不是的話，說出哪個性質不成立。(a) <span class="arithmatex">\(\mathbb Z\)</span> 上的 <span class="arithmatex">\(\le\)</span> (b) <span class="arithmatex">\(\mathbb Z\)</span> 上的 <span class="arithmatex">\(&lt;\)</span> (c) <span class="arithmatex">\(\mathbb Z^+\)</span> 上的整除 (d) <span class="arithmatex">\(\mathbb Z-\{0\}\)</span> 上的整除</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只問定義；這題要拿定義（反身、反對稱、遞移）一個一個檢查。</li>
+<li><strong>(a) 是</strong>：<span class="arithmatex">\(x\le x\)</span>；<span class="arithmatex">\(x\le y\)</span>、<span class="arithmatex">\(y\le x\)</span> 推得 <span class="arithmatex">\(x=y\)</span>；<span class="arithmatex">\(\le\)</span> 可以遞移。而且任兩個都能比，是全序。</li>
+<li><strong>(b) 不是</strong>：不反身，<span class="arithmatex">\(x&lt;x\)</span> 不成立。</li>
+<li><strong>(c) 是</strong>：<span class="arithmatex">\(x\mid x\)</span>；正整數 <span class="arithmatex">\(x\mid y\)</span>、<span class="arithmatex">\(y\mid x\)</span> 推得 <span class="arithmatex">\(x=y\)</span>；<span class="arithmatex">\(x\mid y\)</span>、<span class="arithmatex">\(y\mid z\)</span> 推得 <span class="arithmatex">\(x\mid z\)</span>。但不是全序（2 和 3 不能比）。</li>
+<li><strong>(d) 不是</strong>：反對稱不成立，<span class="arithmatex">\(2\mid-2\)</span> 而且 <span class="arithmatex">\(-2\mid2\)</span>，但 <span class="arithmatex">\(2\ne-2\)</span>。</li>
+<li><strong>答案</strong>：(a)、(c) 是偏序。</li>
+</ul>
+<p>我用程式在小範圍內把三個性質都檢查過，結果一樣。</p>
+</details>
+<p><strong>考古變化 10.</strong>（改自 102 Q7・換集合）72 的所有正因數，在整除關係下的 Hasse 圖有幾個頂點、幾條邊？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題是子集合在 <span class="arithmatex">\(\subseteq\)</span> 下（每個元素選或不選）；這題是因數在整除下，指數可以是 0 到 <span class="arithmatex">\(e\)</span>，不只兩種。</li>
+<li><strong>頂點</strong>：<span class="arithmatex">\(72=2^3\times3^2\)</span>，因數 <span class="arithmatex">\(2^a3^b\)</span>，<span class="arithmatex">\(a\)</span> 有 4 種、<span class="arithmatex">\(b\)</span> 有 3 種：<span class="arithmatex">\(4\times3=12\)</span> 個。</li>
+<li><strong>邊</strong>：Hasse 圖的邊連「多乘一個質數」的兩個因數（中間不能再插別的因數）。<ul>
+<li>乘 2：<span class="arithmatex">\(a\)</span> 從 0、1、2 往上加 1（3 種），<span class="arithmatex">\(b\)</span> 任意（3 種）：<span class="arithmatex">\(3\times3=9\)</span> 條。</li>
+<li>乘 3：<span class="arithmatex">\(b\)</span> 從 0、1 往上加 1（2 種），<span class="arithmatex">\(a\)</span> 任意（4 種）：<span class="arithmatex">\(2\times4=8\)</span> 條。</li>
+</ul>
+</li>
+<li><strong>答案</strong>：<strong>12</strong> 個頂點、<strong>17</strong> 條邊。圖畫出來是 <span class="arithmatex">\(4\times3\)</span> 的格子。</li>
+</ul>
+<p>我用程式列出所有「相除剛好是一個質數」的配對，答案一樣。</p>
+</details>
+<p><strong>考古變化 11.</strong>（改自 100 Q5・換式子）用卡諾圖化簡 <span class="arithmatex">\(F(w,x,y,z)=\sum m(0,2,5,7,8,10,13,15)\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題給乘積和的式子；這題直接給 minterm，要自己填卡諾圖，還會用到「四個角」這種不明顯的相鄰。</li>
+<li><strong>填表</strong>：把 8 個 minterm 填 1（列是 <span class="arithmatex">\(wx\)</span>、行是 <span class="arithmatex">\(yz\)</span>，都照 00、01、11、10 的順序）。</li>
+<li><strong>找最大的方塊</strong>：<ul>
+<li><span class="arithmatex">\(m(0,2,8,10)\)</span>：四個角，<span class="arithmatex">\(x=0\)</span>、<span class="arithmatex">\(z=0\)</span> → <span class="arithmatex">\(\bar x\bar z\)</span>。</li>
+<li><span class="arithmatex">\(m(5,7,13,15)\)</span>：正中間的 <span class="arithmatex">\(2\times2\)</span>，<span class="arithmatex">\(x=1\)</span>、<span class="arithmatex">\(z=1\)</span> → <span class="arithmatex">\(xz\)</span>。</li>
+</ul>
+</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(F=\)</span> <strong><span class="arithmatex">\(\bar x\bar z+xz\)</span></strong>（也就是 <span class="arithmatex">\(x\)</span> 和 <span class="arithmatex">\(z\)</span> 相同，<span class="arithmatex">\(\overline{x\oplus z}\)</span>）。<span class="arithmatex">\(w\)</span>、<span class="arithmatex">\(y\)</span> 都沒用到。</li>
+</ul>
+<p>我用程式把 16 種輸入都代進去比對過，答案一樣。</p>
+</details>
+<p><strong>考古變化 12.</strong>（改自 105 Q2・換集合）證明 <span class="arithmatex">\(\mathbb Z\)</span>（所有整數）和 <span class="arithmatex">\(\mathbb Z^+\)</span> 之間存在 bijection。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題是 <span class="arithmatex">\(\mathbb N\times\mathbb N\)</span> 對到 <span class="arithmatex">\(\mathbb N\)</span>；這題是比較簡單的 <span class="arithmatex">\(\mathbb Z\)</span> 對到 <span class="arithmatex">\(\mathbb Z^+\)</span>，但一樣要給公式、證明一對一和映成。</li>
+<li><strong>想法</strong>：正整數送到偶數，0 和負數送到奇數：<span class="arithmatex">\(0,1,-1,2,-2,\dots\)</span> 依序對到 <span class="arithmatex">\(1,2,3,4,5,\dots\)</span>。</li>
+<li><strong>公式</strong>：<span class="arithmatex">\(f(n)=2n\)</span>（<span class="arithmatex">\(n&gt;0\)</span>）；<span class="arithmatex">\(f(n)=-2n+1\)</span>（<span class="arithmatex">\(n\le0\)</span>）。</li>
+<li><strong>一對一</strong>：兩個正數 <span class="arithmatex">\(2m=2n\)</span> ⇒ <span class="arithmatex">\(m=n\)</span>；兩個非正數 <span class="arithmatex">\(-2m+1=-2n+1\)</span> ⇒ <span class="arithmatex">\(m=n\)</span>；一正一非正的話，一個是偶數、一個是奇數，不可能相等。</li>
+<li><strong>映成</strong>：偶數 <span class="arithmatex">\(2k\)</span> 是 <span class="arithmatex">\(f(k)\)</span>；奇數 <span class="arithmatex">\(2k+1\)</span>（<span class="arithmatex">\(k\ge0\)</span>）是 <span class="arithmatex">\(f(-k)\)</span>。∎</li>
+</ul>
+<p>我用程式檢查過 <span class="arithmatex">\(-500\)</span> 到 500 的值都不重複，而且 1 到 1000 全部被對到。</p>
+</details>
 <h3 id="u7-quiz">單元 7 小考</h3>
 <p><strong>7-1.</strong> <span class="arithmatex">\(|A|=4\)</span>：反身關係、對稱關係、反身且對稱的關係各有幾個？</p>
 <details class="quiz">
@@ -6935,7 +8045,7 @@ window.MathJax = {
 <p class="admonition-title">114 Q5（10%）：辨識 <span class="arithmatex">\(\{0,0\}^*\{1,0\}\cup\{0,1\}^*\{00\}\)</span></p>
 <p><strong>先讀懂語言</strong>：<span class="arithmatex">\(\{0,0\}\)</span> 這個集合其實只有一個元素 0，所以 <span class="arithmatex">\(\{0,0\}^*\{1,0\}\)</span> 是「若干個 0 再接一個 0 或 1」，也就是 <span class="arithmatex">\(0^k1\)</span> 或 <span class="arithmatex">\(0^{k+1}\)</span>。另一半是「以 00 結尾」。</p>
 <p>（如果你認為題目本意是 <span class="arithmatex">\(\{00\}^*\{10\}\)</span>，要在答案開頭寫出你的假設，題目允許這樣做。）</p>
-<p>依字面意思需要的狀態：<span class="arithmatex">\(s_0\)</span> 起始、<span class="arithmatex">\(s_A\)</span> 目前全是 0（長度 1）、<span class="arithmatex">\(s_B\)</span> 目前全是 0（長度 ≥2）、<span class="arithmatex">\(s_C\)</span> 剛好是 <span class="arithmatex">\(0^k1\)</span>、<span class="arithmatex">\(s_D\)</span> 已離開前綴、末尾是 0、<span class="arithmatex">\(s_E\)</span> 已離開前綴、末尾是 00、<span class="arithmatex">\(s_F\)</span> 已離開前綴、末尾是 1。每次轉移後輸出 1 的條件是：落在 <span class="arithmatex">\(s_A,s_B,s_C\)</span> 或 <span class="arithmatex">\(s_E\)</span>。</p>
+<p>照字面意思一步一步記，可以用這 7 個狀態：<span class="arithmatex">\(s_0\)</span> 起始、<span class="arithmatex">\(s_A\)</span> 目前全是 0（長度 1）、<span class="arithmatex">\(s_B\)</span> 目前全是 0（長度 ≥2）、<span class="arithmatex">\(s_C\)</span> 剛好是 <span class="arithmatex">\(0^k1\)</span>、<span class="arithmatex">\(s_D\)</span> 已離開前綴、末尾是 0、<span class="arithmatex">\(s_E\)</span> 已離開前綴、末尾是 00、<span class="arithmatex">\(s_F\)</span> 已離開前綴、末尾是 1。每次轉移後輸出 1 的條件是：落在 <span class="arithmatex">\(s_A,s_B,s_C\)</span> 或 <span class="arithmatex">\(s_E\)</span>。</p>
 <table>
 <thead>
 <tr>
@@ -6982,6 +8092,38 @@ window.MathJax = {
 </tr>
 </tbody>
 </table>
+<p><strong>還可以再化簡</strong>：Mealy 機器的輸出寫在邊上，兩個狀態只要「讀到每個字元時的輸出和下一個狀態」都一樣，就可以合併。上表的 <span class="arithmatex">\(s_0,s_A,s_B\)</span>（讀過的全部是 0）、<span class="arithmatex">\(s_C,s_F\)</span>（出現過 1、最後一個字是 1）、<span class="arithmatex">\(s_D,s_E\)</span>（出現過 1、最後一個字是 0）各自合併，最少只要 3 個狀態：</p>
+<table>
+<thead>
+<tr>
+<th>狀態</th>
+<th>意義</th>
+<th>輸入 0</th>
+<th>輸入 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(q_0\)</span>（起始）</td>
+<td>讀過的全部是 0（包含還沒讀）</td>
+<td><span class="arithmatex">\(q_0\)</span>/1</td>
+<td><span class="arithmatex">\(q_1\)</span>/1</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(q_1\)</span></td>
+<td>出現過 1，最後一個字是 1</td>
+<td><span class="arithmatex">\(q_2\)</span>/0</td>
+<td><span class="arithmatex">\(q_1\)</span>/0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(q_2\)</span></td>
+<td>出現過 1，最後一個字是 0</td>
+<td><span class="arithmatex">\(q_2\)</span>/1</td>
+<td><span class="arithmatex">\(q_1\)</span>/0</td>
+</tr>
+</tbody>
+</table>
+<p>題目沒有要求最少狀態，寫 7 個的版本也對；但狀態越少，畫圖越不容易出錯。兩個版本我都用程式把長度 12 以內的字串全部跑過，每一步的輸出都跟語言的定義一樣。</p>
 </div>
 <h3 id="u8-concept">8.2 觀念小考</h3>
 <p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
@@ -7113,6 +8255,112 @@ window.MathJax = {
 </tbody>
 </table>
 <p>這就是 Mealy 機器：輸出（出不出貨）跟著「目前狀態 ＋ 這次投的硬幣」。</p>
+</details>
+<h3 id="u8-exam">8.3 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 111 Q2・換語言）<span class="arithmatex">\(I=O=\{0,1\}\)</span>，設計一個有限狀態機（Mealy，輸出 1 代表讀到目前為止的字串屬於語言）辨識 <span class="arithmatex">\(\{1\}\{0,1\}^*\cup\{0,1\}^*\{01\}\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只看結尾；這題多了「以 1 開頭」，一旦第一個字是 1，之後不管讀什麼都屬於語言，要有一個「永遠輸出 1」的狀態。</li>
+<li><strong>先讀懂語言</strong>：以 1 開頭，<strong>或</strong>以 01 結尾。</li>
+<li><strong>需要記住的事</strong>：第一個字是什麼；如果第一個字是 0，還要記住最後一個字是 0 還是 1。</li>
+<li>
+<p><strong>狀態表</strong>（格子裡是「下一個狀態／輸出」）：</p>
+<table>
+<thead>
+<tr>
+<th>狀態</th>
+<th>意義</th>
+<th>輸入 0</th>
+<th>輸入 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(s_0\)</span>（起始）</td>
+<td>還沒讀任何字元</td>
+<td><span class="arithmatex">\(s_B\)</span>/0</td>
+<td><span class="arithmatex">\(s_A\)</span>/<strong>1</strong></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_A\)</span></td>
+<td>以 1 開頭</td>
+<td><span class="arithmatex">\(s_A\)</span>/<strong>1</strong></td>
+<td><span class="arithmatex">\(s_A\)</span>/<strong>1</strong></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_B\)</span></td>
+<td>以 0 開頭，最後一個字是 0</td>
+<td><span class="arithmatex">\(s_B\)</span>/0</td>
+<td><span class="arithmatex">\(s_C\)</span>/<strong>1</strong></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_C\)</span></td>
+<td>以 0 開頭，最後一個字是 1</td>
+<td><span class="arithmatex">\(s_B\)</span>/0</td>
+<td><span class="arithmatex">\(s_C\)</span>/0</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>檢查</strong>：讀 0、1、1：輸出 0、1、0（「01」屬於語言，「011」以 0 開頭、以 11 結尾，不屬於）。</p>
+</li>
+</ul>
+<p>我用程式把長度 1 到 10 的字串全部丟進這台機器，每一步的輸出都跟語言的定義一樣；也確認過 4 個狀態不能再少。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 114 Q5・換字母）<span class="arithmatex">\(I=O=\{0,1\}\)</span>，設計一個有限狀態機（Mealy）辨識 <span class="arithmatex">\(\{1,1\}^*\{0\}\cup\{0,1\}^*\{11\}\)</span>。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：同一個陷阱換了字母：<span class="arithmatex">\(\{1,1\}\)</span> 這個集合其實只有一個元素 1，所以 <span class="arithmatex">\(\{1,1\}^*\{0\}\)</span> 是「若干個 1 再接一個 0」，也就是 <span class="arithmatex">\(1^k0\)</span>（<span class="arithmatex">\(k\ge0\)</span>）。另一半是「以 11 結尾」。</li>
+<li><strong>需要記住的事</strong>：目前是不是「全部都是 1」；如果已經出現過 0，還要記住最後一個字是 0 還是 1。</li>
+<li>
+<p><strong>狀態表</strong>（「下一個狀態／輸出」）：</p>
+<table>
+<thead>
+<tr>
+<th>狀態</th>
+<th>意義</th>
+<th>輸入 0</th>
+<th>輸入 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(s_0\)</span>（起始）</td>
+<td>還沒讀任何字元</td>
+<td><span class="arithmatex">\(s_D\)</span>/<strong>1</strong></td>
+<td><span class="arithmatex">\(s_P\)</span>/0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_P\)</span></td>
+<td>讀過的全部是 1（至少一個）</td>
+<td><span class="arithmatex">\(s_D\)</span>/<strong>1</strong></td>
+<td><span class="arithmatex">\(s_P\)</span>/<strong>1</strong></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_D\)</span></td>
+<td>出現過 0，最後一個字是 0</td>
+<td><span class="arithmatex">\(s_D\)</span>/0</td>
+<td><span class="arithmatex">\(s_X\)</span>/0</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(s_X\)</span></td>
+<td>出現過 0，最後一個字是 1</td>
+<td><span class="arithmatex">\(s_D\)</span>/0</td>
+<td><span class="arithmatex">\(s_X\)</span>/<strong>1</strong></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>為什麼這麼少</strong>：Mealy 的輸出寫在邊上，「字串本身屬不屬於語言」已經在剛剛那條邊輸出了，狀態只要記住「以後會怎樣」。例如「1」和「11」以後的行為完全一樣，可以是同一個狀態 <span class="arithmatex">\(s_P\)</span>。</p>
+</li>
+<li><strong>檢查</strong>：讀 1、1、0：輸出 0、1、1（「11」以 11 結尾；「110」是 <span class="arithmatex">\(1^20\)</span>）。</li>
+</ul>
+<p>我用程式把長度 1 到 10 的字串全部丟進這台機器，每一步的輸出都跟語言的定義一樣；也確認過 4 個狀態不能再少。</p>
 </details>
 <h3 id="u8-quiz">單元 8 小考</h3>
 <p><strong>8-1.</strong> 畫出辨識「以 00 結尾」字串的 FSM（<span class="arithmatex">\(I=O=\{0,1\}\)</span>）。</p>
@@ -7533,6 +8781,50 @@ window.MathJax = {
 <li><strong>答案</strong>：<span class="arithmatex">\(\frac{10}{216}=\)</span> <strong><span class="arithmatex">\(\frac{5}{108}\)</span></strong>。</li>
 </ul>
 <p>我用程式把 <span class="arithmatex">\(6^3\)</span> 種結果全部數過，答案一樣。</p>
+</details>
+<h3 id="u9-exam">9.4 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 115 B1・換數字）公平骰子擲 4 次，總和為 14 的機率是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：次數和總和都換了；排容的做法一樣，先平移下限、再扣掉超過上限的。</li>
+<li><strong>平移下限</strong>：<span class="arithmatex">\(x_1+\cdots+x_4=14\)</span>、<span class="arithmatex">\(1\le x_i\le6\)</span>。令 <span class="arithmatex">\(y_i=x_i-1\)</span>：<span class="arithmatex">\(y_1+\cdots+y_4=10\)</span>、<span class="arithmatex">\(0\le y_i\le5\)</span>。</li>
+<li><strong>不管上限</strong>：<span class="arithmatex">\(\binom{10+3}{3}=\binom{13}{3}=286\)</span>。</li>
+<li><strong>扣掉某一個 <span class="arithmatex">\(y_i\ge6\)</span></strong>：先塞 6，剩 4 分給 4 個：<span class="arithmatex">\(\binom{7}{3}=35\)</span>；選哪一個 4 種：<span class="arithmatex">\(140\)</span>。</li>
+<li><strong>兩個同時 <span class="arithmatex">\(\ge6\)</span></strong>：至少 12，超過 10，不可能。</li>
+<li><strong>個數</strong>：<span class="arithmatex">\(286-140=146\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(\frac{146}{6^4}=\frac{146}{1296}=\)</span> <strong><span class="arithmatex">\(\frac{73}{648}\)</span></strong>（約 0.113）。</li>
+</ul>
+<p>我用程式把 <span class="arithmatex">\(6^4\)</span> 種結果全部列出來數過，答案一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 115 A10・改條件）甲有 3 元、乙有 7 元，每局公平地賭 1 元，直到一人輸光。(a) 期望要賭幾局？(b) 甲最後贏走全部 10 元的機率是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：兩人的錢不一樣多，還多問了「誰贏」的機率。</li>
+<li><strong>(a)</strong>：賭徒破產問題的期望局數是 <span class="arithmatex">\(ab\)</span>：<span class="arithmatex">\(3\times7=\)</span> <strong>21</strong> 局。推導跟原題一樣：<span class="arithmatex">\(E_k=1+\frac12E_{k-1}+\frac12E_{k+1}\)</span>，<span class="arithmatex">\(E_0=E_{10}=0\)</span>，解得 <span class="arithmatex">\(E_k=k(10-k)\)</span>，<span class="arithmatex">\(E_3=21\)</span>。</li>
+<li><strong>(b)</strong>：令 <span class="arithmatex">\(W_k\)</span> ＝ 甲有 <span class="arithmatex">\(k\)</span> 元時最後贏光的機率。<span class="arithmatex">\(W_k=\frac12W_{k-1}+\frac12W_{k+1}\)</span>，<span class="arithmatex">\(W_0=0\)</span>、<span class="arithmatex">\(W_{10}=1\)</span>。<ul>
+<li>這個式子說 <span class="arithmatex">\(W_k\)</span> 是左右兩個的平均，所以 <span class="arithmatex">\(W_k\)</span> 是一條直線：<span class="arithmatex">\(W_k=\frac{k}{10}\)</span>。</li>
+<li><span class="arithmatex">\(W_3=\)</span> <strong><span class="arithmatex">\(\frac{3}{10}\)</span></strong>。</li>
+</ul>
+</li>
+<li><strong>直覺</strong>：公平的賭局，期望的錢不會變。最後甲只會是 0 元或 10 元，<span class="arithmatex">\(10\times W_3=3\)</span>，所以 <span class="arithmatex">\(W_3=\frac3{10}\)</span>。</li>
+</ul>
+<p>我用程式把這些方程式用分數精確地解過，答案一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 115 A10・改條件）甲、乙各有 5 元，每局甲贏的機率是 <span class="arithmatex">\(\frac23\)</span>、乙贏的機率是 <span class="arithmatex">\(\frac13\)</span>，每局賭 1 元，直到一人輸光。甲最後贏光的機率是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：賭局不公平了，「<span class="arithmatex">\(W_k\)</span> 是一條直線」不再成立，要解遞迴。</li>
+<li><strong>列式</strong>：<span class="arithmatex">\(W_k=\frac23W_{k+1}+\frac13W_{k-1}\)</span>，<span class="arithmatex">\(W_0=0\)</span>、<span class="arithmatex">\(W_{10}=1\)</span>。</li>
+<li><strong>特徵方程</strong>：<span class="arithmatex">\(\frac23r^2-r+\frac13=0\)</span>，乘 3：<span class="arithmatex">\(2r^2-3r+1=0\)</span>，<span class="arithmatex">\(r=1,\ \frac12\)</span>。所以 <span class="arithmatex">\(W_k=A+B\left(\frac12\right)^k\)</span>。</li>
+<li><strong>代邊界</strong>：<span class="arithmatex">\(W_0=A+B=0\)</span>；<span class="arithmatex">\(W_{10}=A+\frac{B}{1024}=1\)</span>。得 <span class="arithmatex">\(A=\frac{1024}{1023}\)</span>、<span class="arithmatex">\(B=-\frac{1024}{1023}\)</span>。</li>
+<li><strong><span class="arithmatex">\(k=5\)</span></strong>：<span class="arithmatex">\(W_5=\frac{1024}{1023}\left(1-\frac{1}{32}\right)=\frac{1024}{1023}\cdot\frac{31}{32}=\frac{32\times31}{1023}=\)</span> <strong><span class="arithmatex">\(\frac{32}{33}\)</span></strong>。</li>
+<li><strong>一般公式</strong>：<span class="arithmatex">\(W_k=\frac{1-(q/p)^k}{1-(q/p)^N}\)</span>，這裡 <span class="arithmatex">\(\frac qp=\frac12\)</span>、<span class="arithmatex">\(N=10\)</span>。</li>
+</ul>
+<p>我用程式把這些方程式用分數精確地解過，答案一樣。</p>
 </details>
 <h3 id="u9-quiz">單元 9 小考</h3>
 <p><strong>9-1.</strong> 擲 3 顆骰子，總和為 10 的機率？</p>
@@ -7992,6 +9284,90 @@ window.MathJax = {
 <summary>看參考答案</summary>
 <p><strong>一定有</strong>：<span class="arithmatex">\(n=6\)</span>，每個點度數 <span class="arithmatex">\(\ge3=\frac n2\)</span>，符合 Dirac 定理。</p>
 <p><span class="arithmatex">\(K_{3,3}\)</span> 的兩群是 <span class="arithmatex">\(\{a_1,a_2,a_3\}\)</span>、<span class="arithmatex">\(\{b_1,b_2,b_3\}\)</span>，每個點度數 3。Hamilton 環：<span class="arithmatex">\(a_1\to b_1\to a_2\to b_2\to a_3\to b_3\to a_1\)</span>，6 個點各一次、相鄰的都在不同群（都有邊）。注意 <span class="arithmatex">\(K_{3,3}\)</span> 每個點度數 3 是奇數，<strong>沒有</strong> Euler 迴路，兩件事沒有關係。</p>
+</details>
+<h3 id="u10-exam">10.6 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 100 Q6・延伸）一棵樹有 3 個度數 3 的點、2 個度數 2 的點，其他的點度數都是 1。這棵樹一共有幾個點？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題證明「至少 2 個葉子」；這題用同樣的工具（握手定理＋樹的邊數）把葉子數精確算出來。</li>
+<li><strong>設葉子有 <span class="arithmatex">\(L\)</span> 個</strong>：點數 <span class="arithmatex">\(n=3+2+L=5+L\)</span>，邊數 <span class="arithmatex">\(n-1=4+L\)</span>。</li>
+<li><strong>握手定理</strong>：度數和 ＝ 2 × 邊數：<span class="arithmatex">\(3\times3+2\times2+L=2(4+L)\)</span>，即 <span class="arithmatex">\(13+L=8+2L\)</span>，<span class="arithmatex">\(L=5\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(n=5+5=\)</span> <strong>10</strong> 個點。</li>
+<li><strong>一般公式</strong>：葉子數 <span class="arithmatex">\(=2+\sum_{k\ge3}(k-2)\,n_k\)</span>（<span class="arithmatex">\(n_k\)</span> 是度數 <span class="arithmatex">\(k\)</span> 的點數）。這題 <span class="arithmatex">\(2+1\times3=5\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。度數 2 的點不影響葉子數。</li>
+</ul>
+<p>我用程式依這組度數真的建出一棵樹（10 個點、9 條邊），度數跟題目一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 101 Q4・延伸）簡單圖 <span class="arithmatex">\(G\)</span> 的最小度數 <span class="arithmatex">\(\delta\ge k\ge2\)</span>。證明 <span class="arithmatex">\(G\)</span> 有一個長度至少 <span class="arithmatex">\(k+1\)</span> 的環。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題證明有長度 <span class="arithmatex">\(\ge k\)</span> 的<strong>路徑</strong>；這題用同一條最長路徑，再多走一步把它接成<strong>環</strong>。</li>
+<li><strong>取最長路徑</strong> <span class="arithmatex">\(v_0,v_1,\dots,v_\ell\)</span>。跟原題一樣，<span class="arithmatex">\(v_0\)</span> 的鄰居全部都在這條路徑上（不然可以接在前面變得更長）。</li>
+<li><strong>最遠的鄰居</strong>：<span class="arithmatex">\(v_0\)</span> 至少有 <span class="arithmatex">\(k\)</span> 個鄰居，都在 <span class="arithmatex">\(\{v_1,\dots,v_\ell\}\)</span> 裡，所以裡面編號最大的那個 <span class="arithmatex">\(v_j\)</span> 滿足 <span class="arithmatex">\(j\ge k\)</span>。</li>
+<li><strong>接成環</strong>：<span class="arithmatex">\(v_0,v_1,\dots,v_j\)</span> 再走邊 <span class="arithmatex">\(v_jv_0\)</span> 回到 <span class="arithmatex">\(v_0\)</span>，是一個環，長度 <span class="arithmatex">\(j+1\ge k+1\)</span>。（<span class="arithmatex">\(k\ge2\)</span> 保證 <span class="arithmatex">\(j\ge2\)</span>，環至少 3 個點，是真正的環。）∎</li>
+</ul>
+<p>我用程式隨機產生 300 個最小度數至少 2 的圖，找出最長的環，每一個都符合。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 104 Q6・改條件）簡單圖 <span class="arithmatex">\(G\)</span> 有 <span class="arithmatex">\(n\ge2\)</span> 個點、<span class="arithmatex">\(m\)</span> 條邊。證明：如果 <span class="arithmatex">\(m&gt;\binom{n-1}{2}\)</span>，<span class="arithmatex">\(G\)</span> 一定連通。再說明 <span class="arithmatex">\(m=\binom{n-1}{2}\)</span> 時為什麼不一定。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題用「度數和」當條件；這題改用「邊數」，一樣用反證法：不連通時邊數最多能有多少。</li>
+<li><strong>反證</strong>：假設 <span class="arithmatex">\(G\)</span> 不連通，把點分成兩群：一個連通分量（<span class="arithmatex">\(a\)</span> 個點）和其他的點（<span class="arithmatex">\(b\)</span> 個點），<span class="arithmatex">\(a+b=n\)</span>、<span class="arithmatex">\(a,b\ge1\)</span>。兩群之間沒有邊，所以 <span class="arithmatex">\(m\le\binom a2+\binom b2\)</span>。</li>
+<li><strong><span class="arithmatex">\(\binom a2+\binom b2\)</span> 最大是多少</strong>：<span class="arithmatex">\(a,b\)</span> 越不平均越大，最大是 <span class="arithmatex">\(a=n-1\)</span>、<span class="arithmatex">\(b=1\)</span>（或反過來）：<span class="arithmatex">\(\binom{n-1}{2}+0\)</span>。<ul>
+<li>理由：<span class="arithmatex">\(\binom a2+\binom b2=\frac{a^2+b^2-n}{2}\)</span>，<span class="arithmatex">\(a+b\)</span> 固定時 <span class="arithmatex">\(a^2+b^2\)</span> 在兩端最大。</li>
+</ul>
+</li>
+<li><strong>矛盾</strong>：<span class="arithmatex">\(m\le\binom{n-1}{2}\)</span>，跟 <span class="arithmatex">\(m&gt;\binom{n-1}{2}\)</span> 矛盾，所以 <span class="arithmatex">\(G\)</span> 連通。∎</li>
+<li><strong>剛好等於時不一定</strong>：<span class="arithmatex">\(K_{n-1}\)</span> 加上一個孤立點，邊數剛好 <span class="arithmatex">\(\binom{n-1}{2}\)</span>，但不連通。</li>
+</ul>
+<p>我用程式把 <span class="arithmatex">\(n\le6\)</span> 的所有簡單圖都檢查過，邊數超過 <span class="arithmatex">\(\binom{n-1}{2}\)</span> 的都連通。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 101 Q3・反過來問）原題證明了「簡單圖至少 2 個點時，一定有兩個點度數相同」。如果允許兩點之間有很多條邊（多重圖，但沒有 loop），還成立嗎？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題的證明用到「度數最多 <span class="arithmatex">\(n-1\)</span>」和「0 和 <span class="arithmatex">\(n-1\)</span> 不會同時出現」，兩件事都靠「兩點之間最多一條邊」。拿掉這個條件，證明就斷了。</li>
+<li><strong>反例</strong>：3 個點 a、b、c。a–b 一條邊，b–c 兩條邊。度數：a 是 1、b 是 3、c 是 2，三個都不一樣。</li>
+<li><strong>答案</strong>：<strong>不成立</strong>。</li>
+<li><strong>哪一步壞掉</strong>：b 有 3 條邊，但只有 2 個鄰居，度數超過了 <span class="arithmatex">\(n-1=2\)</span>，可能的度數不再只有 <span class="arithmatex">\(n\)</span> 種。</li>
+</ul>
+</details>
+<p><strong>考古變化 5.</strong>（改自 106 Q4・換圖）下面哪些是二分圖？(a) <span class="arithmatex">\(C_6\)</span> (b) <span class="arithmatex">\(C_7\)</span> (c) <span class="arithmatex">\(K_{2,3}\)</span> (d) <span class="arithmatex">\(Q_3\)</span> 拿掉一個點 (e) Petersen 圖</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題證明「二分圖 ⇔ 沒有奇數環」；這題拿這個定理去判斷具體的圖：找到奇數環就不是，找到分法就是。</li>
+<li><strong>(a) 是</strong>：偶數長度的環，點輪流塗兩色就好。</li>
+<li><strong>(b) 不是</strong>：本身就是長度 7 的奇數環。</li>
+<li><strong>(c) 是</strong>：本來就分成 2 個點和 3 個點兩群。</li>
+<li><strong>(d) 是</strong>：<span class="arithmatex">\(Q_3\)</span> 是二分圖（1 的個數奇偶分群，原題 (a)），拿掉點不會產生新的環，還是二分圖。</li>
+<li><strong>(e) 不是</strong>：外圈就是一個長度 5 的環。</li>
+<li><strong>答案</strong>：(a)、(c)、(d) 是二分圖。</li>
+</ul>
+<p>我用程式對每個圖做兩色塗色（BFS），結果一樣。</p>
+</details>
+<p><strong>考古變化 6.</strong>（改自 100 Q4・改條件）(a) 證明：簡單平面圖如果<strong>沒有三角形</strong>、點數 <span class="arithmatex">\(n\ge3\)</span>，則邊數 <span class="arithmatex">\(m\le2n-4\)</span>。(b) 用 (a) 證明 <span class="arithmatex">\(K_{3,3}\)</span> 不是平面圖。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題是 <span class="arithmatex">\(m\le3n-6\)</span>（每個面至少 3 條邊）；沒有三角形時，每個面至少 4 條邊，界線更緊。</li>
+<li><strong>(a)</strong>：先假設連通、<span class="arithmatex">\(m\ge3\)</span>（<span class="arithmatex">\(m&lt;3\)</span> 時 <span class="arithmatex">\(2n-4\ge2&gt;m\)</span> 直接成立）。沒有三角形，每個面至少被 4 條邊圍住；每條邊最多碰到 2 個面，所以 <span class="arithmatex">\(4f\le2m\)</span>，<span class="arithmatex">\(f\le\frac m2\)</span>。代進 Euler 公式 <span class="arithmatex">\(n-m+f=2\)</span>：<span class="arithmatex">\(2\le n-m+\frac m2\)</span>，得 <span class="arithmatex">\(m\le2n-4\)</span>。不連通時，在分量之間加邊（不會產生三角形，也還是平面圖）再套用，原本的邊數更少。∎</li>
+<li><strong>(b)</strong>：<span class="arithmatex">\(K_{3,3}\)</span> 是二分圖，沒有奇數環，當然沒有三角形；<span class="arithmatex">\(n=6\)</span>、<span class="arithmatex">\(m=9\)</span>。如果是平面圖，<span class="arithmatex">\(9\le2\times6-4=8\)</span>，矛盾。∎</li>
+</ul>
+</details>
+<p><strong>考古變化 7.</strong>（改自 105 Q6・換圖）用原題的不等式 <span class="arithmatex">\(\epsilon\le\frac{g}{g-2}(\nu-2)\)</span> 證明 Petersen 圖不是平面圖。（Petersen 圖：外圈 5 個點連成五邊形，內圈 5 個點連成五角星，內外對應的點相連。）</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題的 <span class="arithmatex">\(K_5\)</span>、<span class="arithmatex">\(K_{3,3}\)</span> 的 girth 一看就知道；Petersen 圖要自己說明最短的環是 5。</li>
+<li><strong>點和邊</strong>：<span class="arithmatex">\(\nu=10\)</span>；外圈 5 條、內圈 5 條、內外 5 條，<span class="arithmatex">\(\epsilon=15\)</span>。</li>
+<li><strong>girth 是 5</strong>：外圈本身就是長度 5 的環。沒有更短的：內外圈各自沒有長度 3、4 的環；要用到內外連線的環，至少要走兩條連線，再加上內圈、外圈各至少一段，算下來長度至少 5。</li>
+<li><strong>代進不等式</strong>：如果是平面圖，<span class="arithmatex">\(\epsilon\le\frac{5}{3}(10-2)=\frac{40}{3}\approx13.3\)</span>，但 <span class="arithmatex">\(\epsilon=15\)</span>，矛盾。∎</li>
+</ul>
+<p>我用程式算過 Petersen 圖的 girth 是 5、邊數 15。</p>
 </details>
 <h3 id="u10-quiz">單元 10 小考</h3>
 <div class="mcq" data-ans="3">
@@ -8596,6 +9972,170 @@ window.MathJax = {
 <li><strong>答案（7）</strong>：<span class="arithmatex">\(27\bmod20=7\)</span>。</li>
 </ul>
 <p>我用程式直接算 <span class="arithmatex">\(3^{2027}\bmod20\)</span>，也是 7。</p>
+</details>
+<h3 id="u11-exam">11.3 考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<p><strong>考古變化 1.</strong>（改自 102 Q8・換數字）(a) <span class="arithmatex">\((\mathbb Z_{12},+)\)</span> 的所有生成元 (b) <span class="arithmatex">\((\mathbb Z_7-\{0\},\times)\)</span> 的所有生成元 (c) 12 個元素的循環群有幾個生成元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：群的大小換了。(b) 的 7 是質數，乘法群有 6 個元素，要一個一個算次方。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(a\)</span> 是生成元 ⇔ <span class="arithmatex">\(\gcd(a,12)=1\)</span>：<strong>1、5、7、11</strong>。</li>
+<li><strong>(b)</strong>：算每個元素的次方（mod 7），看第一次回到 1 是第幾次：<ul>
+<li>2：2、4、1 → order 3，不是</li>
+<li>3：3、2、6、4、5、1 → order 6，<strong>是</strong></li>
+<li>4：4、2、1 → order 3；6：6、1 → order 2</li>
+<li>5：5、4、6、2、3、1 → order 6，<strong>是</strong></li>
+<li>答案 <strong>3、5</strong>。</li>
+</ul>
+</li>
+<li><strong>(c)</strong>：<span class="arithmatex">\(\varphi(12)=\)</span> <strong>4</strong> 個（跟 (a) 一樣，12 個元素的循環群都跟 <span class="arithmatex">\(\mathbb Z_{12}\)</span> 同構）。</li>
+</ul>
+<p>我用程式把每個元素的次方都算過，答案一樣。</p>
+</details>
+<p><strong>考古變化 2.</strong>（改自 107 Q4、Q5・換數字）(a) <span class="arithmatex">\((\mathbb Z_{12},+)\)</span> 中 8 的 order (b) <span class="arithmatex">\(|\mathbb Z_{100}^*|\)</span> (c) 37 在 <span class="arithmatex">\(\mathbb Z_{100}^*\)</span> 裡的反元素</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了，三小題的方法都一樣。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(8,16\equiv4,12\equiv0\)</span>，加 3 次回到 0；或用公式 <span class="arithmatex">\(\frac{12}{\gcd(8,12)}=\frac{12}{4}=3\)</span>。答案 <strong>3</strong>。</li>
+<li><strong>(b)</strong>：<span class="arithmatex">\(100=2^2\times5^2\)</span>，<span class="arithmatex">\(\varphi(100)=(4-2)(25-5)=2\times20=\)</span> <strong>40</strong>。</li>
+<li><strong>(c)</strong> 歐幾里得：<span class="arithmatex">\(100=2\times37+26\)</span>、<span class="arithmatex">\(37=1\times26+11\)</span>、<span class="arithmatex">\(26=2\times11+4\)</span>、<span class="arithmatex">\(11=2\times4+3\)</span>、<span class="arithmatex">\(4=1\times3+1\)</span>。往回代：<ul>
+<li><span class="arithmatex">\(1=4-3=4-(11-2\times4)=3\times4-11\)</span></li>
+<li><span class="arithmatex">\(\phantom{1}=3\times(26-2\times11)-11=3\times26-7\times11\)</span></li>
+<li><span class="arithmatex">\(\phantom{1}=3\times26-7\times(37-26)=10\times26-7\times37\)</span></li>
+<li><span class="arithmatex">\(\phantom{1}=10\times(100-2\times37)-7\times37=10\times100-27\times37\)</span></li>
+<li>所以 <span class="arithmatex">\(37^{-1}\equiv-27\equiv\)</span> <strong>73</strong> <span class="arithmatex">\(\pmod{100}\)</span>。驗算 <span class="arithmatex">\(37\times73=2701=27\times100+1\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+</li>
+</ul>
+<p>我用程式算過，答案一樣。</p>
+</details>
+<p><strong>考古變化 3.</strong>（改自 103 Q7・換數字）算 (a) <span class="arithmatex">\(7^{2023}\bmod13\)</span> (b) <span class="arithmatex">\(11^{100}\bmod35\)</span></p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：(a) 跟原題一樣用 Fermat；(b) 的 35 不是質數，要改用 Euler 定理 <span class="arithmatex">\(a^{\varphi(n)}\equiv1\)</span>（<span class="arithmatex">\(\gcd(a,n)=1\)</span>）。</li>
+<li><strong>(a)</strong>：13 是質數，<span class="arithmatex">\(7^{12}\equiv1\)</span>。<span class="arithmatex">\(2023=12\times168+7\)</span>，只要算 <span class="arithmatex">\(7^7\)</span>：<ul>
+<li><span class="arithmatex">\(7^2=49\equiv10\)</span>、<span class="arithmatex">\(7^4\equiv10^2=100\equiv9\)</span></li>
+<li><span class="arithmatex">\(7^7=7^4\cdot7^2\cdot7\equiv9\times10\times7=630\equiv630-48\times13=6\)</span></li>
+<li>答案 <strong>6</strong>。</li>
+</ul>
+</li>
+<li><strong>(b)</strong>：<span class="arithmatex">\(\varphi(35)=(5-1)(7-1)=24\)</span>，<span class="arithmatex">\(\gcd(11,35)=1\)</span>，所以 <span class="arithmatex">\(11^{24}\equiv1\)</span>。<span class="arithmatex">\(100=24\times4+4\)</span>，只要算 <span class="arithmatex">\(11^4\)</span>：<ul>
+<li><span class="arithmatex">\(11^2=121\equiv121-105=16\)</span>、<span class="arithmatex">\(11^4\equiv16^2=256\equiv256-245=11\)</span></li>
+<li>答案 <strong>11</strong>。</li>
+</ul>
+</li>
+</ul>
+<p>我用程式直接算過這兩個次方的餘數，答案一樣。</p>
+</details>
+<p><strong>考古變化 4.</strong>（改自 103 Q8・換數字）<span class="arithmatex">\(p=3\)</span>、<span class="arithmatex">\(q=5\)</span>。寫出 <span class="arithmatex">\(\mathbb Z_3^*\times\mathbb Z_5^*\)</span> 和 <span class="arithmatex">\(\mathbb Z_{15}^*\)</span> 之間的同構對應，並驗證一組乘法。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題證明一般的 <span class="arithmatex">\(p,q\)</span>；這題代具體的數字，把對應表真的寫出來，看懂同構在做什麼。</li>
+<li><strong>對應方式</strong>：<span class="arithmatex">\(x\in\mathbb Z_{15}^*\)</span> 對到 <span class="arithmatex">\((x\bmod3,\ x\bmod5)\)</span>。中國剩餘定理保證這是一對一、映成。</li>
+<li>
+<p><strong>對應表</strong>（兩邊都有 <span class="arithmatex">\(2\times4=8=\varphi(15)\)</span> 個元素）：</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\((u,v)\)</span></th>
+<th><span class="arithmatex">\(x\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(1, 1)</td>
+<td>1</td>
+</tr>
+<tr>
+<td>(1, 2)</td>
+<td>7</td>
+</tr>
+<tr>
+<td>(1, 3)</td>
+<td>13</td>
+</tr>
+<tr>
+<td>(1, 4)</td>
+<td>4</td>
+</tr>
+<tr>
+<td>(2, 1)</td>
+<td>11</td>
+</tr>
+<tr>
+<td>(2, 2)</td>
+<td>2</td>
+</tr>
+<tr>
+<td>(2, 3)</td>
+<td>8</td>
+</tr>
+<tr>
+<td>(2, 4)</td>
+<td>14</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p><strong>驗證保持乘法</strong>：<span class="arithmatex">\((2,3)*(2,4)=(4\bmod3,\ 12\bmod5)=(1,2)\)</span>，對到 7；另一邊 <span class="arithmatex">\(8\times14=112=7\times15+7\equiv7\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
+</li>
+</ul>
+<p>我用程式把 8 × 8 種乘法全部對照過，兩邊都一樣。</p>
+</details>
+<p><strong>考古變化 5.</strong>（改自 107 Q6・換運算）在 <span class="arithmatex">\(\mathbb Z\times\mathbb Z\)</span> 上定義 <span class="arithmatex">\((a,b)\oplus(c,d)=(a+c-1,\ b+d+3)\)</span>。求 (a) <span class="arithmatex">\(3(2,1)\)</span>（三個 <span class="arithmatex">\((2,1)\)</span> 相加）(b) 單位元素 (c) <span class="arithmatex">\((a,b)\)</span> 的反元素</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：常數換了（<span class="arithmatex">\(-1\)</span>、<span class="arithmatex">\(+3\)</span>），單位元素和反元素要重新解，不能背原題的答案。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\((2,1)\oplus(2,1)=(3,5)\)</span>，再 <span class="arithmatex">\(\oplus(2,1)=(4,9)\)</span>。答案 <strong>(4, 9)</strong>。</li>
+<li><strong>(b)</strong>：要 <span class="arithmatex">\((a+e_1-1,\ b+e_2+3)=(a,b)\)</span>，得 <span class="arithmatex">\(e_1=1\)</span>、<span class="arithmatex">\(e_2=-3\)</span>。答案 <strong>(1, −3)</strong>。</li>
+<li><strong>(c)</strong>：要 <span class="arithmatex">\((a+c-1,\ b+d+3)=(1,-3)\)</span>，得 <span class="arithmatex">\(c=2-a\)</span>、<span class="arithmatex">\(d=-6-b\)</span>。答案 <strong><span class="arithmatex">\((2-a,\ -6-b)\)</span></strong>。</li>
+<li><strong>驗算</strong>：<span class="arithmatex">\((2,1)\oplus(0,-7)=(2+0-1,\ 1-7+3)=(1,-3)\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+</ul>
+<p>我用程式在小範圍內檢查過單位元素和反元素，答案一樣。</p>
+</details>
+<p><strong>考古變化 6.</strong>（改自 102 Q9・換數字）把 26 個字母當成 <span class="arithmatex">\(\mathbb Z_{26}\)</span>，加密函數 <span class="arithmatex">\(E(m)=7m\bmod26\)</span>。(a) 找出解密函數 (b) 為什麼不能用 <span class="arithmatex">\(E(m)=13m\bmod26\)</span>？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題要你自己找 <span class="arithmatex">\(k\)</span>；這題給了 <span class="arithmatex">\(k=7\)</span>，要算出模反元素，再說明「<span class="arithmatex">\(k\)</span> 跟 26 不互質」會出什麼事。</li>
+<li><strong>(a)</strong>：要找 <span class="arithmatex">\(7^{-1}\bmod26\)</span>。<span class="arithmatex">\(26=3\times7+5\)</span>、<span class="arithmatex">\(7=1\times5+2\)</span>、<span class="arithmatex">\(5=2\times2+1\)</span>，往回代：<span class="arithmatex">\(1=5-2\times2=5-2(7-5)=3\times5-2\times7=3(26-3\times7)-2\times7=3\times26-11\times7\)</span>。所以 <span class="arithmatex">\(7^{-1}\equiv-11\equiv15\)</span>。解密 <strong><span class="arithmatex">\(D(c)=15c\bmod26\)</span></strong>。驗算 <span class="arithmatex">\(7\times15=105=4\times26+1\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</li>
+<li><strong>(b)</strong>：<span class="arithmatex">\(\gcd(13,26)=13\ne1\)</span>，13 沒有模反元素，解不回來。例如 <span class="arithmatex">\(E(1)=13\)</span>、<span class="arithmatex">\(E(3)=39\equiv13\)</span>，兩個不同的字母加密成同一個，收到 13 不知道原本是哪一個。</li>
+</ul>
+<p>我用程式把 26 個字母加密再解密過，都回到原本的字母。</p>
+</details>
+<p><strong>考古變化 7.</strong>（改自 104 Q1(c)・換群）<span class="arithmatex">\(G=(\mathbb Z_{12},+)\)</span>、<span class="arithmatex">\(H=\{0,4,8\}\)</span>。寫出 <span class="arithmatex">\(H\)</span> 的所有左陪集，並用它們說明 Lagrange 定理。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只問定義；這題實際算出陪集，看「大小相同、互不相交、剛好分完」。</li>
+<li><strong>先確認 <span class="arithmatex">\(H\)</span> 是子群</strong>：<span class="arithmatex">\(4+4=8\)</span>、<span class="arithmatex">\(4+8=12\equiv0\)</span>、<span class="arithmatex">\(8+8=16\equiv4\)</span>，加法封閉，0 在裡面，4 和 8 互為反元素。</li>
+<li><strong>左陪集</strong> <span class="arithmatex">\(a+H\)</span>：<ul>
+<li><span class="arithmatex">\(0+H=\{0,4,8\}\)</span></li>
+<li><span class="arithmatex">\(1+H=\{1,5,9\}\)</span></li>
+<li><span class="arithmatex">\(2+H=\{2,6,10\}\)</span></li>
+<li><span class="arithmatex">\(3+H=\{3,7,11\}\)</span></li>
+<li>（<span class="arithmatex">\(4+H\)</span> 又回到 <span class="arithmatex">\(\{4,8,0\}\)</span>，跟 <span class="arithmatex">\(0+H\)</span> 一樣。）</li>
+</ul>
+</li>
+<li><strong>Lagrange</strong>：4 個陪集大小都是 3、兩兩不相交，剛好把 12 個元素分完，所以 <span class="arithmatex">\(|G|=4\times|H|\)</span>，<span class="arithmatex">\(|H|\)</span> 整除 <span class="arithmatex">\(|G|\)</span>。</li>
+</ul>
+<p>我用程式把 12 個元素各自加上 <span class="arithmatex">\(H\)</span>，答案一樣。</p>
+</details>
+<p><strong>考古變化 8.</strong>（改自 104 Q7・反過來問）原題證明「有限的整環一定是體」。(a) 拿掉「有限」，整環還一定是體嗎？(b) <span class="arithmatex">\(\mathbb Z_6\)</span> 是整環嗎？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：看證明裡哪個條件不能少。原題用到「有限集合上一對一的函數一定映成」，無限集合不一定。</li>
+<li><strong>(a) 不一定</strong>：整數 <span class="arithmatex">\(\mathbb Z\)</span> 是整環（交換、有 1、沒有零因子），但 2 沒有乘法反元素（沒有整數 <span class="arithmatex">\(x\)</span> 使 <span class="arithmatex">\(2x=1\)</span>），所以不是體。原題的函數 <span class="arithmatex">\(f(x)=2x\)</span> 在 <span class="arithmatex">\(\mathbb Z\)</span> 上一對一，但不映成（打不到奇數）。</li>
+<li><strong>(b) 不是</strong>：<span class="arithmatex">\(2\times3=6\equiv0\)</span>，但 2、3 都不是 0，有零因子。所以 <span class="arithmatex">\(\mathbb Z_6\)</span> 不是整環，也不是體。</li>
+<li><strong>一般結論</strong>：<span class="arithmatex">\(\mathbb Z_n\)</span> 是整環 ⇔ <span class="arithmatex">\(n\)</span> 是質數 ⇔ <span class="arithmatex">\(\mathbb Z_n\)</span> 是體。</li>
+</ul>
 </details>
 <h3 id="u11-quiz">單元 11 小考</h3>
 <div class="mcq" data-ans="2">
