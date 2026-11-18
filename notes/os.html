@@ -6272,17 +6272,35 @@ lock(second.lock);</code></pre>
 <h3 id="u4-0">4.0 觀念課：記憶體不夠時，誰要讓出來</h3>
 <h4 id="paging">paging 的想法</h4>
 <p>（計結教材 3.0 的「門牌對照表」講的是同一件事，可以先看那一節。）</p>
-<p>把程式的位址空間切成一樣大的 <strong>page</strong>，實體記憶體切成一樣大的 <strong>frame</strong>。任何 page 可以放進任何 frame，用 page table 記錄對應。好處是不會有「中間有空隙但塞不下」的外部碎片。</p>
+<p>把程式的位址空間切成一樣大的 <strong>page</strong>，實體記憶體切成一樣大的 <strong>frame</strong>。任何 page 可以放進任何 frame，用 page table 記錄對應。</p>
+<ul>
+<li><strong>怎麼轉</strong>：CPU 給的邏輯位址拆成兩段：<strong>page 號碼</strong>和 <strong>offset</strong>（在這一頁裡的第幾個 byte）。拿 page 號碼去查 page table 得到 frame 號碼，實體位址 ＝ frame 號碼 × page 大小 ＋ offset。page 和 frame 一樣大，所以 offset 不用變（<a href="#u4-1">4.1</a> 有數字例子）。</li>
+<li><strong>沒有外部碎片</strong>：任何空的 frame 都能放任何 page，只要空的 frame 數量夠就放得下，不用找一整段連續的空間。</li>
+<li><strong>有內部碎片</strong>：程式大小通常不是 page 大小的整數倍，最後一頁會用不滿。</li>
+</ul>
+<div class="mcq" data-ans="2" data-qid="u4-0-frag" markdown="1">
+<p><strong>觀念題 1.</strong> page 大小 2 KB（2048 bytes）。一個 process 大小 72,766 bytes，要用幾個 frame？最後一頁浪費多少？</p>
+<ol>
+<li>35 個 frame，沒有浪費</li>
+<li>36 個 frame，浪費 962 bytes</li>
+<li>36 個 frame，浪費 1,086 bytes</li>
+<li>35 個 frame，浪費 1,086 bytes</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(72766=35\times2048+1086\)</span>：35 頁裝滿，還剩 1,086 bytes 要第 36 頁。第 36 頁只用了 1,086 bytes，浪費 <span class="arithmatex">\(2048-1086=962\)</span> bytes，這就是內部碎片。C 把「用掉的」當成「浪費的」。</p>
+</details>
+</div>
 <h4 id="page-fault">page fault 時發生什麼事</h4>
 <ol>
 <li>程式存取一個 page，查 page table，發現它不在記憶體（valid ＝ 0）。</li>
-<li>硬體產生 trap，交給作業系統。</li>
+<li>硬體產生 trap，交給作業系統。作業系統先檢查這個位址合不合法：不屬於這個 process 的位址空間（例如亂用指標），就終止它；合法、只是還沒載入，才繼續。</li>
 <li>作業系統找到這個 page 在磁碟上的位置，再找一個空的 frame；<strong>沒有空的就挑一個 page 踢出去</strong>（如果它被改過，dirty bit ＝ 1，要先寫回磁碟）。</li>
 <li>從磁碟把 page 讀進那個 frame。</li>
 <li>更新 page table：填上 frame 號碼，valid 設成 1。</li>
 <li>重新執行剛剛那條指令。</li>
 </ol>
-<p><figure class="fig">
+<figure class="fig">
 <svg viewBox="0 0 360 248" role="img" aria-label="page fault 的六個步驟：1 程式執行 load M，查 page table；2 valid 是 0，產生 trap 給作業系統；3 作業系統找到這個 page 在磁碟上的位置；4 把它讀進一個空的 frame；5 更新 page table，填上 frame 號碼、valid 設成 1；6 重新執行 load M。">
 <text x="56" y="28" text-anchor="middle" dominant-baseline="central" class="sm">程式</text>
 <rect class="box" x="8" y="40" width="96" height="44" rx="6"/>
@@ -6332,10 +6350,24 @@ lock(second.lock);</code></pre>
 <polygon class="ah" points="58.0,85.0 67.9,87.9 60.7,94.9"/>
 <circle class="fa" cx="100" cy="120" r="9"/>
 <text x="100" y="120" text-anchor="middle" dominant-baseline="central" class="sm mono ta">6</text>
-</svg></p>
+</svg>
 <figcaption>圖上的編號就是上面的六個步驟；③ 到 ④ 要讀磁碟，是最花時間的部分</figcaption>
 </figure>
+
 <p>只在用到時才載入 page，叫 <strong>demand paging</strong>。</p>
+<div class="mcq" data-ans="1" data-qid="u4-0-restart">
+<p><strong>觀念題 2.</strong> page fault 處理完之後，為什麼要<strong>重新執行</strong>剛剛那條指令，而不是接著執行下一條？</p>
+<ol>
+<li>那條指令剛剛沒做完：它要存取的資料當時不在記憶體，現在才讀進來</li>
+<li>為了更新 TLB</li>
+<li>因為 program counter 被清成 0</li>
+<li>為了讓其他 process 有機會執行</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。page fault 發生在指令執行到一半、存取記憶體的時候，這條指令根本沒有完成。page 讀進來之後從頭再做一次，對程式來說就像什麼事都沒發生，只是慢了一點。</p>
+</details>
+</div>
 <h4 id="_24">踢誰出去：三種策略</h4>
 <p>3 個 frame，存取順序 7, 0, 1, 2, 0, 3, 0, 4：</p>
 <table>
@@ -6460,12 +6492,38 @@ lock(second.lock);</code></pre>
 <p>動畫可以換策略、改 frame 數，也可以把延伸練習的長字串貼進去對答案：</p>
 <div class="viz" data-viz="paging" data-refs="7,0,1,2,0,3,0,4" data-frames="3" data-algo="lru"></div>
 
+<div class="mcq" data-ans="1" data-qid="u4-0-opt">
+<p><strong>觀念題 3.</strong> OPT 為什麼做不出來？既然做不出來，為什麼還要學？</p>
+<ol>
+<li>它要知道未來的存取順序；用來當作標準，看其他演算法離最好還差多少</li>
+<li>它太慢；用在 page 很少的系統</li>
+<li>它需要特殊硬體；用在伺服器上</li>
+<li>它會有 Belady's anomaly；用來示範這個現象</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。OPT 踢「未來最晚才會用到」的 page，可是作業系統不知道程式之後會存取什麼。它保證 page fault 最少，所以拿來當比較的基準：例如某個演算法比 OPT 多不到幾個百分點，就算很好了。OPT 和 LRU 都不會有 Belady's anomaly（<a href="#u4-alloc">4.5</a>）。</p>
+</details>
+</div>
 <h4 id="eat-page-fault">EAT：為什麼 page fault 要極少</h4>
 <div class="arithmatex">\[\begin{aligned}\text{EAT}=\;&amp;(1-p)\times\text{記憶體存取時間}\\&amp;+p\times\text{page fault 處理時間}\end{aligned}\]</div>
 <p>記憶體 100 ns、page fault 10 ms（<span class="arithmatex">\(10^7\)</span> ns），<span class="arithmatex">\(p=0.001\)</span>：</p>
 <div class="arithmatex">\[0.999\times100+0.001\times10^7\approx10100\text{ ns}\]</div>
 <p>每 1000 次才 fault 一次，平均存取時間就變成原本的 <strong>100 倍</strong>。這就是考題要你算「page fault rate 要低於多少」的原因。</p>
 <p><strong>公式就是加權平均</strong>：<span class="arithmatex">\(p\)</span> 是 page fault 的機率。沒 fault（機率 <span class="arithmatex">\(1-p\)</span>）時只花一次記憶體存取的時間；fault（機率 <span class="arithmatex">\(p\)</span>）時要花處理 page fault 的時間（讀磁碟為主）。兩種情況的時間乘上各自的機率再相加。</p>
+<div class="mcq" data-ans="2" data-qid="u4-0-eat">
+<p><strong>觀念題 4.</strong> 記憶體存取 200 ns、處理一次 page fault 8 ms，page fault rate 是 0.0001（每一萬次一次）。EAT 大約是多少？</p>
+<ol>
+<li>約 200 ns</li>
+<li>約 1000 ns</li>
+<li>約 800 ns</li>
+<li>約 8000 ns</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(0.9999\times200+0.0001\times8\times10^6=199.98+800\approx1000\)</span> ns，是沒有 page fault 時的 5 倍。C 只算了 page fault 那一項，忘了加上一般存取的 200 ns。</p>
+</details>
+</div>
 <h4 id="thrashing">thrashing</h4>
 <p>行程太多、每個人分到的 frame 太少，每個行程都在不斷 page fault、等磁碟，CPU 使用率反而掉下來。作業系統看到 CPU 閒著，又加更多行程進來，情況更糟。解法是用 working set 估計每個行程需要多少 frame，不夠時<strong>減少</strong>同時執行的行程數。</p>
 <figure class="fig">
@@ -6487,6 +6545,19 @@ lock(second.lock);</code></pre>
 <figcaption>過了虛線那一點，再加 process 只會讓大家搶 frame、一直等磁碟，CPU 使用率急速往下掉</figcaption>
 </figure>
 
+<div class="mcq" data-ans="2" data-qid="u4-0-thrash">
+<p><strong>觀念題 5.</strong> thrashing 的根本原因是什麼？</p>
+<ol>
+<li>CPU 太慢</li>
+<li>process 分到的 frame 比它正在用的 page 少，剛踢掉的 page 馬上又要用</li>
+<li>TLB 太小</li>
+<li>磁碟太大</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。每個 process 正在用的 page（locality）都需要留在記憶體裡。frame 不夠時，踢掉的正是等一下要用的，於是一直 page fault、一直等磁碟。所以解法是減少同時執行的 process，讓每個人分到足夠的 frame（<a href="#u4-3">4.3</a> 的 working-set model）。</p>
+</details>
+</div>
 <div class="admonition key">
 <p class="admonition-title">記憶體題要做什麼</p>
 <table>
@@ -6580,6 +6651,47 @@ lock(second.lock);</code></pre>
 <p>沒被改過的 page（dirty ＝ 0）磁碟上的副本還是最新的，直接丟掉就好，不用寫回磁碟。</p>
 </details>
 <h3 id="u4-1">4.1 位址繫結與轉換</h3>
+<p>考古題考過的位址轉換觀念，這一節一個一個講清楚。每個觀念後面都接一題<strong>觀念題</strong>：先自己想、寫在手寫板上，再打開答案。</p>
+<table>
+<thead>
+<tr>
+<th>觀念</th>
+<th>考過的題目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>compile、load、execution time 的位址繫結</td>
+<td>112 Q6a</td>
+</tr>
+<tr>
+<td>邏輯位址、實體位址與 MMU</td>
+<td>113 Q8d 填空；102 Q5(3) 是非</td>
+</tr>
+<tr>
+<td>TLB 和它的運作步驟</td>
+<td>113 Q8c 填空；114 Q7</td>
+</tr>
+<tr>
+<td>inverted page table 為什麼要存 ASID</td>
+<td>114 Q8f 填空</td>
+</tr>
+<tr>
+<td>reentrant code</td>
+<td>114 Q8e 填空</td>
+</tr>
+<tr>
+<td>real-time system 的三種位址轉換</td>
+<td>113 Q5a</td>
+</tr>
+<tr>
+<td>page table 太大怎麼辦</td>
+<td>111 Q9</td>
+</tr>
+</tbody>
+</table>
+<h4 id="112-q6a">位址繫結：什麼時候決定放在哪裡（112 Q6a）</h4>
+<p>程式裡的變數、函式一開始只是名字（例如 <code>count</code>），要變成真正的記憶體位址，這個「決定位址」的動作叫 <strong>binding</strong>。差別在什麼時候做：</p>
 <div class="admonition example">
 <p class="admonition-title">112 Q6a（6%）：compile time、load time、execution time 的位址繫結差別</p>
 <ul>
@@ -6588,11 +6700,46 @@ lock(second.lock);</code></pre>
 <li><strong>execution time</strong>：執行時才轉換，process 在執行中可以被搬動。需要硬體（MMU）支援，現代 OS 都用這種。</li>
 </ul>
 </div>
+<p>越晚繫結越有彈性：compile time 寫死位址，程式只能放在固定的地方；load time 每次載入可以放不同位置，但載入後就固定；execution time 每次存取才轉換，process 被 swap 出去再回來時，可以放到別的地方。</p>
+<div class="mcq" data-ans="3" data-qid="u4-1-bind">
+<p><strong>觀念題 6.</strong> 三種繫結時機裡，哪一種一定需要 MMU 這類硬體？</p>
+<ol>
+<li>compile time</li>
+<li>load time</li>
+<li>execution time</li>
+<li>三種都需要</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。execution time 繫結時，程式裡的位址到執行時都還是邏輯位址，<strong>每一次</strong>存取都要轉換，只能交給硬體做才夠快。compile time 和 load time 產生的已經是實體位址，執行時不用轉。</p>
+</details>
+</div>
+<h4 id="mmu113-q8d">邏輯位址、實體位址與 MMU（113 Q8d）</h4>
 <ul>
-<li><strong>MMU（memory-management unit）</strong>：把邏輯 page 對應到實體 frame 的硬體。（113 Q8d）</li>
-<li><strong>TLB（translation look-aside buffer）</strong>：page table 的 cache。（113 Q8c）</li>
-<li><strong>inverted page table</strong> 每個 entry 要存 <strong>address-space identifier（ASID）</strong>，因為整個系統只有一張表。（114 Q8f）</li>
-<li><strong>reentrant code（pure code）</strong>：不會修改自己的程式碼，可以讓多個 process 共用。（114 Q8e）</li>
+<li><strong>邏輯位址（logical address，也叫 virtual address）</strong>：CPU 產生、程式看到的位址。</li>
+<li><strong>實體位址（physical address）</strong>：真正送到記憶體的位址。</li>
+<li><strong>MMU（memory-management unit）</strong>：執行時把邏輯位址轉成實體位址的<strong>硬體</strong>。最簡單的 MMU 只有一個 <strong>relocation register</strong>：實體位址 ＝ 邏輯位址 ＋ relocation register。</li>
+</ul>
+<p>程式永遠只看到邏輯位址，不知道自己實際放在哪裡。compile time、load time 繫結時兩種位址一樣；execution time 繫結時才不一樣。</p>
+<div class="mcq" data-ans="3" data-qid="u4-1-mmu">
+<p><strong>觀念題 7.</strong> relocation register 是 14000，程式存取邏輯位址 346。送到記憶體的實體位址是多少？</p>
+<ol>
+<li>346</li>
+<li>14000</li>
+<li>14346</li>
+<li>13654</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。<span class="arithmatex">\(14000+346=14346\)</span>。程式自己只看得到 346。102 Q5(3) 的是非題「relocation register 是 1877、邏輯位址 123，實體位址是 2000」也是這樣算，是對的。</p>
+</details>
+</div>
+<h4 id="tlbpage-table-cache113-q8c114-q7">TLB：page table 的 cache（113 Q8c、114 Q7）</h4>
+<p>page table 放在記憶體裡，每次存取資料都要先讀一次 page table、再讀資料，<strong>變成兩次記憶體存取</strong>，慢一倍。解法是在 CPU 裡放一個小而快的 <strong>TLB</strong>，記住最近用過的「page → frame」對應：</p>
+<ul>
+<li><strong>TLB hit</strong>：直接拿到 frame 號碼，只要讀一次記憶體（資料本身）。</li>
+<li><strong>TLB miss</strong>：照常去記憶體查 page table，查到後把這組對應放進 TLB，下次就會 hit。</li>
+<li>程式常常存取附近的位址（locality），所以 TLB 只有幾十到幾千個 entry，hit rate 也能很高。</li>
 </ul>
 <div class="admonition example">
 <p class="admonition-title">114 Q7（10%）：TLB 運作的五個步驟</p>
@@ -6604,6 +6751,57 @@ lock(second.lock);</code></pre>
 <li>把這組 (page number, frame number) 放進 TLB（滿了就依策略置換一個），再存取記憶體。</li>
 </ol>
 </div>
+<div class="mcq" data-ans="2" data-qid="u4-1-tlb">
+<p><strong>觀念題 8.</strong> 沒有 TLB、用單層 page table 時，程式讀一個變數要存取記憶體幾次？</p>
+<ol>
+<li>1 次</li>
+<li>2 次</li>
+<li>3 次</li>
+<li>要看 page 大小</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。一次讀 page table 拿 frame 號碼，一次讀變數本身。TLB 就是為了省掉第一次；k 層 page table 時，沒 hit 要多讀 k 次。</p>
+</details>
+</div>
+<h4 id="inverted-page-table-asid114-q8f">inverted page table 為什麼要存 ASID（114 Q8f）</h4>
+<p>一般的 page table 是<strong>每個 process 一張</strong>，用 page 號碼當索引，查的是「這個 process 的第 p 頁在哪個 frame」，查哪一張表就代表是哪個 process。</p>
+<p>inverted page table 反過來：<strong>整個系統只有一張</strong>，<strong>每個實體 frame 一個 entry</strong>，記錄「這個 frame 放的是誰的第幾頁」。不同的 process 都可能有第 5 頁，所以 entry 裡除了 page 號碼，還要存 <strong>ASID（address-space identifier，代表哪個 process）</strong>。查表時拿（ASID, page 號碼）去找，找到第 i 個 entry，frame 號碼就是 i。</p>
+<ul>
+<li><strong>好處</strong>：表的大小跟實體記憶體成正比，虛擬位址空間再大也不會爆掉。</li>
+<li><strong>壞處</strong>：要搜尋整張表（通常配雜湊表加速）；兩個 process 也很難共用同一個 frame。</li>
+</ul>
+<div class="mcq" data-ans="2" data-qid="u4-1-inv">
+<p><strong>觀念題 9.</strong> inverted page table 有幾個 entry？</p>
+<ol>
+<li>跟虛擬位址空間的 page 數一樣多</li>
+<li>跟實體記憶體的 frame 數一樣多</li>
+<li>每個 process 一張，各有自己的 entry 數</li>
+<li>跟 TLB 一樣多</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。它是「以 frame 為主」的表，每個 frame 一個 entry。A 是一般 page table（每個 process 一張）的大小。</p>
+</details>
+</div>
+<h4 id="reentrant-code-process-114-q8e">reentrant code：讓很多 process 共用同一份程式碼（114 Q8e）</h4>
+<p><strong>reentrant code</strong>（也叫 pure code）是<strong>執行時不會修改自己</strong>的程式碼。每個 process 的資料放在自己的暫存器、stack 和資料區，程式碼本身永遠不變，所以很多 process 可以共用同一份：各自的 page table 把程式碼的 page 都對到<strong>同一組 frame</strong>。</p>
+<p>例：40 個人同時用同一個編輯器，程式碼 150 KB、每人的資料 50 KB。不共用要 <span class="arithmatex">\(40\times200=8000\)</span> KB；共用程式碼只要 <span class="arithmatex">\(150+40\times50=2150\)</span> KB。</p>
+<div class="mcq" data-ans="2" data-qid="u4-1-reent">
+<p><strong>觀念題 10.</strong> 30 個人同時用同一個 reentrant 的程式，程式碼 120 KB、每人自己的資料 40 KB。共用程式碼時，總共要多少記憶體？</p>
+<ol>
+<li>4800 KB</li>
+<li>1320 KB</li>
+<li>1200 KB</li>
+<li>160 KB</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。程式碼只放一份 120 KB，資料每人一份 <span class="arithmatex">\(30\times40=1200\)</span> KB，合計 1320 KB。A 是不共用時的 <span class="arithmatex">\(30\times(120+40)\)</span>；C 忘了加程式碼。</p>
+</details>
+</div>
+<h4 id="real-time-system-113-q5a">real-time system 的三種位址轉換（113 Q5a）</h4>
+<p>real-time system 最在意的是<strong>時間可以預測</strong>：一定要在期限內做完。</p>
 <div class="admonition example">
 <p class="admonition-title">113 Q5a（6%）：real-time system 的三種位址轉換方法</p>
 <ol>
@@ -6611,6 +6809,19 @@ lock(second.lock);</code></pre>
 <li><strong>relocation register mode</strong>：用一個 relocation register，實體位址 ＝ 暫存器值 ＋ 邏輯位址。</li>
 <li><strong>full virtual memory</strong>：完整的 page table 與 TLB，彈性最大，但轉換時間不確定，對即時系統不利。</li>
 </ol>
+</div>
+<div class="mcq" data-ans="2" data-qid="u4-1-rt">
+<p><strong>觀念題 11.</strong> 對 hard real-time system 來說，完整的虛擬記憶體最大的問題是什麼？</p>
+<ol>
+<li>平均速度太慢</li>
+<li>每次存取花的時間不固定（TLB miss、page fault），沒辦法保證在期限內做完</li>
+<li>不安全</li>
+<li>不能同時執行多個 process</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。real-time 看的是<strong>最壞情況</strong>能不能趕上期限，不是平均。一次 page fault 要讀磁碟，可能多花幾毫秒，所以常改用前兩種方法，或把需要的 page 鎖在記憶體裡。</p>
+</details>
 </div>
 <h4 id="_26">一個邏輯位址怎麼轉：數字例子</h4>
 <p>page 大小 1 KB（1024 bytes），page table：page 0 → frame 5、page 1 → frame 2、page 2 → frame 7、page 3 → frame 1，其他 page 不在記憶體。</p>
@@ -6623,6 +6834,19 @@ lock(second.lock);</code></pre>
 </ul>
 <p><strong>邏輯位址 5000</strong>：<span class="arithmatex">\(5000\div1024=4\)</span> 餘 904，page 4 不在記憶體（valid ＝ 0）→ <strong>page fault</strong>。</p>
 <p>page 大小是 2 的次方時，除法就是切位元：1 KB ＝ <span class="arithmatex">\(2^{10}\)</span>，邏輯位址的<strong>低 10 位元</strong>是 offset，上面的位元是 page 號碼。3085 的二進位是 <code>11 0000001101</code>：上面的 <code>11</code> 是 3，下面 10 位元是 13。</p>
+<div class="mcq" data-ans="1" data-qid="u4-1-hex">
+<p><strong>觀念題 12.</strong> page 大小 4 KB，邏輯位址是 0x3A7F（16 進位）。page 號碼和 offset 是？</p>
+<ol>
+<li>page 3、offset 0xA7F</li>
+<li>page 0x3A、offset 0x7F</li>
+<li>page 14、offset 0xA7F</li>
+<li>page 3、offset 0x7F</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。4 KB ＝ <span class="arithmatex">\(2^{12}\)</span>，offset 是低 12 位元，也就是 16 進位的最後 <strong>3 位數</strong> A7F；剩下的 3 是 page 號碼。驗算：<span class="arithmatex">\(\text{0x3A7F}=14975=3\times4096+2687\)</span>，2687 就是 0xA7F。B 是用 8 位元（256 bytes 的 page）去切的。</p>
+</details>
+</div>
 <h4 id="page-table">page table 太大怎麼辦</h4>
 <p>111 Q9 的 48-bit 位址、4 KB page，一張表有 <span class="arithmatex">\(2^{36}\)</span> 個 entry，每個 4 bytes 就要 256 GB，根本放不下。三種解法：</p>
 <ul>
@@ -6630,6 +6854,19 @@ lock(second.lock);</code></pre>
 <li><strong>hashed page table</strong>：用 page 號碼做雜湊，同一格掛一串，適合 64-bit 的位址空間。</li>
 <li><strong>inverted page table</strong>：整個系統只有一張表，<strong>每個 frame 一個 entry</strong>，記錄「這個 frame 放的是哪個 process 的哪一頁」，所以要存 ASID。省記憶體，但查表要搜尋，通常搭配雜湊。</li>
 </ul>
+<div class="mcq" data-ans="2" data-qid="u4-1-multi">
+<p><strong>觀念題 13.</strong> 多層 page table 為什麼比較省記憶體？</p>
+<ol>
+<li>每個 entry 變小了</li>
+<li>沒用到的位址範圍，不用建裡面那一層的表</li>
+<li>查表比較快</li>
+<li>不需要 TLB 了</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。單層的表要替<strong>每一頁</strong>都留一個 entry，就算那一大段位址根本沒用到。多層時，外層表的某一格如果整段都沒用到，就不用配置它下面的內層表。代價是 TLB miss 時要多讀幾次記憶體（C 剛好相反）。</p>
+</details>
+</div>
 <h3 id="u4-2">4.2 計算模板</h3>
 <table>
 <thead>
@@ -6663,10 +6900,37 @@ lock(second.lock);</code></pre>
 <li><strong>TLB miss</strong>（機率 <span class="arithmatex">\(1-h\)</span>）：TLB 時間 ＋ 1 次記憶體（查 page table）＋ 1 次記憶體（拿資料）。</li>
 </ul>
 <p>兩種情況乘上機率相加。<span class="arithmatex">\(k\)</span> 層 page table 時，miss 要多查 <span class="arithmatex">\(k\)</span> 次記憶體。題目只問「轉換的開銷」（111 Q6）時，就不算拿資料的那一次。</p>
+<div class="mcq" data-ans="2" data-qid="u4-2-tlb">
+<p><strong>觀念題 14.</strong> TLB 查詢 10 ns、記憶體存取 100 ns、TLB hit rate 90%，單層 page table。有效存取時間是多少？</p>
+<ol>
+<li>110 ns</li>
+<li>120 ns</li>
+<li>200 ns</li>
+<li>111 ns</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。hit：<span class="arithmatex">\(10+100=110\)</span>；miss：<span class="arithmatex">\(10+100+100=210\)</span>。<span class="arithmatex">\(0.9\times110+0.1\times210=99+21=120\)</span> ns。A 是全部 hit 的情況。</p>
+</details>
+</div>
 <div class="admonition example">
 <p class="admonition-title">111 Q9（10%）：48-bit 虛擬位址、32-bit 實體位址、4 KB page，page table 有幾個 entry</p>
 <p><span class="arithmatex">\(2^{48}/2^{12}=2^{36}\)</span> 個（每個 process 一張單層 page table 時）。</p>
 </div>
+<div class="mcq" data-ans="2" data-qid="u4-2-size">
+<p><strong>觀念題 15.</strong> 32-bit 虛擬位址、4 KB page、每個 PTE 4 bytes，每個 process 一張單層 page table。50 個 process 的 page table 總共多大？</p>
+<ol>
+<li>4 MB</li>
+<li>200 MB</li>
+<li>50 MB</li>
+<li>2 MB</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。一張表有 <span class="arithmatex">\(2^{32}/2^{12}=2^{20}\)</span> 個 entry，乘 4 bytes 是 4 MB；50 張就是 200 MB，而且大部分 entry 根本沒用到。這就是要用多層 page table 的原因（<a href="#u4-1">4.1</a>）。</p>
+</details>
+</div>
+<p><strong>bitmap</strong>：記憶體切成固定大小的單位，每個單位用 1 個位元記錄它是空的（0）還是被用了（1）。單位越小越精細，bitmap 就越大。</p>
 <div class="admonition example">
 <p class="admonition-title">111 Q8（10%）：8 GB RAM 以 4 KB 為單位配置，用 bitmap 記錄空閒記憶體要幾 KB</p>
 <p>單位數 <span class="arithmatex">\(=2^{33}/2^{12}=2^{21}\)</span>，每單位 1 位元 → <span class="arithmatex">\(2^{21}\)</span> 位元 <span class="arithmatex">\(=2^{18}\)</span> bytes <span class="arithmatex">\(=256\)</span> KB。</p>
@@ -6684,15 +6948,93 @@ lock(second.lock);</code></pre>
 <p>也就是大約每 2400 次存取才能有 1 次 page fault。</p>
 </div>
 <h3 id="u4-3">4.3 置換與 thrashing</h3>
+<table>
+<thead>
+<tr>
+<th>觀念</th>
+<th>考過的題目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dirty bit</td>
+<td>115 Q1b 填空</td>
+</tr>
+<tr>
+<td>thrashing</td>
+<td>113 Q8e 填空</td>
+</tr>
+<tr>
+<td>working-set model</td>
+<td>112 Q6b</td>
+</tr>
+<tr>
+<td>copy-on-write</td>
+<td>115 Q3b</td>
+</tr>
+</tbody>
+</table>
+<h4 id="dirty-bit-page-115-q1b">dirty bit：被踢的 page 要不要寫回（115 Q1b）</h4>
+<p>每個 page 有一個 <strong>dirty bit</strong>（也叫 modify bit），這個 page 被<strong>寫入</strong>時，硬體把它設成 1。要把它踢出去時：</p>
 <ul>
-<li><strong>dirty bit（modify bit）</strong>：page 內容被改過就設為 1，被置換時才需要寫回磁碟。（115 Q1b）</li>
-<li><strong>thrashing</strong>：process 花在 paging 的時間比執行還多。（113 Q8e）</li>
-<li><strong>copy-on-write</strong>（115 Q3b）：<code>fork()</code> 後父子行程先<strong>共用</strong>相同的 page，標記為 copy-on-write；任何一方要<strong>寫入</strong>某個 page 時，才複製那一頁。省下複製整個位址空間的時間和記憶體（尤其子行程馬上 <code>exec()</code> 時）。</li>
+<li>dirty ＝ 0：磁碟上的副本還是最新的，直接丟掉，把新的 page 讀進來就好（一次磁碟 I/O）。</li>
+<li>dirty ＝ 1：要先寫回磁碟，再讀新的 page（兩次磁碟 I/O）。</li>
 </ul>
+<p>所以挑 victim 時，同樣條件下踢沒改過的比較省（clock 的改良版就這樣做，見<a href="#u4-bank">猜題</a>）。</p>
+<div class="mcq" data-ans="2" data-qid="u4-3-dirty">
+<p><strong>觀念題 16.</strong> page fault 時要踢掉的 page，dirty bit 是 1。跟 dirty bit 是 0 比起來，這次 page fault 大約要花多少時間？</p>
+<ol>
+<li>一樣</li>
+<li>大約兩倍：要先寫回磁碟，再讀新的 page</li>
+<li>一半</li>
+<li>不用讀磁碟</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。處理 page fault 的時間幾乎都花在磁碟 I/O。dirty ＝ 1 時多一次寫回，I/O 從一次變兩次。<a href="#u4-drill">4.7</a> 有一題就是照「改過的比例」算平均的 page fault 時間。</p>
+</details>
+</div>
+<h4 id="thrashing-working-set-model113-q8e112-q6b">thrashing 和 working-set model（113 Q8e、112 Q6b）</h4>
+<p><strong>thrashing</strong>：process 花在 paging 的時間比執行還多。<a href="#u4-0">4.0</a> 講過怎麼發生：每個 process 分到的 frame 比它「正在用的 page」少，剛踢掉的 page 馬上又要用。</p>
+<p><strong>working set</strong> 就是「正在用的 page」的估計：最近 <span class="arithmatex">\(\Delta\)</span> 次存取用到的 page 集合。例如 <span class="arithmatex">\(\Delta=4\)</span>，最近四次存取是 3, 4, 4, 3，working set 就是 {3, 4}，大小 2。<span class="arithmatex">\(\Delta\)</span> 太小抓不到整段 locality，太大會把好幾段 locality 都算進去。</p>
 <div class="admonition example">
 <p class="admonition-title">112 Q6b（4%）：用 working-set model 解決 thrashing</p>
 <p>定義 working-set window <span class="arithmatex">\(\Delta\)</span>（最近 <span class="arithmatex">\(\Delta\)</span> 次存取），process <span class="arithmatex">\(i\)</span> 在這段時間用到的 page 集合大小是 <span class="arithmatex">\(WSS_i\)</span>。</p>
 <p>總需求 <span class="arithmatex">\(D=\sum WSS_i\)</span>。如果 <span class="arithmatex">\(D\)</span> 大於可用的 frame 數 <span class="arithmatex">\(m\)</span>，就會 thrashing，OS <strong>暫停（swap out）某個 process</strong>，把它的 frame 分給其他人；<span class="arithmatex">\(D\)</span> 夠小時再載入新的 process。這樣既能避免 thrashing，又能維持最高的 multiprogramming 程度。</p>
+</div>
+<div class="mcq" data-ans="1" data-qid="u4-3-ws">
+<p><strong>觀念題 17.</strong> <span class="arithmatex">\(\Delta=4\)</span>。一個 process 的存取依序是 1, 2, 3, 2, 4, 4, 2（最右邊是最新的）。現在它的 working set 是？</p>
+<ol>
+<li>{2, 4}</li>
+<li>{1, 2, 3, 4}</li>
+<li>{4}</li>
+<li>{2, 3, 4}</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。只看最近 4 次：2, 4, 4, 2，用到的 page 是 2 和 4。B 把全部的存取都算進去了；D 多看了一次（最近 5 次才有 3）。</p>
+</details>
+</div>
+<h4 id="copy-on-writefork-115-q3b">copy-on-write：fork 時先共用，寫的時候才複製（115 Q3b）</h4>
+<p><code>fork()</code> 要給子行程一份跟父行程一樣的位址空間。直接把每一頁都複製一份很浪費，因為子行程常常馬上呼叫 <code>exec()</code>，複製來的東西立刻被丟掉。copy-on-write 的做法：</p>
+<ol>
+<li><code>fork()</code> 時只複製 page table，父子的 page 都指向<strong>同一組 frame</strong>，並把這些 page 標成唯讀、copy-on-write。</li>
+<li>任何一方要<strong>寫入</strong>某一頁時，因為是唯讀，會 trap 給作業系統。</li>
+<li>作業系統這時才複製那一頁，讓寫的那一方指到新的副本、可以寫；另一方還是用原本那頁。</li>
+</ol>
+<p>沒被寫的 page（例如程式碼）就一直共用，不會被複製。</p>
+<div class="mcq" data-ans="2" data-qid="u4-3-cow">
+<p><strong>觀念題 18.</strong> 用 copy-on-write 時，子行程 <code>fork()</code> 之後馬上呼叫 <code>exec()</code>，大概會複製多少個 page？</p>
+<ol>
+<li>父行程的全部 page</li>
+<li>幾乎沒有：<code>exec()</code> 會換掉整個位址空間，只有在那之前被寫到的少數幾頁（例如 stack）才會被複製</li>
+<li>只複製程式碼</li>
+<li>只複製 heap</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。copy-on-write 只在「寫」的時候複製。子行程很快就 <code>exec()</code>，換成新程式的位址空間，原本共用的 page 根本沒被寫過。這正是 115 Q3b 說的「省下複製整個位址空間的時間和記憶體」。</p>
+</details>
 </div>
 <h4 id="lru-reference-bit-second-chanceclock">LRU 太貴：用 reference bit 近似（second-chance／clock）</h4>
 <p>真正的 LRU 每次存取都要更新順序，硬體負擔太大。常見的近似做法：每個 frame 一個 <strong>reference bit</strong>，被存取就設成 1。frame 排成一圈，指標像時鐘的指針：</p>
@@ -6794,6 +7136,19 @@ lock(second.lock);</code></pre>
 <li><strong>順序一致</strong>（row-major 用「i 在外、j 在內」；column-major 用「j 在外、i 在內」）：連續存取，一頁的元素全部用完才換下一頁 → <strong>page fault 次數 ＝ 陣列佔幾頁</strong>。</li>
 <li><strong>順序相反</strong>：每次存取都跳到另一頁。內層迴圈一圈會碰到很多頁，frame 卻只有幾個，回到同一頁時它早就被換掉 → <strong>每一次存取都 page fault</strong>。</li>
 </ul>
+<div class="mcq" data-ans="1" data-qid="u4-pf-1">
+<p><strong>觀念題 19.</strong> C 語言的 <code>int a[100][100]</code>（row-major），要把整個陣列設成 0，哪一種迴圈順序 page fault 最少？</p>
+<ol>
+<li><code>for (i…) for (j…) a[i][j] = 0;</code></li>
+<li><code>for (j…) for (i…) a[i][j] = 0;</code></li>
+<li>兩種一樣</li>
+<li>看用哪一種置換演算法</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。C 是 row-major，同一列的元素連在一起。i 在外、j 在內，就是一列一列照記憶體的順序存取，一頁用完才換下一頁。B 每次都跳一整列，容易每次都 fault。</p>
+</details>
+</div>
 <h4 id="_29">解題步驟</h4>
 <ol>
 <li><strong>一頁放幾個元素</strong> ＝ page 大小 ÷ 元素大小；<strong>陣列佔幾頁</strong> ＝ 元素總數 ÷ 一頁放幾個。</li>
@@ -6801,6 +7156,19 @@ lock(second.lock);</code></pre>
 <li><strong>陣列從頁的開頭開始</strong>：A[0][0] 的位置剛好是 page 大小的倍數（例如 200），所以每一頁剛好裝滿一段，不會有半頁。</li>
 <li><strong>判斷迴圈順序</strong>：一致 → 答案 ＝ 陣列頁數；相反 → 看內層迴圈一圈碰到幾頁，比可用的 frame 多，就是每次都 fault，答案 ＝ 元素總數。</li>
 </ol>
+<div class="mcq" data-ans="2" data-qid="u4-pf-3">
+<p><strong>觀念題 20.</strong> 這類題目中，程式所在的 page 0 為什麼不會被 LRU 換掉？</p>
+<ol>
+<li>作業系統規定程式的 page 不能換</li>
+<li>每個指令都要從 page 0 讀，它永遠是最近用過的</li>
+<li>page 0 是唯讀的</li>
+<li>page 0 在 TLB 裡</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。LRU 換掉「最久沒用」的 page。每執行一個指令都要讀 page 0，所以它永遠是「剛剛用過」，輪不到它。結果就是陣列只能用剩下的 frame。</p>
+</details>
+</div>
 <div class="admonition example">
 <p class="admonition-title">103 Q2（10%）：double A[200][200]，column-major，A[0][0] 在位置 200，page 200 bytes，3 個 frame（frame 0 放程式），LRU</p>
 <p><strong>條件</strong>：double 8 bytes；frame 0 一直放程式（page 0），另外兩個一開始是空的。</p>
@@ -6822,31 +7190,8 @@ lock(second.lock);</code></pre>
 </ul>
 <p>這題換成 row-major，所以答案跟 103 Q2 的 (a)、(b) 反過來：<strong>哪個順序快要看排法，不是固定的</strong>。</p>
 </div>
-<h4 id="page-fault_1">page fault 次數的上下界</h4>
-<div class="admonition example">
-<p class="admonition-title">103 Q3、106 Q2（各 10%）：m 個 frame（一開始全空），reference string 長度 n、出現 p 個不同的 page。不管用哪一種置換演算法，page fault 次數的下界和上界？</p>
-<ul>
-<li><strong>下界（p）</strong>：一開始記憶體是空的，每個不同的 page 第一次出現時一定不在記憶體裡，所以至少 p 次。</li>
-<li><strong>上界（n）</strong>：最壞的情況是每一次存取都 fault，n 次。</li>
-</ul>
-<p><strong>補充</strong>：如果 <span class="arithmatex">\(p\le m\)</span>，所有 page 都裝得下，不會有任何 page 被換掉，剛好 p 次。上界 n 要在 <span class="arithmatex">\(p&gt;m\)</span> 時才可能發生，例如只有 1 個 frame、reference string 每次都換一個 page。</p>
-</div>
-<h4 id="_30">觀念小考</h4>
-<div class="mcq" data-ans="1">
-<p><strong>C-1.</strong> C 語言的 <code>int a[100][100]</code>（row-major），要把整個陣列設成 0，哪一種迴圈順序 page fault 最少？</p>
-<ol>
-<li><code>for (i…) for (j…) a[i][j] = 0;</code></li>
-<li><code>for (j…) for (i…) a[i][j] = 0;</code></li>
-<li>兩種一樣</li>
-<li>看用哪一種置換演算法</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>A</strong>。C 是 row-major，同一列的元素連在一起。i 在外、j 在內，就是一列一列照記憶體的順序存取，一頁用完才換下一頁。B 每次都跳一整列，容易每次都 fault。</p>
-</details>
-</div>
-<div class="mcq" data-ans="2">
-<p><strong>C-2.</strong> page 4 KB、int 4 bytes、<code>int a[1024][1024]</code>（row-major），陣列可以用 2 個 frame。用 <code>for (j…) for (i…) a[i][j] = 0;</code>，大約幾次 page fault？</p>
+<div class="mcq" data-ans="2" data-qid="u4-pf-2">
+<p><strong>觀念題 21.</strong> page 4 KB、int 4 bytes、<code>int a[1024][1024]</code>（row-major），陣列可以用 2 個 frame。用 <code>for (j…) for (i…) a[i][j] = 0;</code>，大約幾次 page fault？</p>
 <ol>
 <li>1024</li>
 <li>1024 × 1024</li>
@@ -6858,21 +7203,17 @@ lock(second.lock);</code></pre>
 <p><strong>B</strong>。一列有 1024 個 int ＝ 4 KB，剛好一頁。j 固定時 i 從 0 跑到 1023，每次換一列，就是換一頁；一圈碰到 1024 頁，只有 2 個 frame，每次都 fault，共 <span class="arithmatex">\(1024\times1024\)</span> 次。改成 i 在外、j 在內，只要 1024 次（每列一頁）。</p>
 </details>
 </div>
-<div class="mcq" data-ans="2">
-<p><strong>C-3.</strong> 這類題目中，程式所在的 page 0 為什麼不會被 LRU 換掉？</p>
-<ol>
-<li>作業系統規定程式的 page 不能換</li>
-<li>每個指令都要從 page 0 讀，它永遠是最近用過的</li>
-<li>page 0 是唯讀的</li>
-<li>page 0 在 TLB 裡</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>B</strong>。LRU 換掉「最久沒用」的 page。每執行一個指令都要讀 page 0，所以它永遠是「剛剛用過」，輪不到它。結果就是陣列只能用剩下的 frame。</p>
-</details>
+<h4 id="page-fault_1">page fault 次數的上下界</h4>
+<div class="admonition example">
+<p class="admonition-title">103 Q3、106 Q2（各 10%）：m 個 frame（一開始全空），reference string 長度 n、出現 p 個不同的 page。不管用哪一種置換演算法，page fault 次數的下界和上界？</p>
+<ul>
+<li><strong>下界（p）</strong>：一開始記憶體是空的，每個不同的 page 第一次出現時一定不在記憶體裡，所以至少 p 次。</li>
+<li><strong>上界（n）</strong>：最壞的情況是每一次存取都 fault，n 次。</li>
+</ul>
+<p><strong>補充</strong>：如果 <span class="arithmatex">\(p\le m\)</span>，所有 page 都裝得下，不會有任何 page 被換掉，剛好 p 次。上界 n 要在 <span class="arithmatex">\(p&gt;m\)</span> 時才可能發生，例如只有 1 個 frame、reference string 每次都換一個 page。</p>
 </div>
-<div class="mcq" data-ans="1">
-<p><strong>C-4.</strong> 3 個 frame（一開始全空），reference string 是 1, 2, 1, 2, 3, 1。不管用哪一種置換演算法，page fault 幾次？</p>
+<div class="mcq" data-ans="1" data-qid="u4-pf-4">
+<p><strong>觀念題 22.</strong> 3 個 frame（一開始全空），reference string 是 1, 2, 1, 2, 3, 1。不管用哪一種置換演算法，page fault 幾次？</p>
 <ol>
 <li>3</li>
 <li>6</li>
@@ -6884,12 +7225,6 @@ lock(second.lock);</code></pre>
 <p><strong>A. 3</strong>。只有 3 個不同的 page（p ＝ 3），frame 也有 3 個，全部裝得下，不用換掉任何 page。每個 page 只有第一次出現時 fault，共 3 次，剛好等於下界 p。</p>
 </details>
 </div>
-<p><strong>W-1.</strong> 用自己的話說明：為什麼迴圈順序跟陣列的排法相反時，<strong>每一次</strong>存取都會 page fault？</p>
-<details class="quiz">
-<summary>看參考答案</summary>
-<p>順序相反時，內層迴圈每走一步就跳到另一頁，走一圈會碰到很多不同的頁（103 Q2 是 200 頁）。陣列只有 2 個 frame，等到下一圈回到同一頁時，它早就被後面的頁換掉了，所以每次都要重新載入。</p>
-<p><strong>自我檢查</strong>：有沒有比較「內層一圈碰到幾頁」和「可用的 frame 數」？前者比較多，才會每次都 fault。</p>
-</details>
 <h3 id="u4-alloc">4.5 記憶體配置：連續配置、segmentation、buddy system</h3>
 <p>100、104、105 年考過：first／best／worst fit、內部和外部碎片、segment table 的位址轉換、buddy system、為什麼 stack algorithm 不會有 Belady's anomaly。</p>
 <h4 id="process">連續配置：每個 process 佔一整段</h4>
@@ -6899,7 +7234,7 @@ lock(second.lock);</code></pre>
 <li><strong>limit register</strong>：這段有多長，邏輯位址超過就 trap（存取違規）。</li>
 </ul>
 <p>102 Q5(3) 的是非題「relocation register 是 1877、邏輯位址 123，實體位址是 2000」是<strong>對</strong>的。</p>
-<h4 id="_31">有一堆空洞時，要放哪一個</h4>
+<h4 id="_30">有一堆空洞時，要放哪一個</h4>
 <p>process 來來去去，記憶體裡會有很多大小不一的空洞（hole）。新的 process 要放進去：</p>
 <table>
 <thead>
@@ -6965,7 +7300,20 @@ lock(second.lock);</code></pre>
 </tbody>
 </table>
 <p>這一組 best fit 最好，四個都放得下。用程式模擬過。</p>
-<h4 id="_32">兩種碎片</h4>
+<div class="mcq" data-ans="2" data-qid="u4-alloc-1">
+<p><strong>觀念題 23.</strong> 空洞依序是 50K、300K、120K，要放 100K。best fit 會放在哪裡？</p>
+<ol>
+<li>50K</li>
+<li>120K</li>
+<li>300K</li>
+<li>放不下</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. 120K</strong>。夠大的有 300K、120K，best fit 挑裡面最小的 120K（剩 20K）。first fit 會挑第一個夠大的 300K，worst fit 也挑 300K。</p>
+</details>
+</div>
+<h4 id="_31">兩種碎片</h4>
 <table>
 <thead>
 <tr>
@@ -6992,6 +7340,19 @@ lock(second.lock);</code></pre>
 </tr>
 </tbody>
 </table>
+<div class="mcq" data-ans="4" data-qid="u4-alloc-2">
+<p><strong>觀念題 24.</strong> paging 會產生哪一種碎片？</p>
+<ol>
+<li>只有外部碎片</li>
+<li>兩種都有</li>
+<li>都沒有</li>
+<li>只有內部碎片</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。每個 frame 大小一樣，任何空的 frame 都能用，沒有外部碎片；但最後一頁通常沒用滿，有內部碎片。</p>
+</details>
+</div>
 <h4 id="segmentation">segmentation：照程式的邏輯切段</h4>
 <p>程式是由好幾段組成的：程式碼、全域變數、stack、heap……每一段（segment）各自連續放，<strong>邏輯位址 ＝（段號 s, 段內位移 d）</strong>：</p>
 <ol>
@@ -7075,69 +7436,8 @@ lock(second.lock);</code></pre>
 </table>
 <p><strong>注意</strong>：位移等於 length 也要 trap，因為合法的位移是 0 到 length − 1。</p>
 </div>
-<h4 id="buddy-system-2">buddy system：都切成 2 的次方</h4>
-<p>kernel 自己要記憶體時常用 buddy system：</p>
-<ul>
-<li>從一大塊（例如 256 KB）開始，要求來了就<strong>對半切</strong>，切到「再切一半就不夠」為止。切出來的兩半互為 <strong>buddy</strong>。</li>
-<li>例：要 21 KB → 256 切成 128＋128 → 128 切成 64＋64 → 64 切成 32＋32 → 給 <strong>32 KB</strong>（再切成 16 KB 就不夠了）。</li>
-<li>釋放時，如果它的 buddy 也是空的，就<strong>合併</strong>回大的一塊，一路往上合併。</li>
-</ul>
-<p><strong>優點</strong>：合併很快（buddy 的位址一算就知道）。<strong>缺點</strong>：大小都是 2 的次方，會有內部碎片（要 21 KB 給 32 KB，浪費 11 KB）。</p>
-<div class="admonition example">
-<p class="admonition-title">105 Q3（15%）：(1) 動態記憶體配置的三種常見做法 (2) MMU 和 TLB 的用途 (3) 證明 stack algorithm 不會有 Belady's anomaly (4) buddy system 怎麼配置 kernel 記憶體</p>
-<p><strong>(1)</strong> first fit、best fit、worst fit（上面的表）。</p>
-<p><strong>(2)</strong> <strong>MMU</strong>（memory-management unit）：執行時把邏輯位址轉成實體位址，並檢查權限（越界就 trap）。<strong>TLB</strong>：page table 的快取，存最近用過的 page → frame 對應，大部分轉換不用再去記憶體查 page table。</p>
-<p><strong>(3)</strong> <strong>stack algorithm</strong> 的定義：任何時刻，n 個 frame 時記憶體裡的 page 集合，一定是 n＋1 個 frame 時的集合的<strong>子集合</strong>。</p>
-<p>LRU 是 stack algorithm：n 個 frame 時記憶體裡放的是「最近用過的 n 個不同 page」，n＋1 個 frame 時是「最近用過的 n＋1 個」，前者一定包含在後者裡。</p>
-<p>所以 n 個 frame 時會 hit 的存取，n＋1 個 frame 時也一定 hit；frame 變多，page fault 不會變多，不會有 Belady's anomaly。∎ FIFO 不是 stack algorithm，所以可能發生（<a href="#u4-0">4.0</a> 的例子）。</p>
-<p><strong>(4)</strong> buddy system：見上面。</p>
-</div>
-<div class="admonition example">
-<p class="admonition-title">104 Q7(2)（4%）：外部碎片和內部碎片的差別</p>
-<p>外部碎片：空的記憶體總量夠，但被切成很多不連續的小洞，放不下新的要求。內部碎片：分配出去的區塊比實際需要的大，多出來的部分在區塊裡面沒用到、別人也不能用。</p>
-</div>
-<h4 id="_33">觀念小考</h4>
-<div class="mcq" data-ans="2">
-<p><strong>C-1.</strong> 空洞依序是 50K、300K、120K，要放 100K。best fit 會放在哪裡？</p>
-<ol>
-<li>50K</li>
-<li>120K</li>
-<li>300K</li>
-<li>放不下</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>B. 120K</strong>。夠大的有 300K、120K，best fit 挑裡面最小的 120K（剩 20K）。first fit 會挑第一個夠大的 300K，worst fit 也挑 300K。</p>
-</details>
-</div>
-<div class="mcq" data-ans="4">
-<p><strong>C-2.</strong> paging 會產生哪一種碎片？</p>
-<ol>
-<li>只有外部碎片</li>
-<li>兩種都有</li>
-<li>都沒有</li>
-<li>只有內部碎片</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>D</strong>。每個 frame 大小一樣，任何空的 frame 都能用，沒有外部碎片；但最後一頁通常沒用滿，有內部碎片。</p>
-</details>
-</div>
-<div class="mcq" data-ans="1">
-<p><strong>C-3.</strong> buddy system 中，從 128 KB 開始，要 17 KB，會分到多大？</p>
-<ol>
-<li>32 KB</li>
-<li>17 KB</li>
-<li>64 KB</li>
-<li>16 KB</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>A. 32 KB</strong>。128 → 64 → 32，再切成 16 KB 就不夠 17 KB，所以給 32 KB，內部碎片 15 KB。</p>
-</details>
-</div>
-<div class="mcq" data-ans="3">
-<p><strong>C-4.</strong> segment table 第 2 列是 base 1400、length 300。邏輯位址（2, 300）的結果是？</p>
+<div class="mcq" data-ans="3" data-qid="u4-alloc-4">
+<p><strong>觀念題 25.</strong> segment table 第 2 列是 base 1400、length 300。邏輯位址（2, 300）的結果是？</p>
 <ol>
 <li>1700</li>
 <li>1400</li>
@@ -7149,10 +7449,84 @@ lock(second.lock);</code></pre>
 <p><strong>C. trap</strong>。合法的位移是 0～299，300 已經超出這一段，MMU 會產生 trap。</p>
 </details>
 </div>
-<h3 id="u4-concept">4.6 觀念小考</h3>
-<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
-<div class="mcq" data-ans="2">
-<p><strong>C-1.</strong> page 大小 1 KB，邏輯位址 2500 的 page 號碼和 offset 是？</p>
+<h4 id="buddy-system-2">buddy system：都切成 2 的次方</h4>
+<p>kernel 自己要記憶體時常用 buddy system：</p>
+<ul>
+<li>從一大塊（例如 256 KB）開始，要求來了就<strong>對半切</strong>，切到「再切一半就不夠」為止。切出來的兩半互為 <strong>buddy</strong>。</li>
+<li>例：要 21 KB → 256 切成 128＋128 → 128 切成 64＋64 → 64 切成 32＋32 → 給 <strong>32 KB</strong>（再切成 16 KB 就不夠了）。</li>
+<li>釋放時，如果它的 buddy 也是空的，就<strong>合併</strong>回大的一塊，一路往上合併。</li>
+</ul>
+<p><strong>優點</strong>：合併很快（buddy 的位址一算就知道）。<strong>缺點</strong>：大小都是 2 的次方，會有內部碎片（要 21 KB 給 32 KB，浪費 11 KB）。</p>
+<div class="mcq" data-ans="1" data-qid="u4-alloc-3">
+<p><strong>觀念題 26.</strong> buddy system 中，從 128 KB 開始，要 17 KB，會分到多大？</p>
+<ol>
+<li>32 KB</li>
+<li>17 KB</li>
+<li>64 KB</li>
+<li>16 KB</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A. 32 KB</strong>。128 → 64 → 32，再切成 16 KB 就不夠 17 KB，所以給 32 KB，內部碎片 15 KB。</p>
+</details>
+</div>
+<div class="admonition example">
+<p class="admonition-title">105 Q3（15%）：(1) 動態記憶體配置的三種常見做法 (2) MMU 和 TLB 的用途 (3) 證明 stack algorithm 不會有 Belady's anomaly (4) buddy system 怎麼配置 kernel 記憶體</p>
+<p><strong>(1)</strong> first fit、best fit、worst fit（上面的表）。</p>
+<p><strong>(2)</strong> <strong>MMU</strong>（memory-management unit）：執行時把邏輯位址轉成實體位址，並檢查權限（越界就 trap）。<strong>TLB</strong>：page table 的快取，存最近用過的 page → frame 對應，大部分轉換不用再去記憶體查 page table。</p>
+<p><strong>(3)</strong> <strong>stack algorithm</strong> 的定義：任何時刻，n 個 frame 時記憶體裡的 page 集合，一定是 n＋1 個 frame 時的集合的<strong>子集合</strong>。</p>
+<p>LRU 是 stack algorithm：n 個 frame 時記憶體裡放的是「最近用過的 n 個不同 page」，n＋1 個 frame 時是「最近用過的 n＋1 個」，前者一定包含在後者裡。</p>
+<p>所以 n 個 frame 時會 hit 的存取，n＋1 個 frame 時也一定 hit；frame 變多，page fault 不會變多，不會有 Belady's anomaly。∎ FIFO 不是 stack algorithm，所以可能發生（<a href="#u4-0">4.0</a> 的例子）。</p>
+<p><strong>(4)</strong> buddy system：見上面。</p>
+</div>
+<div class="mcq" data-ans="2" data-qid="u4-alloc-stack">
+<p><strong>觀念題 27.</strong> stack algorithm 的定義是什麼？</p>
+<ol>
+<li>用 stack 這種資料結構存 page 的演算法</li>
+<li>任何時刻，<span class="arithmatex">\(n\)</span> 個 frame 時記憶體裡的 page，一定也在 <span class="arithmatex">\(n+1\)</span> 個 frame 時的記憶體裡</li>
+<li>只會踢掉最上面那個 page 的演算法</li>
+<li>不會發生 page fault 的演算法</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。有這個性質，frame 變多時「原本會 hit 的還是 hit」，page fault 不會變多，所以不會有 Belady's anomaly。LRU、OPT 是 stack algorithm，FIFO 不是。A 是常見的誤會：LRU 可以用 stack 實作，但名字的意思是 B。</p>
+</details>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q7(2)（4%）：外部碎片和內部碎片的差別</p>
+<p>外部碎片：空的記憶體總量夠，但被切成很多不連續的小洞，放不下新的要求。內部碎片：分配出去的區塊比實際需要的大，多出來的部分在區塊裡面沒用到、別人也不能用。</p>
+</div>
+<h3 id="u4-concept">4.6 練習：簡單觀念題</h3>
+<p>一兩句話就能回答的題目，確認名詞和觀念有沒有記對。題目照主題分組；選擇題按下選項就會對答案，問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<h4 id="tlb">位址轉換與 TLB</h4>
+<div class="mcq" data-ans="2" data-qid="u4-bank-s1">
+<p><strong>簡單 1.</strong> 程式裡用 <code>printf("%p", &amp;x)</code> 印出變數 x 的位址，印出來的是哪一種位址？</p>
+<ol>
+<li>實體位址</li>
+<li>邏輯（虛擬）位址</li>
+<li>frame 號碼</li>
+<li>x 在磁碟上的位置</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。程式只看得到邏輯位址，實體位址由 MMU 在執行時轉換，程式自己不知道。所以兩個 process 印出同一個位址，也可能放在完全不同的實體位置。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u4-bank-s2">
+<p><strong>簡單 2.</strong> TLB 為什麼查得很快？</p>
+<ol>
+<li>它放在磁碟上，容量很大</li>
+<li>它是 CPU 裡一小塊 associative memory，所有 entry 同時拿 page 號碼去比對</li>
+<li>它存了整張 page table</li>
+<li>它只存 offset</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。associative memory 一次把所有 entry 都比對完，不用一格一格找，但這種硬體很貴，所以 TLB 很小。C 剛好相反：整張 page table 在記憶體裡，TLB 只存最近用過的幾組。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u4-concept-1">
+<p><strong>簡單 3.</strong> page 大小 1 KB，邏輯位址 2500 的 page 號碼和 offset 是？</p>
 <ol>
 <li>page 2、offset 500</li>
 <li>page 2、offset 452</li>
@@ -7164,8 +7538,35 @@ lock(second.lock);</code></pre>
 <p><strong>B</strong>。<span class="arithmatex">\(2500=2\times1024+452\)</span>。page 大小是 1024 不是 1000，A 是用 1000 去切的錯誤。</p>
 </details>
 </div>
-<div class="mcq" data-ans="4">
-<p><strong>C-2.</strong> clock（second-chance）演算法中，指標指到的 page reference bit 是 1，會怎樣？</p>
+<div class="mcq" data-ans="3" data-qid="u4-bank-s3">
+<p><strong>簡單 4.</strong> page table entry 的 valid bit 是 0，代表什麼？</p>
+<ol>
+<li>只代表這是非法位址</li>
+<li>這一頁被改過</li>
+<li>這一頁不屬於 process 的位址空間（非法），或合法但還沒載入記憶體</li>
+<li>這一頁在 TLB 裡</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。兩種情況都會 trap 給作業系統，作業系統再分辨：非法就終止 process，合法就當成 page fault 把它載入（<a href="#u4-0">4.0</a> 的步驟 2）。B 是 dirty bit 的意思。</p>
+</details>
+</div>
+<h4 id="thrashing-frame">置換、thrashing 與 frame 分配</h4>
+<div class="mcq" data-ans="2" data-qid="u4-bank-s6">
+<p><strong>簡單 5.</strong> pure demand paging：process 開始時，記憶體裡沒有它的任何一頁。它執行第一條指令時會怎樣？</p>
+<ol>
+<li>正常執行</li>
+<li>立刻 page fault，把那一頁載入</li>
+<li>作業系統先把全部的 page 載入</li>
+<li>process 被終止</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。連第一條指令所在的那一頁都不在記憶體，一開始會連續發生好幾次 page fault，等用到的 page 都進來之後才穩定。「用到才載入」就是 demand paging 的意思。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4" data-qid="u4-concept-2">
+<p><strong>簡單 6.</strong> clock（second-chance）演算法中，指標指到的 page reference bit 是 1，會怎樣？</p>
 <ol>
 <li>直接踢掉它</li>
 <li>先寫回磁碟再踢掉</li>
@@ -7177,8 +7578,8 @@ lock(second.lock);</code></pre>
 <p><strong>D</strong>。bit ＝ 1 表示最近被用過，給它第二次機會；繞回來時如果還是 0（這段時間都沒被用），才踢掉。</p>
 </details>
 </div>
-<div class="mcq" data-ans="1">
-<p><strong>C-3.</strong> 哪一種置換策略會出現 Belady's anomaly（frame 變多，fault 反而變多）？</p>
+<div class="mcq" data-ans="1" data-qid="u4-concept-3">
+<p><strong>簡單 7.</strong> 哪一種置換策略會出現 Belady's anomaly（frame 變多，fault 反而變多）？</p>
 <ol>
 <li>FIFO</li>
 <li>LRU</li>
@@ -7190,8 +7591,8 @@ lock(second.lock);</code></pre>
 <p><strong>A</strong>。LRU 和 OPT 是 stack algorithm：<span class="arithmatex">\(n\)</span> 個 frame 裡的 page，一定也在 <span class="arithmatex">\(n+1\)</span> 個 frame 裡，所以 frame 變多不會更差。FIFO 沒有這個性質，1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5 就是例子（<a href="#u4-0">4.0</a> 的延伸練習）。</p>
 </details>
 </div>
-<div class="mcq" data-ans="3">
-<p><strong>C-4.</strong> CPU 使用率很低、磁碟一直忙著 paging，作業系統應該？</p>
+<div class="mcq" data-ans="3" data-qid="u4-concept-4">
+<p><strong>簡單 8.</strong> CPU 使用率很低、磁碟一直忙著 paging，作業系統應該？</p>
 <ol>
 <li>再加入更多 process，讓 CPU 有事做</li>
 <li>把 page 變小</li>
@@ -7203,8 +7604,16 @@ lock(second.lock);</code></pre>
 <p><strong>C</strong>。這是 thrashing：每個 process 分到的 frame 太少。A 正是讓情況更糟的做法（早期的排程器看到 CPU 閒就加 process）。暫停一些 process，把 frame 讓給其他人，fault 才會降下來。</p>
 </details>
 </div>
-<div class="mcq" data-ans="2">
-<p><strong>C-5.</strong> 64 個 frame，兩個 process 大小是 20 和 140 page，用按比例分配，第一個 process 分到幾個 frame？</p>
+<div data-qid="u4-pf-5">
+<p><strong>簡單 9.</strong> 用自己的話說明：為什麼迴圈順序跟陣列的排法相反時，<strong>每一次</strong>存取都會 page fault？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>順序相反時，內層迴圈每走一步就跳到另一頁，走一圈會碰到很多不同的頁（103 Q2 是 200 頁）。陣列只有 2 個 frame，等到下一圈回到同一頁時，它早就被後面的頁換掉了，所以每次都要重新載入。</p>
+<p><strong>自我檢查</strong>：有沒有比較「內層一圈碰到幾頁」和「可用的 frame 數」？前者比較多，才會每次都 fault。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u4-concept-5">
+<p><strong>簡單 10.</strong> 64 個 frame，兩個 process 大小是 20 和 140 page，用按比例分配，第一個 process 分到幾個 frame？</p>
 <ol>
 <li>32</li>
 <li>8</li>
@@ -7216,7 +7625,64 @@ lock(second.lock);</code></pre>
 <p><strong>B</strong>。<span class="arithmatex">\(\frac{20}{20+140}\times64=8\)</span>，另一個分到 56（D）。A 是平均分配。</p>
 </details>
 </div>
-<p><strong>W-1.</strong> page 大小 2 KB，page table：page 0 → frame 3、page 1 → frame 7、page 2 不在記憶體、page 3 → frame 2。邏輯位址 1000、4500、7000 各轉成什麼？</p>
+<div class="mcq" data-ans="2" data-qid="u4-bank-s5">
+<p><strong>簡單 11.</strong> 用 global replacement（要踢 page 時，可以從所有 process 的 frame 挑），缺點是什麼？</p>
+<ol>
+<li>整體效率比 local 差</li>
+<li>一個 process 的 page fault 次數會受其他 process 影響，執行時間比較難預測</li>
+<li>不能用 LRU</li>
+<li>一定會有 Belady's anomaly</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。別的 process 可能把我的 frame 搶走，我的 page fault 就變多。local replacement 只從自己的 frame 挑，比較可預測，但用不到別人閒著的 frame。實際上 global 的整體效率通常比較好（所以 A 不對），比較常用。</p>
+</details>
+</div>
+<h4 id="_32">記憶體配置</h4>
+<div class="mcq" data-ans="2" data-qid="u4-bank-s8">
+<p><strong>簡單 12.</strong> segmentation 和 paging 比，下面哪一句對？</p>
+<ol>
+<li>segmentation 沒有外部碎片</li>
+<li>segmentation 照程式的邏輯切（程式碼、stack、heap），每段大小不同，所以會有外部碎片</li>
+<li>paging 會有外部碎片</li>
+<li>兩者都只有內部碎片</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。每個 segment 要放在一段連續的記憶體，大小又不一樣，跟連續配置一樣會留下塞不進去的小洞。paging 的 frame 大小都一樣，只有內部碎片（<a href="#u4-alloc">4.5</a>）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3" data-qid="u4-bank-s4">
+<p><strong>簡單 13.</strong> 想用 compaction（把 process 搬到一起，合併空洞）解決外部碎片，位址必須在什麼時候繫結？</p>
+<ol>
+<li>compile time</li>
+<li>load time</li>
+<li>execution time</li>
+<li>都可以</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。搬動之後 process 的實體位置就變了。execution time 繫結時，程式用的是邏輯位址，只要改 relocation register 就好；compile、load time 繫結時，實體位址已經寫在程式裡，搬了就錯（<a href="#u4-1">4.1</a>）。</p>
+</details>
+</div>
+<h3 id="u4-drill">4.7 練習：基礎題</h3>
+<p>要動手轉位址、畫置換的表、算 EAT，但每題只用到一個觀念。先自己算，再打開對答案；答案都用程式驗算過。</p>
+<h4 id="_33">位址轉換</h4>
+<p><strong>做法</strong>：page 號碼 ＝ 位址 ÷ page 大小、offset ＝ 餘數；page 大小是 <span class="arithmatex">\(2^k\)</span> 時，offset 就是低 <span class="arithmatex">\(k\)</span> 位元（<a href="#u4-1">4.1</a>）。</p>
+<div data-qid="u4-bank-b2">
+<p><strong>基礎 1.</strong> page 大小 4 KB，邏輯位址空間有 256 個 page，實體記憶體有 64 個 frame。邏輯位址和實體位址各要幾個位元？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>offset</strong>：4 KB ＝ <span class="arithmatex">\(2^{12}\)</span>，要 12 位元，兩種位址都一樣。</li>
+<li><strong>邏輯位址</strong>：256 個 page ＝ <span class="arithmatex">\(2^8\)</span>，page 號碼 8 位元，共 <span class="arithmatex">\(8+12=\)</span> <strong>20 位元</strong>。</li>
+<li><strong>實體位址</strong>：64 個 frame ＝ <span class="arithmatex">\(2^6\)</span>，frame 號碼 6 位元，共 <span class="arithmatex">\(6+12=\)</span> <strong>18 位元</strong>。</li>
+<li><strong>重點</strong>：邏輯位址空間可以比實體記憶體大（這題 1 MB 對 256 KB），這就是虛擬記憶體。</li>
+</ul>
+</details>
+</div>
+<div data-qid="u4-concept-6">
+<p><strong>基礎 2.</strong> page 大小 2 KB，page table：page 0 → frame 3、page 1 → frame 7、page 2 不在記憶體、page 3 → frame 2。邏輯位址 1000、4500、7000 各轉成什麼？</p>
 <details class="quiz">
 <summary>看參考答案</summary>
 <table>
@@ -7251,65 +7717,24 @@ lock(second.lock);</code></pre>
 </table>
 <p>page 號碼 ＝ 位址 ÷ 2048 的商，offset ＝ 餘數；例如 <span class="arithmatex">\(7000=3\times2048+856\)</span>。</p>
 </details>
-<p><strong>W-2.</strong> 3 個 frame，存取 3, 1, 4, 1, 5, 3, 1。clock 演算法（新放進來的 page bit 設 1）有幾次 fault？跟 FIFO、LRU 比較，為什麼 clock 沒有跟 LRU 一樣好？</p>
+</div>
+<div data-qid="u4-bank-b1">
+<p><strong>基礎 3.</strong> 32 位元的邏輯位址、4 KB page，兩層 page table：最上面 10 位元查外層表、接下來 10 位元查內層表、最後 12 位元是 offset。邏輯位址 0x00403004 拆成哪三段？TLB miss 時要讀幾次記憶體？</p>
 <details class="quiz">
-<summary>看參考答案</summary>
-<table>
-<thead>
-<tr>
-<th>存取</th>
-<th>frame 0</th>
-<th>frame 1</th>
-<th>frame 2</th>
-<th>結果</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>3, 1, 4</td>
-<td>3 (1)</td>
-<td>1 (1)</td>
-<td>4 (1)</td>
-<td>F F F</td>
-</tr>
-<tr>
-<td>1</td>
-<td>3 (1)</td>
-<td>1 (1)</td>
-<td>4 (1)</td>
-<td>hit（bit 本來就是 1）</td>
-</tr>
-<tr>
-<td>5</td>
-<td>5 (1)</td>
-<td>1 (0)</td>
-<td>4 (0)</td>
-<td>F：全部是 1，繞一圈清掉，踢 frame 0 的 3</td>
-</tr>
-<tr>
-<td>3</td>
-<td>5 (1)</td>
-<td>3 (1)</td>
-<td>4 (0)</td>
-<td>F：指標在 frame 1，1 的 bit 是 0，踢掉 1</td>
-</tr>
-<tr>
-<td>1</td>
-<td>5 (1)</td>
-<td>3 (1)</td>
-<td>1 (1)</td>
-<td>F：指標在 frame 2，4 的 bit 是 0，踢掉 4</td>
-</tr>
-</tbody>
-</table>
-<p>clock <strong>6 次</strong>，FIFO 也是 6 次；LRU 在存取 3 時會踢 4（1 比 4 晚用過），最後的 1 就 hit，只有 5 次。</p>
-<p>原因：1 在 4 之後被用過，但在存取 5 時兩個的 bit 都被清成 0 了。只有 1 個 bit，clock 分不出誰比較晚用，只能照指標的順序踢。我用程式跑過三種策略，次數都對。</p>
+<summary>看完整解答</summary>
+<ul>
+<li><strong>offset</strong>：低 12 位元 ＝ 16 進位的最後 3 位數 <strong>004</strong>，也就是 4。</li>
+<li><strong>剩下的 20 位元</strong>：0x00403 ＝ <code>0000 0000 0100 0000 0011</code>。</li>
+<li><strong>切成 10＋10</strong>：前 10 位元 <code>0000000001</code> ＝ <strong>1</strong>（外層表的第 1 格）；後 10 位元 <code>0000000011</code> ＝ <strong>3</strong>（內層表的第 3 格）。</li>
+<li><strong>TLB miss</strong>：讀外層表、讀內層表、讀資料，共 <strong>3 次</strong>記憶體存取。</li>
+</ul>
+<p>我用程式做位元運算驗算過：1、3、4。</p>
 </details>
-<h3 id="u4-drill">4.7 換數字練習</h3>
-<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
-<h4 id="page-replacement-fault">題型一：page replacement 幾次 fault</h4>
+</div>
+<h4 id="page-replacement-fault">page replacement 幾次 fault</h4>
 <p><strong>做法</strong>：畫表一格一格走，寫出每次踢掉誰（<a href="#u4-0">4.0</a>）。</p>
-<p><strong>P-1.</strong> 3 個 frame，存取順序 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5，用 FIFO 會有幾次 page fault？</p>
+<div data-qid="u4-drill-1">
+<p><strong>基礎 4.</strong> 3 個 frame，存取順序 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5，用 FIFO 會有幾次 page fault？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <p>規則：踢最早進來的。</p>
@@ -7387,7 +7812,9 @@ lock(second.lock);</code></pre>
 <p>共 <strong>9 次</strong> page fault。</p>
 <p>用動畫對答案：把 <code>1,2,3,4,1,2,5,1,2,3,4,5</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 FIFO。</p>
 </details>
-<p><strong>P-2.</strong> 3 個 frame，存取順序 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5，用 LRU 會有幾次 page fault？</p>
+</div>
+<div data-qid="u4-drill-2">
+<p><strong>基礎 5.</strong> 3 個 frame，存取順序 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5，用 LRU 會有幾次 page fault？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <p>規則：踢最久沒被用到的（frame 內容由舊到新排）。</p>
@@ -7465,7 +7892,9 @@ lock(second.lock);</code></pre>
 <p>共 <strong>10 次</strong> page fault。</p>
 <p>用動畫對答案：把 <code>1,2,3,4,1,2,5,1,2,3,4,5</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 LRU。</p>
 </details>
-<p><strong>P-3.</strong> 3 個 frame，存取順序 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5，用 OPT 會有幾次 page fault？</p>
+</div>
+<div data-qid="u4-drill-3">
+<p><strong>基礎 6.</strong> 3 個 frame，存取順序 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5，用 OPT 會有幾次 page fault？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <p>規則：踢未來最晚才用到（或再也不用）的。</p>
@@ -7543,7 +7972,9 @@ lock(second.lock);</code></pre>
 <p>共 <strong>7 次</strong> page fault。</p>
 <p>用動畫對答案：把 <code>1,2,3,4,1,2,5,1,2,3,4,5</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 OPT。</p>
 </details>
-<p><strong>P-4.</strong> 3 個 frame，存取順序 7, 0, 1, 2, 0, 3, 0, 4, 2, 3，用 FIFO 會有幾次 page fault？</p>
+</div>
+<div data-qid="u4-drill-4">
+<p><strong>基礎 7.</strong> 3 個 frame，存取順序 7, 0, 1, 2, 0, 3, 0, 4, 2, 3，用 FIFO 會有幾次 page fault？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <p>規則：踢最早進來的。</p>
@@ -7611,7 +8042,9 @@ lock(second.lock);</code></pre>
 <p>共 <strong>9 次</strong> page fault。</p>
 <p>用動畫對答案：把 <code>7,0,1,2,0,3,0,4,2,3</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 FIFO。</p>
 </details>
-<p><strong>P-5.</strong> 3 個 frame，存取順序 2, 3, 2, 1, 5, 2, 4, 5, 3, 2，用 LRU 會有幾次 page fault？</p>
+</div>
+<div data-qid="u4-drill-5">
+<p><strong>基礎 8.</strong> 3 個 frame，存取順序 2, 3, 2, 1, 5, 2, 4, 5, 3, 2，用 LRU 會有幾次 page fault？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <p>規則：踢最久沒被用到的（frame 內容由舊到新排）。</p>
@@ -7679,7 +8112,9 @@ lock(second.lock);</code></pre>
 <p>共 <strong>7 次</strong> page fault。</p>
 <p>用動畫對答案：把 <code>2,3,2,1,5,2,4,5,3,2</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 LRU。</p>
 </details>
-<p><strong>P-6.</strong> 3 個 frame，存取順序 2, 3, 2, 1, 5, 2, 4, 5, 3, 2，用 OPT 會有幾次 page fault？</p>
+</div>
+<div data-qid="u4-drill-6">
+<p><strong>基礎 9.</strong> 3 個 frame，存取順序 2, 3, 2, 1, 5, 2, 4, 5, 3, 2，用 OPT 會有幾次 page fault？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <p>規則：踢未來最晚才用到（或再也不用）的。</p>
@@ -7747,9 +8182,67 @@ lock(second.lock);</code></pre>
 <p>共 <strong>6 次</strong> page fault。</p>
 <p>用動畫對答案：把 <code>2,3,2,1,5,2,4,5,3,2</code> 貼進 <a href="#u4-0">4.0 的動畫</a>，frame 數填 3、策略選 OPT。</p>
 </details>
-<h4 id="eat-page-fault-rate">題型二：EAT 與 page fault rate</h4>
+</div>
+<div data-qid="u4-concept-7">
+<p><strong>基礎 10.</strong> 3 個 frame，存取 3, 1, 4, 1, 5, 3, 1。clock 演算法（新放進來的 page bit 設 1）有幾次 fault？跟 FIFO、LRU 比較，為什麼 clock 沒有跟 LRU 一樣好？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<table>
+<thead>
+<tr>
+<th>存取</th>
+<th>frame 0</th>
+<th>frame 1</th>
+<th>frame 2</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3, 1, 4</td>
+<td>3 (1)</td>
+<td>1 (1)</td>
+<td>4 (1)</td>
+<td>F F F</td>
+</tr>
+<tr>
+<td>1</td>
+<td>3 (1)</td>
+<td>1 (1)</td>
+<td>4 (1)</td>
+<td>hit（bit 本來就是 1）</td>
+</tr>
+<tr>
+<td>5</td>
+<td>5 (1)</td>
+<td>1 (0)</td>
+<td>4 (0)</td>
+<td>F：全部是 1，繞一圈清掉，踢 frame 0 的 3</td>
+</tr>
+<tr>
+<td>3</td>
+<td>5 (1)</td>
+<td>3 (1)</td>
+<td>4 (0)</td>
+<td>F：指標在 frame 1，1 的 bit 是 0，踢掉 1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>5 (1)</td>
+<td>3 (1)</td>
+<td>1 (1)</td>
+<td>F：指標在 frame 2，4 的 bit 是 0，踢掉 4</td>
+</tr>
+</tbody>
+</table>
+<p>clock <strong>6 次</strong>，FIFO 也是 6 次；LRU 在存取 3 時會踢 4（1 比 4 晚用過），最後的 1 就 hit，只有 5 次。</p>
+<p>原因：1 在 4 之後被用過，但在存取 5 時兩個的 bit 都被清成 0 了。只有 1 個 bit，clock 分不出誰比較晚用，只能照指標的順序踢。我用程式跑過三種策略，次數都對。</p>
+</details>
+</div>
+<h4 id="eat-page-fault-rate">EAT 與 page fault rate</h4>
 <p><strong>做法</strong>：EAT ＝ <span class="arithmatex">\((1-p)\times\)</span> 記憶體時間 ＋ <span class="arithmatex">\(p\times\)</span> fault 處理時間；問上限就把不等式解出 <span class="arithmatex">\(p\)</span>。</p>
-<p><strong>P-7.</strong> 記憶體存取 200 ns、處理一次 page fault 8 ms，page fault rate 是 0.001。EAT 是多少？</p>
+<div data-qid="u4-drill-7">
+<p><strong>基礎 11.</strong> 記憶體存取 200 ns、處理一次 page fault 8 ms，page fault rate 是 0.001。EAT 是多少？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -7758,7 +8251,9 @@ lock(second.lock);</code></pre>
 <li><strong>答案</strong>：約 <strong>8199.8 ns</strong>，是原本的 41 倍。</li>
 </ul>
 </details>
-<p><strong>P-8.</strong> 記憶體 100 ns、page fault 10 ms。要讓 EAT 比沒有 page fault 時最多慢 10%，page fault rate 最多多少？</p>
+</div>
+<div data-qid="u4-drill-8">
+<p><strong>基礎 12.</strong> 記憶體 100 ns、page fault 10 ms。要讓 EAT 比沒有 page fault 時最多慢 10%，page fault rate 最多多少？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -7767,7 +8262,9 @@ lock(second.lock);</code></pre>
 <li><strong>答案</strong>：大約<strong>每一百萬次存取最多 1 次</strong> page fault。</li>
 </ul>
 </details>
-<p><strong>P-9.</strong> 記憶體 100 ns。page fault 時，被換掉的 page 沒改過要 8 ms、改過（要先寫回）要 20 ms，70% 的情況是改過的。page fault rate <span class="arithmatex">\(10^{-6}\)</span>，EAT？</p>
+</div>
+<div data-qid="u4-drill-9">
+<p><strong>基礎 13.</strong> 記憶體 100 ns。page fault 時，被換掉的 page 沒改過要 8 ms、改過（要先寫回）要 20 ms，70% 的情況是改過的。page fault rate <span class="arithmatex">\(10^{-6}\)</span>，EAT？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -7776,7 +8273,9 @@ lock(second.lock);</code></pre>
 <li><strong>答案</strong>：約 <strong>116.4 ns</strong>。如果每次都只要 8 ms（都沒改過），只要約 108 ns：dirty bit 讓沒改過的 page 不用寫回，省的就是這段。</li>
 </ul>
 </details>
-<p><strong>P-10.</strong> 記憶體 120 ns、page fault 50000 ns。要讓 EAT ＜ 150 ns，page fault rate 最多多少？</p>
+</div>
+<div data-qid="u4-drill-10">
+<p><strong>基礎 14.</strong> 記憶體 120 ns、page fault 50000 ns。要讓 EAT ＜ 150 ns，page fault rate 最多多少？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -7784,7 +8283,9 @@ lock(second.lock);</code></pre>
 <li><strong>解</strong>：<span class="arithmatex">\(49880p&lt;30\)</span>，<span class="arithmatex">\(p&lt;\frac{30}{49880}\approx\)</span> <strong><span class="arithmatex">\(6.01\times10^{-4}\)</span></strong>。</li>
 </ul>
 </details>
-<p><strong>P-11.</strong> 記憶體 100 ns、page fault 5 ms。要讓 EAT 不超過記憶體時間的 2 倍，平均多少次存取最多只能有 1 次 page fault？</p>
+</div>
+<div data-qid="u4-drill-11">
+<p><strong>基礎 15.</strong> 記憶體 100 ns、page fault 5 ms。要讓 EAT 不超過記憶體時間的 2 倍，平均多少次存取最多只能有 1 次 page fault？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -7793,7 +8294,9 @@ lock(second.lock);</code></pre>
 <li><strong>答案</strong>：大約<strong>每 50000 次存取最多 1 次</strong>。</li>
 </ul>
 </details>
-<p><strong>P-12.</strong> 記憶體 100 ns、page fault 10 ms、page fault rate 0.0001。EAT 是多少？比沒有 page fault 慢幾倍？</p>
+</div>
+<div data-qid="u4-drill-12">
+<p><strong>基礎 16.</strong> 記憶體 100 ns、page fault 10 ms、page fault rate 0.0001。EAT 是多少？比沒有 page fault 慢幾倍？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -7801,7 +8304,325 @@ lock(second.lock);</code></pre>
 <li><strong>慢了約 11 倍</strong>：每一萬次才 fault 一次，平均時間還是被它主宰。</li>
 </ul>
 </details>
-<h3 id="u4-en">4.8 英文作答範例</h3>
+</div>
+<h4 id="working-set">working set</h4>
+<div data-qid="u4-bank-b3">
+<p><strong>基礎 17.</strong> <span class="arithmatex">\(\Delta=4\)</span>。一個 process 在 t ＝ 1 到 10 的存取依序是 1, 2, 1, 3, 4, 4, 3, 2, 2, 1。(a) t ＝ 4、7、10 時的 working set 各是什麼？(b) 系統只有 5 個 frame，有兩個這樣的 process，t ＝ 10 時兩個的 WSS 都是 3，作業系統該怎麼做？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>(a)</strong> 每次只看最近 4 次存取（含當下）：<ul>
+<li>t ＝ 4：1, 2, 1, 3 → <strong>{1, 2, 3}</strong>，WSS ＝ 3。</li>
+<li>t ＝ 7：3, 4, 4, 3 → <strong>{3, 4}</strong>，WSS ＝ 2。</li>
+<li>t ＝ 10：3, 2, 2, 1 → <strong>{1, 2, 3}</strong>，WSS ＝ 3。</li>
+</ul>
+</li>
+<li><strong>(b)</strong> 總需求 <span class="arithmatex">\(D=3+3=6&gt;5\)</span>，frame 不夠，會 thrashing。作業系統<strong>暫停其中一個 process</strong>（swap out），把它的 frame 給另一個；等 <span class="arithmatex">\(D\)</span> 夠小再讓它回來（<a href="#u4-3">4.3</a> 112 Q6b）。</li>
+</ul>
+<p>我用程式照定義算過三個時間點的 working set。</p>
+</details>
+</div>
+<h3 id="u4-exam">4.8 練習：考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<div data-qid="u4-exam-1">
+<p><strong>考古變化 1.</strong>（改自 112 Q6a・判斷）下面三種情況，位址各在什麼時候繫結（compile time、load time、execution time）？(a) 洗衣機的控制程式，永遠放在記憶體的固定位址 (b) 程式每次載入的位置都不一樣，但載入之後就不會再移動 (c) 程式執行到一半會被 swap 出去，回來時可能放在不同的位置</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題問三種繫結的差別；這題給情境，要判斷是哪一種。</li>
+<li><strong>(a) compile time</strong>：位置事先就知道而且不會變，編譯時直接產生絕對位址。</li>
+<li><strong>(b) load time</strong>：編譯出可重定位的程式，載入時決定位址，之後不再動。</li>
+<li><strong>(c) execution time</strong>：執行中位置會變，只能在每次存取時才轉換，要有 MMU（硬體）支援。</li>
+</ul>
+</details>
+</div>
+<div data-qid="u4-exam-2">
+<p><strong>考古變化 2.</strong>（改自 114 Q7・量化）TLB 查詢 20 ns、記憶體存取 100 ns、TLB hit rate 80%。(1) 單層 page table 的有效存取時間 (2) 兩層 page table 呢？(3) 兩層時 hit rate 要多少，有效存取時間才會 ≤ 130 ns？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題要你講 TLB 的五個步驟；這題把步驟換成時間算出來（hit 走步驟 3，miss 走步驟 4、5）。</li>
+<li><strong>(1)</strong>：hit：TLB ＋ 存取資料 <span class="arithmatex">\(=120\)</span>；miss：TLB ＋ 查 page table ＋ 存取資料 <span class="arithmatex">\(=220\)</span>。<span class="arithmatex">\(0.8\times120+0.2\times220=\)</span> <strong>140 ns</strong>。</li>
+<li><strong>(2)</strong>：miss 時要查兩層 page table，多一次記憶體：<span class="arithmatex">\(20+100+100+100=320\)</span>。<span class="arithmatex">\(0.8\times120+0.2\times320=\)</span> <strong>160 ns</strong>。</li>
+<li><strong>(3)</strong>：<span class="arithmatex">\(120h+320(1-h)\le130\)</span> → <span class="arithmatex">\(320-200h\le130\)</span> → <span class="arithmatex">\(h\ge\)</span> <strong>95%</strong>。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u4-exam-3">
+<p><strong>考古變化 3.</strong>（改自 111 Q9・換數字・延伸）39 位元虛擬位址、34 位元實體位址、4 KB page、每個 PTE 8 bytes。(1) 單層 page table 有幾個 entry？占多少記憶體？(2) 改成多層，每一層的表剛好一個 page，要幾層？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了；(2) 多問多層 page table（這正是 RISC-V Sv39 的設計）。</li>
+<li><strong>(1)</strong>：offset 12 位元，VPN <span class="arithmatex">\(39-12=27\)</span> 位元 → <strong><span class="arithmatex">\(2^{27}\)</span></strong> 個 entry；<span class="arithmatex">\(2^{27}\times8\text{ B}=2^{30}\text{ B}=\)</span> <strong>1 GiB</strong>。（實體位址 34 位元決定 PPN 有 22 位元，PTE 用 8 bytes 放得下。）</li>
+<li><strong>(2)</strong>：一個 page 放 <span class="arithmatex">\(\frac{4096}{8}=512=2^9\)</span> 個 PTE，每一層吃 VPN 的 9 位元：<span class="arithmatex">\(27\div9=\)</span> <strong>3 層</strong>。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u4-exam-4">
+<p><strong>考古變化 4.</strong>（改自 111 Q8・換數字）32 GB 的記憶體以 4 KB 為單位配置，用 bitmap 記錄哪些單位是空的，bitmap 要多大？改成 8 KB 為單位呢？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：記憶體和單位都換了，多問「單位變大」的效果。</li>
+<li><strong>4 KB</strong>：單位數 <span class="arithmatex">\(\frac{2^{35}}{2^{12}}=2^{23}\)</span>，每單位 1 位元 → <span class="arithmatex">\(2^{23}\)</span> 位元 <span class="arithmatex">\(=2^{20}\)</span> bytes ＝ <strong>1 MB</strong>。</li>
+<li><strong>8 KB</strong>：單位數減半 → <strong>512 KB</strong>。單位越大 bitmap 越小，但每次配置的浪費（內部碎片）可能越大。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u4-exam-5">
+<p><strong>考古變化 5.</strong>（改自 111 Q6・換數字）TLB 查詢 20 ns，miss 時才去讀 page table（200 ns）。希望位址轉換的平均開銷 ≤ 30 ns，TLB hit rate 至少要多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了，算法一樣：每次都要查 TLB，miss 時才多花查 page table 的時間。</li>
+<li><strong>列式</strong>：<span class="arithmatex">\(20+(1-h)\times200\le30\)</span> → <span class="arithmatex">\((1-h)\times200\le10\)</span> → <span class="arithmatex">\(1-h\le0.05\)</span>。</li>
+<li><strong>答案</strong>：<span class="arithmatex">\(h\ge\)</span> <strong>95%</strong>。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u4-exam-6">
+<p><strong>考古變化 6.</strong>（改自 113 Q6b・換數字）記憶體存取 100 ns，處理一次 page fault 要 8 ms。希望有效存取時間最多比 100 ns 慢 10%，page fault rate 上限是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了，而且 page fault 的時間單位是 ms，要先換成 ns。</li>
+<li><strong>換單位</strong>：8 ms ＝ 8,000,000 ns。</li>
+<li><strong>列式</strong>：<span class="arithmatex">\((1-p)\times100+p\times8000000\le110\)</span> → <span class="arithmatex">\(7999900p\le10\)</span> → <span class="arithmatex">\(p\le\frac{10}{7999900}\approx1.25\times10^{-6}\)</span>。</li>
+<li><strong>意思</strong>：大約每 80 萬次存取才能有 1 次 page fault。page fault 非常貴，所以 thrashing 一發生，系統就幾乎停住。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u4-exam-7">
+<p><strong>考古變化 7.</strong>（改自 103 Q2、110 Q5・換數字）<code>int A[100][100]</code>（int 4 bytes），row-major，A[0][0] 在一個 page 的開頭，page 800 bytes；程式另外佔一個 frame，資料只有 2 個 frame，LRU。(a) j 在外層、i 在內層 (b) i 在外層、j 在內層，各會發生幾次 page fault？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題一頁剛好放不滿一列；這題一頁放<strong>兩列</strong>，所以 (a) 不再是每次都 fault，要多想一步。</li>
+<li><strong>一頁放幾個元素</strong>：800 ÷ 4 ＝ 200 個 ＝ 兩列（每列 100 個）。陣列共 50 頁，第 <span class="arithmatex">\(i\)</span> 列在第 <span class="arithmatex">\(\lfloor i/2\rfloor\)</span> 頁。</li>
+<li><strong>(a) j 在外、i 在內</strong>：內層 i 從 0 走到 99，依序碰到第 0、0、1、1、2、2、…、49、49 頁。每頁第一次碰到時 fault、緊接著同一頁的下一列就 hit。一輪內層 50 次 fault，外層 100 輪：<span class="arithmatex">\(50\times100=\)</span> <strong>5000 次</strong>。</li>
+<li><strong>(b) i 在外、j 在內</strong>：照記憶體的順序走，每頁只在第一次碰到時 fault：<strong>50 次</strong>。</li>
+</ul>
+<p>我用程式模擬過 LRU 和這兩種迴圈順序，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u4-exam-8">
+<p><strong>考古變化 8.</strong>（改自 105 Q3(3)、103 Q3・實際算）reference string：1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5。(1) FIFO 用 3 個、4 個 frame 各幾次 page fault？(2) LRU 呢？(3) 對照原題的上下界</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題用證明說明 LRU 不會有 Belady's anomaly；這題用一個具體的字串，親眼看到 FIFO 有、LRU 沒有。</li>
+<li><strong>(1) FIFO</strong>：3 個 frame <strong>9 次</strong>；4 個 frame <strong>10 次</strong>。frame 變多，fault 反而變多，這就是 <strong>Belady's anomaly</strong>。</li>
+<li><strong>(2) LRU</strong>：3 個 frame <strong>10 次</strong>；4 個 frame <strong>8 次</strong>。frame 變多，fault 不會變多（LRU 是 stack algorithm）。</li>
+<li><strong>(3) 上下界</strong>：字串長度 <span class="arithmatex">\(n=12\)</span>、不同的 page <span class="arithmatex">\(p=5\)</span>。四個答案都在 5 到 12 之間；3、4 個 frame 都比 5 少，所以不可能剛好 5 次。</li>
+</ul>
+<p>我用程式模擬過 FIFO 和 LRU，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u4-exam-9">
+<p><strong>考古變化 9.</strong>（改自 100 Q4・換數字）segment table：0 號 base 1400、length 1000；1 號 6300、400；2 號 4300、400；3 號 3200、1100；4 號 4700、1000。下面的邏輯位址各對到哪個實體位址？(a) (2, 53) (b) (3, 852) (c) (1, 500) (d) (0, 999) (e) (4, 1000)</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：表和位址換了；多了 offset 剛好等於 length 的邊界情況。</li>
+<li><strong>規則</strong>：offset 必須 <strong>小於</strong> length，否則 trap；合法時實體位址 ＝ base ＋ offset。</li>
+<li><strong>(a)</strong>：53 ＜ 400 → <span class="arithmatex">\(4300+53=\)</span> <strong>4353</strong>。</li>
+<li><strong>(b)</strong>：852 ＜ 1100 → <span class="arithmatex">\(3200+852=\)</span> <strong>4052</strong>。</li>
+<li><strong>(c)</strong>：500 ≥ 400 → <strong>trap</strong>（越界）。</li>
+<li><strong>(d)</strong>：999 ＜ 1000 → <span class="arithmatex">\(1400+999=\)</span> <strong>2399</strong>。</li>
+<li><strong>(e)</strong>：1000 ≥ 1000 → <strong>trap</strong>。length 1000 代表合法的 offset 是 0 到 999。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u4-exam-10">
+<p><strong>考古變化 10.</strong>（改自 105 Q3(1)・實際算）記憶體的空洞依序是 150K、350K、200K、500K、100K。依序來了 180K、90K、320K、210K 四個要求。first fit、best fit、worst fit 各會怎麼放？哪一種放得下全部？（從空洞的開頭切，剩下的部分還是空洞）</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只要說出三種方法；這題用一組數字跑一次，看出三種方法的結果真的不一樣。</li>
+<li><strong>first fit</strong>（第一個夠大的）：180 → 350（剩 170）；90 → 150（剩 60）；320 → 500（剩 180）；210 → 剩下 60、170、200、180、100，<strong>都不夠</strong>，要等。</li>
+<li><strong>best fit</strong>（夠大裡面最小的）：180 → 200（剩 20）；90 → 100（剩 10）；320 → 350（剩 30）；210 → 500（剩 290）。<strong>全部放得下</strong>。</li>
+<li><strong>worst fit</strong>（最大的）：180 → 500（剩 320）；90 → 350（剩 260）；320 → 剛剛剩下的 320（剩 0）；210 → 260（剩 50）。<strong>全部放得下</strong>。</li>
+<li><strong>結論</strong>：這組資料裡 first fit 輸了。哪一種最好要看要求的大小分布，沒有永遠最好的；一般的模擬結果是 first fit 和 best fit 比 worst fit 好，first fit 又比較快。</li>
+</ul>
+<p>我用程式模擬過三種配置方法，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u4-exam-11">
+<p><strong>考古變化 11.</strong>（改自 105 Q3(4)・實際算）kernel 用 buddy system 管理一塊 512 KB 的記憶體（位址 0 開始）。依序：A 要 60 KB、B 要 30 KB、C 要 100 KB，然後釋放 A、再釋放 B。每一步配到哪一塊？最後剩下哪些空的區塊？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只要說明 buddy system；這題實際切一次、合併一次。</li>
+<li><strong>規則</strong>：大小都是 2 的次方；要 <span class="arithmatex">\(k\)</span> KB 就找不小於 <span class="arithmatex">\(k\)</span> 的 2 的次方；不夠小就對半切，兩半互為 buddy；釋放時如果 buddy 也是空的就合併回去。</li>
+<li><strong>A 要 60 → 64 KB</strong>：512 切成 256＋256；前面的 256 切成 128＋128；前面的 128 切成 64＋64。A 拿 <strong>0–64</strong>。</li>
+<li><strong>B 要 30 → 32 KB</strong>：A 旁邊的 64（64–128）切成 32＋32，B 拿 <strong>64–96</strong>。</li>
+<li><strong>C 要 100 → 128 KB</strong>：128–256 那塊剛好，C 拿 <strong>128–256</strong>。</li>
+<li><strong>釋放 A</strong>：A 的 buddy 是 64–128，裡面有 B，不能合併；0–64 變成空的。</li>
+<li><strong>釋放 B</strong>：B 的 buddy 96–128 是空的 → 合併成 64–128；它的 buddy 0–64（A 剛放掉）也是空的 → 合併成 0–128；再往上的 buddy 128–256 是 C，停。</li>
+<li><strong>最後空的</strong>：<strong>0–128</strong>（128 KB）和 <strong>256–512</strong>（256 KB）。C 還佔著 128–256。</li>
+<li><strong>代價</strong>：A 只要 60 卻佔 64、C 要 100 卻佔 128，這些浪費是內部碎片。</li>
+</ul>
+<p>我寫了一個 buddy allocator 的模擬程式，每一步的結果都一樣。</p>
+</details>
+</div>
+<h3 id="u4-bank">4.9 練習：猜題</h3>
+<p>考古題還沒考過、但恐龍書 Main Memory、Virtual Memory 兩章的重點，我猜比較可能出現的題型，包含 115 年那種英文名詞填空。</p>
+<div data-qid="u4-bank-g1">
+<div>
+<p><strong>猜題 1.</strong> 填空（115 年那種英文名詞填空）：</p>
+<ul>
+<li>(a) The set of pages in the most recent <span class="arithmatex">\(\Delta\)</span> page references is the ＿＿.</li>
+<li>(b) ＿＿ allows the parent and child processes initially to share the same pages; a shared page is copied only when either process writes to it.</li>
+<li>(c) ＿＿ is the situation in which the page-fault rate may increase as the number of allocated frames increases.</li>
+<li>(d) With ＿＿ replacement, a process selects a replacement frame only from its own set of allocated frames.</li>
+<li>(e) Memory allocated to a process that is slightly larger than the requested memory results in ＿＿ fragmentation.</li>
+</ul>
+</div>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li>(a) <strong>working set</strong>（<a href="#u4-3">4.3</a>）</li>
+<li>(b) <strong>copy-on-write</strong>（<a href="#u4-3">4.3</a>）</li>
+<li>(c) <strong>Belady's anomaly</strong>（<a href="#u4-alloc">4.5</a>）</li>
+<li>(d) <strong>local</strong>（<a href="#u4-3">4.3</a> 的 frame 分配）</li>
+<li>(e) <strong>internal</strong>（<a href="#u4-0">4.0</a> 觀念題 1）</li>
+</ul>
+</details>
+</div>
+<div class="mcq" data-ans="3" data-qid="u4-bank-g2">
+<p><strong>猜題 2.</strong> 改良版的 second-chance 同時看兩個位元：(reference bit, dirty bit)。下面四種 page，最先被踢的是哪一種？</p>
+<ol>
+<li>(1, 0)</li>
+<li>(0, 1)</li>
+<li>(0, 0)</li>
+<li>(1, 1)</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。優先順序是 (0, 0) → (0, 1) → (1, 0) → (1, 1)：</p>
+<ul>
+<li>(0, 0)：最近沒用、也沒改過，踢掉不用寫回，最好。</li>
+<li>(0, 1)：最近沒用，但踢之前要先寫回磁碟。</li>
+<li>(1, 0)：最近用過，可能很快又要用，但沒改過。</li>
+<li>(1, 1)：最近用過又改過，最不該踢。</li>
+</ul>
+<p>指標繞一圈找最好的那一類，找不到再找下一類。跟 <a href="#u4-3">4.3</a> 的 clock 比，多考慮了寫回磁碟的代價（觀念題 16）。</p>
+</details>
+</div>
+<div data-qid="u4-bank-g3">
+<p><strong>猜題 3.</strong> 除了 working-set model，page-fault frequency（PFF）也能控制 thrashing。它怎麼做？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>直接看每個 process 的 <strong>page fault rate</strong>，替它設一個上限和下限：</p>
+<ul>
+<li><strong>超過上限</strong>：frame 不夠，多給它幾個 frame；沒有空的 frame 可以給，就暫停某個 process，把它的 frame 拿來用。</li>
+<li><strong>低於下限</strong>：frame 太多了，收回幾個給別人。</li>
+</ul>
+<p>thrashing 的症狀就是 page fault rate 太高，PFF 直接量這個數字，比算 working set 簡單。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u4-bank-g4">
+<p><strong>猜題 4.</strong> TLB 的 entry 沒有存 ASID（代表哪個 process）。context switch 換到另一個 process 時，TLB 要怎麼辦？</p>
+<ol>
+<li>不用管</li>
+<li>全部清空（flush），不然新的 process 會用到舊 process 的 page → frame 對應</li>
+<li>只清一半</li>
+<li>把 TLB 存進 PCB</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。兩個 process 都有第 5 頁，但放在不同的 frame。TLB 分不出是誰的，只好在換人時清空，新的 process 一開始每次都 miss。entry 裡有 ASID 的話，不同 process 的對應可以同時留在 TLB 裡，換人時不用清。</p>
+</details>
+</div>
+<div data-qid="u4-bank-g5">
+<p><strong>猜題 5.</strong> kernel 配置記憶體，除了 buddy system，還常用 <strong>slab allocation</strong>。slab 是怎麼運作的？好處是什麼？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li><strong>做法</strong>：kernel 常用的資料結構（PCB、inode、semaphore……）各有一個 <strong>cache</strong>，每個 cache 由一或多個 <strong>slab</strong>（幾個連續的 page）組成，slab 先切成一格一格、剛好放得下那種物件。要配置時，從對應的 cache 拿一個空的物件；釋放時把它標成空的，放回 cache。</li>
+<li><strong>好處 1，沒有碎片</strong>：每一格剛好是物件的大小，不會像 buddy system 那樣要 21 KB 給 32 KB。</li>
+<li><strong>好處 2，快</strong>：物件事先切好，還可以重複使用，配置和釋放只是改一個標記。</li>
+</ul>
+<p>Linux 的 kernel 就用這種方法（SLAB、SLUB）。</p>
+</details>
+</div>
+<div data-qid="u4-bank-g6">
+<p><strong>猜題 6.</strong> page 大小選大一點、小一點，各有什麼影響？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>page 大</th>
+<th>page 小</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>page table</td>
+<td>小（entry 少）</td>
+<td>大</td>
+</tr>
+<tr>
+<td>內部碎片</td>
+<td>多（最後一頁浪費得多）</td>
+<td>少</td>
+</tr>
+<tr>
+<td>磁碟 I/O</td>
+<td>一次讀一大塊，次數少</td>
+<td>次數多</td>
+</tr>
+<tr>
+<td>只載入需要的部分</td>
+<td>會順便載入很多用不到的資料</td>
+<td>比較精準</td>
+</tr>
+<tr>
+<td>TLB 涵蓋的範圍</td>
+<td>大</td>
+<td>小</td>
+</tr>
+</tbody>
+</table>
+<p>沒有絕對的好壞，所以有些系統同時支援好幾種 page 大小（例如 4 KB 和 2 MB 的 huge page）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u4-bank-g7">
+<p><strong>猜題 7.</strong> TLB 有 64 個 entry，page 大小 4 KB。TLB reach（TLB 一次能涵蓋多少記憶體）是多少？改用 2 MB 的 huge page 呢？</p>
+<ol>
+<li>64 KB；2 MB</li>
+<li>256 KB；128 MB</li>
+<li>4 MB；128 GB</li>
+<li>256 KB；2 MB</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。TLB reach ＝ entry 數 × page 大小：<span class="arithmatex">\(64\times4\)</span> KB ＝ 256 KB；<span class="arithmatex">\(64\times2\)</span> MB ＝ 128 MB。程式常用的資料超過 TLB reach，就會一直 TLB miss，所以大量用記憶體的程式（例如資料庫）會用 huge page。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3" data-qid="u4-bank-g8">
+<p><strong>猜題 8.</strong> 用一個 stack 實作 LRU：每次存取某個 page 時要怎麼處理？要踢 page 時踢哪一個？</p>
+<ol>
+<li>不動；踢頂端的</li>
+<li>移到底部；踢頂端的</li>
+<li>把它移到頂端；踢底部的</li>
+<li>push 一份新的；踢頂端的</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。頂端永遠是最近用過的，底部就是最久沒用的。page 可能在 stack 的中間，要能從中間拿出來，所以通常用雙向鏈結串列。每次存取都要改好幾個指標，太花時間，所以實際上用 reference bit 近似（<a href="#u4-3">4.3</a> 的 clock）。</p>
+</details>
+</div>
+<h3 id="u4-en">4.10 英文作答範例</h3>
 <p>考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把<strong>粗體的關鍵字</strong>記起來。寫法見 <a href="#u0-en">0. 中山 OS 怎麼考</a>。</p>
 <div>
 <p><strong>E-1.</strong> Explain address binding at compile time, load time and execution time.</p>
@@ -7881,134 +8702,6 @@ lock(second.lock);</code></pre>
 <li><strong>Restart the instruction</strong> that was interrupted by the trap.</li>
 </ol>
 <p>寫法提示：最後一步 restart the instruction 常被漏掉；沒有空 frame 時才需要置換（<a href="#u4-0">4.0</a>）。</p>
-</details>
-<h3 id="u4-exam">4.9 考古題變化題</h3>
-<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
-<p><strong>考古變化 1.</strong>（改自 112 Q6a・判斷）下面三種情況，位址各在什麼時候繫結（compile time、load time、execution time）？(a) 洗衣機的控制程式，永遠放在記憶體的固定位址 (b) 程式每次載入的位置都不一樣，但載入之後就不會再移動 (c) 程式執行到一半會被 swap 出去，回來時可能放在不同的位置</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題問三種繫結的差別；這題給情境，要判斷是哪一種。</li>
-<li><strong>(a) compile time</strong>：位置事先就知道而且不會變，編譯時直接產生絕對位址。</li>
-<li><strong>(b) load time</strong>：編譯出可重定位的程式，載入時決定位址，之後不再動。</li>
-<li><strong>(c) execution time</strong>：執行中位置會變，只能在每次存取時才轉換，要有 MMU（硬體）支援。</li>
-</ul>
-</details>
-<p><strong>考古變化 2.</strong>（改自 114 Q7・量化）TLB 查詢 20 ns、記憶體存取 100 ns、TLB hit rate 80%。(1) 單層 page table 的有效存取時間 (2) 兩層 page table 呢？(3) 兩層時 hit rate 要多少，有效存取時間才會 ≤ 130 ns？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題要你講 TLB 的五個步驟；這題把步驟換成時間算出來（hit 走步驟 3，miss 走步驟 4、5）。</li>
-<li><strong>(1)</strong>：hit：TLB ＋ 存取資料 <span class="arithmatex">\(=120\)</span>；miss：TLB ＋ 查 page table ＋ 存取資料 <span class="arithmatex">\(=220\)</span>。<span class="arithmatex">\(0.8\times120+0.2\times220=\)</span> <strong>140 ns</strong>。</li>
-<li><strong>(2)</strong>：miss 時要查兩層 page table，多一次記憶體：<span class="arithmatex">\(20+100+100+100=320\)</span>。<span class="arithmatex">\(0.8\times120+0.2\times320=\)</span> <strong>160 ns</strong>。</li>
-<li><strong>(3)</strong>：<span class="arithmatex">\(120h+320(1-h)\le130\)</span> → <span class="arithmatex">\(320-200h\le130\)</span> → <span class="arithmatex">\(h\ge\)</span> <strong>95%</strong>。</li>
-</ul>
-<p>我用程式重算過每一步，答案一樣。</p>
-</details>
-<p><strong>考古變化 3.</strong>（改自 111 Q9・換數字・延伸）39 位元虛擬位址、34 位元實體位址、4 KB page、每個 PTE 8 bytes。(1) 單層 page table 有幾個 entry？占多少記憶體？(2) 改成多層，每一層的表剛好一個 page，要幾層？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：數字換了；(2) 多問多層 page table（這正是 RISC-V Sv39 的設計）。</li>
-<li><strong>(1)</strong>：offset 12 位元，VPN <span class="arithmatex">\(39-12=27\)</span> 位元 → <strong><span class="arithmatex">\(2^{27}\)</span></strong> 個 entry；<span class="arithmatex">\(2^{27}\times8\text{ B}=2^{30}\text{ B}=\)</span> <strong>1 GiB</strong>。（實體位址 34 位元決定 PPN 有 22 位元，PTE 用 8 bytes 放得下。）</li>
-<li><strong>(2)</strong>：一個 page 放 <span class="arithmatex">\(\frac{4096}{8}=512=2^9\)</span> 個 PTE，每一層吃 VPN 的 9 位元：<span class="arithmatex">\(27\div9=\)</span> <strong>3 層</strong>。</li>
-</ul>
-<p>我用程式重算過每一步，答案一樣。</p>
-</details>
-<p><strong>考古變化 4.</strong>（改自 111 Q8・換數字）32 GB 的記憶體以 4 KB 為單位配置，用 bitmap 記錄哪些單位是空的，bitmap 要多大？改成 8 KB 為單位呢？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：記憶體和單位都換了，多問「單位變大」的效果。</li>
-<li><strong>4 KB</strong>：單位數 <span class="arithmatex">\(\frac{2^{35}}{2^{12}}=2^{23}\)</span>，每單位 1 位元 → <span class="arithmatex">\(2^{23}\)</span> 位元 <span class="arithmatex">\(=2^{20}\)</span> bytes ＝ <strong>1 MB</strong>。</li>
-<li><strong>8 KB</strong>：單位數減半 → <strong>512 KB</strong>。單位越大 bitmap 越小，但每次配置的浪費（內部碎片）可能越大。</li>
-</ul>
-<p>我用程式重算過每一步，答案一樣。</p>
-</details>
-<p><strong>考古變化 5.</strong>（改自 111 Q6・換數字）TLB 查詢 20 ns，miss 時才去讀 page table（200 ns）。希望位址轉換的平均開銷 ≤ 30 ns，TLB hit rate 至少要多少？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：數字換了，算法一樣：每次都要查 TLB，miss 時才多花查 page table 的時間。</li>
-<li><strong>列式</strong>：<span class="arithmatex">\(20+(1-h)\times200\le30\)</span> → <span class="arithmatex">\((1-h)\times200\le10\)</span> → <span class="arithmatex">\(1-h\le0.05\)</span>。</li>
-<li><strong>答案</strong>：<span class="arithmatex">\(h\ge\)</span> <strong>95%</strong>。</li>
-</ul>
-<p>我用程式重算過每一步，答案一樣。</p>
-</details>
-<p><strong>考古變化 6.</strong>（改自 113 Q6b・換數字）記憶體存取 100 ns，處理一次 page fault 要 8 ms。希望有效存取時間最多比 100 ns 慢 10%，page fault rate 上限是多少？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：數字換了，而且 page fault 的時間單位是 ms，要先換成 ns。</li>
-<li><strong>換單位</strong>：8 ms ＝ 8,000,000 ns。</li>
-<li><strong>列式</strong>：<span class="arithmatex">\((1-p)\times100+p\times8000000\le110\)</span> → <span class="arithmatex">\(7999900p\le10\)</span> → <span class="arithmatex">\(p\le\frac{10}{7999900}\approx1.25\times10^{-6}\)</span>。</li>
-<li><strong>意思</strong>：大約每 80 萬次存取才能有 1 次 page fault。page fault 非常貴，所以 thrashing 一發生，系統就幾乎停住。</li>
-</ul>
-<p>我用程式重算過每一步，答案一樣。</p>
-</details>
-<p><strong>考古變化 7.</strong>（改自 103 Q2、110 Q5・換數字）<code>int A[100][100]</code>（int 4 bytes），row-major，A[0][0] 在一個 page 的開頭，page 800 bytes；程式另外佔一個 frame，資料只有 2 個 frame，LRU。(a) j 在外層、i 在內層 (b) i 在外層、j 在內層，各會發生幾次 page fault？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題一頁剛好放不滿一列；這題一頁放<strong>兩列</strong>，所以 (a) 不再是每次都 fault，要多想一步。</li>
-<li><strong>一頁放幾個元素</strong>：800 ÷ 4 ＝ 200 個 ＝ 兩列（每列 100 個）。陣列共 50 頁，第 <span class="arithmatex">\(i\)</span> 列在第 <span class="arithmatex">\(\lfloor i/2\rfloor\)</span> 頁。</li>
-<li><strong>(a) j 在外、i 在內</strong>：內層 i 從 0 走到 99，依序碰到第 0、0、1、1、2、2、…、49、49 頁。每頁第一次碰到時 fault、緊接著同一頁的下一列就 hit。一輪內層 50 次 fault，外層 100 輪：<span class="arithmatex">\(50\times100=\)</span> <strong>5000 次</strong>。</li>
-<li><strong>(b) i 在外、j 在內</strong>：照記憶體的順序走，每頁只在第一次碰到時 fault：<strong>50 次</strong>。</li>
-</ul>
-<p>我用程式模擬過 LRU 和這兩種迴圈順序，答案一樣。</p>
-</details>
-<p><strong>考古變化 8.</strong>（改自 105 Q3(3)、103 Q3・實際算）reference string：1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5。(1) FIFO 用 3 個、4 個 frame 各幾次 page fault？(2) LRU 呢？(3) 對照原題的上下界</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題用證明說明 LRU 不會有 Belady's anomaly；這題用一個具體的字串，親眼看到 FIFO 有、LRU 沒有。</li>
-<li><strong>(1) FIFO</strong>：3 個 frame <strong>9 次</strong>；4 個 frame <strong>10 次</strong>。frame 變多，fault 反而變多，這就是 <strong>Belady's anomaly</strong>。</li>
-<li><strong>(2) LRU</strong>：3 個 frame <strong>10 次</strong>；4 個 frame <strong>8 次</strong>。frame 變多，fault 不會變多（LRU 是 stack algorithm）。</li>
-<li><strong>(3) 上下界</strong>：字串長度 <span class="arithmatex">\(n=12\)</span>、不同的 page <span class="arithmatex">\(p=5\)</span>。四個答案都在 5 到 12 之間；3、4 個 frame 都比 5 少，所以不可能剛好 5 次。</li>
-</ul>
-<p>我用程式模擬過 FIFO 和 LRU，答案一樣。</p>
-</details>
-<p><strong>考古變化 9.</strong>（改自 100 Q4・換數字）segment table：0 號 base 1400、length 1000；1 號 6300、400；2 號 4300、400；3 號 3200、1100；4 號 4700、1000。下面的邏輯位址各對到哪個實體位址？(a) (2, 53) (b) (3, 852) (c) (1, 500) (d) (0, 999) (e) (4, 1000)</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：表和位址換了；多了 offset 剛好等於 length 的邊界情況。</li>
-<li><strong>規則</strong>：offset 必須 <strong>小於</strong> length，否則 trap；合法時實體位址 ＝ base ＋ offset。</li>
-<li><strong>(a)</strong>：53 ＜ 400 → <span class="arithmatex">\(4300+53=\)</span> <strong>4353</strong>。</li>
-<li><strong>(b)</strong>：852 ＜ 1100 → <span class="arithmatex">\(3200+852=\)</span> <strong>4052</strong>。</li>
-<li><strong>(c)</strong>：500 ≥ 400 → <strong>trap</strong>（越界）。</li>
-<li><strong>(d)</strong>：999 ＜ 1000 → <span class="arithmatex">\(1400+999=\)</span> <strong>2399</strong>。</li>
-<li><strong>(e)</strong>：1000 ≥ 1000 → <strong>trap</strong>。length 1000 代表合法的 offset 是 0 到 999。</li>
-</ul>
-<p>我用程式重算過每一步，答案一樣。</p>
-</details>
-<p><strong>考古變化 10.</strong>（改自 105 Q3(1)・實際算）記憶體的空洞依序是 150K、350K、200K、500K、100K。依序來了 180K、90K、320K、210K 四個要求。first fit、best fit、worst fit 各會怎麼放？哪一種放得下全部？（從空洞的開頭切，剩下的部分還是空洞）</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題只要說出三種方法；這題用一組數字跑一次，看出三種方法的結果真的不一樣。</li>
-<li><strong>first fit</strong>（第一個夠大的）：180 → 350（剩 170）；90 → 150（剩 60）；320 → 500（剩 180）；210 → 剩下 60、170、200、180、100，<strong>都不夠</strong>，要等。</li>
-<li><strong>best fit</strong>（夠大裡面最小的）：180 → 200（剩 20）；90 → 100（剩 10）；320 → 350（剩 30）；210 → 500（剩 290）。<strong>全部放得下</strong>。</li>
-<li><strong>worst fit</strong>（最大的）：180 → 500（剩 320）；90 → 350（剩 260）；320 → 剛剛剩下的 320（剩 0）；210 → 260（剩 50）。<strong>全部放得下</strong>。</li>
-<li><strong>結論</strong>：這組資料裡 first fit 輸了。哪一種最好要看要求的大小分布，沒有永遠最好的；一般的模擬結果是 first fit 和 best fit 比 worst fit 好，first fit 又比較快。</li>
-</ul>
-<p>我用程式模擬過三種配置方法，答案一樣。</p>
-</details>
-<p><strong>考古變化 11.</strong>（改自 105 Q3(4)・實際算）kernel 用 buddy system 管理一塊 512 KB 的記憶體（位址 0 開始）。依序：A 要 60 KB、B 要 30 KB、C 要 100 KB，然後釋放 A、再釋放 B。每一步配到哪一塊？最後剩下哪些空的區塊？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題只要說明 buddy system；這題實際切一次、合併一次。</li>
-<li><strong>規則</strong>：大小都是 2 的次方；要 <span class="arithmatex">\(k\)</span> KB 就找不小於 <span class="arithmatex">\(k\)</span> 的 2 的次方；不夠小就對半切，兩半互為 buddy；釋放時如果 buddy 也是空的就合併回去。</li>
-<li><strong>A 要 60 → 64 KB</strong>：512 切成 256＋256；前面的 256 切成 128＋128；前面的 128 切成 64＋64。A 拿 <strong>0–64</strong>。</li>
-<li><strong>B 要 30 → 32 KB</strong>：A 旁邊的 64（64–128）切成 32＋32，B 拿 <strong>64–96</strong>。</li>
-<li><strong>C 要 100 → 128 KB</strong>：128–256 那塊剛好，C 拿 <strong>128–256</strong>。</li>
-<li><strong>釋放 A</strong>：A 的 buddy 是 64–128，裡面有 B，不能合併；0–64 變成空的。</li>
-<li><strong>釋放 B</strong>：B 的 buddy 96–128 是空的 → 合併成 64–128；它的 buddy 0–64（A 剛放掉）也是空的 → 合併成 0–128；再往上的 buddy 128–256 是 C，停。</li>
-<li><strong>最後空的</strong>：<strong>0–128</strong>（128 KB）和 <strong>256–512</strong>（256 KB）。C 還佔著 128–256。</li>
-<li><strong>代價</strong>：A 只要 60 卻佔 64、C 要 100 卻佔 128，這些浪費是內部碎片。</li>
-</ul>
-<p>我寫了一個 buddy allocator 的模擬程式，每一步的結果都一樣。</p>
 </details>
 <h3 id="u4-quiz">單元 4 小考</h3>
 <p><strong>4-1.</strong> 32-bit 虛擬位址、8 KB page、PTE 4 B，單層 page table 多大？</p>
