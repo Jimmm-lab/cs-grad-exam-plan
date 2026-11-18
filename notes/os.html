@@ -5806,7 +5806,7 @@ void *worker(void *p) {
 <div class="viz" data-viz="paging" data-refs="7,0,1,2,0,3,0,4" data-frames="3" data-algo="lru"></div>
 
 <h4 id="eat-page-fault">EAT：為什麼 page fault 要極少</h4>
-<div class="arithmatex">\[\text{EAT}=(1-p)\times\text{記憶體存取時間}+p\times\text{page fault 處理時間}\]</div>
+<div class="arithmatex">\[\begin{aligned}\text{EAT}=\;&amp;(1-p)\times\text{記憶體存取時間}\\&amp;+p\times\text{page fault 處理時間}\end{aligned}\]</div>
 <p>記憶體 100 ns、page fault 10 ms（<span class="arithmatex">\(10^7\)</span> ns），<span class="arithmatex">\(p=0.001\)</span>：</p>
 <div class="arithmatex">\[0.999\times100+0.001\times10^7\approx10100\text{ ns}\]</div>
 <p>每 1000 次才 fault 一次，平均存取時間就變成原本的 <strong>100 倍</strong>。這就是考題要你算「page fault rate 要低於多少」的原因。</p>
@@ -6018,8 +6018,8 @@ void *worker(void *p) {
 </div>
 <div class="admonition example">
 <p class="admonition-title">111 Q6（10%）：讀 page table 500 ns、TLB 查詢 50 ns，miss 時才查 page table。平均開銷 ≤ 100 ns 需要多少 hit rate</p>
-<p>每次都要查 TLB（50 ns），miss 時才多花 500 ns 查 page table：</p>
-<div class="arithmatex">\[\text{平均開銷}=50+(1-h)\times500\le100\ \Rightarrow\ (1-h)\times500\le50\ \Rightarrow\ 1-h\le0.1\]</div>
+<p>每次都要查 TLB（50 ns），miss 時才多花 500 ns 查 page table，所以平均開銷是 <span class="arithmatex">\(50+(1-h)\times500\)</span> ns。要它 ≤ 100：</p>
+<div class="arithmatex">\[\begin{aligned}50+(1-h)\times500&amp;\le100\\(1-h)\times500&amp;\le50\\1-h&amp;\le0.1\end{aligned}\]</div>
 <p>所以 <strong><span class="arithmatex">\(h\ge0.9\)</span></strong>，hit rate 至少 90%。</p>
 </div>
 <div class="admonition example">
@@ -8364,7 +8364,7 @@ void *worker(void *p) {
 <details class="quiz">
 <summary>看參考答案</summary>
 <p><strong>(a) 約 4 TB</strong>：一塊放 <span class="arithmatex">\(4096\div4=1024=2^{10}\)</span> 個指標。資料區塊數 <span class="arithmatex">\(12+2^{10}+2^{20}+2^{30}\)</span>，每塊 4 KB：</p>
-<div class="arithmatex">\[48\text{ KB}+4\text{ MB}+4\text{ GB}+4\text{ TB}\approx4\text{ TB}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;48\text{ KB}+4\text{ MB}+4\text{ GB}+4\text{ TB}\\&amp;\approx4\text{ TB}\end{aligned}\]</div>
 <p><strong>(b) 2 次</strong>：<span class="arithmatex">\(3000000\div4096=732\)</span> 餘 1728，是第 732 塊（從 0 算）。direct 管第 0–11 塊，single indirect 管第 12–1035 塊，所以在 single indirect 的範圍：先讀那個索引區塊，再讀資料區塊。</p>
 </details>
 <h3 id="u5-drill">5.7 換數字練習</h3>

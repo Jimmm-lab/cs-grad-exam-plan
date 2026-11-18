@@ -4166,7 +4166,7 @@ OPT 的過程（看**未來**誰最晚才用到）：存取 2 時，未來是 0,
 
 #### EAT：為什麼 page fault 要極少
 
-$$\text{EAT}=(1-p)\times\text{記憶體存取時間}+p\times\text{page fault 處理時間}$$
+$$\begin{aligned}\text{EAT}=\;&(1-p)\times\text{記憶體存取時間}\\&+p\times\text{page fault 處理時間}\end{aligned}$$
 
 記憶體 100 ns、page fault 10 ms（$10^7$ ns），$p=0.001$：
 $$0.999\times100+0.001\times10^7\approx10100\text{ ns}$$
@@ -4306,9 +4306,9 @@ page 大小是 2 的次方時，除法就是切位元：1 KB ＝ $2^{10}$，邏�
     單位數 $=2^{33}/2^{12}=2^{21}$，每單位 1 位元 → $2^{21}$ 位元 $=2^{18}$ bytes $=256$ KB。
 
 !!! example "111 Q6（10%）：讀 page table 500 ns、TLB 查詢 50 ns，miss 時才查 page table。平均開銷 ≤ 100 ns 需要多少 hit rate"
-    每次都要查 TLB（50 ns），miss 時才多花 500 ns 查 page table：
+    每次都要查 TLB（50 ns），miss 時才多花 500 ns 查 page table，所以平均開銷是 $50+(1-h)\times500$ ns。要它 ≤ 100：
 
-    $$\text{平均開銷}=50+(1-h)\times500\le100\ \Rightarrow\ (1-h)\times500\le50\ \Rightarrow\ 1-h\le0.1$$
+    $$\begin{aligned}50+(1-h)\times500&\le100\\(1-h)\times500&\le50\\1-h&\le0.1\end{aligned}$$
 
     所以 **$h\ge0.9$**，hit rate 至少 90%。
 
@@ -5911,7 +5911,7 @@ i-node 像一本書的**目錄頁**：前面幾格直接寫「第 1 章在第幾
 ??? quiz "看參考答案"
     **(a) 約 4 TB**：一塊放 $4096\div4=1024=2^{10}$ 個指標。資料區塊數 $12+2^{10}+2^{20}+2^{30}$，每塊 4 KB：
 
-    $$48\text{ KB}+4\text{ MB}+4\text{ GB}+4\text{ TB}\approx4\text{ TB}$$
+    $$\begin{aligned}&48\text{ KB}+4\text{ MB}+4\text{ GB}+4\text{ TB}\\&\approx4\text{ TB}\end{aligned}$$
 
     **(b) 2 次**：$3000000\div4096=732$ 餘 1728，是第 732 塊（從 0 算）。direct 管第 0–11 塊，single indirect 管第 12–1035 塊，所以在 single indirect 的範圍：先讀那個索引區塊，再讀資料區塊。
 

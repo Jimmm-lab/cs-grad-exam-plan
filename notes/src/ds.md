@@ -1590,7 +1590,7 @@ $$h\ge\lg(n!)\ge\frac n2\lg\frac n2=\Omega(n\log n)$$
 !!! example "106 Q9（10%）：如果每隔一次 pivot 就是最好的（一次最好、一次最壞輪流），quicksort 要多久？"
     設 $L(n)$ 是「這一層切得好」的時間、$U(n)$ 是「這一層切得差」的時間：
 
-    $$L(n)=2U(n/2)+\Theta(n),\qquad U(n)=L(n-1)+\Theta(n)$$
+    $$\begin{aligned}L(n)&=2U(n/2)+\Theta(n)\\U(n)&=L(n-1)+\Theta(n)\end{aligned}$$
 
     把 U 代進 L：$L(n)=2\big[L(n/2-1)+\Theta(n/2)\big]+\Theta(n)=2L(n/2-1)+\Theta(n)$，跟最好情況的遞迴式差不多，**結果還是 $\Theta(n\lg n)$**。
 
@@ -2410,7 +2410,7 @@ $$h\ge\lg(n!)\ge\frac n2\lg\frac n2=\Omega(n\log n)$$
 
 問反過來：高度 $h$ 的 AVL tree **最少**有幾個節點？設為 $N(h)$（只有根時高度 1）。要讓節點最少，根的兩棵子樹高度要差 1：一棵高 $h-1$、一棵高 $h-2$，各自也用最少的節點：
 
-$$N(h)=N(h-1)+N(h-2)+1,\qquad N(1)=1,\ N(2)=2$$
+$$\begin{aligned}N(h)&=N(h-1)+N(h-2)+1\\N(1)&=1,\quad N(2)=2\end{aligned}$$
 
 | $h$ | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
 |---|---|---|---|---|---|---|---|
@@ -2420,7 +2420,7 @@ $$N(h)=N(h-1)+N(h-2)+1,\qquad N(1)=1,\ N(2)=2$$
 
 ### 3.4 Optimal BST（動態規劃） {#u3-4}
 
-$$c(i,j)=\min_{i\le r\le j}\{c(i,r-1)+c(r+1,j)\}+w(i,j)$$
+$$\begin{aligned}&c(i,j)\\&=\min_{i\le r\le j}\{c(i,r-1)+c(r+1,j)\}\\&\quad+w(i,j)\end{aligned}$$
 
 $w(i,j)$ 是 $i..j$ 的頻率總和。這樣算出的是 $\sum(\text{頻率}\times\text{深度})$，根的深度算 1。
 
@@ -5278,7 +5278,7 @@ $C_n=\frac{1}{n+1}\binom{2n}{n}$：1, 1, 2, 5, 14, 42, …，遞迴 $C_n=\sum_{k
 !!! example "112 Q4（10%）：郵票組合數 $g(i,j)$：用 1 到 $i$ 元的郵票湊 $j$ 元，3 元和 4 元賣完了"
     考慮「有沒有用到 $i$ 元郵票」：沒用到 → $g(i-1,j)$；用到至少一張 → $g(i,j-i)$。3 元、4 元缺貨時就沒有第二種情況。
 
-    $$g(i,j)=\begin{cases}g(i-1,j)+g(i,j-i) & i\in\{1,2,5\}\\ g(i-1,j) & i\in\{3,4\}\end{cases}$$
+    $$g(i,j)=\begin{cases}g(i-1,j)+g(i,j-i)\\\qquad(i=1,2,5)\\[2pt]g(i-1,j)\\\qquad(i=3,4)\end{cases}$$
 
     邊界：$g(i,0)=1$、$j<0$ 時 $g(i,j)=0$、$g(0,j)=0$（$j>0$）。
 
@@ -5293,7 +5293,7 @@ $C_n=\frac{1}{n+1}\binom{2n}{n}$：1, 1, 2, 5, 14, 42, …，遞迴 $C_n=\sum_{k
     - 最右兩行用「L 形 ＋ 1 個正方形」填滿，L 有 4 種方向 → $4\,d(m-2)$
     - 最右三行用兩個 L 形互相咬合 → 2 種 → $2\,d(m-3)$
 
-    $$d(m)=d(m-1)+4d(m-2)+2d(m-3)$$
+    $$\begin{aligned}d(m)&=d(m-1)+4d(m-2)\\&\quad+2d(m-3)\end{aligned}$$
 
     所以 $a=1$、$b=4$、$c=2$。驗算：$d(3)=5+4\times1+2\times1=11$ ✓、$d(4)=11+20+2=33$。
 
@@ -5346,7 +5346,7 @@ $C_n=\frac{1}{n+1}\binom{2n}{n}$：1, 1, 2, 5, 14, 42, …，遞迴 $C_n=\sum_{k
 !!! example "113 Q2（10%）：二維陣列的蛇形編號，求 $N[i][j]$"
     觀察：$m=\max(i,j)$ 相同的格子形成一個「L 形殼」，裡面的數字是 $m^2$ 到 $m^2+2m$。$m$ 是偶數時從右上 $(0,m)$ 往下再往左；$m$ 是奇數時從左下 $(m,0)$ 往右再往上。
 
-    $$N[i][j]=\begin{cases}m^2+i & m\text{ 偶數}, j=m\\ m^2+2m-j & m\text{ 偶數}, i=m\\ m^2+j & m\text{ 奇數}, i=m\\ m^2+2m-i & m\text{ 奇數}, j=m\end{cases}$$
+    $$\begin{aligned}&N[i][j]=\\&m\text{ 偶數：}\begin{cases}m^2+i & j=m\\ m^2+2m-j & i=m\end{cases}\\[4pt]&m\text{ 奇數：}\begin{cases}m^2+j & i=m\\ m^2+2m-i & j=m\end{cases}\end{aligned}$$
 
     驗算：$N[0][2]=4$、$N[2][0]=4+4-0=8$、$N[3][3]=9+3=12$、$N[0][3]=9+6-0=15$ ✓。
 
@@ -5358,7 +5358,7 @@ $C_n=\frac{1}{n+1}\binom{2n}{n}$：1, 1, 2, 5, 14, 42, …，遞迴 $C_n=\sum_{k
 
 子序列可以跳著取，不用連續。$c[i][j]$ ＝ $X$ 的前 $i$ 個字和 $Y$ 的前 $j$ 個字的 LCS 長度：
 
-$$c[i][j]=\begin{cases}0 & i=0\text{ 或 }j=0\\ c[i-1][j-1]+1 & x_i=y_j\\ \max(c[i-1][j],\ c[i][j-1]) & x_i\ne y_j\end{cases}$$
+$$\begin{aligned}&c[i][j]=\\&\begin{cases}0 & i=0\text{ 或 }j=0\\ c[i-1][j-1]+1 & x_i=y_j\\ \max\big(c[i-1][j], & x_i\ne y_j\\ \qquad c[i][j-1]\big) & \end{cases}\end{aligned}$$
 
 **為什麼**：看兩個字串的最後一個字。一樣的話，它一定可以當 LCS 的最後一個字，剩下的就是兩邊都去掉它的問題；不一樣的話，LCS 不會同時用到這兩個字，去掉其中一個，取比較好的那邊。
 
@@ -5379,7 +5379,7 @@ $X$ ＝ ABCBD（列）、$Y$ ＝ BDCB（欄）：
 
 容量 $W$，每個物品只能拿一次。$K[i][w]$ ＝ 只考慮前 $i$ 個物品、容量 $w$ 時的最大價值：
 
-$$K[i][w]=\max\big(K[i-1][w],\ K[i-1][w-w_i]+v_i\big)$$
+$$\begin{aligned}&K[i][w]=\max\big(K[i-1][w],\\&\qquad K[i-1][w-w_i]+v_i\big)\end{aligned}$$
 
 第二項只在 $w_i\le w$ 時才有。看第 $i$ 個物品：不拿；或拿，容量少 $w_i$、價值多 $v_i$。
 
@@ -6092,7 +6092,7 @@ CLRS 的做法是**往下走的時候，遇到滿的節點（$2t-1$ 個 key）�
 
     **證明**：要讓樹盡量高，每個節點都放最少的 key。根至少 1 個 key、2 個孩子；第 1 層至少 2 個節點，之後每個節點至少 t 個孩子，所以第 i 層（$i\ge1$）至少 $2t^{i-1}$ 個節點，每個至少 $t-1$ 個 key：
 
-    $$\begin{aligned}n&\ge1+(t-1)\sum_{i=1}^{h}2t^{i-1}\\&=1+2(t-1)\cdot\frac{t^h-1}{t-1}=2t^h-1\end{aligned}$$
+    $$\begin{aligned}n&\ge1+(t-1)\sum_{i=1}^{h}2t^{i-1}\\&=1+2(t-1)\cdot\frac{t^h-1}{t-1}\\&=2t^h-1\end{aligned}$$
 
     所以 $t^h\le\frac{n+1}2$，$h\le\log_t\frac{n+1}2$。∎
 
@@ -6164,7 +6164,7 @@ $B_0$ 是一個點；$B_k$ 是兩棵 $B_{k-1}$ 連起來：其中一棵的根變
 
     $B_k$ 由兩棵 $B_{k-1}$ 組成：當根的那一棵，深度 i 的節點還在深度 i；接在下面的那一棵，所有節點都往下移一層，它原本深度 $i-1$ 的節點現在在深度 i。所以
 
-    $$D(k,i)=D(k-1,i)+D(k-1,i-1)=\binom{k-1}i+\binom{k-1}{i-1}=\binom ki$$
+    $$\begin{aligned}&D(k,i)\\&=D(k-1,i)+D(k-1,i-1)\\&=\binom{k-1}i+\binom{k-1}{i-1}=\binom ki\end{aligned}$$
 
     最後一步是 Pascal 恆等式（[離散 1.6](discrete.html#u1-6)）。∎
 

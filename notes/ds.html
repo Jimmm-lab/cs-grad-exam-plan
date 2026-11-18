@@ -2747,7 +2747,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <div class="admonition example">
 <p class="admonition-title">106 Q9（10%）：如果每隔一次 pivot 就是最好的（一次最好、一次最壞輪流），quicksort 要多久？</p>
 <p>設 <span class="arithmatex">\(L(n)\)</span> 是「這一層切得好」的時間、<span class="arithmatex">\(U(n)\)</span> 是「這一層切得差」的時間：</p>
-<div class="arithmatex">\[L(n)=2U(n/2)+\Theta(n),\qquad U(n)=L(n-1)+\Theta(n)\]</div>
+<div class="arithmatex">\[\begin{aligned}L(n)&amp;=2U(n/2)+\Theta(n)\\U(n)&amp;=L(n-1)+\Theta(n)\end{aligned}\]</div>
 <p>把 U 代進 L：<span class="arithmatex">\(L(n)=2\big[L(n/2-1)+\Theta(n/2)\big]+\Theta(n)=2L(n/2-1)+\Theta(n)\)</span>，跟最好情況的遞迴式差不多，<strong>結果還是 <span class="arithmatex">\(\Theta(n\lg n)\)</span></strong>。</p>
 <p><strong>直覺</strong>：切得差的那一層只多花 <span class="arithmatex">\(\Theta(n)\)</span>，下一層切得好時就把它吸收掉了，只是常數變大（大約多一倍的層數），不會變成 <span class="arithmatex">\(n^2\)</span>。</p>
 </div>
@@ -4041,7 +4041,7 @@ swap(A[i + 1], A[r]);</code></pre>
 
 <h4 id="avl-olog-n">AVL 的高度為什麼是 <span class="arithmatex">\(O(\log n)\)</span>？</h4>
 <p>問反過來：高度 <span class="arithmatex">\(h\)</span> 的 AVL tree <strong>最少</strong>有幾個節點？設為 <span class="arithmatex">\(N(h)\)</span>（只有根時高度 1）。要讓節點最少，根的兩棵子樹高度要差 1：一棵高 <span class="arithmatex">\(h-1\)</span>、一棵高 <span class="arithmatex">\(h-2\)</span>，各自也用最少的節點：</p>
-<div class="arithmatex">\[N(h)=N(h-1)+N(h-2)+1,\qquad N(1)=1,\ N(2)=2\]</div>
+<div class="arithmatex">\[\begin{aligned}N(h)&amp;=N(h-1)+N(h-2)+1\\N(1)&amp;=1,\quad N(2)=2\end{aligned}\]</div>
 <table>
 <thead>
 <tr>
@@ -4070,7 +4070,7 @@ swap(A[i + 1], A[r]);</code></pre>
 </table>
 <p>這跟費氏數列一樣是指數成長（<span class="arithmatex">\(N(h)=F_{h+2}-1\)</span>），所以 <span class="arithmatex">\(n\)</span> 個節點的 AVL tree 高度是 <span class="arithmatex">\(O(\log n)\)</span>，大約不超過 <span class="arithmatex">\(1.44\lg n\)</span>。搜尋、插入、刪除都是 <span class="arithmatex">\(O(\log n)\)</span>。</p>
 <h3 id="u3-4">3.4 Optimal BST（動態規劃）</h3>
-<div class="arithmatex">\[c(i,j)=\min_{i\le r\le j}\{c(i,r-1)+c(r+1,j)\}+w(i,j)\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;c(i,j)\\&amp;=\min_{i\le r\le j}\{c(i,r-1)+c(r+1,j)\}\\&amp;\quad+w(i,j)\end{aligned}\]</div>
 <p><span class="arithmatex">\(w(i,j)\)</span> 是 <span class="arithmatex">\(i..j\)</span> 的頻率總和。這樣算出的是 <span class="arithmatex">\(\sum(\text{頻率}\times\text{深度})\)</span>，根的深度算 1。</p>
 <p><strong>這個式子怎麼來的</strong>：<span class="arithmatex">\(c(i,j)\)</span> ＝ 只用第 <span class="arithmatex">\(i\)</span> 到第 <span class="arithmatex">\(j\)</span> 個鍵建 BST，<span class="arithmatex">\(\sum(\text{頻率}\times\text{深度})\)</span> 最小是多少。</p>
 <ul>
@@ -8575,7 +8575,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <div class="admonition example">
 <p class="admonition-title">112 Q4（10%）：郵票組合數 <span class="arithmatex">\(g(i,j)\)</span>：用 1 到 <span class="arithmatex">\(i\)</span> 元的郵票湊 <span class="arithmatex">\(j\)</span> 元，3 元和 4 元賣完了</p>
 <p>考慮「有沒有用到 <span class="arithmatex">\(i\)</span> 元郵票」：沒用到 → <span class="arithmatex">\(g(i-1,j)\)</span>；用到至少一張 → <span class="arithmatex">\(g(i,j-i)\)</span>。3 元、4 元缺貨時就沒有第二種情況。</p>
-<div class="arithmatex">\[g(i,j)=\begin{cases}g(i-1,j)+g(i,j-i) &amp; i\in\{1,2,5\}\\ g(i-1,j) &amp; i\in\{3,4\}\end{cases}\]</div>
+<div class="arithmatex">\[g(i,j)=\begin{cases}g(i-1,j)+g(i,j-i)\\\qquad(i=1,2,5)\\[2pt]g(i-1,j)\\\qquad(i=3,4)\end{cases}\]</div>
 <p>邊界：<span class="arithmatex">\(g(i,0)=1\)</span>、<span class="arithmatex">\(j&lt;0\)</span> 時 <span class="arithmatex">\(g(i,j)=0\)</span>、<span class="arithmatex">\(g(0,j)=0\)</span>（<span class="arithmatex">\(j&gt;0\)</span>）。</p>
 <p>這是經典的<strong>硬幣找零（coin change）</strong>組合數。</p>
 </div>
@@ -8588,7 +8588,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <li>最右兩行用「L 形 ＋ 1 個正方形」填滿，L 有 4 種方向 → <span class="arithmatex">\(4\,d(m-2)\)</span></li>
 <li>最右三行用兩個 L 形互相咬合 → 2 種 → <span class="arithmatex">\(2\,d(m-3)\)</span></li>
 </ul>
-<div class="arithmatex">\[d(m)=d(m-1)+4d(m-2)+2d(m-3)\]</div>
+<div class="arithmatex">\[\begin{aligned}d(m)&amp;=d(m-1)+4d(m-2)\\&amp;\quad+2d(m-3)\end{aligned}\]</div>
 <p>所以 <span class="arithmatex">\(a=1\)</span>、<span class="arithmatex">\(b=4\)</span>、<span class="arithmatex">\(c=2\)</span>。驗算：<span class="arithmatex">\(d(3)=5+4\times1+2\times1=11\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>、<span class="arithmatex">\(d(4)=11+20+2=33\)</span>。</p>
 </div>
 <p>113 Q4 的三種結束方式畫出來（同一個顏色的三格是一個 L 形，單獨一格的綠色是正方形）：</p>
@@ -8638,14 +8638,14 @@ swap(A[i + 1], A[r]);</code></pre>
 <div class="admonition example">
 <p class="admonition-title">113 Q2（10%）：二維陣列的蛇形編號，求 <span class="arithmatex">\(N[i][j]\)</span></p>
 <p>觀察：<span class="arithmatex">\(m=\max(i,j)\)</span> 相同的格子形成一個「L 形殼」，裡面的數字是 <span class="arithmatex">\(m^2\)</span> 到 <span class="arithmatex">\(m^2+2m\)</span>。<span class="arithmatex">\(m\)</span> 是偶數時從右上 <span class="arithmatex">\((0,m)\)</span> 往下再往左；<span class="arithmatex">\(m\)</span> 是奇數時從左下 <span class="arithmatex">\((m,0)\)</span> 往右再往上。</p>
-<div class="arithmatex">\[N[i][j]=\begin{cases}m^2+i &amp; m\text{ 偶數}, j=m\\ m^2+2m-j &amp; m\text{ 偶數}, i=m\\ m^2+j &amp; m\text{ 奇數}, i=m\\ m^2+2m-i &amp; m\text{ 奇數}, j=m\end{cases}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;N[i][j]=\\&amp;m\text{ 偶數：}\begin{cases}m^2+i &amp; j=m\\ m^2+2m-j &amp; i=m\end{cases}\\[4pt]&amp;m\text{ 奇數：}\begin{cases}m^2+j &amp; i=m\\ m^2+2m-i &amp; j=m\end{cases}\end{aligned}\]</div>
 <p>驗算：<span class="arithmatex">\(N[0][2]=4\)</span>、<span class="arithmatex">\(N[2][0]=4+4-0=8\)</span>、<span class="arithmatex">\(N[3][3]=9+3=12\)</span>、<span class="arithmatex">\(N[0][3]=9+6-0=15\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 </div>
 <h3 id="u6-classic">6.3 經典 DP：LCS 與 0/1 背包</h3>
 <p>這兩題是演算法課本最常拿來出 DP 填表題的例子，做法都是「填一張二維表」。</p>
 <h4 id="lcs">LCS：兩個字串最長的共同子序列</h4>
 <p>子序列可以跳著取，不用連續。<span class="arithmatex">\(c[i][j]\)</span> ＝ <span class="arithmatex">\(X\)</span> 的前 <span class="arithmatex">\(i\)</span> 個字和 <span class="arithmatex">\(Y\)</span> 的前 <span class="arithmatex">\(j\)</span> 個字的 LCS 長度：</p>
-<div class="arithmatex">\[c[i][j]=\begin{cases}0 &amp; i=0\text{ 或 }j=0\\ c[i-1][j-1]+1 &amp; x_i=y_j\\ \max(c[i-1][j],\ c[i][j-1]) &amp; x_i\ne y_j\end{cases}\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;c[i][j]=\\&amp;\begin{cases}0 &amp; i=0\text{ 或 }j=0\\ c[i-1][j-1]+1 &amp; x_i=y_j\\ \max\big(c[i-1][j], &amp; x_i\ne y_j\\ \qquad c[i][j-1]\big) &amp; \end{cases}\end{aligned}\]</div>
 <p><strong>為什麼</strong>：看兩個字串的最後一個字。一樣的話，它一定可以當 LCS 的最後一個字，剩下的就是兩邊都去掉它的問題；不一樣的話，LCS 不會同時用到這兩個字，去掉其中一個，取比較好的那邊。</p>
 <p><span class="arithmatex">\(X\)</span> ＝ ABCBD（列）、<span class="arithmatex">\(Y\)</span> ＝ BDCB（欄）：</p>
 <table>
@@ -8713,7 +8713,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p><strong>往回找出 LCS</strong>：從右下角開始，兩個字一樣就收下這個字、往左上走；不一樣就往值比較大的那邊（上或左）走。這裡依序收到 B、C、B，倒過來就是 <strong>BCB</strong>。時間 <span class="arithmatex">\(O(mn)\)</span>。</p>
 <h4 id="01">0/1 背包：每個物品拿或不拿</h4>
 <p>容量 <span class="arithmatex">\(W\)</span>，每個物品只能拿一次。<span class="arithmatex">\(K[i][w]\)</span> ＝ 只考慮前 <span class="arithmatex">\(i\)</span> 個物品、容量 <span class="arithmatex">\(w\)</span> 時的最大價值：</p>
-<div class="arithmatex">\[K[i][w]=\max\big(K[i-1][w],\ K[i-1][w-w_i]+v_i\big)\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;K[i][w]=\max\big(K[i-1][w],\\&amp;\qquad K[i-1][w-w_i]+v_i\big)\end{aligned}\]</div>
 <p>第二項只在 <span class="arithmatex">\(w_i\le w\)</span> 時才有。看第 <span class="arithmatex">\(i\)</span> 個物品：不拿；或拿，容量少 <span class="arithmatex">\(w_i\)</span>、價值多 <span class="arithmatex">\(v_i\)</span>。</p>
 <p>容量 5，物品（重量, 價值）：(2, 3)、(3, 4)、(4, 5)、(5, 6)：</p>
 <table>
@@ -10166,7 +10166,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p class="admonition-title">107 Q6(1)（8%）：n 個 key、minimum degree t 的 B-tree，高度最多多少？證明</p>
 <p><strong>答案</strong>：<span class="arithmatex">\(h\le\log_t\frac{n+1}2\)</span>。</p>
 <p><strong>證明</strong>：要讓樹盡量高，每個節點都放最少的 key。根至少 1 個 key、2 個孩子；第 1 層至少 2 個節點，之後每個節點至少 t 個孩子，所以第 i 層（<span class="arithmatex">\(i\ge1\)</span>）至少 <span class="arithmatex">\(2t^{i-1}\)</span> 個節點，每個至少 <span class="arithmatex">\(t-1\)</span> 個 key：</p>
-<div class="arithmatex">\[\begin{aligned}n&amp;\ge1+(t-1)\sum_{i=1}^{h}2t^{i-1}\\&amp;=1+2(t-1)\cdot\frac{t^h-1}{t-1}=2t^h-1\end{aligned}\]</div>
+<div class="arithmatex">\[\begin{aligned}n&amp;\ge1+(t-1)\sum_{i=1}^{h}2t^{i-1}\\&amp;=1+2(t-1)\cdot\frac{t^h-1}{t-1}\\&amp;=2t^h-1\end{aligned}\]</div>
 <p>所以 <span class="arithmatex">\(t^h\le\frac{n+1}2\)</span>，<span class="arithmatex">\(h\le\log_t\frac{n+1}2\)</span>。∎</p>
 </div>
 <div class="admonition example">
@@ -10239,7 +10239,7 @@ swap(A[i + 1], A[r]);</code></pre>
 <p class="admonition-title">107 Q6(3)（5%）：證明 <span class="arithmatex">\(B_k\)</span> 在深度 i 剛好有 <span class="arithmatex">\(\binom ki\)</span> 個節點</p>
 <p>令 <span class="arithmatex">\(D(k,i)\)</span> 是 <span class="arithmatex">\(B_k\)</span> 在深度 i 的節點數，對 k 做歸納。<span class="arithmatex">\(B_0\)</span>：<span class="arithmatex">\(D(0,0)=1=\binom00\)</span> <svg class="ico ico-ok" viewBox="0 0 24 24" role="img" aria-label="對" focusable="false" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>。</p>
 <p><span class="arithmatex">\(B_k\)</span> 由兩棵 <span class="arithmatex">\(B_{k-1}\)</span> 組成：當根的那一棵，深度 i 的節點還在深度 i；接在下面的那一棵，所有節點都往下移一層，它原本深度 <span class="arithmatex">\(i-1\)</span> 的節點現在在深度 i。所以</p>
-<div class="arithmatex">\[D(k,i)=D(k-1,i)+D(k-1,i-1)=\binom{k-1}i+\binom{k-1}{i-1}=\binom ki\]</div>
+<div class="arithmatex">\[\begin{aligned}&amp;D(k,i)\\&amp;=D(k-1,i)+D(k-1,i-1)\\&amp;=\binom{k-1}i+\binom{k-1}{i-1}=\binom ki\end{aligned}\]</div>
 <p>最後一步是 Pascal 恆等式（<a href="discrete.html#u1-6">離散 1.6</a>）。∎</p>
 </div>
 <h4 id="binomial-heap">binomial heap</h4>

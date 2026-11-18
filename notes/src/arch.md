@@ -149,7 +149,7 @@ $$\text{CPU time}=\text{IC}\times\text{CPI}\times T$$
 
 **不能加速的那 20% 決定了上限。** 寫成公式（$f$＝可加速比例、$s$＝加速倍數）：
 
-$$\text{新時間}=(1-f)+\frac fs,\qquad\text{Speedup}=\frac{1}{(1-f)+\frac fs}$$
+$$\begin{aligned}\text{新時間}&=(1-f)+\frac fs\\[4pt]\text{Speedup}&=\frac{1}{(1-f)+\frac fs}\end{aligned}$$
 
 這就是「make the common case fast」：佔比大的部分（$f$ 大）才值得加速。
 
@@ -197,7 +197,7 @@ $$\text{新時間}=(1-f)+\frac fs,\qquad\text{Speedup}=\frac{1}{(1-f)+\frac fs}$
 
 ### 1.1 CPU time 與加權 CPI {#u1-1}
 
-$$\text{CPU time}=\text{IC}\times\text{CPI}\times T_{\text{clock}}=\frac{\text{IC}\times\text{CPI}}{f}$$
+$$\begin{aligned}\text{CPU time}&=\text{IC}\times\text{CPI}\times T_{\text{clock}}\\&=\frac{\text{IC}\times\text{CPI}}{f}\end{aligned}$$
 
 $$\text{CPI}_{\text{avg}}=\sum_i(\text{指令類別 } i \text{ 的比例})\times\text{CPI}_i$$
 
@@ -217,7 +217,7 @@ $$\text{CPI}_{\text{avg}}=\sum_i(\text{指令類別 } i \text{ 的比例})\times
 
 只有比例 $f$ 的部分加速 $s$ 倍：
 
-$$\text{Speedup}=\frac{1}{(1-f)+\dfrac{f}{s}}\qquad\text{上限}=\frac{1}{1-f}$$
+$$\begin{aligned}\text{Speedup}&=\frac{1}{(1-f)+\dfrac{f}{s}}\\[4pt]\text{上限}&=\frac{1}{1-f}\end{aligned}$$
 
 **公式怎麼來的**：原本時間當成 1。不能加速的部分佔 $1-f$，時間不變；能加速的部分原本 $f$，變成 $\frac fs$。新時間 $=(1-f)+\frac fs$，speedup ＝ 舊時間 ÷ 新時間。$s$ 再大，$\frac fs$ 也只會趨近 0，新時間至少是 $1-f$，所以上限是 $\frac{1}{1-f}$。
 
@@ -254,7 +254,7 @@ $$\text{Speedup}=\frac{1}{(1-f)+\dfrac{f}{s}}\qquad\text{上限}=\frac{1}{1-f}$$
 
 **MIPS**（million instructions per second，每秒幾百萬條指令）：
 
-$$\text{MIPS}=\frac{\text{IC}}{\text{CPU time}\times10^6}=\frac{f}{\text{CPI}\times10^6}$$
+$$\begin{aligned}\text{MIPS}&=\frac{\text{IC}}{\text{CPU time}\times10^6}\\&=\frac{f}{\text{CPI}\times10^6}\end{aligned}$$
 
 它只看「每秒做幾條指令」，**不管指令數（IC）**。同一個程式，編譯器 A 產生很多簡單的指令（CPI 低、MIPS 高），編譯器 B 產生比較少、比較複雜的指令（CPI 高、MIPS 低），結果可能是 B 先跑完。比快慢**只能看 CPU time**。
 
@@ -351,7 +351,7 @@ $$\frac{P_{\text{new}}}{P_{\text{old}}}=\frac{C_{\text{new}}}{C_{\text{old}}}\ti
 
     **100 Q1.3、104 Q1.2 平均 CPI（1.24）**：整數、浮點的比例先平均：算術 36%、資料搬移 37.5%、邏輯 11.5%（104 年）、分支 12%、跳躍 3%。
 
-    $$0.36\times1+0.375\times1.4+0.115\times1+0.12\times1.7+0.03\times1.2=1.24$$
+    $$\begin{aligned}&0.36\times1+0.375\times1.4\\&\quad+0.115\times1+0.12\times1.7\\&\quad+0.03\times1.2\\&=1.24\end{aligned}$$
 
     100 年的浮點欄只加到 99%（邏輯 4%），照抄算出 1.235；寫一句「比例和不是 100%，照題目數字算」就好。
 
@@ -402,12 +402,12 @@ $$\frac{P_{\text{new}}}{P_{\text{old}}}=\frac{C_{\text{new}}}{C_{\text{old}}}\ti
 
     **104 Q3.2 什麼程式會讓兩種改進一樣快**：只改乘法省下 $f_m-\frac{f_m}4=0.75f_m$；只改記憶體省下 $f_{mem}-\frac{f_{mem}}2=0.5f_{mem}$。省下的一樣多就平手：
 
-    $$0.75f_m=0.5f_{mem}\ \Rightarrow\ f_{mem}=1.5f_m$$
+    $$\begin{aligned}&0.75f_m=0.5f_{mem}\\&\Rightarrow\ f_{mem}=1.5f_m\end{aligned}$$
 
     例：乘法 20%、記憶體 30%、其他 50%（兩種都是 1.18 倍）；乘法 30%、記憶體 45%、其他 25%（都是 1.29 倍）。
 
 !!! example "101 Q2（5%）：$P=CFV^2$。新處理器的電容是舊的 80%、電壓降 20%、時脈快 20%，$P_{\text{new}}$ 是 $P_{\text{old}}$ 的幾倍"
-    $$\begin{aligned}\frac{P_{\text{new}}}{P_{\text{old}}}&=0.8\times1.2\times0.8^2\\&=0.8\times1.2\times0.64=0.6144\end{aligned}$$
+    $$\begin{aligned}\frac{P_{\text{new}}}{P_{\text{old}}}&=0.8\times1.2\times0.8^2\\&=0.8\times1.2\times0.64\\&=0.6144\end{aligned}$$
 
     **0.6144 倍**（省了約 39%）。時脈還快了 20%，靠的是電壓的平方。
 
@@ -598,7 +598,7 @@ $$\frac{P_{\text{new}}}{P_{\text{old}}}=\frac{C_{\text{new}}}{C_{\text{old}}}\ti
 **W-2.** 程式跑 100 秒，其中 90 秒在 CPU 計算、10 秒在等 I/O（不能加速）。想讓總時間變成 50 秒，CPU 的部分要快幾倍？
 
 ??? quiz "看參考答案"
-    $$10+\frac{90}{s}=50\ \Rightarrow\ \frac{90}{s}=40\ \Rightarrow\ s=2.25$$
+    $$\begin{aligned}&10+\frac{90}{s}=50\\&\Rightarrow\ \frac{90}{s}=40\\&\Rightarrow\ s=2.25\end{aligned}$$
 
     CPU 的部分要快 **2.25 倍**。檢查上限：I/O 的 10 秒怎麼樣都在，最多快 $100\div10=10$ 倍，50 秒（2 倍）在範圍內。
 
@@ -846,7 +846,7 @@ $$\frac{P_{\text{new}}}{P_{\text{old}}}=\frac{C_{\text{new}}}{C_{\text{old}}}\ti
 ??? quiz "看答案"
     要整體快 2 倍 → 新時間是原本的 $\frac12$：
 
-    $$(1-0.8)+\frac{0.8}{s}=0.5\ \Rightarrow\ \frac{0.8}{s}=0.3\ \Rightarrow\ s=\frac{0.8}{0.3}=\frac83\approx2.67$$
+    $$\begin{aligned}&(1-0.8)+\frac{0.8}{s}=0.5\\&\Rightarrow\ \frac{0.8}{s}=0.3\\&\Rightarrow\ s=\frac{0.8}{0.3}=\frac83\approx2.67\end{aligned}$$
 
     那 80% 要加速約 **2.67 倍**。（檢查上限：$\frac1{0.2}=5\ge2$，做得到。）
 
@@ -904,9 +904,9 @@ CPU 要一筆資料時，先看書桌：
 
 寫成公式：
 
-$$\text{block 號碼}=\left\lfloor\frac{\text{位址}}{\text{block 大小}}\right\rfloor,\qquad \text{offset}=\text{位址}\bmod\text{block 大小}$$
+$$\begin{aligned}\text{block 號碼}&=\left\lfloor\frac{\text{位址}}{\text{block 大小}}\right\rfloor\\\text{offset}&=\text{位址}\bmod\text{block 大小}\end{aligned}$$
 
-$$\text{index}=\text{block 號碼}\bmod\text{set 數},\qquad \text{tag}=\left\lfloor\frac{\text{block 號碼}}{\text{set 數}}\right\rfloor$$
+$$\begin{aligned}\text{index}&=\text{block 號碼}\bmod\text{set 數}\\\text{tag}&=\left\lfloor\frac{\text{block 號碼}}{\text{set 數}}\right\rfloor\end{aligned}$$
 
 （抽屜正式的名稱是 **set**；direct-mapped 時一個 set 只有一格。）
 
@@ -1063,7 +1063,7 @@ block 大小和 set 數都是 2 的次方。**除以 4 就是把二進位往右�
 
 所以總位元數是「每一格都要存的」加上「每個 set 共用的」：
 
-$$\begin{aligned}\text{總位元數}=\;&\text{block 數}\times(\text{data}+\text{tag}+\text{valid}+\text{dirty})\\&+\text{set 數}\times\text{每個 set 的 LRU 位元}\end{aligned}$$
+$$\begin{aligned}&\text{總位元數}=\text{block 數}\\&\quad\times(\text{data}+\text{tag}+\text{valid}+\text{dirty})\\&\quad+\text{set 數}\times\text{每個 set 的 LRU 位元}\end{aligned}$$
 
 **LRU 位元**（[2.6](#u2-repl)）記錄同一個 set 裡「誰最久沒用」，所以跟著 **set** 走，不是跟著 block 走。2-way 的 set 只有兩格，**1 個位元**就夠（0 表示下次踢第 0 格、1 表示踢第 1 格）；direct-mapped 每個 set 只有一格、沒得選，**不需要 LRU**；4-way 以上要記完整的先後順序，位元數依做法不同，考試會給條件。
 
@@ -1153,7 +1153,7 @@ $$\begin{aligned}\text{總位元數}=\;&\text{block 數}\times(\text{data}+\text
 
 **平均拿一筆資料要等多久**：每次都一定要先查 cache（hit time）；沒找到的機率是 miss rate，沒找到時還要再等 miss penalty：
 
-$$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
+$$\begin{aligned}&\text{AMAT}=\text{hit time}\\&\quad+\text{miss rate}\times\text{miss penalty}\end{aligned}$$
 
 hit time 1、miss rate 5%、miss penalty 100：$1+0.05\times100=6$ cycles。miss rate 只有 5%，平均時間卻是 hit 的 6 倍，所以降低 miss rate 這麼重要。
 
@@ -1168,7 +1168,7 @@ hit time 1、miss rate 5%、miss penalty 100：$1+0.05\times100=6$ cycles。miss
 
 **把 cache miss 算進 CPI**：每條指令平均要等記憶體的 cycle 數 ＝ 每條指令存取幾次 × miss rate × miss penalty，加到原本的 CPI 上：
 
-$$\text{CPI}_{\text{實際}}=\text{CPI}_{\text{base}}+\frac{\text{記憶體存取次數}}{\text{指令}}\times\text{miss rate}\times\text{miss penalty（cycle）}$$
+$$\begin{aligned}&\text{CPI}_{\text{實際}}=\text{CPI}_{\text{base}}\\&\quad+\frac{\text{記憶體存取次數}}{\text{指令}}\times\text{miss rate}\\&\quad\times\text{miss penalty（cycle）}\end{aligned}$$
 
 每條指令都要抓指令（I-cache 1 次），load／store 再多 1 次 D-cache。綜合小考 M-1 就是這個公式。
 
@@ -1463,7 +1463,7 @@ LRU 2 次 hit、FIFO 1 次。差別在第三步：A 被用到了，**LRU 會記�
 
 #### AMAT 的三個數字，各有一套方法
 
-$$\text{AMAT}=\text{hit time}+\text{miss rate}\times\text{miss penalty}$$
+$$\begin{aligned}&\text{AMAT}=\text{hit time}\\&\quad+\text{miss rate}\times\text{miss penalty}\end{aligned}$$
 
 （[2.4](#u2-4)）要讓 cache 變快，就是降低其中一個數字，但常常會讓另一個變大：
 
@@ -2068,7 +2068,7 @@ page table 放在記憶體裡，所以每次存取資料都要**先讀一次記�
 - **TLB hit**：TLB 時間 ＋ 1 次記憶體（拿資料）。
 - **TLB miss**（page 在記憶體）：TLB 時間 ＋ 1 次記憶體（查 page table）＋ 1 次記憶體（拿資料）。
 
-$$\text{EAT}=h\,(t_{\text{TLB}}+t_{\text{mem}})+(1-h)\,(t_{\text{TLB}}+2t_{\text{mem}})$$
+$$\begin{aligned}\text{EAT}=\;&h\,(t_{\text{TLB}}+t_{\text{mem}})\\&+(1-h)\,(t_{\text{TLB}}+2t_{\text{mem}})\end{aligned}$$
 
 例：記憶體 100 ns、TLB 20 ns、命中率 90%：$0.9\times120+0.1\times220=108+22=130$ ns。沒有 TLB 的話每次都是 200 ns。OS 的考題常考反過來求命中率，模板在 [OS 4.2](os.html#u4-2)。
 
@@ -3273,7 +3273,7 @@ $$\text{penalty}=\text{決定 branch 的那一級}-1$$
 
 100 條指令裡有 20 條 branch，猜對率 75%：猜錯 $20\times0.25=5$ 次，每次 2 cycle，多花 10 cycle。理想 CPI 1 變成 $\frac{100+10}{100}=1.1$。
 
-$$\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty}$$
+$$\begin{aligned}&\text{CPI}=1+\text{branch 比例}\\&\quad\times(1-\text{準確率})\times\text{penalty}\end{aligned}$$
 
 #### 三種減少損失的方法
 
@@ -3402,7 +3402,7 @@ $$\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty
     1.3：$\text{CPI}=1+0.3\times\frac13\times3=1.3$。
 
     1.4：深 pipeline 的 penalty 為 $P$，時脈加倍 → 週期減半。深的較快的條件：
-    $$\frac{1+0.3\times\frac13\times P}{2}<1.3\ \Rightarrow\ 1+0.1P<2.6\ \Rightarrow\ P<16$$
+    $$\begin{aligned}&\frac{1+0.3\times\frac13\times P}{2}<1.3\\&\Rightarrow\ 1+0.1P<2.6\\&\Rightarrow\ P<16\end{aligned}$$
     misprediction penalty 小於 16 個週期時，深 pipeline 才划算。
 
 !!! example "115 Q5.2（7 分）：branch 在最後一級決定，準確率 90%，pipeline 深 5、10、20"
@@ -3418,12 +3418,12 @@ $$\text{CPI}=1+\text{branch 比例}\times(1-\text{準確率})\times\text{penalty
     3.1：每次猜錯浪費 **5 條**指令（第 1–5 級的）。
 
     3.2：$N$ 條正確路徑的指令、準確率 $A$：
-    $$\text{fetch 總數}=N+0.2N(1-A)\times5=N(2-A)$$
+    $$\begin{aligned}&\text{fetch 總數}\\&=N+0.2N(1-A)\times5\\&=N(2-A)\end{aligned}$$
 
     3.3：dual-path（兩條路徑各 fetch 一樣多）：每個 branch 都有 5 個 slot 花在錯的那條路徑上 → $N+0.2N\times5=2N$。
 
     3.4：比例 $C$ 的 branch 是高信心（用預測，猜錯機率 $M$），其餘 $1-C$ 用 dual-path：
-    $$N+0.2N\times5\times[CM+(1-C)]=N(2-C+CM)$$
+    $$\begin{aligned}&N+0.2N\times5\\&\quad\times[CM+(1-C)]\\&=N(2-C+CM)\end{aligned}$$
 
     這題是 CMU 18-447（Onur Mutlu）2013 年期中考的原題型。
 
@@ -4356,7 +4356,7 @@ refresh 有兩個成本：
 
 #### 使用率怎麼算
 
-$$\text{使用率}=\frac{\text{這段時間內被 refresh 佔用的總時間}}{\text{這段時間}}$$
+$$\text{使用率}=\frac{\text{被 refresh 佔用的總時間}}{\text{這段時間}}$$
 
 **小例子**：1 個 bank、1000 列，每次 refresh 佔用 bus 10 ns，每 64 ms 要全部 refresh 一次。
 
@@ -4476,11 +4476,11 @@ for i in 0..2:
 
 ### 7.1 Refresh 使用率 {#u7-1}
 
-$$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用時間}}{\text{期間長度}}$$
+$$\text{使用率}=\frac{\text{refresh 次數}\times\text{每次佔用時間}}{\text{期間長度}}$$
 
 !!! example "114 Q1（18%）：8 banks × $2^{16}$ 列，每次 refresh 佔 command bus 5 ns"
     1.1 64 ms 內要 refresh $8\times2^{16}=2^{19}$ 次：
-    $$\frac{2^{19}\times5\text{ ns}}{64\text{ ms}}=\frac{2^{19}\times5}{2^6\times10^6}=\frac{2^{13}\times5}{10^6}=4.096\%$$
+    $$\begin{aligned}&\frac{2^{19}\times5\text{ ns}}{64\text{ ms}}\\&=\frac{2^{19}\times5}{2^6\times10^6}\\&=\frac{2^{13}\times5}{10^6}=4.096\%\end{aligned}$$
 
     1.2 70% 的列只要 256 ms 一次：在同樣的時間裡，這些列的 refresh 次數只剩 $\frac{64}{256}=\frac14$；另外 30% 不變。refresh 總次數變成原本的 $0.3\times1+0.7\times\frac14=0.475$ 倍。
 
@@ -4698,7 +4698,7 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
 ??? quiz "看答案"
     32 ms 內每一列都要 refresh 一次：$4\times2^{14}=2^{16}=65536$ 次，每次佔 4 ns → 共 $262144$ ns。
 
-    $$\frac{262144\text{ ns}}{32\text{ ms}}=\frac{262144}{32\times10^6}=0.008192=\mathbf{0.8192\%}$$
+    $$\begin{aligned}&\frac{262144\text{ ns}}{32\text{ ms}}\\&=\frac{262144}{32\times10^6}\\&=0.008192=\mathbf{0.8192\%}\end{aligned}$$
 
     不用計算機的算法：$\frac{2^{16}\times4}{2^5\times10^6}=\frac{2^{13}}{10^6}=\frac{8192}{10^6}$。
 
@@ -4718,7 +4718,7 @@ $$\text{使用率}=\frac{\text{期間內 refresh 次數}\times\text{每次佔用
 
 **公式（Amdahl's law）**：把原本的執行時間當成 1，可以平行的比例是 $f$。用 $N$ 個處理器時，不能平行的 $1-f$ 不變，可平行的 $f$ 變成 $f/N$：
 
-$$\text{speedup}=\frac{1}{(1-f)+\frac fN}\ \xrightarrow{N\to\infty}\ \frac1{1-f}$$
+$$\begin{aligned}\text{speedup}&=\frac{1}{(1-f)+\frac fN}\\&\xrightarrow{N\to\infty}\ \frac1{1-f}\end{aligned}$$
 
 <figure class="fig">
 <svg viewBox="0 0 360 210" role="img" aria-label="Amdahl 定律：橫軸是處理器數 1 到 64（每格加倍），縱軸是 speedup。90% 可平行的曲線越來越平，最多到 10；95% 可平行的最多到 20。處理器再多，也超不過 1 除以不能平行的比例。">
@@ -5274,7 +5274,7 @@ for (i = 0; i < 100; i += 4) {       /* 攤開 4 次 */
 **W-1.** 用 16 個處理器想得到 8 倍的 speedup，程式至少要有多少比例可以平行？
 
 ??? quiz "看參考答案"
-    $$\frac{1}{(1-f)+\frac f{16}}=8\ \Rightarrow\ 1-f+\frac f{16}=\frac18\ \Rightarrow\ \frac{15}{16}f=\frac78\ \Rightarrow\ f=\frac{14}{15}\approx93.3\%$$
+    $$\begin{aligned}&\frac{1}{(1-f)+\frac f{16}}=8\\&\Rightarrow\ 1-f+\frac f{16}=\frac18\\&\Rightarrow\ \frac{15}{16}f=\frac78\\&\Rightarrow\ f=\frac{14}{15}\approx93.3\%\end{aligned}$$
 
     只用了一半的處理器效率（8 ÷ 16），就需要 93% 以上能平行。驗算：$\frac1{1/15+14/240}=\frac1{0.125}=8$ ✓。
 
@@ -5439,7 +5439,7 @@ for (i = 0; i < 100; i += 4) {       /* 攤開 4 次 */
 
 #### 浮點數：二進位的科學記號
 
-$$(-1)^s\times1.f\times2^{e-127}\quad(\text{單精度：} s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})$$
+$$\begin{gathered}(-1)^s\times1.f\times2^{e-127}\\(\text{單精度：}s\text{ 1 位、}e\text{ 8 位、}f\text{ 23 位})\end{gathered}$$
 
 **每一部分的意思**：
 
@@ -5897,7 +5897,7 @@ $$c_{i+1}=g_i+p_ic_i$$
 
 一直代下去，每個進位都只跟 g、p、$c_0$ 有關，**全部可以同時算**：
 
-$$\begin{aligned}c_1&=g_0+p_0c_0\\c_2&=g_1+p_1g_0+p_1p_0c_0\\c_3&=g_2+p_2g_1+p_2p_1g_0+p_2p_1p_0c_0\\c_4&=g_3+p_3g_2+p_3p_2g_1+p_3p_2p_1g_0+p_3p_2p_1p_0c_0\end{aligned}$$
+$$\begin{aligned}c_1&=g_0+p_0c_0\\c_2&=g_1+p_1g_0+p_1p_0c_0\\c_3&=g_2+p_2g_1+p_2p_1g_0+p_2p_1p_0c_0\\c_4&=g_3+p_3g_2+p_3p_2g_1\\&\quad+p_3p_2p_1g_0+p_3p_2p_1p_0c_0\end{aligned}$$
 
 讀法：$c_4$ 是 1 的情況 ＝ 第 3 位自己產生；或第 2 位產生、第 3 位傳下去；或……；或 $c_0$ 是 1、四位都傳下去。
 
@@ -5910,9 +5910,9 @@ $$\begin{aligned}c_1&=g_0+p_0c_0\\c_2&=g_1+p_1g_0+p_1p_0c_0\\c_3&=g_2+p_2g_1+p_2
 
 組和組之間用一樣的式子：
 
-$$C_1=G_0+P_0c_0,\quad C_2=G_1+P_1G_0+P_1P_0c_0,\quad\dots$$
+$$\begin{aligned}C_1&=G_0+P_0c_0\\C_2&=G_1+P_1G_0+P_1P_0c_0,\ \dots\end{aligned}$$
 
-$$C_4=G_3+P_3G_2+P_3P_2G_1+P_3P_2P_1G_0+P_3P_2P_1P_0c_0$$
+$$\begin{aligned}C_4&=G_3+P_3G_2+P_3P_2G_1\\&\quad+P_3P_2P_1G_0+P_3P_2P_1P_0c_0\end{aligned}$$
 
 （$C_i$ 是第 i 組的進位輸入，$C_4$ 是整個 16 位元的進位輸出。）延遲大約是：g、p 一層，P、G 兩層，C 再兩層，共 5 個閘延遲，比 ripple 的 32 個快很多。
 
@@ -5941,7 +5941,7 @@ $$C_4=G_3+P_3G_2+P_3P_2G_1+P_3P_2P_1G_0+P_3P_2P_1P_0c_0$$
 !!! example "101 Q8（15%）：2 位元加法器，$A_1A_0$ ＋ $B_1B_0$，進位輸入 $C_0$、輸出 $C_2$。(1) 只用 $A_i$、$B_i$、$C_0$ 寫出 $C_2$ (2) 用 $G_i=A_iB_i$、$P_i=A_i+B_i$ 和 $C_0$ 寫出 $C_2$ (3) (1) 的式子比 (2) 好在哪"
     **(1)** 先寫 $C_1=A_0B_0+A_0C_0+B_0C_0$，再代進 $C_2=A_1B_1+A_1C_1+B_1C_1$，展開成積之和：
 
-    $$C_2=A_1B_1+A_1A_0B_0+A_1A_0C_0+A_1B_0C_0+B_1A_0B_0+B_1A_0C_0+B_1B_0C_0$$
+    $$\begin{aligned}C_2={}&A_1B_1+A_1A_0B_0\\&+A_1A_0C_0+A_1B_0C_0\\&+B_1A_0B_0+B_1A_0C_0\\&+B_1B_0C_0\end{aligned}$$
 
     **(2)**：$C_2=G_1+P_1G_0+P_1P_0C_0$。
 
