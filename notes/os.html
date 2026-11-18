@@ -8762,6 +8762,19 @@ lock(second.lock);</code></pre>
 </table>
 <p><strong>平均 rotational latency ＝ 轉半圈的時間</strong>。7200 RPM：一圈 <span class="arithmatex">\(\frac{60}{7200}\)</span> 秒 ≈ 8.33 ms，半圈約 4.17 ms。</p>
 <p>隨機讀取時，seek 和 rotational latency 遠大於 transfer，所以把同一個檔案的區塊<strong>放在一起</strong>（111 Q7 的 clustering）可以省下大量時間。</p>
+<div class="mcq" data-ans="2" data-qid="u5-0-time">
+<p><strong>觀念題 1.</strong> 硬碟 7500 RPM、平均 seek 6 ms，傳一個區塊 0.1 ms。隨機讀一個區塊平均要多久？</p>
+<ol>
+<li>14.1 ms</li>
+<li>10.1 ms</li>
+<li>6.1 ms</li>
+<li>4.1 ms</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。一圈 <span class="arithmatex">\(\frac{60}{7500}\)</span> 秒 ＝ 8 ms，平均等半圈 4 ms：<span class="arithmatex">\(6+4+0.1=10.1\)</span> ms。A 用了轉一整圈的時間；C 漏了 rotational latency。</p>
+</details>
+</div>
 <h4 id="_35">檔案的區塊怎麼配置：連續、鏈結、索引</h4>
 <p>一個檔案有好幾個區塊，要記錄它們在磁碟的哪裡。三種方法：</p>
 <figure class="fig">
@@ -8914,6 +8927,19 @@ lock(second.lock);</code></pre>
 </tbody>
 </table>
 <p><strong>FAT</strong>（file allocation table）是鏈結配置的變形：把每一塊的「下一塊」集中放在磁碟開頭的一張表，表可以整張讀進記憶體，隨機讀時在記憶體裡查表就好，不用真的去讀每一塊。下面的 i-node 就是索引配置，用多層索引支援大檔案。</p>
+<div class="mcq" data-ans="1" data-qid="u5-0-alloc">
+<p><strong>觀念題 2.</strong> 一個 log 檔會一直往後面加資料、越變越大。哪一種配置方式最麻煩？</p>
+<ol>
+<li>連續配置</li>
+<li>鏈結配置</li>
+<li>索引配置</li>
+<li>FAT</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。連續配置要求所有區塊連在一起，檔案後面的空間可能已經被別的檔案佔走，只好整個搬到更大的空洞去。鏈結配置和 FAT 只要接上任何一塊空的；索引配置只要在索引裡多記一塊。</p>
+</details>
+</div>
 <h4 id="i-node">檔案的區塊放在哪：i-node</h4>
 <p>i-node 像一本書的<strong>目錄頁</strong>：前面幾格直接寫「第 1 章在第幾頁」（direct pointer），後面一格寫「其他章節的目錄在第幾頁」（indirect pointer），那一頁整頁都是指標。</p>
 <p><strong>小例子</strong>：區塊 1 KB、指標 4 bytes → 一個區塊可以放 <span class="arithmatex">\(1024/4=256\)</span> 個指標。</p>
@@ -8944,6 +8970,19 @@ lock(second.lock);</code></pre>
 </tbody>
 </table>
 <p>小檔案只用 direct pointer，讀取很快；大檔案才用到間接區塊。</p>
+<div class="mcq" data-ans="3" data-qid="u5-0-inode">
+<p><strong>觀念題 3.</strong> 用上表的 i-node（區塊 1 KB、12 個 direct、指標 4 bytes），一個 300 KB 的檔案會用到哪幾種指標？</p>
+<ol>
+<li>只有 direct</li>
+<li>direct 和 single indirect</li>
+<li>direct、single indirect 和 double indirect</li>
+<li>只有 double indirect</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。direct 管前 12 KB，single indirect 再管 256 KB，加起來只有 268 KB，不夠 300 KB，剩下的 32 KB 要用到 double indirect。檔案一定從 direct 開始用，用完才往下一層。</p>
+</details>
+</div>
 <h4 id="_36">最大檔案還有第二個上限：指標寫得下幾個區塊</h4>
 <p>指標存的是<strong>區塊編號</strong>。<span class="arithmatex">\(p\)</span> bytes 的指標只有 <span class="arithmatex">\(8p\)</span> 個 bit，最多寫得出 <span class="arithmatex">\(2^{8p}\)</span> 種編號，也就是磁碟最多只能有 <span class="arithmatex">\(2^{8p}\)</span> 個區塊。一個檔案不可能用到比這還多的區塊，所以</p>
 <p>最大檔案 ＝ min（i-node 結構算出的資料區塊數，<span class="arithmatex">\(2^{8p}\)</span>）× 區塊大小。</p>
@@ -8956,7 +8995,20 @@ lock(second.lock);</code></pre>
 <p>指標 8 bytes 時，<span class="arithmatex">\(2^{64}\)</span> 遠大於結構算出的區塊數，這一條就不會卡住（111 Q5 就是這種情況）。</p>
 <div class="admonition trap">
 <p class="admonition-title">作答時兩個都寫</p>
-<p>很多解答只算 i-node 結構。最保險的寫法：先算結構的上限，再補一句「指標只有 32 bit，最多 <span class="arithmatex">\(2^{32}\)</span> 個區塊，所以實際最大是 <span class="arithmatex">\(2^{32}\times\)</span> 區塊大小」，兩個取小的。練習見 <a href="#u5-drill">5.7 的 P-13、P-14</a>。</p>
+<p>很多解答只算 i-node 結構。最保險的寫法：先算結構的上限，再補一句「指標只有 32 bit，最多 <span class="arithmatex">\(2^{32}\)</span> 個區塊，所以實際最大是 <span class="arithmatex">\(2^{32}\times\)</span> 區塊大小」，兩個取小的。練習見 <a href="#u5-drill">5.7</a>「i-node 最大檔案」的最後兩題。</p>
+</div>
+<div class="mcq" data-ans="2" data-qid="u5-0-ptr">
+<p><strong>觀念題 4.</strong> 區塊編號用 2 bytes 的指標存，區塊 1 KB。這個檔案系統最大能管多大的磁碟？</p>
+<ol>
+<li>64 KB</li>
+<li>64 MB</li>
+<li>4 GB</li>
+<li>2 MB</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。2 bytes ＝ 16 bit，只寫得出 <span class="arithmatex">\(2^{16}=65536\)</span> 個區塊編號，乘 1 KB ＝ 64 MB。磁碟再大，多出來的區塊也沒有編號可以用，檔案當然也不可能超過這個大小。</p>
+</details>
 </div>
 <h4 id="raid">RAID：用多顆硬碟換速度或安全</h4>
 <ul>
@@ -9031,6 +9083,19 @@ lock(second.lock);</code></pre>
 </figure>
 
 <p><strong>XOR 為什麼能救回資料</strong>：資料 1100 和 1010，parity ＝ 1100 XOR 1010 ＝ 0110。第二顆壞了，把剩下的 XOR 起來：1100 XOR 0110 ＝ 1010，就是原本的資料。RAID 6 再多一份不同算法的校驗（P＋Q），可以同時壞兩顆。</p>
+<div class="mcq" data-ans="2" data-qid="u5-0-raid">
+<p><strong>觀念題 5.</strong> 只有兩顆一樣大的硬碟，想要「任何一顆壞掉，資料都還在」。要用哪一種 RAID？可用容量剩多少？</p>
+<ol>
+<li>RAID 0，兩顆的容量全部</li>
+<li>RAID 1，一顆的容量</li>
+<li>RAID 5，一顆半的容量</li>
+<li>RAID 6，一顆的容量</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。RAID 1 兩顆存一模一樣的資料，壞一顆還有另一份，代價是容量剩一半。RAID 0 壞一顆就全毀；RAID 5 至少要 3 顆、RAID 6 至少要 4 顆。</p>
+</details>
+</div>
 <div class="admonition key">
 <p class="admonition-title">儲存與檔案題要做什麼</p>
 <table>
@@ -9095,32 +9160,215 @@ lock(second.lock);</code></pre>
 <p>一個 4 KB 的區塊可以放 <span class="arithmatex">\(4096\div4=1024\)</span> 個指標，每個指標指到一個 4 KB 的資料區塊：<span class="arithmatex">\(1024\times4\text{ KB}=4096\text{ KB}=\)</span> <strong>4 MB</strong>。</p>
 </details>
 <h3 id="u5-1">5.1 檔案系統</h3>
+<p>考古題考過的檔案系統觀念，這一節一個一個講清楚。每個觀念後面都接一題<strong>觀念題</strong>：先自己想、寫在手寫板上，再打開答案。</p>
+<table>
+<thead>
+<tr>
+<th>觀念</th>
+<th>考過的題目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>檔案的定義、volume</td>
+<td>115 Q1h、113 Q8f 填空</td>
+</tr>
+<tr>
+<td>檔案的屬性</td>
+<td>114 Q5a</td>
+</tr>
+<tr>
+<td>三種存取方式、consistency semantics</td>
+<td>112 Q7</td>
+</tr>
+<tr>
+<td>i-node 的最小、最大檔案</td>
+<td>111 Q5</td>
+</tr>
+</tbody>
+</table>
+<h4 id="volume115-q1h113-q8f">檔案和 volume（115 Q1h、113 Q8f）</h4>
 <ul>
-<li>檔案是記錄在次要儲存裝置上、<strong>有名字（named）</strong>的相關資訊集合。（115 Q1h）</li>
-<li>任何包含檔案系統的個體叫做 <strong>volume</strong>。（113 Q8f）</li>
+<li><strong>檔案</strong>：記錄在次要儲存裝置上、<strong>有名字（named）</strong>的一組相關資訊。從使用者的角度，資料一定要放在某個檔案裡，才寫得進磁碟。</li>
+<li><strong>volume</strong>：任何<strong>含有一個檔案系統</strong>的東西。一顆硬碟可以切成好幾個 partition，各放一個檔案系統（好幾個 volume）；反過來，RAID 把好幾顆硬碟合起來，上面也可以只有一個 volume。</li>
 </ul>
+<div class="mcq" data-ans="2" data-qid="u5-1-vol">
+<p><strong>觀念題 6.</strong> 關於 volume，下面哪一句對？</p>
+<ol>
+<li>一個 volume 一定是一整顆硬碟</li>
+<li>volume 可以只是一個 partition，也可以跨好幾顆硬碟</li>
+<li>一個 volume 只能放一個檔案</li>
+<li>volume 就是目錄</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。volume 看的是「裡面有沒有一個檔案系統」，跟實體硬碟幾顆無關。</p>
+</details>
+</div>
+<h4 id="114-q5a">檔案的屬性（114 Q5a）</h4>
 <div class="admonition example">
 <p class="admonition-title">114 Q5a（6%）：除了名字之外，檔案的六種屬性</p>
 <p>identifier（系統內部的唯一編號）、type、location（在裝置上的位置）、size、protection（存取權限）、timestamps and user identification（建立、修改、使用時間與擁有者）。</p>
 </div>
+<p>這些屬性放在每個檔案的 <strong>FCB</strong>（file control block）裡；UNIX 的 FCB 就是 i-node。名字不在 i-node 裡，而是在<strong>目錄</strong>裡：目錄的每一格記「檔名 → i-node 編號」。所以同一個檔案可以在不同目錄有不同的名字（<a href="#u5-more">5.5</a> 的 link）。</p>
+<div class="mcq" data-ans="2" data-qid="u5-1-attr">
+<p><strong>觀念題 7.</strong> UNIX 裡，檔名存在哪裡？大小、權限、修改時間這些屬性呢？</p>
+<ol>
+<li>都在 i-node</li>
+<li>檔名在目錄裡，其他屬性在 i-node</li>
+<li>都在檔案的第一個資料區塊</li>
+<li>都在 open-file table</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。目錄只記「名字 → i-node 編號」，屬性和資料區塊的位置都在 i-node。open-file table 只在檔案開著時，暫時記一份放在記憶體裡（<a href="#u5-more">5.5</a>）。</p>
+</details>
+</div>
+<h4 id="consistency-semantics112-q7">存取方式和 consistency semantics（112 Q7）</h4>
 <div class="admonition example">
 <p class="admonition-title">112 Q7（10%）：(a) 三種存取方式 (b) consistency semantics</p>
 <p>(a) <strong>sequential</strong>：照順序一筆一筆讀寫（read next、write next），像磁帶。<strong>direct</strong>：用相對區塊編號隨意讀寫任一區塊，適合資料庫。<strong>indexed</strong>：另外建一份索引，先查索引找到指標，再直接存取該區塊。</p>
 <p>(b) <strong>consistency semantics</strong> 規定多個使用者同時存取同一個檔案時，一個人的修改<strong>什麼時候對其他人可見</strong>。例如 UNIX semantics（寫入立刻可見）、session semantics（關檔之後，新開的 session 才看得到，AFS 用）、immutable-shared-files semantics（共享檔案不能修改）。</p>
 </div>
+<ul>
+<li><strong>direct 和 indexed 的差別</strong>：direct 要知道「第幾筆」才能直接算出位置；indexed 是用<strong>關鍵字</strong>（例如學號）先查索引，再找到那一筆。</li>
+<li><strong>session</strong>：從 <code>open()</code> 到 <code>close()</code> 這一段。session semantics 下，A 的修改要等 A 關檔，而且別人<strong>之後重新開檔</strong>才看得到。</li>
+</ul>
+<div class="mcq" data-ans="3" data-qid="u5-1-access">
+<p><strong>觀念題 8.</strong> 要在一個很大的檔案裡，依照「學號」找某個學生的資料，又不想從頭讀到尾。哪一種存取方式最適合？</p>
+<ol>
+<li>sequential</li>
+<li>direct（但不知道是第幾筆）</li>
+<li>indexed</li>
+<li>三種都一樣</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。只知道學號、不知道是第幾筆，direct 算不出位置；indexed 先在索引裡用學號找到那一筆的位置，再直接讀。sequential 要從頭讀到找到為止。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u5-1-sem">
+<p><strong>觀念題 9.</strong> 系統用 session semantics。A 開檔、寫入、還沒關檔；這時 B 開同一個檔案來讀。B 看到什麼？</p>
+<ol>
+<li>立刻看到 A 寫的內容</li>
+<li>看不到；要等 A 關檔後，B 重新開檔才看得到</li>
+<li>檔案被鎖住，B 開不了</li>
+<li>看到 A 寫到一半的內容</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。session semantics 的修改以 session 為單位：A 關檔時才生效，而且只有之後新開的 session 看得到。A 是 UNIX semantics。</p>
+</details>
+</div>
+<h4 id="i-node-111-q5">i-node 的最小、最大檔案（111 Q5）</h4>
 <div class="admonition example">
 <p class="admonition-title">111 Q5（10%）：i-node 有 10 個直接區塊、三層間接區塊，指標 8 B、區塊 8 KB</p>
 <p>每個區塊可放 <span class="arithmatex">\(8\text{ KB}/8\text{ B}=1024=2^{10}\)</span> 個指標。</p>
 <p>(a) 最小的檔案（非空）需要 <strong>1 個</strong>資料區塊。</p>
 <p>(b) 最大的檔案可以有 <span class="arithmatex">\(10+2^{10}+2^{20}+2^{30}\)</span> 個<strong>資料區塊</strong>。如果題目要算進索引區塊，再加上 single 1 個、double <span class="arithmatex">\(1+2^{10}\)</span> 個、triple <span class="arithmatex">\(1+2^{10}+2^{20}\)</span> 個。作答時寫清楚你算的是哪一種。</p>
 </div>
+<p>最小的檔案只有一個 byte，也要佔一整個資料區塊（區塊是配置的最小單位），而且只用到第一個 direct pointer，不需要任何索引區塊。</p>
+<div class="mcq" data-ans="2" data-qid="u5-1-size">
+<p><strong>觀念題 10.</strong> 用 111 Q5 的 i-node（10 個 direct、區塊 8 KB），一個 100 KB 的檔案要幾個資料區塊？會用到 indirect 嗎？</p>
+<ol>
+<li>13 塊，只用 direct</li>
+<li>13 塊，要用到 single indirect</li>
+<li>12 塊，只用 direct</li>
+<li>100 塊</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。<span class="arithmatex">\(100\div8=12.5\)</span>，要 13 個資料區塊。direct 只有 10 個，另外 3 塊要經過 single indirect，所以還多一個索引區塊。</p>
+</details>
+</div>
 <h3 id="u5-2">5.2 磁碟</h3>
+<table>
+<thead>
+<tr>
+<th>觀念</th>
+<th>考過的題目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HDD 的隨機存取時間</td>
+<td>114 Q8g 填空</td>
+</tr>
+<tr>
+<td>NVM 裝置</td>
+<td>115 Q1e 填空</td>
+</tr>
+<tr>
+<td>swap space 放在 raw partition</td>
+<td>114 Q8j 填空</td>
+</tr>
+<tr>
+<td>RAID 6 的 P＋Q</td>
+<td>113 Q8g 填空</td>
+</tr>
+<tr>
+<td>區塊聚集（clustering）</td>
+<td>111 Q7</td>
+</tr>
+<tr>
+<td>sector sparing</td>
+<td>115 Q4</td>
+</tr>
+</tbody>
+</table>
+<h4 id="hdd-nvm114-q8g115-q1e">HDD 和 NVM（114 Q8g、115 Q1e）</h4>
 <ul>
-<li>HDD 隨機存取時間 ＝ <strong>seek time</strong> ＋ <strong>rotational latency</strong>。（114 Q8g）</li>
-<li>次要儲存裝置主要是 HDD 和 <strong>nonvolatile memory（NVM）</strong> 裝置。（115 Q1e）</li>
-<li>swap space 可以建在 <strong>raw partition</strong>，不放檔案系統。（114 Q8j）</li>
-<li><strong>RAID 6</strong> 使用 <strong>P + Q redundancy</strong>，可以承受兩顆磁碟同時故障。（113 Q8g）</li>
+<li><strong>HDD</strong>：隨機存取時間 ＝ <strong>seek time</strong> ＋ <strong>rotational latency</strong>（<a href="#u5-0">5.0</a>），兩段都是機械動作，比傳輸資料慢得多。</li>
+<li><strong>NVM</strong>（nonvolatile memory，例如 SSD、隨身碟）：用快閃記憶體，<strong>沒有讀寫頭、不用轉</strong>，隨機讀和循序讀差不多快。但它不能直接覆寫：要先把整個 block <strong>抹掉</strong>才能再寫，每個 block 能抹的次數也有限，所以控制器會把寫入平均分散到各處（wear leveling）。</li>
 </ul>
+<div class="mcq" data-ans="2" data-qid="u5-2-nvm">
+<p><strong>觀念題 11.</strong> 在 SSD（NVM）上用 SSTF、SCAN 這些磁碟排程，還有用嗎？</p>
+<ol>
+<li>很有用，可以大幅縮短 seek time</li>
+<li>幾乎沒用：沒有讀寫頭要移動，通常照到達順序（FCFS）處理</li>
+<li>只有 SCAN 有用</li>
+<li>只有 C-LOOK 有用</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。磁碟排程是為了減少讀寫頭移動的距離，NVM 根本沒有讀寫頭。Linux 對 NVM 裝置通常用最簡單的 FCFS（頂多把相鄰的要求合併）。</p>
+</details>
+</div>
+<h4 id="swap-space-raw-partition114-q8j">swap space 放在 raw partition（114 Q8j）</h4>
+<p>swap space 是 virtual memory 把 page 換出去時放的地方，有兩種放法：</p>
+<ul>
+<li><strong>放在一般檔案系統裡的一個大檔案</strong>：好管理，大小也好調整；但每次存取都要經過檔案系統（查目錄、找區塊），比較慢。</li>
+<li><strong>放在 raw partition</strong>（沒有檔案系統的一塊分割區）：由 swap-space manager 直接管，配置方法以<strong>速度</strong>為主，不在意浪費一點空間（swap 的資料很快就沒用了）。缺點是大小固定，要改就得重新分割。</li>
+</ul>
+<div class="mcq" data-ans="2" data-qid="u5-2-swap">
+<p><strong>觀念題 12.</strong> swap space 放在 raw partition，比放在檔案系統裡的檔案好在哪裡？</p>
+<ol>
+<li>比較省空間</li>
+<li>不經過檔案系統，讀寫比較快</li>
+<li>可以隨時改大小</li>
+<li>比較安全</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。swap 是為了速度，不用查目錄、不用照一般檔案的方式配置區塊。C 剛好是 swap 檔案的優點；raw partition 要改大小就得重新分割。</p>
+</details>
+</div>
+<h4 id="raid-6-pq113-q8g">RAID 6 的 P＋Q（113 Q8g）</h4>
+<p>RAID 5 只有一份 parity，壞一顆還救得回來；但現在的硬碟很大，<strong>重建</strong>一顆壞掉的硬碟可能要好幾個小時，這段時間如果再壞一顆，資料就毀了。<strong>RAID 6</strong> 存兩份用不同方法算出來的校驗（P 是 XOR，Q 是另一種 error-correcting code），可以同時壞兩顆；<span class="arithmatex">\(n\)</span> 顆硬碟的可用容量是 <span class="arithmatex">\(n-2\)</span> 顆。</p>
+<div class="mcq" data-ans="2" data-qid="u5-2-raid6">
+<p><strong>觀念題 13.</strong> 為什麼容量很大的磁碟陣列，越來越常用 RAID 6，而不是 RAID 5？</p>
+<ol>
+<li>RAID 6 寫入比較快</li>
+<li>大硬碟重建要很久，這段時間再壞一顆，RAID 5 就救不回來</li>
+<li>RAID 6 比較便宜</li>
+<li>RAID 5 不能讀取</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。RAID 6 多付出一顆硬碟的容量，換來重建期間還能再壞一顆的保障。寫入反而比較慢，因為每次要更新兩份校驗。</p>
+</details>
+</div>
+<h4 id="111-q7">區塊聚集（111 Q7）</h4>
 <div class="admonition example">
 <p class="admonition-title">111 Q7（10%）：讀 100 個區塊的檔案，未聚集時平均 seek 5 ms、聚集後 0.5 ms，rotational latency 10 ms、每區塊傳輸 20 μs</p>
 <ul>
@@ -9128,6 +9376,21 @@ lock(second.lock);</code></pre>
 <li>聚集：<span class="arithmatex">\(100\times(0.5+10+0.02)=1052\)</span> ms</li>
 </ul>
 </div>
+<p>把同一個檔案的區塊放在相近的磁柱上，讀寫頭不用移動太遠，省的是 <strong>seek time</strong>。rotational latency 還在，所以聚集後它變成最大的一段；要再快，就要讓同一圈能連續讀到好幾塊。</p>
+<div class="mcq" data-ans="2" data-qid="u5-2-cluster">
+<p><strong>觀念題 14.</strong> 111 Q7 聚集之後，讀一個區塊的時間裡，哪一段變成最大的？</p>
+<ol>
+<li>seek time</li>
+<li>rotational latency</li>
+<li>transfer time</li>
+<li>三段一樣大</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。聚集後每塊是 <span class="arithmatex">\(0.5+10+0.02\)</span> ms，rotational latency 的 10 ms 佔了大部分。聚集只縮短 seek，等轉的時間不變。</p>
+</details>
+</div>
+<h4 id="sector-sparing115-q4">sector sparing（115 Q4）</h4>
 <div class="admonition example">
 <p class="admonition-title">115 Q4（10%）：sector sparing 的步驟</p>
 <ol>
@@ -9138,16 +9401,124 @@ lock(second.lock);</code></pre>
 <li>之後系統每次要讀 logical block 87，controller 都會把請求<strong>轉到備用 sector 的位址</strong>。</li>
 </ol>
 </div>
+<p>硬碟出廠時就在<strong>每個磁柱</strong>保留幾個備用 sector。換到同一個磁柱的備用 sector，讀寫頭不用多移動，作業系統排好的磁碟排程也不會被打亂。另一種做法是 sector slipping：把壞掉那格之後的 sector 都往後挪一格（<a href="#u5-exam">5.8</a> 有一題比較兩種）。</p>
+<div class="mcq" data-ans="2" data-qid="u5-2-spare">
+<p><strong>觀念題 15.</strong> 為什麼備用的 sector 通常在每個磁柱上都留幾個，而不是全部集中在磁碟的最後面？</p>
+<ol>
+<li>比較便宜</li>
+<li>換到同一個磁柱的備用 sector，讀寫頭不用多移動，不會打亂磁碟排程</li>
+<li>讓 ECC 算得比較快</li>
+<li>為了支援 RAID</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。作業系統排磁碟排程時，以為 logical block 87 在原來的位置。如果備用的在很遠的地方，每次讀 87 都要多跑一大段 seek。</p>
+</details>
+</div>
 <h3 id="u5-3">5.3 I/O</h3>
+<table>
+<thead>
+<tr>
+<th>觀念</th>
+<th>考過的題目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>daisy chain</td>
+<td>114 Q8a 填空</td>
+</tr>
+<tr>
+<td>device driver</td>
+<td>115 Q1f 填空</td>
+</tr>
+<tr>
+<td>vectored I/O</td>
+<td>112 Q9a 填空</td>
+</tr>
+<tr>
+<td>maskable、non-maskable interrupt</td>
+<td>113 Q5b</td>
+</tr>
+<tr>
+<td>interrupt chaining</td>
+<td>114 Q5b</td>
+</tr>
+</tbody>
+</table>
+<h4 id="kernel-114-q8a115-q1f">裝置怎麼接、kernel 怎麼管（114 Q8a、115 Q1f）</h4>
 <ul>
-<li><strong>daisy chain</strong>：A 接 B、B 接 C、C 接電腦的串接方式。（114 Q8a）</li>
-<li>kernel 用 <strong>device-driver</strong> 模組把各種裝置的細節包起來。（115 Q1f）</li>
-<li><strong>vectored I/O（scatter-gather）</strong>：一個 system call 完成多個緩衝區的讀寫，減少 context switch 和系統呼叫開銷。（112 Q9a）</li>
-<li><strong>maskable vs non-maskable interrupt</strong>（113 Q5b）：maskable 可以在 CPU 執行不能被打斷的程式段時暫時關掉；non-maskable 不能關，保留給無法恢復的記憶體錯誤這類嚴重事件。</li>
+<li><strong>daisy chain</strong>：A 接 B、B 接 C、C 接電腦，一個串一個，整條線通常當成一條 bus 來用。</li>
+<li><strong>device driver</strong>：每種裝置的控制方式都不一樣。kernel 讓每個 driver 對上提供<strong>同一套介面</strong>（例如 block 裝置都有讀、寫某一塊），裝置的細節包在 driver 裡面。I/O 子系統不用知道是哪一牌的硬碟；新的裝置只要寫一個 driver，不用改 kernel 的其他部分。</li>
 </ul>
+<div class="mcq" data-ans="2" data-qid="u5-3-driver">
+<p><strong>觀念題 16.</strong> 為什麼 kernel 要用 device driver 把各種裝置包起來？</p>
+<ol>
+<li>讓裝置跑得比較快</li>
+<li>I/O 子系統可以用同一套介面操作各種裝置，新的裝置只要寫一個 driver</li>
+<li>讓使用者程式可以直接控制硬體</li>
+<li>為了省電</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。就像 system call 把 kernel 包起來給應用程式用，driver 把硬體包起來給 kernel 用。C 剛好相反：driver 在 kernel 裡，使用者程式要經過 system call 才碰得到裝置。</p>
+</details>
+</div>
+<h4 id="vectored-io112-q9a">vectored I/O（112 Q9a）</h4>
+<p><strong>vectored I/O</strong>（也叫 scatter-gather）：一次 system call 給一串緩衝區，kernel 依序把它們寫出去（gather），或把讀進來的資料依序分到這些緩衝區（scatter），例如 UNIX 的 <code>writev()</code>、<code>readv()</code>。</p>
+<ul>
+<li><strong>省</strong>：不用呼叫好幾次 <code>write()</code>，也不用先把資料複製到同一塊緩衝區。</li>
+<li><strong>不會被插隊</strong>：整串一次做完，別的 thread 的寫入不會插在中間。</li>
+</ul>
+<div class="mcq" data-ans="2" data-qid="u5-3-vec">
+<p><strong>觀念題 17.</strong> 程式要把不在一起的三塊緩衝區（header、body、footer）依序寫進一個檔案。用 vectored I/O 的好處是？</p>
+<ol>
+<li>資料會自動壓縮</li>
+<li>一次 system call 就寫完，不用呼叫三次 write，也不用先把三塊複製成一塊</li>
+<li>可以同時寫到三個不同的檔案</li>
+<li>不用經過 kernel</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。每次 system call 都要切換到 kernel mode，次數越少越省。C 錯：一次 writev 寫的是同一個檔案；D 錯：還是 system call。</p>
+</details>
+</div>
+<h4 id="maskablenon-maskable-interrupt-interrupt-chaining113-q5b114-q5b">maskable、non-maskable interrupt 和 interrupt chaining（113 Q5b、114 Q5b）</h4>
+<p>CPU 有兩條中斷要求線（105 Q2(4) 也考過）：</p>
+<ul>
+<li><strong>maskable</strong>：一般裝置用的。CPU 在執行不能被打斷的程式段時，可以暫時把它關掉（mask），等一下再處理。</li>
+<li><strong>non-maskable</strong>：關不掉，留給沒辦法等的嚴重事件，例如無法修正的記憶體錯誤。</li>
+</ul>
+<p>中斷發生時，CPU 用中斷號碼查 <strong>interrupt vector</strong>（一張「中斷號碼 → 處理程式位址」的表）。裝置比表的格子還多時，就用 interrupt chaining：</p>
 <div class="admonition example">
 <p class="admonition-title">114 Q5b（4%）：interrupt chaining 怎麼運作</p>
 <p>中斷向量表的每一格指向一串<strong>中斷處理程式的串列</strong>。中斷發生時，依序呼叫串列中的處理程式，直到找到能處理這個中斷的那一個。這是「每個裝置都有自己的向量格（表太大）」和「全部共用一個處理程式（要一個個問）」之間的折衷。</p>
+</div>
+<div class="mcq" data-ans="2" data-qid="u5-3-nmi">
+<p><strong>觀念題 18.</strong> 下面哪一種事件應該用 non-maskable interrupt？</p>
+<ol>
+<li>鍵盤按了一個鍵</li>
+<li>發生無法修正的記憶體錯誤</li>
+<li>磁碟讀完一個區塊</li>
+<li>網路卡收到一個封包</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。記憶體壞了，繼續執行可能算出錯的結果，不能等。其他三種是一般裝置的中斷，晚一點處理沒關係，用 maskable。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u5-3-chain">
+<p><strong>觀念題 19.</strong> interrupt chaining 在解決什麼問題？</p>
+<ol>
+<li>中斷處理太慢</li>
+<li>裝置數量比中斷向量的格子多，又不想每次中斷都去問所有裝置</li>
+<li>防止死結</li>
+<li>讓 CPU 可以關掉中斷</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。一格接一串處理程式：查表先縮小到幾個可能的裝置，再在這一串裡一個一個問，是兩種極端之間的折衷。</p>
+</details>
 </div>
 <h3 id="u5-sched">5.4 磁碟排程：讀寫頭怎麼移動</h3>
 <p>101、102、104、107、110 年都考過（每次 6–10%）：給一串要求的磁柱（cylinder）編號，照某種演算法排出服務順序、算讀寫頭總共移動多遠。規則固定、只要加減法，是最容易拿的分數。</p>
@@ -9201,7 +9572,46 @@ lock(second.lock);</code></pre>
 </tr>
 </tbody>
 </table>
+<div class="mcq" data-ans="2" data-qid="u5-sched-1">
+<p><strong>觀念題 20.</strong> 哪一種演算法可能讓某些要求等非常久（starvation）？</p>
+<ol>
+<li>FCFS</li>
+<li>SSTF</li>
+<li>SCAN</li>
+<li>C-SCAN</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B. SSTF</strong>。如果讀寫頭附近一直有新的要求進來，SSTF 會一直先服務附近的，遠處的要求就一直輪不到。FCFS 照順序一定輪得到；SCAN、C-SCAN 一定會掃過每個位置。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u5-sched-3">
+<p><strong>觀念題 21.</strong> LOOK 和 SCAN 差在哪裡？</p>
+<ol>
+<li>LOOK 不會回頭</li>
+<li>LOOK 到最遠的要求就回頭，SCAN 要走到磁碟的盡頭</li>
+<li>LOOK 只往一個方向服務</li>
+<li>兩個完全一樣</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。兩個都像電梯，來回掃。差別只在回頭的地方：SCAN 一定走到盡頭（0 或最大編號），LOOK 看到那個方向已經沒有要求就回頭。只往一個方向服務的是 C-SCAN／C-LOOK。</p>
+</details>
+</div>
 <p><strong>為什麼 C-SCAN 比較公平</strong>：SCAN 回頭時，剛掃過的一端要等來回一趟；中間的位置來回各被掃一次。C-SCAN 永遠同一個方向掃，每個位置等的時間差不多。</p>
+<div class="mcq" data-ans="2" data-qid="u5-sched-5">
+<p><strong>觀念題 22.</strong> 為什麼有人寧願用移動距離比較長的 C-SCAN，而不用 SCAN？</p>
+<ol>
+<li>C-SCAN 比較容易實作</li>
+<li>C-SCAN 每個位置的等待時間比較平均</li>
+<li>C-SCAN 不會有 starvation，SCAN 會</li>
+<li>C-SCAN 的 seek time 比較短</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。SCAN 回頭時，剛掃過的那一端要等手臂走到另一端再回來，等最久；中間的位置則來回各被掃一次。C-SCAN 永遠同方向服務，每個位置大約每一輪被掃一次，等待時間比較平均。SCAN 也不會 starvation，所以 C 錯。</p>
+</details>
+</div>
 <h4 id="_39">題目沒講清楚的，要自己寫假設</h4>
 <ol>
 <li><strong>方向</strong>：「前一個要求在 125、現在在 175」代表正往<strong>編號大的</strong>方向走。只給現在位置時，寫「假設往編號大的方向移動」。</li>
@@ -9210,6 +9620,19 @@ lock(second.lock);</code></pre>
 </ol>
 <h4 id="_40">算距離的捷徑</h4>
 <p>電梯類（SCAN、LOOK）只要算<strong>轉折點</strong>：例如 LOOK 往上走到最大的要求再回頭到最小的要求，距離 ＝（最大 − 起點）＋（最大 − 最小），不用一段一段加。</p>
+<div class="mcq" data-ans="1" data-qid="u5-sched-2">
+<p><strong>觀念題 23.</strong> 讀寫頭在 50，往編號大的方向移動，要求是 10、60、90。LOOK 的總移動距離是？</p>
+<ol>
+<li>120</li>
+<li>130</li>
+<li>80</li>
+<li>90</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A. 120</strong>。LOOK 先往上服務 60、90，90 是這個方向最遠的要求，就回頭到 10。距離 <span class="arithmatex">\((90-50)+(90-10)=40+80=120\)</span>。如果是 SCAN 而且盡頭是 99，就要多走到 99 再回頭：<span class="arithmatex">\((99-50)+(99-10)=138\)</span>。</p>
+</details>
+</div>
 <div class="viz" data-viz="disk" data-reqs="98,183,37,122,14,124,65,67" data-head="53" data-dir="down" data-max="199" data-algo="sstf" data-title="102 Q7 的資料：切換演算法和方向，比較總距離"></div>
 
 <div class="admonition example">
@@ -9302,6 +9725,19 @@ lock(second.lock);</code></pre>
 <p>如果假設往編號大的方向：65, 67, 98, 122, 124, 183，走到盡頭 199，回頭 37, 14，距離 <span class="arithmatex">\((199-53)+(199-14)=331\)</span>。方向不同答案就不同，所以<strong>一定要寫出假設</strong>。</p>
 <p><strong>SSTF 不一定最短</strong>：照 37, 14, 65, 67, 98, 122, 124, 183 的順序（往 0 的方向 LOOK）只要 <span class="arithmatex">\((53-14)+(183-14)=208\)</span>，比 SSTF 的 236 少。SSTF 每一步只看最近的（貪心），整體不一定最好。</p>
 </div>
+<div class="mcq" data-ans="3" data-qid="u5-sched-4">
+<p><strong>觀念題 24.</strong> SSTF 的總移動距離一定是所有順序裡最短的嗎？</p>
+<ol>
+<li>是，因為每一步都走最近的</li>
+<li>是，只要要求不超過 10 個</li>
+<li>不一定，每一步最近不代表加起來最短</li>
+<li>不一定，只有方向往上時才是最短</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。SSTF 是貪心法，只看下一步。102 Q7 的資料：SSTF 走 236，但先往下到 14 再一路往上（LOOK 往 0 的方向）只要 208。</p>
+</details>
+</div>
 <div class="admonition example">
 <p class="admonition-title">104 Q6(2)（6%）：磁柱 1–200，讀寫頭在 55；佇列 99, 187, 39, 124, 14, 131, 65, 70；SSTF、SCAN、C-SCAN、C-LOOK</p>
 <p>題目沒給方向，假設往編號大的方向移動。題目只要求「讀寫頭怎麼移動」，寫出順序就夠，距離是順便驗算。</p>
@@ -9319,6 +9755,18 @@ lock(second.lock);</code></pre>
 <li><strong>SSTF</strong>：75, 87, 100, 120, 138, 185, 40, 2（距離 308）。</li>
 <li><strong>C-LOOK</strong>：75, 87, 100, 120, 138, 185，跳回 2，再 40（含跳回 346，不含 163）。</li>
 </ul>
+</div>
+<div data-qid="u5-sched-6">
+<p><strong>觀念題 25.</strong> 讀寫頭在 100、往編號小的方向移動，磁柱 0–199，要求是 20、150、80、190。寫出 C-LOOK 的服務順序和距離（跳回那段算或不算都寫）。</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p>往小的方向：先服務 80、20；20 是這個方向最遠的要求，跳回<strong>另一邊最遠的</strong>要求 190，再往小的方向服務 150。</p>
+<ul>
+<li>順序：<strong>80, 20, 190, 150</strong></li>
+<li>距離：<span class="arithmatex">\((100-20)=80\)</span>，跳回 <span class="arithmatex">\(190-20=170\)</span>，再 <span class="arithmatex">\(190-150=40\)</span>。含跳回 <strong>290</strong>，不含 <strong>120</strong>。</li>
+</ul>
+<p><strong>自我檢查</strong>：C-LOOK 跳回去後，方向還是「往小的」，所以從 190 往下服務到 150，不是從 150 往上到 190。</p>
+</details>
 </div>
 <div class="admonition example">
 <p class="admonition-title">101 Q4（10%）：SCAN-EDF（多媒體系統）；要求（名稱, 截止時間, 磁柱）：(A,150,25)、(B,201,112)、(C,399,95)、(D,94,31)、(E,295,185)、(F,78,85)、(G,165,150)、(H,125,101)、(I,300,85)、(J,210,90)；讀寫頭在 49，往 50 移動</p>
@@ -9368,85 +9816,22 @@ lock(second.lock);</code></pre>
 <p><strong>服務順序：F, D, A, H, G, E, B, J, I, C</strong>。</p>
 <p>如果不分批，截止時間又都不一樣，SCAN-EDF 就等於單純的 EDF：F, D, H, A, G, B, J, E, I, C。考試寫出你用的分批方法。</p>
 </div>
-<h4 id="_41">觀念小考</h4>
-<div class="mcq" data-ans="2">
-<p><strong>C-1.</strong> 哪一種演算法可能讓某些要求等非常久（starvation）？</p>
+<div class="mcq" data-ans="3" data-qid="u5-sched-edf">
+<p><strong>觀念題 26.</strong> 多媒體系統為什麼用 SCAN-EDF，而不是單純的 EDF 或單純的 SCAN？</p>
 <ol>
-<li>FCFS</li>
-<li>SSTF</li>
-<li>SCAN</li>
-<li>C-SCAN</li>
+<li>SCAN-EDF 的移動距離一定最短</li>
+<li>EDF 比較難實作</li>
+<li>單純 EDF 只看截止時間，讀寫頭可能來回亂跑；單純 SCAN 不管截止時間。分批後，同一批照 SCAN 走，既省距離又趕得上截止時間</li>
+<li>SCAN 會 starvation</li>
 </ol>
 <details class="quiz">
 <summary>看解析</summary>
-<p><strong>B. SSTF</strong>。如果讀寫頭附近一直有新的要求進來，SSTF 會一直先服務附近的，遠處的要求就一直輪不到。FCFS 照順序一定輪得到；SCAN、C-SCAN 一定會掃過每個位置。</p>
+<p><strong>C</strong>。多媒體資料（影片、聲音）晚了就沒用，截止時間最重要；但完全照截止時間排，讀寫頭會跑很多冤枉路。截止時間差不多的放一批，批裡用 SCAN 的順序，兩邊都顧到。</p>
 </details>
 </div>
-<div class="mcq" data-ans="1">
-<p><strong>C-2.</strong> 讀寫頭在 50，往編號大的方向移動，要求是 10、60、90。LOOK 的總移動距離是？</p>
-<ol>
-<li>120</li>
-<li>130</li>
-<li>80</li>
-<li>90</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>A. 120</strong>。LOOK 先往上服務 60、90，90 是這個方向最遠的要求，就回頭到 10。距離 <span class="arithmatex">\((90-50)+(90-10)=40+80=120\)</span>。如果是 SCAN 而且盡頭是 99，就要多走到 99 再回頭：<span class="arithmatex">\((99-50)+(99-10)=138\)</span>。</p>
-</details>
-</div>
-<div class="mcq" data-ans="2">
-<p><strong>C-3.</strong> LOOK 和 SCAN 差在哪裡？</p>
-<ol>
-<li>LOOK 不會回頭</li>
-<li>LOOK 到最遠的要求就回頭，SCAN 要走到磁碟的盡頭</li>
-<li>LOOK 只往一個方向服務</li>
-<li>兩個完全一樣</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>B</strong>。兩個都像電梯，來回掃。差別只在回頭的地方：SCAN 一定走到盡頭（0 或最大編號），LOOK 看到那個方向已經沒有要求就回頭。只往一個方向服務的是 C-SCAN／C-LOOK。</p>
-</details>
-</div>
-<div class="mcq" data-ans="3">
-<p><strong>C-4.</strong> SSTF 的總移動距離一定是所有順序裡最短的嗎？</p>
-<ol>
-<li>是，因為每一步都走最近的</li>
-<li>是，只要要求不超過 10 個</li>
-<li>不一定，每一步最近不代表加起來最短</li>
-<li>不一定，只有方向往上時才是最短</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>C</strong>。SSTF 是貪心法，只看下一步。102 Q7 的資料：SSTF 走 236，但先往下到 14 再一路往上（LOOK 往 0 的方向）只要 208。</p>
-</details>
-</div>
-<div class="mcq" data-ans="2">
-<p><strong>C-5.</strong> 為什麼有人寧願用移動距離比較長的 C-SCAN，而不用 SCAN？</p>
-<ol>
-<li>C-SCAN 比較容易實作</li>
-<li>C-SCAN 每個位置的等待時間比較平均</li>
-<li>C-SCAN 不會有 starvation，SCAN 會</li>
-<li>C-SCAN 的 seek time 比較短</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>B</strong>。SCAN 回頭時，剛掃過的那一端要等手臂走到另一端再回來，等最久；中間的位置則來回各被掃一次。C-SCAN 永遠同方向服務，每個位置大約每一輪被掃一次，等待時間比較平均。SCAN 也不會 starvation，所以 C 錯。</p>
-</details>
-</div>
-<p><strong>W-1.</strong> 讀寫頭在 100、往編號小的方向移動，磁柱 0–199，要求是 20、150、80、190。寫出 C-LOOK 的服務順序和距離（跳回那段算或不算都寫）。</p>
-<details class="quiz">
-<summary>看參考答案</summary>
-<p>往小的方向：先服務 80、20；20 是這個方向最遠的要求，跳回<strong>另一邊最遠的</strong>要求 190，再往小的方向服務 150。</p>
-<ul>
-<li>順序：<strong>80, 20, 190, 150</strong></li>
-<li>距離：<span class="arithmatex">\((100-20)=80\)</span>，跳回 <span class="arithmatex">\(190-20=170\)</span>，再 <span class="arithmatex">\(190-150=40\)</span>。含跳回 <strong>290</strong>，不含 <strong>120</strong>。</li>
-</ul>
-<p><strong>自我檢查</strong>：C-LOOK 跳回去後，方向還是「往小的」，所以從 190 往下服務到 150，不是從 150 往上到 190。</p>
-</details>
 <h3 id="u5-more">5.5 檔案系統與 I/O 的考古題補充：目錄、mount、開檔表、I/O 方式</h3>
 <p>104、105、107 年的「File System and I/O」小題，每題 2–4%，加起來將近 25%：目錄有哪幾種結構、mount point 是什麼、開檔時 UNIX 記住哪些資訊、CPU 怎麼知道 I/O 做完了、memory-mapped I/O。都是恐龍書的名詞，<strong>會講「為什麼要這樣做」</strong>就能拿分。</p>
-<h4 id="_42">目錄結構：檔案越來越多，怎麼放？</h4>
+<h4 id="_41">目錄結構：檔案越來越多，怎麼放？</h4>
 <table>
 <thead>
 <tr>
@@ -9490,8 +9875,34 @@ lock(second.lock);</code></pre>
 </tbody>
 </table>
 <p><strong>multilevel（樹狀）命名的好處</strong>：檔案可以照用途分類；不同目錄裡可以有同名的檔案（路徑不同就不衝突）；用路徑一層一層找，比在一個大目錄裡找快。</p>
+<div class="mcq" data-ans="3" data-qid="u5-more-1">
+<p><strong>觀念題 27.</strong> acyclic-graph 目錄讓同一個檔案出現在好幾個目錄。刪除檔案時最需要處理的問題是？</p>
+<ol>
+<li>檔名太長</li>
+<li>目錄會形成迴圈</li>
+<li>其他目錄的 link 會指到已經刪掉的檔案</li>
+<li>檔案會被複製好幾份</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。dangling pointer。解法是 reference count：記錄有幾個 link 指到這個檔案，歸 0 才真的刪。B 是 general graph 的問題，acyclic 本來就不允許迴圈。D 錯：link 不是複製，只有一份資料。</p>
+</details>
+</div>
 <h4 id="mount-point">mount point：把另一個檔案系統接上來</h4>
 <p>一顆硬碟、一支隨身碟各有自己的檔案系統。<strong>mount</strong> 是把一個檔案系統「接」到目前目錄樹的某個目錄上，那個目錄叫 <strong>mount point</strong>（通常是空目錄）。接上之後，<code>/mnt/usb/report.txt</code> 就是隨身碟裡的 <code>report.txt</code>，使用者看到的是一棵完整的樹，不用管檔案實際在哪個裝置。</p>
+<div class="mcq" data-ans="3" data-qid="u5-more-mount">
+<p><strong>觀念題 28.</strong> 把隨身碟 mount 到 <code>/mnt/usb</code> 之前，<code>/mnt/usb</code> 裡本來就有一個檔案 <code>a.txt</code>。mount 之後會怎樣？</p>
+<ol>
+<li><code>a.txt</code> 被刪掉</li>
+<li><code>a.txt</code> 被複製到隨身碟</li>
+<li><code>a.txt</code> 被蓋住、暫時看不到；unmount 之後又會出現</li>
+<li>mount 失敗</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。mount 之後，<code>/mnt/usb</code> 底下看到的是隨身碟的內容，原本的檔案還在硬碟上，只是被蓋住了。所以 mount point 通常用空目錄。（有些系統不允許 mount 到非空目錄，但 UNIX 的一般行為是蓋住。）</p>
+</details>
+</div>
 <h4 id="os">開檔時，OS 記住哪些資訊？</h4>
 <p>每次讀寫都從頭找目錄太慢，所以 <code>open()</code> 時把資訊放進 <strong>open-file table</strong>，之後用 file descriptor 直接查表：</p>
 <table>
@@ -9525,6 +9936,19 @@ lock(second.lock);</code></pre>
 </tr>
 </tbody>
 </table>
+<div class="mcq" data-ans="4" data-qid="u5-more-3">
+<p><strong>觀念題 29.</strong> open-file table 裡，哪一項是<strong>每個 process 各自一份</strong>的？</p>
+<ol>
+<li>disk location</li>
+<li>file-open count</li>
+<li>檔案大小</li>
+<li>file pointer</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。兩個 process 同時讀一個檔案，讀到的位置可以不一樣，所以 file pointer 要各自記。disk location、open count 是這個檔案共用的資訊，放在系統共用的表。</p>
+</details>
+</div>
 <h4 id="cpu-io">CPU 怎麼知道 I/O 做完了？</h4>
 <table>
 <thead>
@@ -9556,6 +9980,27 @@ lock(second.lock);</code></pre>
 </tr>
 </tbody>
 </table>
+<div class="mcq" data-ans="2" data-qid="u5-more-2">
+<p><strong>觀念題 30.</strong> 要把磁碟上 1 MB 的資料讀進記憶體，哪一種方式最不佔 CPU？</p>
+<ol>
+<li>polling</li>
+<li>DMA</li>
+<li>每個 byte 一次 interrupt</li>
+<li>memory-mapped I/O 加上 polling</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。DMA controller 自己搬整塊資料，搬完才中斷 CPU 一次。polling 讓 CPU 一直等；每個 byte 一次中斷，中斷的開銷會比搬資料還大。</p>
+</details>
+</div>
+<div data-qid="u5-more-4">
+<p><strong>觀念題 31.</strong> 什麼情況下 polling 反而比 interrupt 好？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>裝置很快、資料馬上就會好</strong>的時候。這時 CPU 只要檢查幾次 status register 就等到了；如果改用 interrupt，要存目前的狀態、跳去 handler、再恢復，這些開銷可能比等幾個 cycle 還久。</p>
+<p>反過來，裝置很慢（例如鍵盤、磁碟）或事件不常發生時，polling 會讓 CPU 大部分時間在空轉，用 interrupt 才能讓 CPU 先去做別的事。</p>
+</details>
+</div>
 <p><strong>I/O 裝置的暫存器</strong>：通常有 data-in（給 CPU 讀）、data-out（CPU 寫給裝置）、status（忙不忙、有沒有錯誤）、control（下命令）四種。</p>
 <p><strong>CPU 怎麼碰到這些暫存器</strong>：</p>
 <ul>
@@ -9563,6 +10008,19 @@ lock(second.lock);</code></pre>
 <li><strong>memory-mapped I/O</strong>：把裝置的暫存器對應到記憶體位址，CPU 用一般的 load／store 讀寫。好處是不用特殊指令、程式好寫，大量資料（例如顯示卡的畫面記憶體）直接寫記憶體就好，比一個 byte 一個 byte 用 I/O 指令送快。</li>
 </ul>
 <p><strong>blocking、nonblocking、asynchronous I/O</strong>：blocking 是等 I/O 做完才回來（process 被暫停）；nonblocking 是馬上回來，有多少資料就給多少；asynchronous 是馬上回來，I/O 在背後做，<strong>做完再通知</strong>。</p>
+<div class="mcq" data-ans="3" data-qid="u5-more-async">
+<p><strong>觀念題 32.</strong> process 發出 I/O 要求後馬上回來繼續做事，I/O 在背後進行，<strong>整個做完</strong>才通知它。這是哪一種？</p>
+<ol>
+<li>blocking</li>
+<li>nonblocking</li>
+<li>asynchronous</li>
+<li>polling</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。nonblocking 也是馬上回來，但回來時就給「現在有多少」，不會在之後通知；asynchronous 是回來時什麼都還沒拿到，等全部做完再通知（例如 signal 或 callback）。</p>
+</details>
+</div>
 <div class="admonition example">
 <p class="admonition-title">104 Q6(1)（3%）：除了 single-level、two-level，還有哪三種常見的目錄結構？</p>
 <p>tree-structured、acyclic-graph、general graph（各自的特點見上表）。</p>
@@ -9584,56 +10042,11 @@ lock(second.lock);</code></pre>
 <p class="admonition-title">104 Q7(4)（3%）：什麼是 memory-mapped I/O？為什麼需要它？</p>
 <p>把裝置的控制暫存器（和緩衝區）對應到記憶體位址空間，CPU 用一般的 load／store 指令讀寫裝置。<strong>需要的原因</strong>：不用額外的 I/O 指令，程式和硬體都比較簡單；大量資料（例如畫面）可以直接寫到對應的記憶體，速度快。</p>
 </div>
-<h4 id="_43">觀念小考</h4>
-<div class="mcq" data-ans="3">
-<p><strong>C-1.</strong> acyclic-graph 目錄讓同一個檔案出現在好幾個目錄。刪除檔案時最需要處理的問題是？</p>
-<ol>
-<li>檔名太長</li>
-<li>目錄會形成迴圈</li>
-<li>其他目錄的 link 會指到已經刪掉的檔案</li>
-<li>檔案會被複製好幾份</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>C</strong>。dangling pointer。解法是 reference count：記錄有幾個 link 指到這個檔案，歸 0 才真的刪。B 是 general graph 的問題，acyclic 本來就不允許迴圈。D 錯：link 不是複製，只有一份資料。</p>
-</details>
-</div>
-<div class="mcq" data-ans="2">
-<p><strong>C-2.</strong> 要把磁碟上 1 MB 的資料讀進記憶體，哪一種方式最不佔 CPU？</p>
-<ol>
-<li>polling</li>
-<li>DMA</li>
-<li>每個 byte 一次 interrupt</li>
-<li>memory-mapped I/O 加上 polling</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>B</strong>。DMA controller 自己搬整塊資料，搬完才中斷 CPU 一次。polling 讓 CPU 一直等；每個 byte 一次中斷，中斷的開銷會比搬資料還大。</p>
-</details>
-</div>
-<div class="mcq" data-ans="4">
-<p><strong>C-3.</strong> open-file table 裡，哪一項是<strong>每個 process 各自一份</strong>的？</p>
-<ol>
-<li>disk location</li>
-<li>file-open count</li>
-<li>檔案大小</li>
-<li>file pointer</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>D</strong>。兩個 process 同時讀一個檔案，讀到的位置可以不一樣，所以 file pointer 要各自記。disk location、open count 是這個檔案共用的資訊，放在系統共用的表。</p>
-</details>
-</div>
-<p><strong>W-1.</strong> 什麼情況下 polling 反而比 interrupt 好？</p>
-<details class="quiz">
-<summary>看參考答案</summary>
-<p><strong>裝置很快、資料馬上就會好</strong>的時候。這時 CPU 只要檢查幾次 status register 就等到了；如果改用 interrupt，要存目前的狀態、跳去 handler、再恢復，這些開銷可能比等幾個 cycle 還久。</p>
-<p>反過來，裝置很慢（例如鍵盤、磁碟）或事件不常發生時，polling 會讓 CPU 大部分時間在空轉，用 interrupt 才能讓 CPU 先去做別的事。</p>
-</details>
-<h3 id="u5-concept">5.6 觀念小考</h3>
-<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
-<div class="mcq" data-ans="2">
-<p><strong>C-1.</strong> 5400 RPM 的硬碟，平均 rotational latency 大約是多少？</p>
+<h3 id="u5-concept">5.6 練習：簡單觀念題</h3>
+<p>一兩句話就能回答的題目，確認名詞和觀念有沒有記對。題目照主題分組；選擇題按下選項就會對答案，問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<h4 id="raid_1">磁碟與 RAID</h4>
+<div class="mcq" data-ans="2" data-qid="u5-concept-1">
+<p><strong>簡單 1.</strong> 5400 RPM 的硬碟，平均 rotational latency 大約是多少？</p>
 <ol>
 <li>11.1 ms</li>
 <li>5.56 ms</li>
@@ -9645,21 +10058,21 @@ lock(second.lock);</code></pre>
 <p><strong>B</strong>。一圈 <span class="arithmatex">\(\frac{60}{5400}\)</span> 秒 ≈ 11.1 ms，平均要等半圈，約 5.56 ms。A 是轉一整圈的時間。</p>
 </details>
 </div>
-<div class="mcq" data-ans="4">
-<p><strong>C-2.</strong> 要直接讀一個檔案的第 100 塊，哪一種配置方式最慢？</p>
+<div class="mcq" data-ans="1" data-qid="u5-bank-s1">
+<p><strong>簡單 2.</strong> 磁碟排程（SSTF、SCAN……）主要在縮短哪一段時間？</p>
 <ol>
-<li>連續配置</li>
-<li>索引配置</li>
-<li>FAT（表已經讀進記憶體）</li>
-<li>鏈結配置（每一塊存下一塊的位置）</li>
+<li>seek time</li>
+<li>rotational latency</li>
+<li>transfer time</li>
+<li>三段都一樣</li>
 </ol>
 <details class="quiz">
 <summary>看解析</summary>
-<p><strong>D</strong>。要從第 1 塊開始，一塊一塊讀出「下一塊在哪」，讀了 99 塊才知道第 100 塊在哪。FAT 把這些指標集中在記憶體裡，查表就好；連續配置直接算位置；索引配置查索引區塊。</p>
+<p><strong>A</strong>。排程決定讀寫頭先去哪個磁柱，縮短的是手臂移動的距離，也就是 seek time。等轉和傳輸的時間跟順序無關。</p>
 </details>
 </div>
-<div class="mcq" data-ans="1">
-<p><strong>C-3.</strong> 4 顆一樣大的硬碟做 RAID 5，可以用來存資料的容量是幾顆硬碟的量？</p>
+<div class="mcq" data-ans="1" data-qid="u5-concept-3">
+<p><strong>簡單 3.</strong> 4 顆一樣大的硬碟做 RAID 5，可以用來存資料的容量是幾顆硬碟的量？</p>
 <ol>
 <li>3 顆</li>
 <li>2 顆</li>
@@ -9671,21 +10084,8 @@ lock(second.lock);</code></pre>
 <p><strong>A</strong>。每一列有 1 塊 parity，其他 3 塊是資料，容量是 <span class="arithmatex">\(\frac{n-1}{n}\)</span>。B 是 RAID 1（存兩份）的結果。</p>
 </details>
 </div>
-<div class="mcq" data-ans="3">
-<p><strong>C-4.</strong> 區塊 2 KB、指標 4 bytes，i-node 有 10 個 direct、1 個 single indirect、1 個 double indirect，最大的檔案有幾個資料區塊？</p>
-<ol>
-<li><span class="arithmatex">\(10+512\)</span></li>
-<li><span class="arithmatex">\(10+2\times512\)</span></li>
-<li><span class="arithmatex">\(10+512+512^2\)</span></li>
-<li><span class="arithmatex">\(512^3\)</span></li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>C</strong>。一個區塊放 <span class="arithmatex">\(2048\div4=512\)</span> 個指標。single indirect 指到 512 塊；double indirect 指到 512 個索引區塊，每個再指到 512 塊，共 <span class="arithmatex">\(512^2\)</span>。</p>
-</details>
-</div>
-<div class="mcq" data-ans="2">
-<p><strong>C-5.</strong> RAID 5 為什麼把 parity 輪流放在每一顆，而不是集中在同一顆？</p>
+<div class="mcq" data-ans="2" data-qid="u5-concept-5">
+<p><strong>簡單 4.</strong> RAID 5 為什麼把 parity 輪流放在每一顆，而不是集中在同一顆？</p>
 <ol>
 <li>讓總容量變大</li>
 <li>每次寫入都要更新 parity，集中在一顆會變成瓶頸</li>
@@ -9697,7 +10097,131 @@ lock(second.lock);</code></pre>
 <p><strong>B</strong>。parity 集中在一顆是 RAID 4，所有寫入都要動到那一顆。D 是 RAID 6（P＋Q 兩份校驗）才做得到。</p>
 </details>
 </div>
-<p><strong>W-1.</strong> 7200 RPM、平均 seek 8 ms、傳輸率 100 MB/s（1 MB 以 <span class="arithmatex">\(10^6\)</span> bytes、1 KB 以 <span class="arithmatex">\(10^3\)</span> bytes 計）。讀一個 4 KB 的區塊平均要多久？讀一個連續存放的 4 MB 檔案呢？如果那 1000 個區塊散落在磁碟各處呢？</p>
+<div class="mcq" data-ans="3" data-qid="u5-bank-s3">
+<p><strong>簡單 5.</strong> RAID 0 的優缺點是？</p>
+<ol>
+<li>很安全，但容量剩一半</li>
+<li>可以壞一顆，容量剩 <span class="arithmatex">\(\frac{n-1}{n}\)</span></li>
+<li>讀寫快、容量全部可用，但任何一顆壞掉資料就毀了</li>
+<li>可以壞兩顆</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。RAID 0 只做 striping，沒有任何備份或校驗。A 是 RAID 1，B 是 RAID 5，D 是 RAID 6。</p>
+</details>
+</div>
+<h4 id="i-node_1">檔案配置與 i-node</h4>
+<div class="mcq" data-ans="4" data-qid="u5-concept-2">
+<p><strong>簡單 6.</strong> 要直接讀一個檔案的第 100 塊，哪一種配置方式最慢？</p>
+<ol>
+<li>連續配置</li>
+<li>索引配置</li>
+<li>FAT（表已經讀進記憶體）</li>
+<li>鏈結配置（每一塊存下一塊的位置）</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。要從第 1 塊開始，一塊一塊讀出「下一塊在哪」，讀了 99 塊才知道第 100 塊在哪。FAT 把這些指標集中在記憶體裡，查表就好；連續配置直接算位置；索引配置查索引區塊。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u5-bank-s2">
+<p><strong>簡單 7.</strong> FAT 為什麼比單純的鏈結配置快？</p>
+<ol>
+<li>FAT 用連續配置</li>
+<li>每一塊的「下一塊」都集中在一張表，表可以放進記憶體，找第 <span class="arithmatex">\(i\)</span> 塊時只要在記憶體裡查表</li>
+<li>FAT 不需要指標</li>
+<li>FAT 會把檔案壓縮</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。單純的鏈結配置，指標存在每一個資料區塊裡，要讀出第 1 塊才知道第 2 塊在哪，每一步都要讀磁碟。FAT 還是一個串一個，但查的是記憶體裡的表。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u5-bank-s4">
+<p><strong>簡單 8.</strong> 連續配置用久了，空間被切成很多不連續的小洞。怎麼解決？</p>
+<ol>
+<li>改用 RAID</li>
+<li>把檔案搬到一起，把小洞合成一大塊（compaction、磁碟重組）</li>
+<li>把區塊變大</li>
+<li>不用處理，不會影響</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。這是外部碎片，跟記憶體的連續配置一樣（<a href="#u4-alloc">4.5</a>）。搬檔案要花很多時間，所以通常在離峰時做，或乾脆改用鏈結、索引配置。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3" data-qid="u5-concept-4">
+<p><strong>簡單 9.</strong> 區塊 2 KB、指標 4 bytes，i-node 有 10 個 direct、1 個 single indirect、1 個 double indirect，最大的檔案有幾個資料區塊？</p>
+<ol>
+<li><span class="arithmatex">\(10+512\)</span></li>
+<li><span class="arithmatex">\(10+2\times512\)</span></li>
+<li><span class="arithmatex">\(10+512+512^2\)</span></li>
+<li><span class="arithmatex">\(512^3\)</span></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。一個區塊放 <span class="arithmatex">\(2048\div4=512\)</span> 個指標。single indirect 指到 512 塊；double indirect 指到 512 個索引區塊，每個再指到 512 塊，共 <span class="arithmatex">\(512^2\)</span>。</p>
+</details>
+</div>
+<h4 id="io">目錄、開檔與 I/O</h4>
+<div class="mcq" data-ans="2" data-qid="u5-bank-s6">
+<p><strong>簡單 10.</strong> 目前目錄是 <code>/home/amy</code>。<code>/home/amy/os/notes.txt</code> 寫成相對路徑是什麼？</p>
+<ol>
+<li><code>/os/notes.txt</code></li>
+<li><code>os/notes.txt</code></li>
+<li><code>home/amy/os/notes.txt</code></li>
+<li><code>../os/notes.txt</code></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。相對路徑從目前目錄開始找，開頭不加 <code>/</code>。A 開頭有 <code>/</code>，是從根目錄找；D 的 <code>..</code> 是上一層，會變成 <code>/home/os/notes.txt</code>。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3" data-qid="u5-bank-s5">
+<p><strong>簡單 11.</strong> UNIX 的 <code>open()</code> 成功時回傳什麼？</p>
+<ol>
+<li>檔案的內容</li>
+<li>檔案在磁碟上的位置</li>
+<li>file descriptor：這個 process 的開檔表裡的一個索引</li>
+<li>檔案的 i-node</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。之後的 <code>read()</code>、<code>write()</code> 都用這個整數，直接查開檔表，不用每次重新找目錄（<a href="#u5-more">5.5</a>）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="1" data-qid="u5-bank-s7">
+<p><strong>簡單 12.</strong> 下面哪一組分類是對的？</p>
+<ol>
+<li>硬碟是 block device，鍵盤是 character device</li>
+<li>硬碟是 character device，鍵盤是 block device</li>
+<li>兩個都是 block device</li>
+<li>兩個都是 network device</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。block device 一次讀寫一整塊，可以指定第幾塊（read、write、seek）；character device 一次一個字元的串流（get、put），不能跳到某個位置。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u5-bank-s8">
+<p><strong>簡單 13.</strong> DMA 在搬資料時，CPU 有時候會稍微變慢。為什麼？</p>
+<ol>
+<li>DMA 會關掉 CPU 的中斷</li>
+<li>DMA 和 CPU 要搶記憶體匯流排，DMA 用的時候 CPU 暫時存取不到主記憶體（cycle stealing）</li>
+<li>DMA 要 CPU 一個 byte 一個 byte 幫忙</li>
+<li>DMA 會清空 cache</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。DMA 偶爾「偷」幾個匯流排週期，CPU 剛好要存取記憶體時就要等一下；但跟 CPU 自己搬全部資料比，還是省很多。</p>
+</details>
+</div>
+<h3 id="u5-drill">5.7 練習：基礎題</h3>
+<p>要動手算存取時間、排磁碟排程、算 i-node，但每題只用到一個觀念。先自己算，再打開對答案；答案都用程式驗算過。</p>
+<h4 id="_42">磁碟存取時間</h4>
+<p><strong>做法</strong>：seek ＋ 平均 rotational latency（轉半圈）＋ transfer；連續存放時只要一次 seek 和一次等轉（<a href="#u5-0">5.0</a>）。</p>
+<div data-qid="u5-concept-6">
+<p><strong>基礎 1.</strong> 7200 RPM、平均 seek 8 ms、傳輸率 100 MB/s（1 MB 以 <span class="arithmatex">\(10^6\)</span> bytes、1 KB 以 <span class="arithmatex">\(10^3\)</span> bytes 計）。讀一個 4 KB 的區塊平均要多久？讀一個連續存放的 4 MB 檔案呢？如果那 1000 個區塊散落在磁碟各處呢？</p>
 <details class="quiz">
 <summary>看參考答案</summary>
 <ul>
@@ -9708,18 +10232,11 @@ lock(second.lock);</code></pre>
 </ul>
 <p>同樣的資料量，放在一起快了二百多倍：時間幾乎都花在 seek 和等轉，不是傳輸。</p>
 </details>
-<p><strong>W-2.</strong> 區塊 4 KB、指標 4 bytes，i-node 有 12 個 direct，single、double、triple indirect 各 1 個。(a) 最大檔案大約多大？(b) 要讀一個檔案的第 3,000,000 個 byte（從 0 算），i-node 已經在記憶體裡，要讀幾次磁碟？</p>
-<details class="quiz">
-<summary>看參考答案</summary>
-<p><strong>(a) 約 4 TB</strong>：一塊放 <span class="arithmatex">\(4096\div4=1024=2^{10}\)</span> 個指標。資料區塊數 <span class="arithmatex">\(12+2^{10}+2^{20}+2^{30}\)</span>，每塊 4 KB：</p>
-<div class="arithmatex">\[\begin{aligned}&amp;48\text{ KB}+4\text{ MB}+4\text{ GB}+4\text{ TB}\\&amp;\approx4\text{ TB}\end{aligned}\]</div>
-<p><strong>(b) 2 次</strong>：<span class="arithmatex">\(3000000\div4096=732\)</span> 餘 1728，是第 732 塊（從 0 算）。direct 管第 0–11 塊，single indirect 管第 12–1035 塊，所以在 single indirect 的範圍：先讀那個索引區塊，再讀資料區塊。</p>
-</details>
-<h3 id="u5-drill">5.7 換數字練習</h3>
-<p>同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。</p>
-<h4 id="_44">題型一：磁碟排程的移動距離</h4>
+</div>
+<h4 id="_43">磁碟排程的移動距離</h4>
 <p><strong>做法</strong>：照演算法排出服務順序，相鄰相減加總；C-SCAN、C-LOOK 把含跳回和不含的都寫出來（<a href="#u5-sched">5.4</a>）。</p>
-<p><strong>P-1.</strong> 磁柱 0～199，讀寫頭在 53、正往編號大的方向移動。要求依序是 98, 183, 37, 122, 14, 124, 65, 67。用 FCFS，服務順序和總移動距離？</p>
+<div data-qid="u5-drill-1">
+<p><strong>基礎 2.</strong> 磁柱 0～199，讀寫頭在 53、正往編號大的方向移動。要求依序是 98, 183, 37, 122, 14, 124, 65, 67。用 FCFS，服務順序和總移動距離？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9728,7 +10245,9 @@ lock(second.lock);</code></pre>
 </ul>
 <p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>98,183,37,122,14,124,65,67</code>、讀寫頭 53、方向往大、最大 199，演算法選 FCFS。</p>
 </details>
-<p><strong>P-2.</strong> 磁柱 0～199，讀寫頭在 53、正往編號大的方向移動。要求依序是 98, 183, 37, 122, 14, 124, 65, 67。用 SSTF，服務順序和總移動距離？</p>
+</div>
+<div data-qid="u5-drill-2">
+<p><strong>基礎 3.</strong> 磁柱 0～199，讀寫頭在 53、正往編號大的方向移動。要求依序是 98, 183, 37, 122, 14, 124, 65, 67。用 SSTF，服務順序和總移動距離？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9737,7 +10256,9 @@ lock(second.lock);</code></pre>
 </ul>
 <p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>98,183,37,122,14,124,65,67</code>、讀寫頭 53、方向往大、最大 199，演算法選 SSTF。</p>
 </details>
-<p><strong>P-3.</strong> 磁柱 0～199，讀寫頭在 143、正往編號大的方向移動。要求依序是 86, 147, 91, 177, 94, 150, 102, 175, 130。用 SCAN，服務順序和總移動距離？</p>
+</div>
+<div data-qid="u5-drill-3">
+<p><strong>基礎 4.</strong> 磁柱 0～199，讀寫頭在 143、正往編號大的方向移動。要求依序是 86, 147, 91, 177, 94, 150, 102, 175, 130。用 SCAN，服務順序和總移動距離？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9747,7 +10268,9 @@ lock(second.lock);</code></pre>
 </ul>
 <p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>86,147,91,177,94,150,102,175,130</code>、讀寫頭 143、方向往大、最大 199，演算法選 SCAN。</p>
 </details>
-<p><strong>P-4.</strong> 磁柱 0～199，讀寫頭在 143、正往編號大的方向移動。要求依序是 86, 147, 91, 177, 94, 150, 102, 175, 130。用 LOOK，服務順序和總移動距離？</p>
+</div>
+<div data-qid="u5-drill-4">
+<p><strong>基礎 5.</strong> 磁柱 0～199，讀寫頭在 143、正往編號大的方向移動。要求依序是 86, 147, 91, 177, 94, 150, 102, 175, 130。用 LOOK，服務順序和總移動距離？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9757,7 +10280,9 @@ lock(second.lock);</code></pre>
 </ul>
 <p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>86,147,91,177,94,150,102,175,130</code>、讀寫頭 143、方向往大、最大 199，演算法選 LOOK。</p>
 </details>
-<p><strong>P-5.</strong> 磁柱 0～199，讀寫頭在 50、正往編號大的方向移動。要求依序是 45, 21, 67, 90, 4, 55, 89, 52, 61, 87。用 C-SCAN，服務順序和總移動距離？</p>
+</div>
+<div data-qid="u5-drill-5">
+<p><strong>基礎 6.</strong> 磁柱 0～199，讀寫頭在 50、正往編號大的方向移動。要求依序是 45, 21, 67, 90, 4, 55, 89, 52, 61, 87。用 C-SCAN，服務順序和總移動距離？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9767,7 +10292,9 @@ lock(second.lock);</code></pre>
 </ul>
 <p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>45,21,67,90,4,55,89,52,61,87</code>、讀寫頭 50、方向往大、最大 199，演算法選 C-SCAN；跳回那段選「算進」會得到 393、選「不算」會得到 194。</p>
 </details>
-<p><strong>P-6.</strong> 磁柱 0～199，讀寫頭在 50、正往編號大的方向移動。要求依序是 45, 21, 67, 90, 4, 55, 89, 52, 61, 87。用 C-LOOK，服務順序和總移動距離？</p>
+</div>
+<div data-qid="u5-drill-6">
+<p><strong>基礎 7.</strong> 磁柱 0～199，讀寫頭在 50、正往編號大的方向移動。要求依序是 45, 21, 67, 90, 4, 55, 89, 52, 61, 87。用 C-LOOK，服務順序和總移動距離？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9777,9 +10304,11 @@ lock(second.lock);</code></pre>
 </ul>
 <p>用動畫對答案：在 <a href="#u5-sched">5.4 的動畫</a> 要求填 <code>45,21,67,90,4,55,89,52,61,87</code>、讀寫頭 50、方向往大、最大 199，演算法選 C-LOOK；跳回那段選「算進」會得到 167、選「不算」會得到 81。</p>
 </details>
-<h4 id="i-node_1">題型二：i-node 最大檔案</h4>
+</div>
+<h4 id="i-node_2">i-node 最大檔案</h4>
 <p><strong>做法</strong>：一塊放 <span class="arithmatex">\(k\)</span> ＝ 區塊 ÷ 指標 個指標；資料區塊數 ＝ direct ＋ <span class="arithmatex">\(k\)</span> ＋ <span class="arithmatex">\(k^2\)</span> ＋ <span class="arithmatex">\(k^3\)</span>。最後檢查指標夠不夠大：<span class="arithmatex">\(p\)</span> bytes 的指標最多指到 <span class="arithmatex">\(2^{8p}\)</span> 個區塊，兩個上限取小的（<a href="#u5-0">5.0</a>）。</p>
-<p><strong>P-7.</strong> 區塊 4096 B、指標 4 B，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+<div data-qid="u5-drill-7">
+<p><strong>基礎 8.</strong> 區塊 4096 B、指標 4 B，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9789,7 +10318,9 @@ lock(second.lock);</code></pre>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(1074791436\times4096\)</span> B，約 4 TB。</li>
 </ul>
 </details>
-<p><strong>P-8.</strong> 區塊 1024 B、指標 4 B，i-node 有 10 個 direct 和 single、double indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+</div>
+<div data-qid="u5-drill-8">
+<p><strong>基礎 9.</strong> 區塊 1024 B、指標 4 B，i-node 有 10 個 direct 和 single、double indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9799,7 +10330,9 @@ lock(second.lock);</code></pre>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(65802\times1024\)</span> B，約 64.3 MB。</li>
 </ul>
 </details>
-<p><strong>P-9.</strong> 區塊 8192 B、指標 8 B，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+</div>
+<div data-qid="u5-drill-9">
+<p><strong>基礎 10.</strong> 區塊 8192 B、指標 8 B，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9809,7 +10342,9 @@ lock(second.lock);</code></pre>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(1074791436\times8192\)</span> B，約 8.01 TB。</li>
 </ul>
 </details>
-<p><strong>P-10.</strong> 區塊 2048 B、指標 4 B，i-node 有 10 個 direct 和 single indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+</div>
+<div data-qid="u5-drill-10">
+<p><strong>基礎 11.</strong> 區塊 2048 B、指標 4 B，i-node 有 10 個 direct 和 single indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9819,7 +10354,9 @@ lock(second.lock);</code></pre>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(522\times2048\)</span> B，約 1.02 MB。</li>
 </ul>
 </details>
-<p><strong>P-11.</strong> 區塊 4096 B、指標 8 B，i-node 有 12 個 direct 和 single、double indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+</div>
+<div data-qid="u5-drill-11">
+<p><strong>基礎 12.</strong> 區塊 4096 B、指標 8 B，i-node 有 12 個 direct 和 single、double indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9829,7 +10366,9 @@ lock(second.lock);</code></pre>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(262668\times4096\)</span> B，約 1 GB。</li>
 </ul>
 </details>
-<p><strong>P-12.</strong> 區塊 512 B、指標 4 B，i-node 有 10 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+</div>
+<div data-qid="u5-drill-12">
+<p><strong>基礎 13.</strong> 區塊 512 B、指標 4 B，i-node 有 10 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9839,7 +10378,9 @@ lock(second.lock);</code></pre>
 <li><strong>最大檔案</strong>：<span class="arithmatex">\(2113674\times512\)</span> B，約 1.01 GB。</li>
 </ul>
 </details>
-<p><strong>P-13.</strong> 區塊 8192 B、指標 4 B，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+</div>
+<div data-qid="u5-drill-13">
+<p><strong>基礎 14.</strong> 區塊 8192 B、指標 4 B，i-node 有 12 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9849,7 +10390,9 @@ lock(second.lock);</code></pre>
 <li><strong>最大檔案</strong>：兩個上限取小的，最多 <span class="arithmatex">\(2^{32}\)</span> 個資料區塊，<span class="arithmatex">\(2^{32}\times8192\)</span> B，約 32 TB。只看結構會算出 64 TB，但指標指不到那麼多區塊；作答時兩個都寫，說明取小的。</li>
 </ul>
 </details>
-<p><strong>P-14.</strong> 區塊 1024 B、指標 2 B，i-node 有 8 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
+</div>
+<div data-qid="u5-drill-14">
+<p><strong>基礎 15.</strong> 區塊 1024 B、指標 2 B，i-node 有 8 個 direct 和 single、double、triple indirect 各一個。最大的檔案有幾個資料區塊？多大？</p>
 <details class="quiz">
 <summary>看完整解答</summary>
 <ul>
@@ -9859,7 +10402,287 @@ lock(second.lock);</code></pre>
 <li><strong>最大檔案</strong>：兩個上限取小的，最多 <span class="arithmatex">\(2^{16}\)</span> 個資料區塊，<span class="arithmatex">\(2^{16}\times1024\)</span> B，約 64 MB。只看結構會算出 128 GB，但指標指不到那麼多區塊；作答時兩個都寫，說明取小的。</li>
 </ul>
 </details>
-<h3 id="u5-en">5.8 英文作答範例</h3>
+</div>
+<h4 id="_44">找到檔案的某一塊</h4>
+<p><strong>做法</strong>：先算出是第幾塊，再看它落在 direct、single、double 哪一段；每經過一層索引就多讀一次磁碟。</p>
+<div data-qid="u5-concept-7">
+<p><strong>基礎 16.</strong> 區塊 4 KB、指標 4 bytes，i-node 有 12 個 direct，single、double、triple indirect 各 1 個。(a) 最大檔案大約多大？(b) 要讀一個檔案的第 3,000,000 個 byte（從 0 算），i-node 已經在記憶體裡，要讀幾次磁碟？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<p><strong>(a) 約 4 TB</strong>：一塊放 <span class="arithmatex">\(4096\div4=1024=2^{10}\)</span> 個指標。資料區塊數 <span class="arithmatex">\(12+2^{10}+2^{20}+2^{30}\)</span>，每塊 4 KB：</p>
+<div class="arithmatex">\[\begin{aligned}&amp;48\text{ KB}+4\text{ MB}+4\text{ GB}+4\text{ TB}\\&amp;\approx4\text{ TB}\end{aligned}\]</div>
+<p><strong>(b) 2 次</strong>：<span class="arithmatex">\(3000000\div4096=732\)</span> 餘 1728，是第 732 塊（從 0 算）。direct 管第 0–11 塊，single indirect 管第 12–1035 塊，所以在 single indirect 的範圍：先讀那個索引區塊，再讀資料區塊。</p>
+</details>
+</div>
+<div data-qid="u5-bank-b1">
+<p><strong>基礎 17.</strong> 區塊 1 KB、指標 4 bytes，i-node 有 12 個 direct、1 個 single indirect、1 個 double indirect。要讀檔案的第 300,000 個 byte（從 0 算），它在第幾個資料區塊？要經過哪一層指標？i-node 已經在記憶體裡，要讀幾次磁碟？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>第幾塊</strong>：<span class="arithmatex">\(300000\div1024=292\)</span> 餘 992，是第 292 塊（從 0 算）、塊內第 992 個 byte。</li>
+<li><strong>每一層管哪些塊</strong>：一塊放 <span class="arithmatex">\(1024\div4=256\)</span> 個指標。direct 管第 0–11 塊；single indirect 管第 12–267 塊；double indirect 從第 268 塊開始。</li>
+<li><strong>在 double indirect</strong>：<span class="arithmatex">\(292-268=24\)</span>，是 double indirect 底下的第 24 塊：第一層索引的第 <span class="arithmatex">\(24\div256=0\)</span> 格，第二層索引的第 24 格。</li>
+<li><strong>讀幾次磁碟（3 次）</strong>：double indirect 的第一層索引區塊、第二層索引區塊、資料區塊。</li>
+</ul>
+<p>我用程式照這個 i-node 的結構算過一次。</p>
+</details>
+</div>
+<div data-qid="u5-bank-b3">
+<p><strong>基礎 18.</strong> 一個檔案用 FAT 配置，目錄裡記的第一塊是 4。FAT 的內容：第 4 格是 9、第 9 格是 2、第 2 格是 7、第 7 格是「結束」。這個檔案依序用了哪些區塊？要讀它的第 3 塊（從 1 算），要在 FAT 裡查幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>區塊</strong>：從 4 開始，FAT[4] ＝ 9、FAT[9] ＝ 2、FAT[2] ＝ 7、FAT[7] ＝ 結束 → <strong>4, 9, 2, 7</strong>。</li>
+<li><strong>第 3 塊（2 號區塊）</strong>：從第 1 塊 4 出發，查 FAT[4] 得到第 2 塊 9，再查 FAT[9] 得到第 3 塊 2，共查 <strong>2 次</strong>。</li>
+<li><strong>重點</strong>：還是一塊接一塊地找，但查的是記憶體裡的 FAT，不用讀磁碟；單純的鏈結配置每一步都要讀一次磁碟。</li>
+</ul>
+</details>
+</div>
+<div data-qid="u5-bank-b5">
+<p><strong>基礎 19.</strong> 要打開 <code>/usr/ast/mbox</code>。根目錄的 i-node 已經在記憶體裡，每個目錄都只有一個區塊，讀一個 i-node 或一個目錄區塊各要讀一次磁碟。要讀幾次磁碟，才拿到 mbox 的 i-node？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<p>每一層都是「讀目錄的內容 → 找到下一層的 i-node 編號 → 讀那個 i-node」：</p>
+<ol>
+<li>讀根目錄的區塊，找到 usr 的 i-node 編號。</li>
+<li>讀 usr 的 i-node。</li>
+<li>讀 usr 的目錄區塊，找到 ast 的 i-node 編號。</li>
+<li>讀 ast 的 i-node。</li>
+<li>讀 ast 的目錄區塊，找到 mbox 的 i-node 編號。</li>
+<li>讀 mbox 的 i-node。</li>
+</ol>
+<p>共 <strong>6 次</strong>。路徑越深越慢，所以 <code>open()</code> 時只找一次，之後用 file descriptor 查開檔表；OS 也會把最近查過的目錄記在記憶體裡。</p>
+</details>
+</div>
+<h4 id="raid_2">RAID</h4>
+<div data-qid="u5-bank-b2">
+<p><strong>基礎 20.</strong> RAID 5 的一列有 4 塊資料和 1 塊 parity：D0 ＝ 1100、D1 ＝ 0110、D2 ＝ 0011、D3 ＝ 0000，P ＝ 1001。現在要把 D1 改成 1010。新的 P 是多少？最少要讀寫磁碟幾次？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>不用讀全部</strong>：新 P ＝ 舊 P XOR 舊 D1 XOR 新 D1。舊 D1 在 P 裡「XOR 兩次」就抵銷，再把新的 XOR 進去。</li>
+<li><strong>算</strong>：1001 XOR 0110 ＝ 1111；1111 XOR 1010 ＝ <strong>0101</strong>。</li>
+<li><strong>驗算</strong>：1100 XOR 1010 XOR 0011 XOR 0000 ＝ 0101，一樣。</li>
+<li><strong>讀寫幾次（4 次）</strong>：讀舊 D1、讀舊 P、寫新 D1、寫新 P。改一小塊資料就要 4 次 I/O，這是 RAID 5 小筆寫入比較慢的原因。</li>
+</ul>
+<p>我用程式算過 XOR，兩種算法都是 0101。</p>
+</details>
+</div>
+<h3 id="u5-exam">5.8 練習：考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<div data-qid="u5-exam-1">
+<p><strong>考古變化 1.</strong>（改自 111 Q5・換數字・延伸）i-node 有 12 個直接區塊和 single、double、triple 間接區塊各一個；區塊 4 KB、指標 4 bytes。(a) 最大的檔案有幾個資料區塊？大約多大？(b) 4 bytes 的指標最多能指到多大的磁碟？哪一個限制比較緊？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：直接區塊、區塊大小、指標大小都換了；(b) 多問指標寬度本身的限制。</li>
+<li><strong>每個區塊放幾個指標</strong>：<span class="arithmatex">\(\frac{4\text{ KB}}{4\text{ B}}=1024=2^{10}\)</span>。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(12+2^{10}+2^{20}+2^{30}\)</span> 個資料區塊，乘 4 KB 大約是 <span class="arithmatex">\(2^{30}\times4\text{ KB}=\)</span> <strong>4 TB</strong>（再加 4 GB、4 MB、48 KB 幾乎可以忽略）。</li>
+<li><strong>(b)</strong>：4 bytes 的指標能分辨 <span class="arithmatex">\(2^{32}\)</span> 個區塊，最多指到 <span class="arithmatex">\(2^{32}\times4\text{ KB}=\)</span> <strong>16 TB</strong> 的磁碟。</li>
+<li><strong>哪個比較緊</strong>：i-node 的結構只能撐到約 4 TB，比 16 TB 小，所以單一檔案的上限由<strong>結構</strong>決定。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u5-exam-2">
+<p><strong>考古變化 2.</strong>（改自 111 Q7・換數字・延伸）讀一個 200 個區塊的檔案。未聚集時每個區塊平均 seek 8 ms；聚集後平均 seek 1 ms；rotational latency 平均 4 ms，每個區塊傳輸 0.05 ms。(1) 兩種各要多久？(2) 如果檔案完全連續，只要 seek 一次、等一次轉動，之後連續讀，要多久？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了；(2) 多問「完全連續」，看出為什麼要盡量讓檔案放在一起。</li>
+<li><strong>(1) 未聚集</strong>：<span class="arithmatex">\(200\times(8+4+0.05)=\)</span> <strong>2410 ms</strong>；<strong>聚集</strong>：<span class="arithmatex">\(200\times(1+4+0.05)=\)</span> <strong>1010 ms</strong>。</li>
+<li><strong>(2)</strong>：<span class="arithmatex">\(8+4+200\times0.05=\)</span> <strong>22 ms</strong>。</li>
+<li><strong>觀察</strong>：聚集只省了 seek，每個區塊還是要等一次轉動；完全連續時連轉動都只等一次，快了一百倍。磁碟的時間幾乎都花在機械動作上。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u5-exam-3">
+<p><strong>考古變化 3.</strong>（改自 110 Q2・換數字）磁柱 0–499，讀寫頭正在服務 143、上一個是 125；佇列（FIFO）86, 470, 313, 48, 409, 175, 22, 255。FCFS、SSTF、SCAN、LOOK、C-SCAN、C-LOOK 的總移動距離各是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：數字換了，多了 SSTF 和 C-SCAN；這組資料裡 SSTF 剛好跟 LOOK 一樣遠，可以順便比較。</li>
+<li><strong>方向</strong>：從 125 移到 143，正往編號大的方向走。</li>
+<li><strong>FCFS（1844）</strong>：照佇列順序 143 → 86 → 470 → 313 → 48 → 409 → 175 → 22 → 255，距離 <span class="arithmatex">\(57+384+157+265+361+234+153+233\)</span>。</li>
+<li><strong>SSTF（775）</strong>：每次選最近的：175, 255, 313, 409, 470, 86, 48, 22。到 470 時只剩下面的，一路往下。</li>
+<li><strong>SCAN（833）</strong>：往上 175, 255, 313, 409, 470，走到盡頭 499，回頭 86, 48, 22：<span class="arithmatex">\((499-143)+(499-22)=356+477\)</span>。</li>
+<li><strong>LOOK（775）</strong>：往上到 470 就回頭：<span class="arithmatex">\((470-143)+(470-22)=327+448\)</span>。</li>
+<li><strong>C-SCAN（含跳回 941，不含 442）</strong>：往上到 499，跳回 0，再 22, 48, 86：<span class="arithmatex">\(356+499+86\)</span>；不算跳回那段是 <span class="arithmatex">\(356+86\)</span>。</li>
+<li><strong>C-LOOK（含跳回 839，不含 391）</strong>：往上到 470，跳回 22，再 48, 86：<span class="arithmatex">\(327+448+64\)</span>；不算跳回是 <span class="arithmatex">\(327+64\)</span>。</li>
+<li><strong>作答時</strong>：C-SCAN、C-LOOK 要寫清楚有沒有把跳回那段算進去。</li>
+</ul>
+<p>我用程式把六種演算法都模擬過，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u5-exam-4">
+<p><strong>考古變化 4.</strong>（改自 102 Q7、104 Q6(2)、107 Q3(2)・改方向）磁柱 0–199，讀寫頭在 100，<strong>正往 0 的方向</strong>移動；佇列 23, 89, 132, 42, 187, 11, 156。寫出 SSTF、SCAN、C-LOOK 的服務順序和總移動距離（C-LOOK 含跳回那段）。</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：這次是往 0 走，SCAN、C-LOOK 都要先處理比 100 小的要求；C-LOOK 跳回去之後是從最大的往下服務。</li>
+<li><strong>SSTF（285）</strong>：100 → 89（11）→ 132（43）→ 156（24）→ 187（31）→ 42（145）→ 23（19）→ 11（12）。SSTF 不管方向：到 89 時 132 差 43、42 差 47，所以先往上。</li>
+<li><strong>SCAN（287）</strong>：往下 89, 42, 23, 11，走到 0，再回頭 132, 156, 187：<span class="arithmatex">\(100+187\)</span>。</li>
+<li><strong>C-LOOK（320）</strong>：往下 89, 42, 23, 11，跳到最大的 187，再往下 156, 132：<span class="arithmatex">\((100-11)+(187-11)+(187-132)=89+176+55\)</span>。</li>
+<li><strong>觀察</strong>：SSTF 在 89 時被「附近」的 132 吸走，結果最後要從 187 一路跑回 11，總距離反而比 SCAN 只少一點點；SSTF 也可能讓遠處的要求一直等（starvation）。</li>
+</ul>
+<p>我用程式把三種演算法都模擬過，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u5-exam-5">
+<p><strong>考古變化 5.</strong>（改自 115 Q4・改方法）磁碟的 logical block 17 壞了，第一個可用的備用 sector 在 sector 202 後面。(a) 用 sector sparing 怎麼處理？(b) 用 sector slipping 怎麼處理？(c) 兩種方法各有什麼缺點？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只問 sparing 的步驟；這題再加上另一種做法 slipping，比較兩者。</li>
+<li><strong>(a) sector sparing</strong>：controller 把 block 17 對應到那個備用 sector。之後讀寫 block 17 時，controller 自動把請求轉到備用 sector。</li>
+<li><strong>(b) sector slipping</strong>：把 17 到 202 的資料<strong>全部往後挪一格</strong>：202 搬到備用 sector、201 搬到 202、……、18 搬到 19，空出來的 18 號 sector 給 block 17 用。</li>
+<li><strong>(c) 缺點</strong>：<ul>
+<li>sparing：備用 sector 通常離原本的位置很遠，讀 block 17 時讀寫頭要多跑一段，可能打亂 OS 的磁碟排程（原本以為是連續的區塊，其實不是）。</li>
+<li>slipping：要搬動很多 sector，修復時很花時間；好處是之後的區塊還是連續的。</li>
+</ul>
+</li>
+</ul>
+</details>
+</div>
+<div data-qid="u5-exam-6">
+<p><strong>考古變化 6.</strong>（改自 107 Q3(3)・實際算）RAID 有 4 顆資料磁碟和 1 顆 parity 磁碟。某個位置的資料分別是 D0 ＝ 1011 0010、D1 ＝ 0110 1100、D2 ＝ 1110 0001、D3 ＝ 0001 1111。(a) parity 是多少？(b) D2 壞了，怎麼救回來？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只要說明 parity 怎麼運作；這題用位元真的算一次。</li>
+<li><strong>(a) parity ＝ 四顆 XOR</strong>：<ul>
+<li>D0 ⊕ D1 ＝ 1101 1110</li>
+<li>⊕ D2 ＝ 0011 1111</li>
+<li>⊕ D3 ＝ <strong>0010 0000</strong></li>
+</ul>
+</li>
+<li><strong>(b)</strong>：把剩下的資料和 parity 全部 XOR：D0 ⊕ D1 ⊕ D3 ⊕ P ＝ 1101 1110 ⊕ 0001 1111 ⊕ 0010 0000 ＝ <strong>1110 0001</strong>，就是 D2。</li>
+<li><strong>為什麼可以</strong>：<span class="arithmatex">\(x\oplus x=0\)</span>，所以 parity 再跟其他三顆 XOR，就只剩下壞掉的那一顆。只能救<strong>一顆</strong>；同時壞兩顆就救不回來（RAID 6 多一組 parity 才能救兩顆）。</li>
+</ul>
+<p>我用程式算過 XOR，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u5-exam-7">
+<p><strong>考古變化 7.</strong>（改自 112 Q7(b)・判斷）下面三種情況，各符合哪一種 consistency semantics（UNIX、session、immutable-shared-files）？(a) A 寫入檔案後，B 馬上讀就看到新內容 (b) A 改了檔案，B 要等 A 關檔、自己再重新開檔才看得到 (c) 檔案一旦建立、命名之後就不能修改</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題問 consistency semantics 是什麼；這題給情境要對回三種語意。</li>
+<li><strong>(a) UNIX semantics</strong>：寫入立刻對所有開著這個檔案的人可見。</li>
+<li><strong>(b) session semantics</strong>：修改在關檔之後才對「之後新開的 session」可見，AFS 用這種。</li>
+<li><strong>(c) immutable-shared-files semantics</strong>：檔案不能改，要改就建一個新檔，所以根本不會有一致性的問題。</li>
+</ul>
+</details>
+</div>
+<h3 id="u5-bank">5.9 練習：猜題</h3>
+<p>考古題還沒考過、但恐龍書 Mass-Storage、I/O、File-System 幾章的重點，我猜比較可能出現的題型，包含 115 年那種英文名詞填空。</p>
+<div data-qid="u5-bank-g1">
+<div>
+<p><strong>猜題 1.</strong> 填空（115 年那種英文名詞填空）：</p>
+<ul>
+<li>(a) A ＿＿ contains information about a file, including ownership, permissions and the location of the file contents; in UNIX it is called an inode.</li>
+<li>(b) ＿＿ allocation requires that each file occupy a set of contiguous blocks on the device.</li>
+<li>(c) With ＿＿, a device controller transfers an entire block of data directly to or from main memory without CPU intervention.</li>
+<li>(d) The ＿＿ algorithm starts at one end of the disk and moves toward the other end, servicing requests as it reaches each cylinder, and then reverses direction.</li>
+<li>(e) Under ＿＿ semantics, writes to an open file are not visible to other users that have the same file open; the changes become visible only to sessions starting after the file is closed.</li>
+</ul>
+</div>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li>(a) <strong>file control block（FCB）</strong>（<a href="#u5-1">5.1</a>）</li>
+<li>(b) <strong>Contiguous</strong>（<a href="#u5-0">5.0</a>）</li>
+<li>(c) <strong>DMA</strong>（direct memory access，<a href="#u5-more">5.5</a>）</li>
+<li>(d) <strong>SCAN</strong>（<a href="#u5-sched">5.4</a>）</li>
+<li>(e) <strong>session</strong>（<a href="#u5-1">5.1</a>）</li>
+</ul>
+</details>
+</div>
+<div data-qid="u5-bank-g2">
+<p><strong>猜題 2.</strong> 磁碟有 16 個區塊（0–15），第 2、3、4、5、8、9、10、11、12、13 塊是空的。(a) 用 bit vector（1 代表空）怎麼記？(b) 用 counting（起點, 連續幾塊）怎麼記？(c) bit vector 的優缺點？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li><strong>(a)</strong> 0011110011111100（第 0 塊在最左邊）。</li>
+<li><strong>(b)</strong> (2, 4)、(8, 6)：從第 2 塊開始連續 4 塊空的，從第 8 塊開始連續 6 塊空的。</li>
+<li><strong>(c)</strong> 優點：找第一個空的區塊、或連續 n 個空的區塊很簡單，CPU 有指令可以一次找出一個字裡第一個 1。缺點：要整個放在記憶體裡才快，大磁碟的 bit vector 很大（例如 1 TB 的磁碟、4 KB 的區塊，就要 <span class="arithmatex">\(2^{28}\)</span> 位元 ＝ 32 MB）。</li>
+<li>另外兩種方法：把空的區塊串成 <strong>linked list</strong>（不浪費空間，但要找一大段連續的很慢）；<strong>grouping</strong>（第一個空區塊裡記下 n 個空區塊的位址）。</li>
+</ul>
+</details>
+</div>
+<div data-qid="u5-bank-g3">
+<p><strong>猜題 3.</strong> 建立一個檔案要改好幾個地方（目錄、i-node、空閒區塊的記錄）。寫到一半斷電，檔案系統可能不一致。有哪些辦法？journaling 是怎麼做的？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li><strong>consistency checker</strong>（例如 UNIX 的 fsck）：開機時掃描整個檔案系統，比對目錄、i-node、空閒區塊，修正不一致的地方。磁碟大時要掃很久。</li>
+<li><strong>journaling（log-based transaction）</strong>：每個修改先當成一筆交易寫進 <strong>log</strong>（journal），寫完就算 commit，之後才真的去改檔案系統。斷電後重開機時：log 裡已經 commit 的交易重做一次；沒有 commit 的就丟掉。所以只要看 log，不用掃整顆磁碟，檔案系統一定停在某個一致的狀態。</li>
+<li>這跟資料庫的交易是同一個想法（<a href="#u2-more">2.2</a> 的 transaction）。</li>
+</ul>
+</details>
+</div>
+<div data-qid="u5-bank-g4">
+<p><strong>猜題 4.</strong> SSD 為什麼不能直接覆寫資料？這對作業系統有什麼影響（例如 TRIM 指令）？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li><strong>不能覆寫</strong>：快閃記憶體要先把整個 block（很多 page）<strong>抹掉</strong>才能再寫，抹的單位比寫的單位大很多，抹又比較慢。所以控制器把新的資料寫到一個空的 page，舊的標成無效，再找時間把整個 block 裡還有效的資料搬走、整塊抹掉（garbage collection）。</li>
+<li><strong>wear leveling</strong>：每個 block 能抹的次數有限，控制器要把寫入平均分散，不讓某幾塊先壞。</li>
+<li><strong>TRIM</strong>：刪檔時，作業系統告訴 SSD「這些 page 不用了」。不然 SSD 不知道哪些資料已經沒用，garbage collection 時還要把它們搬來搬去，又慢又磨損。</li>
+<li><strong>排程</strong>：沒有讀寫頭，磁碟排程沒意義，通常用 FCFS（<a href="#u5-2">5.2</a>）。</li>
+</ul>
+</details>
+</div>
+<div data-qid="u5-bank-g5">
+<p><strong>猜題 5.</strong> I/O 子系統用 buffer（在記憶體裡暫存資料）有哪三個目的？各舉一個例子。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<ol>
+<li><strong>速度不一樣</strong>：例如從很慢的網路收檔案存進硬碟，先收在 buffer 裡，滿了再一次寫進硬碟。常用兩個 buffer 輪流（double buffering）：一個在收、一個在寫。</li>
+<li><strong>一次傳的大小不一樣</strong>：例如網路一次收一個封包，應用程式要的是一整個訊息，在 buffer 裡把封包組回去。</li>
+<li><strong>copy semantics</strong>：<code>write()</code> 時先把資料複製到 kernel 的 buffer。系統呼叫一回來，應用程式就可以改自己的資料，寫進磁碟的還是呼叫當下的內容。</li>
+</ol>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u5-bank-g6">
+<p><strong>猜題 6.</strong> 很多 process 都要用同一台印表機。spooling 是怎麼處理的？</p>
+<ol>
+<li>讓 process 輪流直接控制印表機</li>
+<li>每個 process 的輸出先寫到磁碟上的一個檔案（spool），由一個 daemon 一份一份送去印</li>
+<li>把印表機切成好幾台虛擬的，大家同時印</li>
+<li>讓印表機用 DMA</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。印表機一次只能印一份，輸出又不能混在一起。spooling 讓每個 process 「印」完就走（其實是寫進佇列），由 daemon 依序處理。從 process 的角度，印表機好像可以共用，所以也是破解死結 mutual exclusion 條件的例子（<a href="#u3-exam">3.5</a> 考古變化 1）。</p>
+</details>
+</div>
+<div data-qid="u5-bank-g7">
+<p><strong>猜題 7.</strong> RAID 0＋1 和 RAID 1＋0 差在哪？哪一種比較可靠？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li><strong>RAID 0＋1</strong>：先把一半的硬碟做 striping（RAID 0），再把整組 mirror 一份（RAID 1）。</li>
+<li><strong>RAID 1＋0</strong>：先把硬碟兩兩做 mirror，再把這些 mirror 對做 striping。</li>
+<li><strong>比較</strong>：容量一樣都是一半。0＋1 只要壞一顆，那一整組 stripe 就不能用，只剩另一組撐著，再壞一顆就可能全毀；1＋0 壞一顆時，只有那一對 mirror 少一顆，其他對都正常，只要不是同一對的兩顆都壞，就還能用。所以 <strong>RAID 1＋0 比較可靠</strong>，重建時也只要複製一顆。</li>
+</ul>
+</details>
+</div>
+<div class="mcq" data-ans="3" data-qid="u5-bank-g8">
+<p><strong>猜題 8.</strong> UNIX 裡，<code>a.txt</code> 有一個 hard link <code>b.txt</code>，還有一個 symbolic link <code>c.txt</code>（指到路徑 <code>a.txt</code>）。把 <code>a.txt</code> 刪掉之後：</p>
+<ol>
+<li><code>b.txt</code>、<code>c.txt</code> 都讀不到</li>
+<li><code>b.txt</code>、<code>c.txt</code> 都還讀得到</li>
+<li><code>b.txt</code> 還讀得到，<code>c.txt</code> 讀不到</li>
+<li><code>b.txt</code> 讀不到，<code>c.txt</code> 還讀得到</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。hard link 是同一個 i-node 的另一個名字，i-node 有 reference count，刪掉 <code>a.txt</code> 只是減 1，還有 <code>b.txt</code> 指著，資料不會被刪。symbolic link 只記「路徑 a.txt」，那個路徑已經不存在，就變成 dangling link。這正是 <a href="#u5-more">5.5</a> acyclic-graph 目錄要處理的問題。</p>
+</details>
+</div>
+<h3 id="u5-en">5.10 英文作答範例</h3>
 <p>考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把<strong>粗體的關鍵字</strong>記起來。寫法見 <a href="#u0-en">0. 中山 OS 怎麼考</a>。</p>
 <div>
 <p><strong>E-1.</strong> Besides its name, list the attributes of a file.</p>
@@ -9962,99 +10785,6 @@ lock(second.lock);</code></pre>
 <li><strong>RAID 6</strong>: stores <strong>extra redundant information (P + Q redundancy)</strong>, so it can tolerate <strong>two disk failures</strong> at the same time.</li>
 </ul>
 <p>寫法提示：每一級寫「怎麼存」和「能壞幾顆」；RAID 5 的 distributed parity 是和 RAID 4 的差別（<a href="#u5-0">5.0</a>）。</p>
-</details>
-<h3 id="u5-exam">5.9 考古題變化題</h3>
-<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
-<p><strong>考古變化 1.</strong>（改自 111 Q5・換數字・延伸）i-node 有 12 個直接區塊和 single、double、triple 間接區塊各一個；區塊 4 KB、指標 4 bytes。(a) 最大的檔案有幾個資料區塊？大約多大？(b) 4 bytes 的指標最多能指到多大的磁碟？哪一個限制比較緊？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：直接區塊、區塊大小、指標大小都換了；(b) 多問指標寬度本身的限制。</li>
-<li><strong>每個區塊放幾個指標</strong>：<span class="arithmatex">\(\frac{4\text{ KB}}{4\text{ B}}=1024=2^{10}\)</span>。</li>
-<li><strong>(a)</strong>：<span class="arithmatex">\(12+2^{10}+2^{20}+2^{30}\)</span> 個資料區塊，乘 4 KB 大約是 <span class="arithmatex">\(2^{30}\times4\text{ KB}=\)</span> <strong>4 TB</strong>（再加 4 GB、4 MB、48 KB 幾乎可以忽略）。</li>
-<li><strong>(b)</strong>：4 bytes 的指標能分辨 <span class="arithmatex">\(2^{32}\)</span> 個區塊，最多指到 <span class="arithmatex">\(2^{32}\times4\text{ KB}=\)</span> <strong>16 TB</strong> 的磁碟。</li>
-<li><strong>哪個比較緊</strong>：i-node 的結構只能撐到約 4 TB，比 16 TB 小，所以單一檔案的上限由<strong>結構</strong>決定。</li>
-</ul>
-<p>我用程式重算過每一步，答案一樣。</p>
-</details>
-<p><strong>考古變化 2.</strong>（改自 111 Q7・換數字・延伸）讀一個 200 個區塊的檔案。未聚集時每個區塊平均 seek 8 ms；聚集後平均 seek 1 ms；rotational latency 平均 4 ms，每個區塊傳輸 0.05 ms。(1) 兩種各要多久？(2) 如果檔案完全連續，只要 seek 一次、等一次轉動，之後連續讀，要多久？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：數字換了；(2) 多問「完全連續」，看出為什麼要盡量讓檔案放在一起。</li>
-<li><strong>(1) 未聚集</strong>：<span class="arithmatex">\(200\times(8+4+0.05)=\)</span> <strong>2410 ms</strong>；<strong>聚集</strong>：<span class="arithmatex">\(200\times(1+4+0.05)=\)</span> <strong>1010 ms</strong>。</li>
-<li><strong>(2)</strong>：<span class="arithmatex">\(8+4+200\times0.05=\)</span> <strong>22 ms</strong>。</li>
-<li><strong>觀察</strong>：聚集只省了 seek，每個區塊還是要等一次轉動；完全連續時連轉動都只等一次，快了一百倍。磁碟的時間幾乎都花在機械動作上。</li>
-</ul>
-<p>我用程式重算過每一步，答案一樣。</p>
-</details>
-<p><strong>考古變化 3.</strong>（改自 110 Q2・換數字）磁柱 0–499，讀寫頭正在服務 143、上一個是 125；佇列（FIFO）86, 470, 313, 48, 409, 175, 22, 255。FCFS、SSTF、SCAN、LOOK、C-SCAN、C-LOOK 的總移動距離各是多少？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：數字換了，多了 SSTF 和 C-SCAN；這組資料裡 SSTF 剛好跟 LOOK 一樣遠，可以順便比較。</li>
-<li><strong>方向</strong>：從 125 移到 143，正往編號大的方向走。</li>
-<li><strong>FCFS（1844）</strong>：照佇列順序 143 → 86 → 470 → 313 → 48 → 409 → 175 → 22 → 255，距離 <span class="arithmatex">\(57+384+157+265+361+234+153+233\)</span>。</li>
-<li><strong>SSTF（775）</strong>：每次選最近的：175, 255, 313, 409, 470, 86, 48, 22。到 470 時只剩下面的，一路往下。</li>
-<li><strong>SCAN（833）</strong>：往上 175, 255, 313, 409, 470，走到盡頭 499，回頭 86, 48, 22：<span class="arithmatex">\((499-143)+(499-22)=356+477\)</span>。</li>
-<li><strong>LOOK（775）</strong>：往上到 470 就回頭：<span class="arithmatex">\((470-143)+(470-22)=327+448\)</span>。</li>
-<li><strong>C-SCAN（含跳回 941，不含 442）</strong>：往上到 499，跳回 0，再 22, 48, 86：<span class="arithmatex">\(356+499+86\)</span>；不算跳回那段是 <span class="arithmatex">\(356+86\)</span>。</li>
-<li><strong>C-LOOK（含跳回 839，不含 391）</strong>：往上到 470，跳回 22，再 48, 86：<span class="arithmatex">\(327+448+64\)</span>；不算跳回是 <span class="arithmatex">\(327+64\)</span>。</li>
-<li><strong>作答時</strong>：C-SCAN、C-LOOK 要寫清楚有沒有把跳回那段算進去。</li>
-</ul>
-<p>我用程式把六種演算法都模擬過，答案一樣。</p>
-</details>
-<p><strong>考古變化 4.</strong>（改自 102 Q7、104 Q6(2)、107 Q3(2)・改方向）磁柱 0–199，讀寫頭在 100，<strong>正往 0 的方向</strong>移動；佇列 23, 89, 132, 42, 187, 11, 156。寫出 SSTF、SCAN、C-LOOK 的服務順序和總移動距離（C-LOOK 含跳回那段）。</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：這次是往 0 走，SCAN、C-LOOK 都要先處理比 100 小的要求；C-LOOK 跳回去之後是從最大的往下服務。</li>
-<li><strong>SSTF（285）</strong>：100 → 89（11）→ 132（43）→ 156（24）→ 187（31）→ 42（145）→ 23（19）→ 11（12）。SSTF 不管方向：到 89 時 132 差 43、42 差 47，所以先往上。</li>
-<li><strong>SCAN（287）</strong>：往下 89, 42, 23, 11，走到 0，再回頭 132, 156, 187：<span class="arithmatex">\(100+187\)</span>。</li>
-<li><strong>C-LOOK（320）</strong>：往下 89, 42, 23, 11，跳到最大的 187，再往下 156, 132：<span class="arithmatex">\((100-11)+(187-11)+(187-132)=89+176+55\)</span>。</li>
-<li><strong>觀察</strong>：SSTF 在 89 時被「附近」的 132 吸走，結果最後要從 187 一路跑回 11，總距離反而比 SCAN 只少一點點；SSTF 也可能讓遠處的要求一直等（starvation）。</li>
-</ul>
-<p>我用程式把三種演算法都模擬過，答案一樣。</p>
-</details>
-<p><strong>考古變化 5.</strong>（改自 115 Q4・改方法）磁碟的 logical block 17 壞了，第一個可用的備用 sector 在 sector 202 後面。(a) 用 sector sparing 怎麼處理？(b) 用 sector slipping 怎麼處理？(c) 兩種方法各有什麼缺點？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題只問 sparing 的步驟；這題再加上另一種做法 slipping，比較兩者。</li>
-<li><strong>(a) sector sparing</strong>：controller 把 block 17 對應到那個備用 sector。之後讀寫 block 17 時，controller 自動把請求轉到備用 sector。</li>
-<li><strong>(b) sector slipping</strong>：把 17 到 202 的資料<strong>全部往後挪一格</strong>：202 搬到備用 sector、201 搬到 202、……、18 搬到 19，空出來的 18 號 sector 給 block 17 用。</li>
-<li><strong>(c) 缺點</strong>：<ul>
-<li>sparing：備用 sector 通常離原本的位置很遠，讀 block 17 時讀寫頭要多跑一段，可能打亂 OS 的磁碟排程（原本以為是連續的區塊，其實不是）。</li>
-<li>slipping：要搬動很多 sector，修復時很花時間；好處是之後的區塊還是連續的。</li>
-</ul>
-</li>
-</ul>
-</details>
-<p><strong>考古變化 6.</strong>（改自 107 Q3(3)・實際算）RAID 有 4 顆資料磁碟和 1 顆 parity 磁碟。某個位置的資料分別是 D0 ＝ 1011 0010、D1 ＝ 0110 1100、D2 ＝ 1110 0001、D3 ＝ 0001 1111。(a) parity 是多少？(b) D2 壞了，怎麼救回來？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題只要說明 parity 怎麼運作；這題用位元真的算一次。</li>
-<li><strong>(a) parity ＝ 四顆 XOR</strong>：<ul>
-<li>D0 ⊕ D1 ＝ 1101 1110</li>
-<li>⊕ D2 ＝ 0011 1111</li>
-<li>⊕ D3 ＝ <strong>0010 0000</strong></li>
-</ul>
-</li>
-<li><strong>(b)</strong>：把剩下的資料和 parity 全部 XOR：D0 ⊕ D1 ⊕ D3 ⊕ P ＝ 1101 1110 ⊕ 0001 1111 ⊕ 0010 0000 ＝ <strong>1110 0001</strong>，就是 D2。</li>
-<li><strong>為什麼可以</strong>：<span class="arithmatex">\(x\oplus x=0\)</span>，所以 parity 再跟其他三顆 XOR，就只剩下壞掉的那一顆。只能救<strong>一顆</strong>；同時壞兩顆就救不回來（RAID 6 多一組 parity 才能救兩顆）。</li>
-</ul>
-<p>我用程式算過 XOR，答案一樣。</p>
-</details>
-<p><strong>考古變化 7.</strong>（改自 112 Q7(b)・判斷）下面三種情況，各符合哪一種 consistency semantics（UNIX、session、immutable-shared-files）？(a) A 寫入檔案後，B 馬上讀就看到新內容 (b) A 改了檔案，B 要等 A 關檔、自己再重新開檔才看得到 (c) 檔案一旦建立、命名之後就不能修改</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題問 consistency semantics 是什麼；這題給情境要對回三種語意。</li>
-<li><strong>(a) UNIX semantics</strong>：寫入立刻對所有開著這個檔案的人可見。</li>
-<li><strong>(b) session semantics</strong>：修改在關檔之後才對「之後新開的 session」可見，AFS 用這種。</li>
-<li><strong>(c) immutable-shared-files semantics</strong>：檔案不能改，要改就建一個新檔，所以根本不會有一致性的問題。</li>
-</ul>
 </details>
 <h3 id="u5-quiz">單元 5 小考</h3>
 <p><strong>5-1.</strong> i-node 有 12 個直接區塊和 single、double indirect，區塊 4 KB、指標 4 B，最大檔案幾個資料區塊？</p>
