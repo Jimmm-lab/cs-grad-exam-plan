@@ -10835,8 +10835,34 @@ lock(second.lock);</code></pre>
 </tr>
 </tbody>
 </table>
+<div class="mcq" data-ans="3" data-qid="u6-0-cia">
+<p><strong>觀念題 1.</strong> 員工把公司的客戶名單複製回家，資料沒有被改，系統也照常運作。破壞的是 CIA 的哪一項？</p>
+<ol>
+<li>integrity</li>
+<li>availability</li>
+<li>confidentiality</li>
+<li>都沒有</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。沒有權限的人<strong>讀到</strong>（帶走）了資料，就是破壞機密性。115 Q1j 考過這個填空：unauthorized reading of data 是違反 confidentiality。</p>
+</details>
+</div>
 <h4 id="_45">最小權限</h4>
 <p><strong>principle of least privilege</strong>（最小權限）和 <strong>need-to-know</strong> 是同一類想法：每個行程、每個使用者只拿到<strong>完成目前工作需要</strong>的權限和資源。出事時，損害才會被限制在小範圍。兩者在恐龍書裡的說法有一點差別，是非題考過，見 <a href="#u6-more">6.2</a>。</p>
+<div class="mcq" data-ans="2" data-qid="u6-0-least">
+<p><strong>觀念題 2.</strong> 下面哪一個做法最符合 principle of least privilege？</p>
+<ol>
+<li>所有使用者都用 root 登入，比較方便</li>
+<li>平常用一般帳號，只有安裝軟體時才用 sudo 暫時取得管理者權限</li>
+<li>所有人共用一個帳號</li>
+<li>把權限檢查關掉，讓系統跑快一點</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。平常只有一般權限，就算帳號被盜或程式出錯，能造成的破壞也有限；需要時才短暫提升。A、C 都讓每個人隨時擁有全部的權限。</p>
+</details>
+</div>
 <h4 id="_46">存取矩陣：誰能對什麼做什麼</h4>
 <p>把權限畫成一張表：列是使用者（domain），欄是檔案（object），格子裡是權限。</p>
 <table>
@@ -10903,6 +10929,19 @@ lock(second.lock);</code></pre>
 </figure>
 
 <p><strong>哪一種比較方便</strong>：要知道「這個檔案誰能用」，或要撤銷某個檔案的所有權限，ACL 一次看完；要知道「這個人能用哪些東西」，capability list 一次看完。實際的系統常常兩個混著用。</p>
+<div class="mcq" data-ans="2" data-qid="u6-0-revoke">
+<p><strong>觀念題 3.</strong> 要撤銷 Bob 對<strong>所有</strong>檔案的權限，哪一種存法比較方便？</p>
+<ol>
+<li>ACL</li>
+<li>capability list</li>
+<li>兩種一樣</li>
+<li>兩種都做不到</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。Bob 的權限都記在他的 capability list（矩陣的一列），把這一列清掉就好；用 ACL 要翻遍每個檔案的名單，把 Bob 那一項刪掉。反過來，要撤銷「所有人對某一個檔案」的權限，ACL 比較方便。</p>
+</details>
+</div>
 <h4 id="_47">惡意程式的名詞</h4>
 <table>
 <thead>
@@ -10934,6 +10973,19 @@ lock(second.lock);</code></pre>
 </tr>
 </tbody>
 </table>
+<div class="mcq" data-ans="3" data-qid="u6-0-trojan">
+<p><strong>觀念題 4.</strong> 一個號稱免費的遊戲，安裝之後暗中把你的密碼傳出去，但它不會把自己複製到別的程式或電腦。這是什麼？</p>
+<ol>
+<li>virus</li>
+<li>worm</li>
+<li>trojan horse</li>
+<li>logic bomb</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。重點是<strong>偽裝</strong>成有用的程式。它不會自己複製，所以不是 virus（要寄生、會感染別的程式）或 worm（自己透過網路散播）。</p>
+</details>
+</div>
 <p>這一單元的分數幾乎都在<strong>名詞填空</strong>，看懂意思後，把英文名詞做成閃卡背起來。</p>
 <div class="admonition key">
 <p class="admonition-title">保護與安全題要做什麼</p>
@@ -10990,21 +11042,187 @@ lock(second.lock);</code></pre>
 <summary>看答案</summary>
 <p>access control list（ACL）。</p>
 </details>
-<h3 id="u6-1">6.1 考古題與重點整理</h3>
+<h3 id="u6-1">6.1 考古題觀念：一個一個講清楚</h3>
+<p>考古題考過的保護與安全觀念，這一節一個一個講清楚。每個觀念後面都接一題<strong>觀念題</strong>：先自己想、寫在手寫板上，再打開答案。</p>
+<table>
+<thead>
+<tr>
+<th>觀念</th>
+<th>考過的題目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>need-to-know、role-based access control</td>
+<td>115 Q1i、113 Q8h 填空</td>
+</tr>
+<tr>
+<td>違反 confidentiality</td>
+<td>115 Q1j 填空（<a href="#u6-0">6.0</a> 觀念題 1）</td>
+</tr>
+<tr>
+<td>AES 和對稱、非對稱加密</td>
+<td>113 Q8i 填空</td>
+</tr>
+<tr>
+<td>stealth virus、logic bomb</td>
+<td>113 Q8j、112 Q9c 填空</td>
+</tr>
+<tr>
+<td>safety-critical system、即時系統的延遲</td>
+<td>112 Q9b 填空；112 Q8b</td>
+</tr>
+<tr>
+<td>分散式檔案系統什麼時候不用 cache</td>
+<td>112 Q8c</td>
+</tr>
+<tr>
+<td>timestamp-ordering protocol</td>
+<td>113 Q7</td>
+</tr>
+</tbody>
+</table>
+<h4 id="need-to-know-role-based-access-control115-q1i113-q8h">need-to-know 和 role-based access control（115 Q1i、113 Q8h）</h4>
 <ul>
-<li><strong>need-to-know principle</strong>：process 任何時候只能存取完成工作<strong>目前需要</strong>的資源。（115 Q1i）</li>
-<li><strong>role-based access control</strong> 中，<strong>privilege</strong> 是執行某個 system call 或使用其選項的權利。（113 Q8h）</li>
-<li>違反 <strong>confidentiality</strong> ＝ 未經授權讀取資料。（115 Q1j）</li>
-<li><strong>AES</strong> 金鑰長度 128、<strong>192</strong>、256 位元，區塊 128 位元。（113 Q8i）</li>
-<li><strong>stealth virus</strong>：修改系統中可能偵測到它的部分來躲避偵測。（113 Q8j）</li>
-<li><strong>logic bomb</strong>：藏在程式裡、只有在特定條件（日期、事件）成立時才啟動的惡意程式碼。（112 Q9c）</li>
-<li><strong>safety-critical system</strong>：失敗會造成人命或重大損失的即時系統，例如醫療、武器、飛航控制。（112 Q9b）</li>
+<li><strong>need-to-know</strong>：process 任何時候只能存取完成工作<strong>目前需要</strong>的資源。例如 process 呼叫一個程序時，那個程序只能碰自己的變數和傳進來的參數。</li>
+<li><strong>role-based access control（RBAC）</strong>：把 <strong>privilege</strong>（執行某個 system call，或使用某個 system call 的某個選項的權利，例如用可寫入的模式開檔）指定給<strong>角色</strong>，再讓使用者扮演角色。需要做管理工作時才切換成那個角色，不用整個變成 root。Solaris 10 就這樣做（<a href="#u6-more">6.2</a> 的 107 Q4(1)）。</li>
 </ul>
-<div class="admonition example">
-<p class="admonition-title">112 Q8b–c（6%）：即時系統的三種延遲、分散式檔案系統不用 cache 的理由</p>
-<p>(b) <strong>event latency</strong>：事件發生到被服務的總時間；其中包含 <strong>interrupt latency</strong>（中斷發生到開始執行 ISR）和 <strong>dispatch latency</strong>（排程器停掉一個 process、啟動另一個的時間）。</p>
-<p>(c) 不用 cache 的理由：(1) <strong>寫入頻繁</strong>時，維持 cache 一致性的成本很高；(2) 資料<strong>很少被重複存取</strong>，cache 沒有幫助；(3) 用戶端是<strong>無磁碟或記憶體很小</strong>的機器；(4) 多人<strong>同時寫入共享檔案</strong>，需要嚴格一致性時，直接遠端存取（remote service）比較簡單。</p>
+<div class="mcq" data-ans="2" data-qid="u6-1-rbac">
+<p><strong>觀念題 5.</strong> 只想讓助理能重新啟動印表機服務。用 RBAC 給他一個角色，比直接給他 root 密碼好在哪？</p>
+<ol>
+<li>速度比較快</li>
+<li>只給這件事需要的 privilege，就算帳號被盜，能做的壞事也有限</li>
+<li>不用密碼</li>
+<li>可以同時給很多人 root</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。root 什麼都能做；角色只包含重開印表機需要的那幾個 privilege。這就是最小權限：出事時損害被限制在小範圍。</p>
+</details>
 </div>
+<h4 id="aes113-q8i">加密：AES，還有對稱與非對稱（113 Q8i）</h4>
+<ul>
+<li><strong>對稱式加密</strong>：加密、解密用<strong>同一把</strong>金鑰，速度快，但金鑰要先祕密地交給對方。<strong>AES</strong> 是現在的標準：區塊 <strong>128 位元</strong>，金鑰 <strong>128、192 或 256 位元</strong>（取代了金鑰只有 56 位元、太容易被暴力破解的 DES）。</li>
+<li><strong>非對稱式加密</strong>：每個人一把<strong>公鑰</strong>（公開）、一把<strong>私鑰</strong>（自己留著）。用公鑰加密的只有私鑰解得開，例如 RSA。金鑰好發，但慢很多。</li>
+<li>實際上兩種一起用：先用非對稱加密交換一把對稱的 session key，之後的資料用對稱加密（<a href="#u6-en">英文作答範例</a>的 E-6）。</li>
+</ul>
+<div class="mcq" data-ans="2" data-qid="u6-1-aes">
+<p><strong>觀念題 6.</strong> AES-256 的區塊大小是多少位元？</p>
+<ol>
+<li>256</li>
+<li>128</li>
+<li>64</li>
+<li>192</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。256 指的是<strong>金鑰</strong>長度。AES 的區塊固定 128 位元，金鑰可以是 128、192、256 位元。</p>
+</details>
+</div>
+<h4 id="stealth-viruslogic-bomb113-q8j112-q9c">惡意程式：stealth virus、logic bomb（113 Q8j、112 Q9c）</h4>
+<p><a href="#u6-0">6.0</a> 的表列了最常考的幾種。病毒還有很多分類，填空可能會考：</p>
+<table>
+<thead>
+<tr>
+<th>種類</th>
+<th>特徵</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>file virus</td>
+<td>附在可執行檔上</td>
+</tr>
+<tr>
+<td>boot virus</td>
+<td>感染開機磁區，一開機就載入，比作業系統還早執行</td>
+</tr>
+<tr>
+<td>macro virus</td>
+<td>用文件軟體的巨集語言寫的（例如 Office 文件）</td>
+</tr>
+<tr>
+<td>polymorphic</td>
+<td>每次感染都改變自己的程式碼，躲避特徵碼比對</td>
+</tr>
+<tr>
+<td>encrypted</td>
+<td>把自己加密，執行時才解密</td>
+</tr>
+<tr>
+<td>stealth</td>
+<td>修改系統中可能偵測到它的部分（例如讀檔的 system call），讓別人看不到它</td>
+</tr>
+<tr>
+<td>multipartite</td>
+<td>同時感染好幾個地方（開機磁區、記憶體、檔案）</td>
+</tr>
+<tr>
+<td>armored</td>
+<td>把自己弄得很難被分析、反組譯</td>
+</tr>
+</tbody>
+</table>
+<p><strong>logic bomb</strong> 不一定是病毒：它是藏在正常程式裡、平常不動，<strong>特定條件成立</strong>（某個日期、某個員工的名字從薪資表消失）才發作的程式碼。</p>
+<div class="mcq" data-ans="3" data-qid="u6-1-mal">
+<p><strong>觀念題 7.</strong> 一段程式藏在公司的薪資系統裡，平常完全正常；等到寫它的工程師從員工名單被刪掉那天，它就把資料庫清空。這是什麼？</p>
+<ol>
+<li>worm</li>
+<li>virus</li>
+<li>logic bomb</li>
+<li>trap door</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。關鍵是「條件成立才發作」。它不會自己複製（不是 virus、worm），也不是讓人繞過登入的祕密入口（trap door）。</p>
+</details>
+</div>
+<h4 id="safety-critical-112-q9b112-q8b">即時系統：safety-critical 與延遲（112 Q9b、112 Q8b）</h4>
+<p><strong>safety-critical system</strong> 是失敗會造成人命或重大損失的即時系統，例如武器、防鎖死煞車、飛航控制、醫療儀器。這種系統通常是 <strong>hard real-time</strong>：一定要在期限內完成，晚了就算失敗；soft real-time（例如影音串流）只是盡量讓重要的工作先做。</p>
+<div class="admonition example">
+<p class="admonition-title">112 Q8b（3%）：即時系統的三種延遲</p>
+<p><strong>event latency</strong>：事件發生到被服務的總時間；其中包含 <strong>interrupt latency</strong>（中斷發生到開始執行 ISR）和 <strong>dispatch latency</strong>（排程器停掉一個 process、啟動另一個的時間）。</p>
+</div>
+<p>要縮短 dispatch latency，kernel 要能被搶先（preemptive kernel），高優先權的工作一來就能馬上換上去。</p>
+<div class="mcq" data-ans="3" data-qid="u6-1-lat">
+<p><strong>觀念題 8.</strong> dispatch latency 指的是哪一段時間？</p>
+<ol>
+<li>事件發生到被服務完的總時間</li>
+<li>中斷到達 CPU，到開始執行中斷處理程式</li>
+<li>排程器停掉一個 process、換另一個上去要花的時間</li>
+<li>磁碟讀寫頭移動的時間</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。A 是 event latency，B 是 interrupt latency；event latency 包含後面這兩段。</p>
+</details>
+</div>
+<h4 id="cache112-q8c">分散式檔案系統什麼時候不用 cache（112 Q8c）</h4>
+<p>分散式檔案系統可以每次都到伺服器存取（remote service），也可以把資料暫存在用戶端（caching）。cache 讓重複讀很快，但多台機器各有一份，就要處理<strong>一致性</strong>：有人改了，其他人的 cache 要跟著更新。</p>
+<div class="admonition example">
+<p class="admonition-title">112 Q8c（3%）：分散式檔案系統不用 cache 的理由</p>
+<p>(1) <strong>寫入頻繁</strong>時，維持 cache 一致性的成本很高；(2) 資料<strong>很少被重複存取</strong>，cache 沒有幫助；(3) 用戶端是<strong>無磁碟或記憶體很小</strong>的機器；(4) 多人<strong>同時寫入共享檔案</strong>，需要嚴格一致性時，直接遠端存取（remote service）比較簡單。</p>
+</div>
+<div class="mcq" data-ans="3" data-qid="u6-1-dfs">
+<p><strong>觀念題 9.</strong> 下面哪一種情況，分散式檔案系統用 cache 的幫助最小？</p>
+<ol>
+<li>同一台電腦一直重複讀同一份文件</li>
+<li>很多台電腦讀同一個唯讀的程式檔</li>
+<li>資料很少被重複讀，而且很多人同時在改同一個檔案</li>
+<li>用戶端的記憶體很大</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。cache 靠「重複讀」才有好處；很多人同時改，每次改都要通知其他人的 cache，成本反而更高。A、B 是 cache 最有用的情況。</p>
+</details>
+</div>
+<h4 id="timestamp-ordering-protocol113-q7">timestamp-ordering protocol（113 Q7）</h4>
+<p>每個交易開始時拿到一個 timestamp（越小越老），protocol 要讓結果<strong>等於照 timestamp 順序一個一個執行</strong>。每個資料 Q 記兩個數：</p>
+<ul>
+<li><strong>W-timestamp(Q)</strong>：成功寫過 Q 的交易裡，最大的 timestamp。</li>
+<li><strong>R-timestamp(Q)</strong>：成功讀過 Q 的交易裡，最大的 timestamp。</li>
+</ul>
+<p>規則的直覺：一個交易不能讀到「比它新的人寫的值」，也不能去改「比它新的人已經讀過或寫過的值」。違反就 rollback，拿一個<strong>新的</strong> timestamp 重來。只會 rollback、不會讓交易等，所以不會死結。</p>
 <div class="admonition example">
 <p class="admonition-title">113 Q7（10%）：timestamp-ordering protocol 怎麼檢查</p>
 <p><strong><span class="arithmatex">\(T_i\)</span> 發出 read(Q)</strong>：</p>
@@ -11019,6 +11237,19 @@ lock(second.lock);</code></pre>
 <li>否則執行，設 <span class="arithmatex">\(\text{W-timestamp}(Q)=TS(T_i)\)</span>。</li>
 </ul>
 <p>這樣保證所有衝突操作都依 timestamp 順序執行，所以排程是 conflict serializable。</p>
+</div>
+<div class="mcq" data-ans="2" data-qid="u6-1-ts">
+<p><strong>觀念題 10.</strong> 資料 Q 的 W-timestamp 是 20。timestamp 是 15 的交易要 read(Q)，結果是？</p>
+<ol>
+<li>執行，並把 R-timestamp 設成 15</li>
+<li>rollback：它要讀的值已經被比它新的交易（20）蓋掉了</li>
+<li>等 timestamp 20 的交易做完</li>
+<li>把 W-timestamp 改成 15</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。照 timestamp 順序，15 應該在 20 寫之前讀，讀到的是舊值；但舊值已經被蓋掉了，只好 rollback。timestamp ordering 不會讓交易等（C），所以不會死結。</p>
+</details>
 </div>
 <h3 id="u6-more">6.2 安全的考古題補充：認證、數位簽章、攻擊手法</h3>
 <p>101、102、105、107 年考過的保護與安全觀念題。</p>
@@ -11042,8 +11273,21 @@ lock(second.lock);</code></pre>
 </tr>
 </tbody>
 </table>
+<div class="mcq" data-ans="2" data-qid="u6-more-np">
+<p><strong>觀念題 11.</strong> process 呼叫一個程序時，那個程序只能存取自己的區域變數和傳進來的參數，不能碰 process 其他的變數。這最符合哪一個原則？</p>
+<ol>
+<li>least privilege</li>
+<li>need-to-know</li>
+<li>availability</li>
+<li>nonrepudiation</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。重點是「這段時間只碰<strong>目前需要的資源</strong>」，恐龍書就用這個例子說明 need-to-know。least privilege 講的是給多少<strong>權限</strong>，兩個很像，是非題就考這個差別（102 Q5(1)）。</p>
+</details>
+</div>
 <h4 id="protection-domain">保護網域（protection domain）怎麼實作</h4>
-<p>domain 是「一組 <object, 權限> 的集合」，process 在某個 domain 裡執行，就有那些權限。恐龍書列出三種實作方式，以及什麼時候會<strong>切換 domain</strong>：</p>
+<p>domain 是「一組〈object, 權限〉的集合」，process 在某個 domain 裡執行，就有那些權限。恐龍書列出三種實作方式，以及什麼時候會<strong>切換 domain</strong>：</p>
 <table>
 <thead>
 <tr>
@@ -11067,6 +11311,19 @@ lock(second.lock);</code></pre>
 </tbody>
 </table>
 <p>UNIX 的 <strong>setuid</strong>：執行檔設了 setuid 位元，任何人執行它時都暫時拿到<strong>檔案擁有者</strong>的身分（例如 <code>passwd</code> 要改密碼檔，暫時變成 root），這就是一種切換 domain 的方式。</p>
+<div class="mcq" data-ans="2" data-qid="u6-more-dom">
+<p><strong>觀念題 12.</strong> 一般使用者執行 <code>passwd</code> 改自己的密碼，<code>passwd</code> 卻寫得進只有 root 能寫的密碼檔。為什麼？</p>
+<ol>
+<li>密碼檔其實誰都能寫</li>
+<li><code>passwd</code> 設了 setuid，執行時暫時換成擁有者 root 的身分，也就是換到 root 的 domain</li>
+<li>使用者輸入了 root 的密碼</li>
+<li>kernel 不檢查 <code>passwd</code></li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。權限跟著 domain 走：執行 setuid 程式時，process 暫時在 root 的 domain 裡，程式結束就回到原本的身分。所以 setuid 程式一定要寫得很小心，有漏洞就等於把 root 送給別人。</p>
+</details>
+</div>
 <h4 id="mac">認證：MAC 和數位簽章</h4>
 <table>
 <thead>
@@ -11106,6 +11363,19 @@ lock(second.lock);</code></pre>
 </table>
 <p><span class="arithmatex">\(H(m)\)</span> 是 <a href="ds.html#u4-theory">資結 4.2</a> 的密碼學雜湊函數，先把訊息壓短再簽。</p>
 <p><strong>公鑰怎麼發</strong>（105 Q4(4)）：公鑰可以公開，問題是怎麼確定這把公鑰真的是對方的（不然中間人可以換成自己的）。做法是<strong>數位憑證</strong>（digital certificate）：可信任的憑證機構（CA）用它的私鑰簽署「這把公鑰屬於某某人」，CA 的公鑰事先內建在瀏覽器或作業系統裡。</p>
+<div class="mcq" data-ans="2" data-qid="u6-more-1">
+<p><strong>觀念題 13.</strong> 哪一種方法能提供 nonrepudiation（送的人事後不能否認）？</p>
+<ol>
+<li>MAC</li>
+<li>數位簽章</li>
+<li>對稱式加密</li>
+<li>雜湊函數</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。只有簽的人有私鑰，別人做不出同樣的簽章，所以他不能否認。MAC 的金鑰雙方都有，收方也能自己做出同樣的 MAC，無法證明是誰送的。</p>
+</details>
+</div>
 <h4 id="_49">攻擊手法的名詞</h4>
 <table>
 <thead>
@@ -11145,11 +11415,37 @@ lock(second.lock);</code></pre>
 </tr>
 </tbody>
 </table>
+<div class="mcq" data-ans="1" data-qid="u6-more-3">
+<p><strong>觀念題 14.</strong> 攻擊者把截到的合法登入訊息再送一次，取得權限，這叫什麼？</p>
+<ol>
+<li>replay attack</li>
+<li>masquerading</li>
+<li>DDoS</li>
+<li>trap door</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。訊息本身是合法的，只是被重送。對策是在訊息裡加時間戳記或一次性的亂數（nonce），重送的舊訊息就會被拒絕。</p>
+</details>
+</div>
 <p><strong>偵測入侵的兩種方式</strong>（105 Q4(5)）：</p>
 <ul>
 <li><strong>signature-based</strong>：比對已知攻擊的特徵。誤報少，但<strong>新的攻擊認不出來</strong>。</li>
 <li><strong>anomaly detection</strong>：先學「正常的樣子」，偏離就警告。能抓到沒見過的攻擊，但<strong>誤報比較多</strong>。</li>
 </ul>
+<div class="mcq" data-ans="4" data-qid="u6-more-2">
+<p><strong>觀念題 15.</strong> 防毒軟體靠比對特徵碼，哪一種病毒最難被這種方法抓到？</p>
+<ol>
+<li>boot virus</li>
+<li>macro virus</li>
+<li>logic bomb</li>
+<li>polymorphic virus</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。polymorphic virus 每次感染都改變自己的程式碼，沒有固定的特徵碼可以比對。</p>
+</details>
+</div>
 <div class="admonition example">
 <p class="admonition-title">101 Q5（10%）：MAC 和數位簽章怎麼運作？</p>
 <p><strong>MAC</strong>：雙方事先共用祕密金鑰 k。傳送方用 k 對訊息算出一個短的認證碼 <span class="arithmatex">\(\text{MAC}_k(m)\)</span>，跟訊息一起送；接收方用同一把 k 重算，一樣就表示訊息沒被改、而且是知道 k 的人送的。</p>
@@ -11187,49 +11483,9 @@ lock(second.lock);</code></pre>
 <li>「location transparency 能在不同時間把同一個檔名對應到不同位置，所以比 location independence 強」：<strong>錯</strong>，說反了。能動態改變對應位置的是 <strong>location independence</strong>，它比 location transparency 強。</li>
 </ol>
 </div>
-<h4 id="_50">觀念小考</h4>
-<div class="mcq" data-ans="2">
-<p><strong>C-1.</strong> 哪一種方法能提供 nonrepudiation（送的人事後不能否認）？</p>
-<ol>
-<li>MAC</li>
-<li>數位簽章</li>
-<li>對稱式加密</li>
-<li>雜湊函數</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>B</strong>。只有簽的人有私鑰，別人做不出同樣的簽章，所以他不能否認。MAC 的金鑰雙方都有，收方也能自己做出同樣的 MAC，無法證明是誰送的。</p>
-</details>
-</div>
-<div class="mcq" data-ans="4">
-<p><strong>C-2.</strong> 防毒軟體靠比對特徵碼，哪一種病毒最難被這種方法抓到？</p>
-<ol>
-<li>boot virus</li>
-<li>macro virus</li>
-<li>logic bomb</li>
-<li>polymorphic virus</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>D</strong>。polymorphic virus 每次感染都改變自己的程式碼，沒有固定的特徵碼可以比對。</p>
-</details>
-</div>
-<div class="mcq" data-ans="1">
-<p><strong>C-3.</strong> 攻擊者把截到的合法登入訊息再送一次，取得權限，這叫什麼？</p>
-<ol>
-<li>replay attack</li>
-<li>masquerading</li>
-<li>DDoS</li>
-<li>trap door</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>A</strong>。訊息本身是合法的，只是被重送。對策是在訊息裡加時間戳記或一次性的亂數（nonce），重送的舊訊息就會被拒絕。</p>
-</details>
-</div>
 <h3 id="u6-dist">6.3 分散式系統與網路：CSMA/CD、token passing、事件的先後</h3>
 <p>101 年（區域網路怎麼避免碰撞，10%）、102 年（分散式系統的事件順序，10%）、104 年（分散式檔案系統的名詞，1%）考過。另外 102 年的分散式檔案系統命名在 <a href="#u6-more">6.2</a>，atomic transaction、two-phase locking 在 <a href="#u2-more">2.2</a>，分散式檔案系統的 cache 在 <a href="#u6-1">6.1</a>。</p>
-<h4 id="_51">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
+<h4 id="_50">區域網路裡，兩台電腦同時傳資料怎麼辦？</h4>
 <p>同一條線上的電腦同時送資料，訊號會疊在一起變成雜訊，叫<strong>碰撞</strong>（collision）。兩種做法：</p>
 <p><strong>CSMA/CD</strong>（carrier sense multiple access with collision detection，乙太網路用的）：</p>
 <ol>
@@ -11237,6 +11493,19 @@ lock(second.lock);</code></pre>
 <li><strong>邊傳邊聽</strong>（collision detection）：兩台剛好同時開始傳，會偵測到訊號跟自己送的不一樣。</li>
 <li><strong>碰撞了就停</strong>：送出 jam 訊號讓大家知道，然後<strong>各自等一段隨機的時間</strong>再重來。連續碰撞 k 次，就從 0 到 <span class="arithmatex">\(2^k-1\)</span> 個時槽裡隨機挑一個等（binary exponential backoff），越撞等越久，避免一直撞在一起。</li>
 </ol>
+<div class="mcq" data-ans="2" data-qid="u6-dist-1">
+<p><strong>觀念題 16.</strong> CSMA/CD 偵測到碰撞之後，為什麼要等一段<strong>隨機</strong>的時間再重傳？</p>
+<ol>
+<li>讓線路冷卻</li>
+<li>如果兩台等一樣久，重傳時會再撞一次</li>
+<li>讓 token 先傳一圈</li>
+<li>讓接收端有時間檢查錯誤</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。兩台同時撞到、又等一樣久，就會同時重傳、再撞一次。隨機等，兩台錯開的機會很大；連續撞越多次，隨機的範圍越大（<span class="arithmatex">\(0\)</span> 到 <span class="arithmatex">\(2^k-1\)</span> 個時槽）。</p>
+</details>
+</div>
 <p><strong>token passing</strong>（token ring）：</p>
 <ol>
 <li>一個特殊的訊息 <strong>token</strong> 在環上一台傳一台。</li>
@@ -11274,7 +11543,20 @@ lock(second.lock);</code></pre>
 </tr>
 </tbody>
 </table>
-<h4 id="_52">分散式系統裡，為什麼很難知道誰先發生？</h4>
+<div class="mcq" data-ans="1" data-qid="u6-dist-3">
+<p><strong>觀念題 17.</strong> token passing 比 CSMA/CD 好的地方是？</p>
+<ol>
+<li>負載很重時效率高，而且等待時間有上限</li>
+<li>負載很輕時延遲比較低</li>
+<li>token 不會弄丟</li>
+<li>不需要任何控制訊息</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>A</strong>。大家輪流拿 token，最多等一圈，不會碰撞。B 剛好相反，負載輕時還是要等 token 繞過來；C、D 錯，token 會弄丟、要有重新產生 token 的機制，token 本身就是控制訊息。</p>
+</details>
+</div>
+<h4 id="_51">分散式系統裡，為什麼很難知道誰先發生？</h4>
 <p>分散式系統的電腦<strong>沒有共用的時鐘、也沒有共用的記憶體</strong>，只能傳訊息。每台電腦的時鐘快慢不一樣（會漂移），訊息在網路上要花多久也不固定。所以 A 機器記錄 10:00:01、B 機器記錄 10:00:02，<strong>不能保證 A 的事件真的比較早</strong>。</p>
 <h4 id="happened-before">happened-before（→）：只用能確定的事排順序</h4>
 <p>Lamport 定義的 happened-before 關係，A → B 讀作「A 在 B 之前發生」：</p>
@@ -11284,6 +11566,19 @@ lock(second.lock);</code></pre>
 <li><strong>遞移</strong>：A → B 而且 B → C，就 A → C。</li>
 </ol>
 <p>A → B 和 B → A <strong>都不成立</strong>的兩個事件叫<strong>同時發生</strong>（concurrent），誰先誰後都無所謂，它們不可能互相影響。</p>
+<div class="mcq" data-ans="4" data-qid="u6-dist-2">
+<p><strong>觀念題 18.</strong> P1 送一個訊息給 P2（P1 的事件 s、P2 的事件 r）。P1 在 s 之前有事件 a，P2 在 r 之前有事件 b。下面哪一對是同時發生（concurrent）？</p>
+<ol>
+<li>a 和 s</li>
+<li>s 和 r</li>
+<li>a 和 r</li>
+<li>a 和 b</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>D</strong>。a → s（同一個 process）、s → r（傳訊息）、所以 a → r（遞移）。b 在 r 之前、跟 P1 的事件沒有任何訊息連起來，a 和 b 誰也推不出誰先，是同時發生。</p>
+</details>
+</div>
 <h4 id="lamport">Lamport 邏輯時鐘：幫每個事件編號</h4>
 <p>每個 process 有一個計數器 LC：</p>
 <ul>
@@ -11381,68 +11676,8 @@ lock(second.lock);</code></pre>
 </figure>
 
 <p><strong>保證</strong>：A → B 就一定 LC(A) &lt; LC(B)。反過來不一定：c（3）和 f（1）是同時發生的，數字大小沒有意義。要排出全部事件的順序（total order），戳記一樣時用 process 編號決定。</p>
-<div class="admonition example">
-<p class="admonition-title">101 Q6（10%）：區域網路裡的電腦可能同時傳資料，造成嚴重的碰撞。說明 CSMA/CD 和 token passing 怎麼運作</p>
-<p><strong>CSMA/CD</strong>：傳之前先聽線路，沒人才傳；傳的時候繼續聽，偵測到碰撞就停止、送 jam 訊號，等一段隨機時間（binary exponential backoff）再重傳。</p>
-<p><strong>token passing</strong>：一個 token 在網路上依序傳遞，只有拿到 token 的電腦可以傳資料，傳完把 token 交給下一台，所以不會碰撞。</p>
-<p>（可以再補上面那張比較表：負載輕時 CSMA/CD 好，負載重或需要保證延遲時 token passing 好。）</p>
-</div>
-<div class="admonition example">
-<p class="admonition-title">102 Q8（10%）：(1) 分散式系統為什麼很難決定事件的順序 (2) 用 A、B、C 和 →，寫出 happened-before 的三條規則 (3) 什麼是 atomic transaction</p>
-<p><strong>(1)</strong> 沒有共用的時鐘和記憶體；各台電腦的時鐘有誤差，訊息的延遲不固定，不能用各自的時間比先後。</p>
-<p><strong>(2)</strong></p>
-<ul>
-<li>A、B 在同一個 process，A 先執行 → A → B。</li>
-<li>A 是送出一個訊息、B 是另一個 process 收到這個訊息 → A → B。</li>
-<li>A → B 且 B → C → A → C。</li>
-</ul>
-<p><strong>(3)</strong> 一組讀寫要嘛<strong>全部完成</strong>（commit），要嘛<strong>全部取消</strong>（abort，回到開始前的狀態），不會只做一半。例：轉帳的扣款和入帳一定要一起成功。（<a href="#u2-more">2.2</a>）</p>
-</div>
-<div class="admonition example">
-<p class="admonition-title">104 Q6(3)（1%）：分散式檔案系統的 component unit 是什麼？</p>
-<p><strong>可以放在同一台機器上、跟其他 unit 互不相關的最小一組檔案</strong>。同一個 component unit 裡的檔案一定放在同一個地方，命名和搬移都以它為單位。</p>
-</div>
-<h4 id="_53">觀念小考</h4>
-<div class="mcq" data-ans="2">
-<p><strong>C-1.</strong> CSMA/CD 偵測到碰撞之後，為什麼要等一段<strong>隨機</strong>的時間再重傳？</p>
-<ol>
-<li>讓線路冷卻</li>
-<li>如果兩台等一樣久，重傳時會再撞一次</li>
-<li>讓 token 先傳一圈</li>
-<li>讓接收端有時間檢查錯誤</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>B</strong>。兩台同時撞到、又等一樣久，就會同時重傳、再撞一次。隨機等，兩台錯開的機會很大；連續撞越多次，隨機的範圍越大（<span class="arithmatex">\(0\)</span> 到 <span class="arithmatex">\(2^k-1\)</span> 個時槽）。</p>
-</details>
-</div>
-<div class="mcq" data-ans="4">
-<p><strong>C-2.</strong> P1 送一個訊息給 P2（P1 的事件 s、P2 的事件 r）。P1 在 s 之前有事件 a，P2 在 r 之前有事件 b。下面哪一對是同時發生（concurrent）？</p>
-<ol>
-<li>a 和 s</li>
-<li>s 和 r</li>
-<li>a 和 r</li>
-<li>a 和 b</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>D</strong>。a → s（同一個 process）、s → r（傳訊息）、所以 a → r（遞移）。b 在 r 之前、跟 P1 的事件沒有任何訊息連起來，a 和 b 誰也推不出誰先，是同時發生。</p>
-</details>
-</div>
-<div class="mcq" data-ans="1">
-<p><strong>C-3.</strong> token passing 比 CSMA/CD 好的地方是？</p>
-<ol>
-<li>負載很重時效率高，而且等待時間有上限</li>
-<li>負載很輕時延遲比較低</li>
-<li>token 不會弄丟</li>
-<li>不需要任何控制訊息</li>
-</ol>
-<details class="quiz">
-<summary>看解析</summary>
-<p><strong>A</strong>。大家輪流拿 token，最多等一圈，不會碰撞。B 剛好相反，負載輕時還是要等 token 繞過來；C、D 錯，token 會弄丟、要有重新產生 token 的機制，token 本身就是控制訊息。</p>
-</details>
-</div>
-<p><strong>W-1.</strong> P1 的事件依序是 x、y（送訊息 m 給 P2）；P2 的事件依序是 u、v、w（w 收到 m）。用 Lamport 邏輯時鐘標出每個事件的時間戳記。</p>
+<div data-qid="u6-dist-4">
+<p><strong>觀念題 19.</strong> P1 的事件依序是 x、y（送訊息 m 給 P2）；P2 的事件依序是 u、v、w（w 收到 m）。用 Lamport 邏輯時鐘標出每個事件的時間戳記。</p>
 <details class="quiz">
 <summary>看參考答案</summary>
 <table>
@@ -11483,10 +11718,51 @@ lock(second.lock);</code></pre>
 </table>
 <p>w 的戳記 3 比 y 的 2 大，符合「送一定比收早」。u、v 和 x、y 之間沒有訊息連接，是同時發生的。</p>
 </details>
-<h3 id="u6-concept">6.4 觀念小考</h3>
-<p>選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。</p>
-<div class="mcq" data-ans="2">
-<p><strong>C-1.</strong> 選課系統被大量假請求灌爆，正常的學生都連不上。破壞的是 CIA 的哪一項？</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">101 Q6（10%）：區域網路裡的電腦可能同時傳資料，造成嚴重的碰撞。說明 CSMA/CD 和 token passing 怎麼運作</p>
+<p><strong>CSMA/CD</strong>：傳之前先聽線路，沒人才傳；傳的時候繼續聽，偵測到碰撞就停止、送 jam 訊號，等一段隨機時間（binary exponential backoff）再重傳。</p>
+<p><strong>token passing</strong>：一個 token 在網路上依序傳遞，只有拿到 token 的電腦可以傳資料，傳完把 token 交給下一台，所以不會碰撞。</p>
+<p>（可以再補上面那張比較表：負載輕時 CSMA/CD 好，負載重或需要保證延遲時 token passing 好。）</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">102 Q8（10%）：(1) 分散式系統為什麼很難決定事件的順序 (2) 用 A、B、C 和 →，寫出 happened-before 的三條規則 (3) 什麼是 atomic transaction</p>
+<p><strong>(1)</strong> 沒有共用的時鐘和記憶體；各台電腦的時鐘有誤差，訊息的延遲不固定，不能用各自的時間比先後。</p>
+<p><strong>(2)</strong></p>
+<ul>
+<li>A、B 在同一個 process，A 先執行 → A → B。</li>
+<li>A 是送出一個訊息、B 是另一個 process 收到這個訊息 → A → B。</li>
+<li>A → B 且 B → C → A → C。</li>
+</ul>
+<p><strong>(3)</strong> 一組讀寫要嘛<strong>全部完成</strong>（commit），要嘛<strong>全部取消</strong>（abort，回到開始前的狀態），不會只做一半。例：轉帳的扣款和入帳一定要一起成功。（<a href="#u2-more">2.2</a>）</p>
+</div>
+<div class="admonition example">
+<p class="admonition-title">104 Q6(3)（1%）：分散式檔案系統的 component unit 是什麼？</p>
+<p><strong>可以放在同一台機器上、跟其他 unit 互不相關的最小一組檔案</strong>。同一個 component unit 裡的檔案一定放在同一個地方，命名和搬移都以它為單位。</p>
+</div>
+<p>分散式檔案系統的命名還有兩個常考的名詞（102 Q5(7) 的是非題）：</p>
+<ul>
+<li><strong>location transparency</strong>：檔名不透露檔案放在哪一台機器。</li>
+<li><strong>location independence</strong>：檔案搬到另一台機器，<strong>名字也不用改</strong>。這比較強：有 independence 一定有 transparency，反過來不一定。</li>
+</ul>
+<div class="mcq" data-ans="2" data-qid="u6-dist-loc">
+<p><strong>觀念題 20.</strong> 分散式檔案系統把一個檔案從伺服器 A 搬到伺服器 B，使用者還是用同一個檔名就能打開它。這個性質叫什麼？</p>
+<ol>
+<li>location transparency</li>
+<li>location independence</li>
+<li>replication</li>
+<li>caching</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。「搬了位置、名字不用改」就是 independence。transparency 只保證名字看不出在哪裡，不保證搬家之後名字還能用。</p>
+</details>
+</div>
+<h3 id="u6-concept">6.4 練習：簡單觀念題</h3>
+<p>一兩句話就能回答的題目，確認名詞和觀念有沒有記對。題目照主題分組；選擇題按下選項就會對答案，問答題先寫在手寫板或紙上，再打開參考答案。</p>
+<h4 id="_52">安全目標與保護</h4>
+<div class="mcq" data-ans="2" data-qid="u6-concept-1">
+<p><strong>簡單 1.</strong> 選課系統被大量假請求灌爆，正常的學生都連不上。破壞的是 CIA 的哪一項？</p>
 <ol>
 <li>confidentiality</li>
 <li>availability</li>
@@ -11498,8 +11774,21 @@ lock(second.lock);</code></pre>
 <p><strong>B</strong>。資料沒被偷看也沒被改，但合法的使用者用不了服務，這是 availability。這種攻擊叫 DoS（denial of service）。</p>
 </details>
 </div>
-<div class="mcq" data-ans="4">
-<p><strong>C-2.</strong> 把存取矩陣「照欄存」，每個物件記錄誰能用它、能做什麼，這叫什麼？</p>
+<div class="mcq" data-ans="2" data-qid="u6-bank-s1">
+<p><strong>簡單 2.</strong> protection 和 security 差在哪？</p>
+<ol>
+<li>兩個是同一件事</li>
+<li>protection 管系統內部「誰可以存取什麼」；security 防外部的攻擊，還要靠認證確認使用者是誰</li>
+<li>protection 防病毒，security 管檔案權限</li>
+<li>security 只跟網路有關</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。protection 是內部的機制（存取矩陣、ACL）；security 防的是外面來的威脅。protection 要有效，前提是系統認得出使用者是誰，所以 security 需要 protection 加上認證（<a href="#u6-en">英文作答範例</a>的 E-1）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="4" data-qid="u6-concept-2">
+<p><strong>簡單 3.</strong> 把存取矩陣「照欄存」，每個物件記錄誰能用它、能做什麼，這叫什麼？</p>
 <ol>
 <li>capability list</li>
 <li>protection domain</li>
@@ -11511,8 +11800,8 @@ lock(second.lock);</code></pre>
 <p><strong>D</strong>。一欄就是一個物件，記在物件旁邊就是 ACL。照列存（跟著使用者）才是 capability list。</p>
 </details>
 </div>
-<div class="mcq" data-ans="1">
-<p><strong>C-3.</strong> 想知道「Alice 能存取哪些東西」，哪一種存法最快？</p>
+<div class="mcq" data-ans="1" data-qid="u6-concept-3">
+<p><strong>簡單 4.</strong> 想知道「Alice 能存取哪些東西」，哪一種存法最快？</p>
 <ol>
 <li>capability list</li>
 <li>ACL</li>
@@ -11524,8 +11813,9 @@ lock(second.lock);</code></pre>
 <p><strong>A</strong>。Alice 的那一列就是她的 capability list。用 ACL 的話，要把每個物件的名單都翻一遍。</p>
 </details>
 </div>
-<div class="mcq" data-ans="3">
-<p><strong>C-4.</strong> 數位簽章能做到、MAC 做不到的是？</p>
+<h4 id="_53">認證與攻擊</h4>
+<div class="mcq" data-ans="3" data-qid="u6-concept-4">
+<p><strong>簡單 5.</strong> 數位簽章能做到、MAC 做不到的是？</p>
 <ol>
 <li>檢查訊息有沒有被改（integrity）</li>
 <li>讓別人看不到訊息內容（confidentiality）</li>
@@ -11537,8 +11827,48 @@ lock(second.lock);</code></pre>
 <p><strong>C</strong>。MAC 的金鑰雙方都有，收的人自己也算得出同一個 MAC，所以無法證明是誰送的。簽章只有持有私鑰的人做得出來。A 兩個都做得到；B 要靠加密，兩個都不是在做這件事。</p>
 </details>
 </div>
-<div class="mcq" data-ans="2">
-<p><strong>C-5.</strong> Lamport 時鐘：P2 的計數器現在是 3，收到一個戳記是 7 的訊息。收訊息這個事件的戳記是？</p>
+<div class="mcq" data-ans="2" data-qid="u6-bank-s2">
+<p><strong>簡單 6.</strong> 下面哪一個是 worm 的特徵，而不是 virus 的？</p>
+<ol>
+<li>附在別的程式上</li>
+<li>自己透過網路複製散播，不需要寄生在其他程式裡</li>
+<li>只在特定日期發作</li>
+<li>偽裝成有用的程式</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。A 是 virus，C 是 logic bomb，D 是 trojan horse（<a href="#u6-0">6.0</a> 的表）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u6-bank-s6">
+<p><strong>簡單 7.</strong> 程式設計者在登入程式裡偷偷留下：輸入某個特定的帳號就不用密碼。這叫什麼？</p>
+<ol>
+<li>trojan horse</li>
+<li>trap door</li>
+<li>logic bomb</li>
+<li>replay attack</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。trap door（後門）是設計者故意留的祕密入口。102 Q5(4) 考過更狡猾的版本：後門藏在<strong>編譯器</strong>裡，看被編譯程式的原始碼找不到（<a href="#u6-more">6.2</a>）。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3" data-qid="u6-bank-s7">
+<p><strong>簡單 8.</strong> 攻擊者夾在 A 和 B 中間，對 A 假裝成 B、對 B 假裝成 A，可以偷看、修改兩人之間傳的資料。這叫什麼？</p>
+<ol>
+<li>masquerading</li>
+<li>replay attack</li>
+<li>man-in-the-middle</li>
+<li>DDoS</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。masquerading 只是「假裝成別人」；man-in-the-middle 是夾在兩方中間、同時騙兩邊。102 Q5(5) 的是非題就是把這兩個說反了。</p>
+</details>
+</div>
+<h4 id="_54">分散式系統</h4>
+<div class="mcq" data-ans="2" data-qid="u6-concept-5">
+<p><strong>簡單 9.</strong> Lamport 時鐘：P2 的計數器現在是 3，收到一個戳記是 7 的訊息。收訊息這個事件的戳記是？</p>
 <ol>
 <li>4</li>
 <li>8</li>
@@ -11550,7 +11880,47 @@ lock(second.lock);</code></pre>
 <p><strong>B</strong>。<span class="arithmatex">\(\max(3,7)+1=8\)</span>，保證收的事件比送的事件（7）晚。A 是忘了跟訊息的戳記比。</p>
 </details>
 </div>
-<p><strong>W-1.</strong> P1 依序有 a、b（送訊息 m1 給 P2）、c（收到 P2 的 m2）；P2 依序有 d、e（收到 m1）、f（送 m2 給 P1）。寫出每個事件的 Lamport 時間戳記。a 和 d 誰先發生？</p>
+<div class="mcq" data-ans="2" data-qid="u6-bank-s8">
+<p><strong>簡單 10.</strong> CSMA/CD 中，同一筆資料已經連續碰撞 3 次。下一次要從幾個時槽裡隨機挑一個來等？</p>
+<ol>
+<li>0 到 3</li>
+<li>0 到 7</li>
+<li>0 到 2</li>
+<li>固定等 3 個</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。binary exponential backoff：第 <span class="arithmatex">\(k\)</span> 次碰撞後，從 <span class="arithmatex">\(0\)</span> 到 <span class="arithmatex">\(2^k-1\)</span> 裡挑。<span class="arithmatex">\(k=3\)</span> 時是 0 到 7，兩台挑到同一個數的機率剩 <span class="arithmatex">\(\frac18\)</span>（<a href="#u6-exam">6.6</a> 考古變化 4）。</p>
+</details>
+</div>
+<h3 id="u6-drill">6.5 練習：基礎題</h3>
+<p>要動手查存取矩陣、標 Lamport 時間、跑 timestamp-ordering protocol，但每題只用到一個觀念。先自己寫，再打開對答案。</p>
+<h4 id="_55">存取矩陣</h4>
+<div data-qid="u6-concept-7">
+<p><strong>基礎 1.</strong> Alice 對 file1 可以 read、write；Bob 對 file1 只能 read、對 file2 可以 read、write；Alice 對 file2 沒有權限。寫出 file1 的 ACL 和 Bob 的 capability list。如果要撤銷所有人對 file2 的存取，哪一種存法比較方便？</p>
+<details class="quiz">
+<summary>看參考答案</summary>
+<ul>
+<li><strong>file1 的 ACL</strong>：Alice：read、write；Bob：read。</li>
+<li><strong>Bob 的 capability list</strong>：file1：read；file2：read、write。</li>
+<li><strong>撤銷 file2：ACL 比較方便</strong>。所有權限都記在 file2 自己的名單上，清掉這一份就好；用 capability 的話，要找出每個使用者（或已經發出去的 capability）裡有 file2 的那一項，一個一個刪。</li>
+</ul>
+</details>
+</div>
+<div data-qid="u6-bank-b1">
+<p><strong>基礎 2.</strong> 存取矩陣把 domain 也當成物件：D1 對 F1 可以 read，對 D2 有 switch 權限；D2 對 F2 可以 read、write，對印表機可以 print；D3 對 F1 可以 read、write。(a) 在 D1 執行的 process 能不能印東西？(b) 能不能寫 F1？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>(a) 可以，但要先切換</strong>：D1 本身沒有 print，但 D1 對 D2 有 switch，切換到 D2 之後就能 print。</li>
+<li><strong>(b) 不能</strong>：能寫 F1 的只有 D3。D1 只能切換到 D2，D2 也沒有切換到 D3 的權限，所以怎麼換都到不了 D3。</li>
+<li><strong>重點</strong>：判斷「做不做得到」時，除了這個 domain 本身的權限，還要看它能 switch 到哪些 domain，一路追下去（<a href="#u6-more">6.2</a> 的 protection domain）。</li>
+</ul>
+</details>
+</div>
+<h4 id="_56">事件順序與交易</h4>
+<div data-qid="u6-concept-6">
+<p><strong>基礎 3.</strong> P1 依序有 a、b（送訊息 m1 給 P2）、c（收到 P2 的 m2）；P2 依序有 d、e（收到 m1）、f（送 m2 給 P1）。寫出每個事件的 Lamport 時間戳記。a 和 d 誰先發生？</p>
 <details class="quiz">
 <summary>看參考答案</summary>
 <table>
@@ -11596,16 +11966,221 @@ lock(second.lock);</code></pre>
 </table>
 <p><strong>a 和 d 是同時發生的（concurrent）</strong>：從 a 出發，要經過 m1 才到 P2，到的是 e，在 d 之後，所以 a → d 不成立；P2 在 d 之前沒有送任何訊息給 P1，d → a 也不成立。兩個的戳記剛好都是 1，但就算數字不一樣，也不代表誰先誰後。</p>
 </details>
-<p><strong>W-2.</strong> Alice 對 file1 可以 read、write；Bob 對 file1 只能 read、對 file2 可以 read、write；Alice 對 file2 沒有權限。寫出 file1 的 ACL 和 Bob 的 capability list。如果要撤銷所有人對 file2 的存取，哪一種存法比較方便？</p>
+</div>
+<div data-qid="u6-bank-b2">
+<p><strong>基礎 4.</strong> 資料 Q 一開始的 R-timestamp 是 5、W-timestamp 是 3。依序發生：Ta（TS 4）write(Q)、Tb（TS 7）read(Q)、Tc（TS 6）write(Q)、Td（TS 8）write(Q)、Te（TS 7）read(Q)。照 timestamp-ordering protocol，每一個是執行還是 rollback？Q 的兩個 timestamp 最後是多少？</p>
 <details class="quiz">
-<summary>看參考答案</summary>
+<summary>看完整解答</summary>
 <ul>
-<li><strong>file1 的 ACL</strong>：Alice：read、write；Bob：read。</li>
-<li><strong>Bob 的 capability list</strong>：file1：read；file2：read、write。</li>
-<li><strong>撤銷 file2：ACL 比較方便</strong>。所有權限都記在 file2 自己的名單上，清掉這一份就好；用 capability 的話，要找出每個使用者（或已經發出去的 capability）裡有 file2 的那一項，一個一個刪。</li>
+<li><strong>Ta write</strong>：4 ＜ R-ts 5，比它新的交易已經讀過舊值 → <strong>rollback</strong>。</li>
+<li><strong>Tb read</strong>：7 ≥ W-ts 3 → <strong>執行</strong>，R-ts ＝ max(5, 7) ＝ 7。</li>
+<li><strong>Tc write</strong>：6 ＜ R-ts 7（Tb 剛讀過）→ <strong>rollback</strong>。</li>
+<li><strong>Td write</strong>：8 ≥ 7、8 ≥ 3 → <strong>執行</strong>，W-ts ＝ 8。</li>
+<li><strong>Te read</strong>：7 ＜ W-ts 8，要讀的值已經被 Td 蓋掉 → <strong>rollback</strong>。</li>
+<li><strong>最後</strong>：R-ts ＝ <strong>7</strong>、W-ts ＝ <strong>8</strong>。</li>
+</ul>
+<p>我用程式照規則跑過一次（<a href="#u6-1">6.1</a> 的 113 Q7），結果一樣。</p>
+</details>
+</div>
+<h3 id="u6-exam">6.6 練習：考古題變化題</h3>
+<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
+<div data-qid="u6-exam-1">
+<p><strong>考古變化 1.</strong>（改自 113 Q7・實際算）資料 Q 一開始的 R-timestamp 是 15、W-timestamp 是 12。依序發生：T1（TS 10）read(Q)、T2（TS 14）read(Q)、T3（TS 13）write(Q)、T4（TS 20）write(Q)、T5（TS 18）write(Q)。照 timestamp-ordering protocol，每一個是執行還是 rollback？Q 的兩個 timestamp 最後是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只要寫出規則；這題照規則一步一步跑，timestamp 會跟著更新。</li>
+<li><strong>T1 read</strong>：10 ＜ W-ts 12，要讀的值已經被比它新的交易寫過了 → <strong>rollback</strong>。</li>
+<li><strong>T2 read</strong>：14 ≥ 12 → <strong>執行</strong>，R-ts ＝ max(15, 14) ＝ 15。</li>
+<li><strong>T3 write</strong>：13 ＜ R-ts 15，比它新的交易已經讀過舊值了 → <strong>rollback</strong>。</li>
+<li><strong>T4 write</strong>：20 ≥ 15 而且 20 ≥ 12 → <strong>執行</strong>，W-ts 變成 20。</li>
+<li><strong>T5 write</strong>：18 ≥ R-ts 15，但 18 ＜ W-ts 20，它要寫的值已經過時 → <strong>rollback</strong>（如果用 Thomas write rule，這個寫入直接忽略，不用 rollback）。</li>
+<li><strong>最後</strong>：R-ts ＝ <strong>15</strong>、W-ts ＝ <strong>20</strong>。</li>
+</ul>
+<p>我用程式照規則跑過一次，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u6-exam-2">
+<p><strong>考古變化 2.</strong>（改自 101 Q5、107 Q4(4)・應用）A 要傳一份合約給 B，希望 (1) 只有 B 看得到內容 (2) B 能確定合約真的是 A 送的、沒有被改過，而且 A 事後不能否認。要怎麼用 A、B 的公鑰和私鑰？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題分開問 MAC 和數位簽章；這題要把「加密」和「簽章」一起用，關鍵是每一步用誰的哪一把鑰匙。</li>
+<li><strong>簽章（滿足 (2)）</strong>：A 算合約的雜湊 <span class="arithmatex">\(H(m)\)</span>，用 <strong>A 的私鑰</strong>簽。只有 A 有自己的私鑰，所以別人偽造不了、A 也賴不掉（nonrepudiation）；B 用 <strong>A 的公鑰</strong>驗證。</li>
+<li><strong>加密（滿足 (1)）</strong>：把合約和簽章用 <strong>B 的公鑰</strong>加密（實務上是用 B 的公鑰加密一把隨機的對稱金鑰，再用對稱金鑰加密內容）。只有 B 的私鑰解得開。</li>
+<li><strong>為什麼不用 MAC</strong>：MAC 的金鑰 A、B 都有，B 也算得出同樣的 MAC，所以做不到「A 不能否認」。</li>
 </ul>
 </details>
-<h3 id="u6-en">6.5 英文作答範例</h3>
+</div>
+<div data-qid="u6-exam-3">
+<p><strong>考古變化 3.</strong>（改自 102 Q8・實際算）三個 process：P1 依序有事件 a、b、c；P2 有 d、e、f；P3 有 g、h、i。b 送訊息給 P2，d 是收到它；e 送訊息給 P3，h 是收到它；i 送訊息給 P1，c 是收到它。(1) 算出每個事件的 Lamport timestamp (2) 下面哪幾對是 concurrent（沒有 happened-before 關係）：(a, g)、(b, h)、(f, i)、(g, c)</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題要寫出 happened-before 的三條規則；這題用規則實際推一次，再用 Lamport clock 標時間。</li>
+<li><strong>(1) Lamport clock</strong>：同一個 process 每個事件加 1；收到訊息時取「自己的時間」和「訊息帶來的時間」的最大值再加 1。<ul>
+<li>P1：a ＝ 1、b ＝ 2；P2：d ＝ max(0, 2)＋1 ＝ 3、e ＝ 4、f ＝ 5；P3：g ＝ 1、h ＝ max(1, 4)＋1 ＝ 5、i ＝ 6；最後 c ＝ max(2, 6)＋1 ＝ 7。</li>
+</ul>
+</li>
+<li><strong>(2)</strong>：<ul>
+<li><strong>(a, g) concurrent</strong>：兩個都是各自的第一個事件，沒有訊息把它們連起來。</li>
+<li><strong>(b, h) 不是</strong>：b → d → e → h，b 先發生。</li>
+<li><strong>(f, i) concurrent</strong>：f 之後 P2 沒再送訊息，i 也沒送到 P2，兩邊找不到路徑。</li>
+<li><strong>(g, c) 不是</strong>：g → h → i → c。</li>
+</ul>
+</li>
+<li><strong>小心</strong>：Lamport timestamp 小<strong>不代表</strong>先發生。f ＝ 5 比 i ＝ 6 小，但它們是 concurrent。反過來才對：<span class="arithmatex">\(x\to y\)</span> 一定有 <span class="arithmatex">\(L(x) &lt; L(y)\)</span>。</li>
+</ul>
+<p>我用程式算了 Lamport clock 和 vector clock，用 vector clock 判斷每一對的關係，結果一樣。</p>
+</details>
+</div>
+<div data-qid="u6-exam-4">
+<p><strong>考古變化 4.</strong>（改自 101 Q6・量化）兩台電腦用 CSMA/CD，同時傳送而碰撞。binary exponential backoff：第 <span class="arithmatex">\(k\)</span> 次碰撞後，各自從 <span class="arithmatex">\(0,1,\dots,2^k-1\)</span> 裡隨機挑一個數，等那麼多個時槽再重傳。第 1、2、3 次碰撞後，兩台「又挑到同一個數、再碰撞一次」的機率各是多少？</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：原題只要說明 CSMA/CD 怎麼運作；這題算出 backoff 為什麼能讓碰撞越來越少。</li>
+<li><strong>第 <span class="arithmatex">\(k\)</span> 次碰撞後</strong>：有 <span class="arithmatex">\(2^k\)</span> 個數可以挑，兩台挑到同一個的機率是 <span class="arithmatex">\(\frac{1}{2^k}\)</span>。</li>
+<li><strong>答案</strong>：第 1 次後 <strong><span class="arithmatex">\(\frac12\)</span></strong>、第 2 次後 <strong><span class="arithmatex">\(\frac14\)</span></strong>、第 3 次後 <strong><span class="arithmatex">\(\frac18\)</span></strong>。</li>
+<li><strong>意思</strong>：每碰撞一次，等待的範圍加倍，再撞的機率減半；網路越擠，大家自動退得越開。代價是負載重時延遲越來越長，這也是 token passing 適合重負載、需要保證延遲的原因。</li>
+</ul>
+<p>我用程式重算過每一步，答案一樣。</p>
+</details>
+</div>
+<div data-qid="u6-exam-5">
+<p><strong>考古變化 5.</strong>（改自 102 Q5・換敘述）是非（錯的要說明）：(a) 每個使用者都直接以 root 身分登入，比較符合最小權限原則 (b) virus 不需要附在別的程式上就能自己透過網路散播 (c) 非對稱加密裡，用公鑰加密的東西要用私鑰解 (d) DDoS 的流量來自很多台電腦，所以很難用封鎖單一來源擋掉 (e) 只要仔細讀過程式的原始碼，就一定找得到後門</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong>跟原題差在哪</strong>：同樣是安全性的是非題，換成另外五個常見的觀念。</li>
+<li><strong>(a) 錯</strong>：最小權限是只給剛好夠的權限；平常用一般帳號，需要時才暫時提升（例如 sudo、RBAC 的角色）。</li>
+<li><strong>(b) 錯</strong>：這是 <strong>worm</strong> 的特性；virus 要附在別的程式上，靠那個程式執行才散播。</li>
+<li><strong>(c) 對</strong>：公鑰加密、私鑰解密（保密）；私鑰簽章、公鑰驗證（認證）。</li>
+<li><strong>(d) 對</strong>：流量來自 botnet 裡的大量電腦。</li>
+<li><strong>(e) 錯</strong>：後門可能藏在<strong>編譯器</strong>裡（Ken Thompson 的例子），被編譯的程式原始碼完全正常。</li>
+</ul>
+</details>
+</div>
+<h3 id="u6-bank">6.7 練習：猜題</h3>
+<p>考古題還沒考過、但恐龍書 Security、Protection 和分散式系統幾章的重點，我猜比較可能出現的題型，包含 115 年那種英文名詞填空。</p>
+<div data-qid="u6-bank-g1">
+<div>
+<p><strong>猜題 1.</strong> 填空（115 年那種英文名詞填空）：</p>
+<ul>
+<li>(a) ＿＿ ensures that the sender of a message cannot later deny having sent it.</li>
+<li>(b) In a ＿＿ attack, a valid data transmission is maliciously or fraudulently repeated.</li>
+<li>(c) A ＿＿ is a program that appears to be legitimate but performs a hidden malicious action.</li>
+<li>(d) In a ＿＿ attack, the attacker sits in the data flow of a communication, masquerading as the sender to the receiver and vice versa.</li>
+<li>(e) The principle of ＿＿ dictates that programs, users and systems be given just enough privileges to perform their tasks.</li>
+</ul>
+</div>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li>(a) <strong>Nonrepudiation</strong>（<a href="#u6-more">6.2</a> 數位簽章）</li>
+<li>(b) <strong>replay</strong>（<a href="#u6-more">6.2</a>）</li>
+<li>(c) <strong>Trojan horse</strong>（<a href="#u6-0">6.0</a>）</li>
+<li>(d) <strong>man-in-the-middle</strong>（<a href="#u6-more">6.2</a>）</li>
+<li>(e) <strong>least privilege</strong>（<a href="#u6-0">6.0</a>）</li>
+</ul>
+</details>
+</div>
+<div data-qid="u6-bank-g2">
+<p><strong>猜題 2.</strong> RSA 的小例子：<span class="arithmatex">\(p=7\)</span>、<span class="arithmatex">\(q=13\)</span>，公開的指數 <span class="arithmatex">\(e=5\)</span>，私密的指數 <span class="arithmatex">\(d=29\)</span>。(a) 驗證 <span class="arithmatex">\(e\)</span>、<span class="arithmatex">\(d\)</span> 選得對 (b) 把訊息 <span class="arithmatex">\(m=69\)</span> 加密 (c) 解密驗算</p>
+<details class="quiz">
+<summary>看完整解答</summary>
+<ul>
+<li><strong><span class="arithmatex">\(n\)</span> 和 <span class="arithmatex">\((p-1)(q-1)\)</span></strong>：<span class="arithmatex">\(n=7\times13=91\)</span>，<span class="arithmatex">\((p-1)(q-1)=6\times12=72\)</span>。</li>
+<li><strong>(a)</strong>：<span class="arithmatex">\(e\times d=5\times29=145=2\times72+1\)</span>，除以 72 餘 1，所以 <span class="arithmatex">\(d\)</span> 是 <span class="arithmatex">\(e\)</span> 的反元素，選得對。公鑰是 <span class="arithmatex">\((e,n)=(5,91)\)</span>，私鑰是 <span class="arithmatex">\((d,n)=(29,91)\)</span>。</li>
+<li><strong>(b) 加密</strong>：<span class="arithmatex">\(c=m^e\bmod n=69^5\bmod91=\)</span> <strong>62</strong>。</li>
+<li><strong>(c) 解密</strong>：<span class="arithmatex">\(62^{29}\bmod91=\)</span> <strong>69</strong>，回到原本的訊息。</li>
+<li><strong>為什麼安全</strong>：要從公鑰算出 <span class="arithmatex">\(d\)</span>，得先把 <span class="arithmatex">\(n\)</span> 分解成 <span class="arithmatex">\(p\times q\)</span>；<span class="arithmatex">\(n\)</span> 有幾百位數時，分解要花不可能的時間。</li>
+</ul>
+<p>我用程式算過兩個次方的餘數。</p>
+</details>
+</div>
+<div data-qid="u6-bank-g3">
+<p><strong>猜題 3.</strong> 系統為什麼存密碼的<strong>雜湊值</strong>，而不是密碼本身？為什麼還要加一個 <strong>salt</strong>？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li><strong>存雜湊值</strong>：登入時把輸入的密碼算雜湊，跟存的比就好。雜湊函數是單向的，就算密碼檔被偷，也不能直接從雜湊值算回密碼。</li>
+<li><strong>只存雜湊的問題</strong>：一樣的密碼算出一樣的雜湊值；攻擊者可以事先把常見密碼的雜湊都算好（字典、rainbow table），偷到檔案後直接查表。</li>
+<li><strong>salt</strong>：替每個使用者產生一個隨機的值，跟雜湊值存在一起，存的是 <span class="arithmatex">\(H(\text{salt}+\text{密碼})\)</span>。同樣的密碼，salt 不同，雜湊值就不同；事先算好的表也沒用了，攻擊者只能一個帳號一個帳號地猜。</li>
+</ul>
+</details>
+</div>
+<div class="mcq" data-ans="2" data-qid="u6-bank-g4">
+<p><strong>猜題 4.</strong> two-factor authentication（兩因素認證）指的是？</p>
+<ol>
+<li>密碼要輸入兩次</li>
+<li>用兩種不同類型的證明，例如「你知道的」密碼，加上「你擁有的」手機收到的一次性密碼</li>
+<li>兩個人一起登入</li>
+<li>用兩把公鑰加密</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>B</strong>。兩個因素要是不同類型（知道的、擁有的、身體特徵），密碼被偷了，攻擊者手上沒有你的手機還是進不來。一次性密碼（one-time password）每次都不一樣，被截到也不能重送使用，所以也能防 replay attack。</p>
+</details>
+</div>
+<div data-qid="u6-bank-g5">
+<p><strong>猜題 5.</strong> stack 上的 buffer overflow 怎麼被用來攻擊？有哪些防禦方法？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li><strong>怎麼攻擊</strong>：函式把使用者的輸入複製進一個固定大小的區域陣列，卻沒有檢查長度（例如 <code>strcpy</code>）。輸入太長，就會蓋掉 stack 上陣列後面的東西，包括這個函式的<strong>返回位址</strong>。攻擊者把返回位址改成指向自己塞進去的程式碼，函式一返回就跳去執行它（code injection），如果程式有 root 權限，攻擊者就拿到 root。</li>
+<li><strong>防禦</strong>：<ul>
+<li>寫程式時檢查長度（<code>strncpy</code>、<code>fgets</code>）。</li>
+<li><strong>NX bit</strong>：把 stack 標成不能執行，塞進去的程式碼跑不起來。</li>
+<li><strong>stack canary</strong>：在返回位址前放一個隨機值，函式返回前檢查有沒有被改。</li>
+<li><strong>ASLR</strong>：每次執行時把 stack、函式庫放在隨機的位址，攻擊者猜不到要跳去哪裡。</li>
+</ul>
+</li>
+</ul>
+</details>
+</div>
+<div data-qid="u6-bank-g6">
+<p><strong>猜題 6.</strong> Lamport 時鐘有一個缺點：<span class="arithmatex">\(L(a) &lt; L(b)\)</span> 不能推出 <span class="arithmatex">\(a\to b\)</span>。vector clock 怎麼解決？用這個例子說明：P1 有 a、b（b 送訊息給 P2）；P2 有 c、d（d 收到 b 的訊息）。</p>
+<details class="quiz">
+<summary>看答案</summary>
+<ul>
+<li><strong>規則</strong>：n 個 process，每個 process <span class="arithmatex">\(P_i\)</span> 存一個長度 n 的向量 <span class="arithmatex">\(V\)</span>。自己發生事件時 <span class="arithmatex">\(V[i]\)</span> 加 1；送訊息時附上整個向量；收訊息時，每一格取「自己的」和「訊息的」較大的，再把 <span class="arithmatex">\(V[i]\)</span> 加 1。</li>
+<li><strong>例子</strong>：<span class="arithmatex">\(V(a)=(1,0)\)</span>、<span class="arithmatex">\(V(b)=(2,0)\)</span>、<span class="arithmatex">\(V(c)=(0,1)\)</span>、<span class="arithmatex">\(V(d)=\max((0,1),(2,0))\)</span> 再把第 2 格加 1 <span class="arithmatex">\(=(2,2)\)</span>。</li>
+<li><strong>比較</strong>：<span class="arithmatex">\(x\to y\)</span> 若且唯若 <span class="arithmatex">\(V(x)\)</span> 的<strong>每一格都 ≤</strong> <span class="arithmatex">\(V(y)\)</span>，而且兩個不相等。<ul>
+<li><span class="arithmatex">\(b\to d\)</span>：<span class="arithmatex">\((2,0)\le(2,2)\)</span>。</li>
+<li>a 和 c：<span class="arithmatex">\((1,0)\)</span> 和 <span class="arithmatex">\((0,1)\)</span> 誰都沒有每一格都比較小，所以是 <strong>concurrent</strong>。</li>
+</ul>
+</li>
+<li><strong>差別</strong>：Lamport 只有一個數字，「數字比較小」不代表先發生；vector clock 可以雙向判斷，看向量就知道有沒有先後（<a href="#u6-dist">6.3</a>）。</li>
+</ul>
+</details>
+</div>
+<div data-qid="u6-bank-g7">
+<p><strong>猜題 7.</strong> 一筆交易要同時改兩台伺服器上的資料（例如跨行轉帳），兩台要嘛都成功、要嘛都取消。two-phase commit（2PC）怎麼做？有什麼缺點？</p>
+<details class="quiz">
+<summary>看答案</summary>
+<p>由一台 <strong>coordinator</strong> 負責：</p>
+<ol>
+<li><strong>第一階段（prepare）</strong>：coordinator 問每一台「能不能 commit？」。每一台把要做的修改寫進自己的 log，能做就回答 ready，不能就回答 abort。</li>
+<li><strong>第二階段（commit）</strong>：全部都回答 ready，coordinator 在自己的 log 寫下 commit，再通知大家 commit；只要有一台回答 abort（或沒回應），就通知大家 abort。</li>
+</ol>
+<p><strong>缺點（blocking）</strong>：參與者回答 ready 之後，就只能等 coordinator 的決定。如果 coordinator 這時當機，參與者不知道該 commit 還是 abort，只能一直等它恢復，鎖住的資料別人也不能用。這跟 <a href="#u2-more">2.2</a> 的 atomic transaction 是同一個目標，只是發生在好幾台機器上。</p>
+</details>
+</div>
+<div class="mcq" data-ans="3" data-qid="u6-bank-g8">
+<p><strong>猜題 8.</strong> 分散式系統用 bully algorithm 選 coordinator。原本的 coordinator 掛了，最後會選出誰？</p>
+<ol>
+<li>第一個發現 coordinator 掛掉的 process</li>
+<li>編號最小的 process</li>
+<li>還活著的 process 裡，編號最大的</li>
+<li>隨機挑一個</li>
+</ol>
+<details class="quiz">
+<summary>看解析</summary>
+<p><strong>C</strong>。發現 coordinator 沒回應的 process，送 election 訊息給所有編號比自己大的；有人回應，就交給它繼續選；沒人回應，它就當 coordinator，並通知所有人。編號大的會把小的「霸凌」下去，所以叫 bully。token passing 的 token 弄丟時，也要用類似的方法選一台重新產生 token（<a href="#u6-dist">6.3</a>）。</p>
+</details>
+</div>
+<h3 id="u6-en">6.8 英文作答範例</h3>
 <p>考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把<strong>粗體的關鍵字</strong>記起來。寫法見 <a href="#u0-en">0. 中山 OS 怎麼考</a>。</p>
 <div>
 <p><strong>E-1.</strong> Distinguish between protection and security.</p>
@@ -11698,75 +12273,6 @@ lock(second.lock);</code></pre>
 </ol>
 <p>To keep dispatch latency low, real-time operating systems provide <strong>preemptive kernels</strong>.</p>
 <p>寫法提示：兩種延遲的起點和終點都要寫清楚（<a href="#u6-1">6.1</a>）。</p>
-</details>
-<h3 id="u6-exam">6.6 考古題變化題</h3>
-<p>把考過的題目<strong>換數字、改條件，或反過來問</strong>。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。</p>
-<p><strong>考古變化 1.</strong>（改自 113 Q7・實際算）資料 Q 一開始的 R-timestamp 是 15、W-timestamp 是 12。依序發生：T1（TS 10）read(Q)、T2（TS 14）read(Q)、T3（TS 13）write(Q)、T4（TS 20）write(Q)、T5（TS 18）write(Q)。照 timestamp-ordering protocol，每一個是執行還是 rollback？Q 的兩個 timestamp 最後是多少？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題只要寫出規則；這題照規則一步一步跑，timestamp 會跟著更新。</li>
-<li><strong>T1 read</strong>：10 ＜ W-ts 12，要讀的值已經被比它新的交易寫過了 → <strong>rollback</strong>。</li>
-<li><strong>T2 read</strong>：14 ≥ 12 → <strong>執行</strong>，R-ts ＝ max(15, 14) ＝ 15。</li>
-<li><strong>T3 write</strong>：13 ＜ R-ts 15，比它新的交易已經讀過舊值了 → <strong>rollback</strong>。</li>
-<li><strong>T4 write</strong>：20 ≥ 15 而且 20 ≥ 12 → <strong>執行</strong>，W-ts 變成 20。</li>
-<li><strong>T5 write</strong>：18 ≥ R-ts 15，但 18 ＜ W-ts 20，它要寫的值已經過時 → <strong>rollback</strong>（如果用 Thomas write rule，這個寫入直接忽略，不用 rollback）。</li>
-<li><strong>最後</strong>：R-ts ＝ <strong>15</strong>、W-ts ＝ <strong>20</strong>。</li>
-</ul>
-<p>我用程式照規則跑過一次，答案一樣。</p>
-</details>
-<p><strong>考古變化 2.</strong>（改自 101 Q5、107 Q4(4)・應用）A 要傳一份合約給 B，希望 (1) 只有 B 看得到內容 (2) B 能確定合約真的是 A 送的、沒有被改過，而且 A 事後不能否認。要怎麼用 A、B 的公鑰和私鑰？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題分開問 MAC 和數位簽章；這題要把「加密」和「簽章」一起用，關鍵是每一步用誰的哪一把鑰匙。</li>
-<li><strong>簽章（滿足 (2)）</strong>：A 算合約的雜湊 <span class="arithmatex">\(H(m)\)</span>，用 <strong>A 的私鑰</strong>簽。只有 A 有自己的私鑰，所以別人偽造不了、A 也賴不掉（nonrepudiation）；B 用 <strong>A 的公鑰</strong>驗證。</li>
-<li><strong>加密（滿足 (1)）</strong>：把合約和簽章用 <strong>B 的公鑰</strong>加密（實務上是用 B 的公鑰加密一把隨機的對稱金鑰，再用對稱金鑰加密內容）。只有 B 的私鑰解得開。</li>
-<li><strong>為什麼不用 MAC</strong>：MAC 的金鑰 A、B 都有，B 也算得出同樣的 MAC，所以做不到「A 不能否認」。</li>
-</ul>
-</details>
-<p><strong>考古變化 3.</strong>（改自 102 Q8・實際算）三個 process：P1 依序有事件 a、b、c；P2 有 d、e、f；P3 有 g、h、i。b 送訊息給 P2，d 是收到它；e 送訊息給 P3，h 是收到它；i 送訊息給 P1，c 是收到它。(1) 算出每個事件的 Lamport timestamp (2) 下面哪幾對是 concurrent（沒有 happened-before 關係）：(a, g)、(b, h)、(f, i)、(g, c)</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題要寫出 happened-before 的三條規則；這題用規則實際推一次，再用 Lamport clock 標時間。</li>
-<li><strong>(1) Lamport clock</strong>：同一個 process 每個事件加 1；收到訊息時取「自己的時間」和「訊息帶來的時間」的最大值再加 1。<ul>
-<li>P1：a ＝ 1、b ＝ 2；P2：d ＝ max(0, 2)＋1 ＝ 3、e ＝ 4、f ＝ 5；P3：g ＝ 1、h ＝ max(1, 4)＋1 ＝ 5、i ＝ 6；最後 c ＝ max(2, 6)＋1 ＝ 7。</li>
-</ul>
-</li>
-<li><strong>(2)</strong>：<ul>
-<li><strong>(a, g) concurrent</strong>：兩個都是各自的第一個事件，沒有訊息把它們連起來。</li>
-<li><strong>(b, h) 不是</strong>：b → d → e → h，b 先發生。</li>
-<li><strong>(f, i) concurrent</strong>：f 之後 P2 沒再送訊息，i 也沒送到 P2，兩邊找不到路徑。</li>
-<li><strong>(g, c) 不是</strong>：g → h → i → c。</li>
-</ul>
-</li>
-<li><strong>小心</strong>：Lamport timestamp 小<strong>不代表</strong>先發生。f ＝ 5 比 i ＝ 6 小，但它們是 concurrent。反過來才對：<span class="arithmatex">\(x\to y\)</span> 一定有 <span class="arithmatex">\(L(x)&lt;L(y)\)</span>。</li>
-</ul>
-<p>我用程式算了 Lamport clock 和 vector clock，用 vector clock 判斷每一對的關係，結果一樣。</p>
-</details>
-<p><strong>考古變化 4.</strong>（改自 101 Q6・量化）兩台電腦用 CSMA/CD，同時傳送而碰撞。binary exponential backoff：第 <span class="arithmatex">\(k\)</span> 次碰撞後，各自從 <span class="arithmatex">\(0,1,\dots,2^k-1\)</span> 裡隨機挑一個數，等那麼多個時槽再重傳。第 1、2、3 次碰撞後，兩台「又挑到同一個數、再碰撞一次」的機率各是多少？</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：原題只要說明 CSMA/CD 怎麼運作；這題算出 backoff 為什麼能讓碰撞越來越少。</li>
-<li><strong>第 <span class="arithmatex">\(k\)</span> 次碰撞後</strong>：有 <span class="arithmatex">\(2^k\)</span> 個數可以挑，兩台挑到同一個的機率是 <span class="arithmatex">\(\frac{1}{2^k}\)</span>。</li>
-<li><strong>答案</strong>：第 1 次後 <strong><span class="arithmatex">\(\frac12\)</span></strong>、第 2 次後 <strong><span class="arithmatex">\(\frac14\)</span></strong>、第 3 次後 <strong><span class="arithmatex">\(\frac18\)</span></strong>。</li>
-<li><strong>意思</strong>：每碰撞一次，等待的範圍加倍，再撞的機率減半；網路越擠，大家自動退得越開。代價是負載重時延遲越來越長，這也是 token passing 適合重負載、需要保證延遲的原因。</li>
-</ul>
-<p>我用程式重算過每一步，答案一樣。</p>
-</details>
-<p><strong>考古變化 5.</strong>（改自 102 Q5・換敘述）是非（錯的要說明）：(a) 每個使用者都直接以 root 身分登入，比較符合最小權限原則 (b) virus 不需要附在別的程式上就能自己透過網路散播 (c) 非對稱加密裡，用公鑰加密的東西要用私鑰解 (d) DDoS 的流量來自很多台電腦，所以很難用封鎖單一來源擋掉 (e) 只要仔細讀過程式的原始碼，就一定找得到後門</p>
-<details class="quiz">
-<summary>看完整解答</summary>
-<ul>
-<li><strong>跟原題差在哪</strong>：同樣是安全性的是非題，換成另外五個常見的觀念。</li>
-<li><strong>(a) 錯</strong>：最小權限是只給剛好夠的權限；平常用一般帳號，需要時才暫時提升（例如 sudo、RBAC 的角色）。</li>
-<li><strong>(b) 錯</strong>：這是 <strong>worm</strong> 的特性；virus 要附在別的程式上，靠那個程式執行才散播。</li>
-<li><strong>(c) 對</strong>：公鑰加密、私鑰解密（保密）；私鑰簽章、公鑰驗證（認證）。</li>
-<li><strong>(d) 對</strong>：流量來自 botnet 裡的大量電腦。</li>
-<li><strong>(e) 錯</strong>：後門可能藏在<strong>編譯器</strong>裡（Ken Thompson 的例子），被編譯的程式原始碼完全正常。</li>
-</ul>
 </details>
 
 </section>
