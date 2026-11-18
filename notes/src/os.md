@@ -3355,16 +3355,34 @@ void *worker(void *p) {
 
 P1 拿著資源 R1、在等 R2；P2 拿著 R2、在等 R1。兩人都不放手，永遠等下去。像兩個人吃飯，各拿了一支筷子，都在等對方的那一支。
 
-把四個必要條件對到這個例子：
+死結要四個必要條件同時成立。每個條件的意思，對到這個例子：
 
-| 條件 | 在例子裡 |
-|---|---|
-| mutual exclusion | 一支筷子一次只能一個人用 |
-| hold and wait | 手上拿著一支，還在等另一支 |
-| no preemption | 不能把別人手上的筷子搶過來 |
-| circular wait | P1 等 P2、P2 等 P1，繞成一圈 |
+| 條件 | 意思 | 在例子裡 |
+|---|---|---|
+| mutual exclusion | 資源一次只能給一個 process 用 | 一支筷子一次只能一個人用 |
+| hold and wait | 手上拿著資源，又在等別的資源 | 手上拿著一支，還在等另一支 |
+| no preemption | 資源只能由拿著它的 process 自己放掉，別人不能搶 | 不能把別人手上的筷子搶過來 |
+| circular wait | 一群 process 互相等，等待的關係繞成一圈 | P1 等 P2、P2 等 P1，繞成一圈 |
 
-四個都成立才會死結。**破壞任何一個就不會死結**，這就是 deadlock prevention 的思路，例如「一次把兩支筷子都拿到才開始吃」破壞了 hold and wait。
+四個都成立才會死結。**破壞任何一個就不會死結**，這就是 deadlock prevention 的思路：
+
+- 「一次把兩支筷子都拿到才開始吃」：不會拿著一支又在等，破壞 hold and wait。
+- 「拿不到第二支，就把第一支放回去」：等於筷子可以被收回，破壞 no preemption。
+- 「筷子編號，每個人都先拿編號小的」：等待的關係繞不成圈，破壞 circular wait。
+
+<div class="mcq" data-ans="4" data-qid="u3-0-cond" markdown="1">
+
+**觀念題 1.** 兩個人各拿一支筷子、都在等對方的那一支。下面哪一個做法**沒有**破壞任何一個條件，所以還是可能死結？
+
+1. 規定每個人都先拿編號小的筷子，再拿編號大的
+2. 要拿就兩支一起拿，拿不到兩支就一支都不拿
+3. 等太久的人，可以把別人手上的筷子拿走
+4. 拿不到第二支時，手上那支不放，休息一下再試
+
+??? quiz "看解析"
+    **D**。休息時手上還拿著一支、還在等另一支，四個條件都還成立，兩個人可能一起休息、一起再試，永遠等下去。A 破壞 circular wait（兩人都先搶編號小的那支，搶到的人一定也拿得到另一支），B 破壞 hold and wait，C 破壞 no preemption。
+
+</div>
 
 #### 資源分配圖：有 cycle 一定死結嗎？
 
@@ -3430,6 +3448,20 @@ P1 拿著資源 R1、在等 R2；P2 拿著 R2、在等 R1。兩人都不放手�
 
 所以 cycle 是死結的**必要條件**；只有在每種資源都只有 1 份時，才是充分條件。
 
+<div class="mcq" data-ans="3" data-qid="u3-0-rag" markdown="1">
+
+**觀念題 2.** R1 有 2 份、R2 有 1 份。R1 的兩份分別給了 P1 和 P3，R2 給了 P2。P1 在等 R2、P2 在等 R1，P3 沒有在等任何東西。這張圖有 cycle 嗎？有死結嗎？
+
+1. 沒有 cycle，所以沒有死結
+2. 有 cycle，所以一定死結
+3. 有 cycle，但沒有死結
+4. 有 cycle，而且 P3 也被卡住
+
+??? quiz "看解析"
+    **C**。cycle 是 P1 → R2 → P2 → R1 → P1（R1 的一份在 P1 手上）。但 R1 還有一份在 P3 手上，P3 不用等，做完會放出那份 R1 → P2 拿到、做完，放出 R2 → P1 拿到、做完。資源不只 1 份時，有 cycle 還要再看「有沒有人能先做完」。
+
+</div>
+
 #### 避免死結：銀行家只借「還得回來」的錢
 
 Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在某個順序**能讓每個客戶都借滿、用完、還錢」時才借。這種狀態叫 **safe state**。
@@ -3443,7 +3475,27 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
 可用 $10-4-2=4$。P2 還需要 3 ≤ 4 → P2 可以做完，還回 2 份 → 可用 6。P1 還需要 4 ≤ 6 → 也能做完。存在順序 P2 → P1，所以是 **safe**。
 
-判斷方法就是：**反覆找一個「還需要 ≤ 目前可用」的行程，讓它做完、把它持有的加回可用**。全部都能做完就是 safe。
+判斷方法就是：**反覆找一個「還需要 ≤ 目前可用」的行程，讓它做完、把它持有的加回可用**。全部都能做完就是 safe。（它做完時，會把原本持有的和中途借到的全部還回來，所以可用的會變成「原本可用 ＋ 它原本持有的」。）
+
+<div class="mcq" data-ans="1" data-qid="u3-0-safe" markdown="1">
+
+**觀念題 3.** 一種資源共 10 份。P1 最多 9、持有 3；P2 最多 4、持有 2；P3 最多 7、持有 3。這個狀態 safe 嗎？
+
+1. safe，順序 P2 → P3 → P1
+2. safe，順序 P1 → P2 → P3
+3. unsafe，因為可用的只剩 2 份
+4. unsafe，因為 P1 還需要 6 份，比可用的多
+
+??? quiz "看解析"
+    **A**。可用 $10-(3+2+3)=2$；還需要：P1 6、P2 2、P3 4。
+
+    - P2 還需 2 ≤ 2 → 做完，可用變成 $2+2=4$。
+    - P3 還需 4 ≤ 4 → 做完，可用 $4+3=7$。
+    - P1 還需 6 ≤ 7 → 做完。
+
+    B 不行：P1 一開始就要 6 份，只有 2 份。C、D 錯在只看「現在夠不夠」：只要存在**某個**做得完的順序就是 safe。
+
+</div>
 
 #### 多種資源：矩陣版的 Banker's algorithm
 
@@ -3481,12 +3533,40 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 !!! trap "unsafe 不等於死結"
     unsafe 只是「系統沒辦法保證」：process 不一定真的會要到 Max，之後也可能平安做完。但 Banker's algorithm 保守地不讓系統進入 unsafe state。
 
+<div class="mcq" data-ans="2" data-qid="u3-0-req" markdown="1">
+
+**觀念題 4.** Banker's algorithm 收到 P 的申請：Request ≤ Need，也 ≤ Available，可是假裝給它之後跑 safety，發現會進入 unsafe state。要怎麼處理？
+
+1. 還是給它，因為資源夠
+2. 不給：把假裝給的還原，P 先等
+3. 當成錯誤，終止 P
+4. 先給它，之後再用偵測演算法檢查有沒有死結
+
+??? quiz "看解析"
+    **B**。「資源夠」只過了第二關；給了會進入 unsafe 就不給，Available、Allocation、Need 都恢復原狀，P 等之後再試。C 是 Request ＞ Need（超過事先宣告的最大需求）時的處理；D 是偵測與復原的想法，不是 avoidance。
+
+</div>
+
 #### 偵測和復原：允許死結，發生了再處理
 
-- **偵測**：步驟跟 safety 一樣，只是把 Need 換成**現在的 Request**（正在等的量）。跑完還做不完的那些 process，就是死結的。每種資源只有 1 份時，也可以畫 **wait-for graph**（把資源節點拿掉，P → Q 表示 P 在等 Q），有 cycle 就是死結。
+- **偵測**：步驟跟 safety 一樣，只是把 Need 換成**現在的 Request**（正在等的量）。跑完還做不完的那些 process，就是死結的。
+    - **為什麼用 Request、不用 Need**：偵測只問「現在卡住的是誰」，所以樂觀地假設：一個 process 拿到現在等的東西就能做完、放出資源。如果它之後又要更多、真的卡住了，下一次偵測會抓到。
+    - **每種資源只有 1 份時**：可以畫 **wait-for graph**：把資源節點拿掉，P 在等 Q 手上的資源，就畫 P → Q。有 cycle 就是死結。
 - **復原**：
     - **終止 process**：全部終止（快，但代價大），或一次終止一個、每次重新偵測。
     - **搶資源**：選一個 victim、把它的資源拿走並 rollback；要把「被選過幾次」算進成本，不然同一個 process 可能一直被犧牲（starvation）。
+
+<div data-qid="u3-0-wfg" markdown="1">
+
+**觀念題 5.** 每種資源都只有 1 份。P1 在等 P2 手上的資源、P2 在等 P3 的、P3 在等 P1 的、P4 在等 P3 的。畫出 wait-for graph。哪些 process 會永遠卡住？要復原的話，終止哪一個有用？
+
+??? quiz "看答案"
+    - **wait-for graph**：P1 → P2、P2 → P3、P3 → P1、P4 → P3。
+    - **cycle**：P1 → P2 → P3 → P1，這三個互相等，誰都做不完。
+    - **P4 也卡住**：它不在 cycle 上，但它等的 P3 永遠不會放手。偵測演算法跑完，做不完的有 **P1、P2、P3、P4**。
+    - **復原**：終止 cycle 上任何一個就好。例如終止 P1：P3 拿到 P1 的資源、做完，放出的資源再讓 P2、P4 輪流做完。只終止 P4 沒有用，cycle 還在。
+
+</div>
 
 !!! key "死結題要做什麼"
     | 題目問 | 怎麼做 |
@@ -3516,15 +3596,104 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 ??? quiz "看答案"
     可用 $12-9=3$。P1 還需 2 ≤ 3 → 做完，可用 5；P0 還需 5 ≤ 5 → 做完，可用 10；P2 還需 7 ≤ 10 → 做完。safe，順序 P1、P0、P2。
 
-### 3.1 考古題與重點整理 {#u3-1}
+### 3.1 考古題觀念：一個一個講清楚 {#u3-1}
 
-- 四個必要條件。（114 Q8d 填 hold and wait）
-- **circular wait 蘊含 hold and wait**：形成循環的每個 process 都正在持有資源又在等別的資源。（115 Q1g）
+| 觀念 | 考過的題目 | 講解在哪 |
+|---|---|---|
+| 四個必要條件 | 114 Q8d 填空；101 Q2(b)；102 Q5(2) 是非 | [3.0](#u3-0) 觀念題 1；下面；[3.2](#u3-more) |
+| circular wait 蘊含 hold and wait | 115 Q1g | 下面 |
+| 處理死結的三種方法 | 115 Q3a | 下面 |
+| deadlock prevention 怎麼做 | 112 Q8a | 下面 |
+| prevention 和 avoidance 的差別 | 107 Q1(4)、105 Q1(2) | [3.2](#u3-more) |
+| n 個 process 搶 m 份資源 | 103 Q1 | [3.2](#u3-more) |
+| 哲學家，筷子放在中間 | 100 Q3 | [3.2](#u3-more) |
+| wait-die、wound-wait | 104 Q8(2)；107 Q7(9) 是非 | [3.2](#u3-more) |
+
+#### 四個條件的英文定義（114 Q8d）
+
+填空題會給英文定義、要你填名詞。課本的寫法：
+
+- **mutual exclusion**：at least one resource must be held in a **nonsharable** mode; only one process at a time can use the resource.
+- **hold and wait**：a process must be **holding** at least one resource and **waiting** to acquire additional resources that are currently being held by other processes.
+- **no preemption**：a resource can be released only **voluntarily** by the process holding it, after that process has completed its task.
+- **circular wait**：a set of waiting processes $\{P_0,\dots,P_n\}$ exists such that $P_0$ is waiting for a resource held by $P_1$, $P_1$ for $P_2$, …, and $P_n$ for $P_0$.
+
+認關鍵字：nonsharable → mutual exclusion；holding … and waiting → hold and wait；voluntarily → no preemption；$P_n$ waits for $P_0$ → circular wait。
+
+<div class="mcq" data-ans="3" data-qid="u3-1-fill" markdown="1">
+
+**觀念題 6.** “A resource can be released only voluntarily by the process holding it, after that process has completed its task.” 這句話描述的是哪一個條件？
+
+1. mutual exclusion
+2. hold and wait
+3. no preemption
+4. circular wait
+
+??? quiz "看解析"
+    **C**。關鍵字是 released only voluntarily：只能自己放，別人搶不走，就是 no preemption。
+
+</div>
+
+#### circular wait 蘊含 hold and wait（115 Q1g）
+
+circular wait 是一圈 process：$P_0$ 等 $P_1$ 手上的資源、$P_1$ 等 $P_2$ 的、…、$P_n$ 等 $P_0$ 的。看圈上的任何一個 $P_i$：
+
+- 它在**等** $P_{i+1}$ 手上的資源；
+- 它**拿著** $P_{i-1}$ 在等的那個資源。
+
+所以圈上每個 process 都「拿著資源又在等」，hold and wait 自動成立。課本因此說四個條件**不是完全獨立的**。反過來不成立：P1 拿著 R1 在等 R2，R2 在 P2 手上，但 P2 沒有在等任何東西，這樣有 hold and wait，卻沒有繞成一圈。
+
+<div class="mcq" data-ans="2" data-qid="u3-1-imply" markdown="1">
+
+**觀念題 7.** 下面哪一句是對的？
+
+1. hold and wait 成立，circular wait 就一定成立
+2. circular wait 成立，hold and wait 就一定成立
+3. 四個條件互相獨立，誰成立都跟別人無關
+4. no preemption 成立，circular wait 就一定成立
+
+??? quiz "看解析"
+    **B**。圈上的每個人都拿著前一個人要的資源、又在等下一個人的資源。A 反過來不對：可以只有一個人拿著又在等，沒有繞成圈（上面 P1、P2 的例子）。
+
+</div>
+
+#### 處理死結的三種方法（115 Q3a）
+
+1. **不讓死結發生**：prevention 用規則讓某個條件永遠不成立；avoidance 每次分配前檢查，分配後仍然 safe 才給（[3.0](#u3-0) 的 Banker's algorithm）。
+2. **讓它發生，再偵測、復原**：定期跑偵測演算法，發現死結就終止 process 或搶回資源。
+3. **忽略**：假裝死結不會發生。聽起來很隨便，但死結很少發生，前兩種方法又都要一直付出代價（限制申請方式、每次分配都要計算、定期偵測），所以 Linux、Windows 等大多數 OS 都採用這種，由寫程式的人自己避免（例如固定拿 lock 的順序）。
 
 !!! example "115 Q3a（6%）：處理死結的三種方法"
     1. **預防或避免（prevention／avoidance）**：保證系統永遠不會進入死結狀態。
     2. **偵測與復原（detection and recovery）**：允許死結發生，偵測到之後終止 process 或搶回資源。
     3. **忽略（ignore）**：假裝死結不會發生，Linux、Windows 等大多數 OS 採用這個做法，由開發者自行處理。
+
+<div class="mcq" data-ans="2" data-qid="u3-1-ignore" markdown="1">
+
+**觀念題 8.** Linux、Windows 對一般程式的死結，採用哪一種做法？
+
+1. avoidance：每次分配資源都跑 Banker's algorithm
+2. 忽略：交給寫程式的人自己避免
+3. prevention：強制所有資源編號、依序申請
+4. 每秒跑一次偵測演算法
+
+??? quiz "看解析"
+    **B**。Banker's algorithm 要事先知道每個 process 最多需要多少資源，一般程式做不到，而且每次分配都要算；定期偵測也要花時間。死結又很少發生，所以大多數 OS 選擇忽略。
+
+</div>
+
+#### deadlock prevention：四個條件各怎麼破壞（112 Q8a）
+
+| 條件 | 怎麼破壞 | 問題 |
+|---|---|---|
+| mutual exclusion | 讓資源可以共享，例如唯讀檔案 | mutex lock、印表機本質上不能共享，**通常破壞不了** |
+| hold and wait | 開始前一次申請全部；或手上沒資源時才能申請（要新的先放掉舊的） | 資源拿了很久才用，**使用率低**；要很多熱門資源的 process 可能一直湊不齊（**starvation**） |
+| no preemption | 申請不到時，把手上的資源全部放掉，等全部都拿得到再重來 | 只適合 CPU 暫存器、記憶體這種**狀態可以存起來再恢復**的資源；mutex lock、印表機不行 |
+| circular wait | 所有資源類型編號，只能**依編號遞增**申請 | 最實用；但所有程式都要遵守同一個順序 |
+
+hold and wait 的例子：一個程式要把 DVD 的資料複製到硬碟、排序，再用印表機印出來。規定一開始就申請全部的話，印表機從頭被佔到尾，可是它只在最後才用到。
+
+circular wait 的規則為什麼有效，是[單元 3 小考](#u3-quiz)的第 1 題。
 
 !!! example "112 Q8a（4%）：deadlock prevention 怎麼運作"
     確保四個必要條件中**至少一個不可能成立**：
@@ -3534,6 +3703,20 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
     - no preemption：申請不到時，強制釋放已持有的資源。
     - circular wait：所有資源類型編號，只能**依遞增順序**申請。
 
+<div class="mcq" data-ans="3" data-qid="u3-1-prev" markdown="1">
+
+**觀念題 9.** 「申請不到新資源時，就把手上的資源全部放掉」這種破壞 no preemption 的做法，適合用在哪種資源？
+
+1. 印表機
+2. mutex lock
+3. CPU 暫存器、記憶體這種狀態可以存起來、之後再恢復的資源
+4. 任何資源都適合
+
+??? quiz "看解析"
+    **C**。放掉之後還要能「接著做」，資源的狀態就得存得起來。印表機印到一半被拿走，紙上已經印了一半；mutex lock 被拿走，它保護的資料可能改到一半。
+
+</div>
+
 ### 3.2 死結的考古題補充：哲學家、磁帶機、wait-die {#u3-more}
 
 100、101、103、104、105、107 年考過的死結題：條件和預防、避免的差別，加上三種固定題型。
@@ -3541,6 +3724,20 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 #### 四個條件是「必要」不是「充分」
 
 四個條件**同時**成立才可能死結，只有其中一個成立不會死結（101 Q2(b)）。102 Q5(2) 的是非題「四個條件中任何一個成立，死結就一定發生」是**錯**的。
+
+<div class="mcq" data-ans="2" data-qid="u3-more-nec" markdown="1">
+
+**觀念題 10.** 下面兩句話各對不對？(甲) 系統死結了，四個條件一定都成立。(乙) 四個條件都成立，系統一定死結。
+
+1. 甲對、乙對
+2. 甲對、乙錯
+3. 甲錯、乙對
+4. 甲錯、乙錯
+
+??? quiz "看解析"
+    **B**。四個是**必要**條件：死結時一定都成立，所以甲對。但它們不是充分條件：[3.0](#u3-0) 圖 (b) 每種資源有 2 份，P1、P3 拿著資源又在等、等待繞成一圈，可是 P4 做完會放出 R2，大家都做得完，所以乙錯。只有每種資源都只有 1 份時，四個條件成立才等於死結。
+
+</div>
 
 #### 預防（prevention）和避免（avoidance）差在哪
 
@@ -3553,6 +3750,20 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 !!! example "107 Q1(4)（4%）、105 Q1(2)（3%）：deadlock prevention 和 avoidance 有什麼不同？avoidance 怎麼運作？"
     prevention 事先用規則破壞四個必要條件之一，例如資源依編號申請（破壞 circular wait），系統根本不可能死結。avoidance 不限制申請方式，但要事先知道每個 process 最多需要多少資源；每次有人申請，就假裝先給它，看看是否仍然存在一個順序能讓所有 process 都做完（safe state），是才真的給，否則讓它等。
 
+<div class="mcq" data-qid="u3-more-3" data-ans="4" markdown="1">
+
+**觀念題 11.** deadlock avoidance 和 prevention 最大的不同是？
+
+1. avoidance 允許死結發生再處理
+2. prevention 需要知道每個 process 最多要多少資源
+3. 兩個一樣
+4. avoidance 每次分配前檢查會不會進入 unsafe state，prevention 是事先破壞某個必要條件
+
+??? quiz "看解析"
+    **D**。A 說的是 detection and recovery；B 剛好相反，需要事先知道最大需求的是 avoidance（Banker's algorithm）。
+
+</div>
+
 #### n 個 process 搶 m 份資源
 
 !!! example "103 Q1（10%）：電腦有 6 台磁帶機，n 個 process 在搶，每個 process 最多需要 2 台。n 是多少時保證不會死結？"
@@ -3562,6 +3773,20 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
     - **n ≥ 6**：6 個 process 各拿 1 台時就死結。
 
     **一般公式**：m 份資源、n 個 process、每個最多需要 k 份，不會死結的條件是 $n(k-1)+1\le m$（每個人都只差一份時，還剩一份給某個人）。這題 $n\times1+1\le6$，$n\le5$。
+
+<div class="mcq" data-qid="u3-more-1" data-ans="3" markdown="1">
+
+**觀念題 12.** 10 份資源、n 個 process，每個最多需要 3 份。n 最大是多少時保證不會死結？
+
+1. 3
+2. 5
+3. 4
+4. 10
+
+??? quiz "看解析"
+    **C. 4**。條件 $n(k-1)+1\le m$：$2n+1\le10$，$n\le4.5$，所以 $n=4$。驗算：4 個 process 各拿 2 份，用掉 8 份，還剩 2 份，至少一個人能湊到 3 份做完。5 個 process 各拿 2 份就用光 10 份，死結。
+
+</div>
 
 #### 哲學家：筷子放在中間
 
@@ -3573,6 +3798,20 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
     - 申請**第二支**：拿到就有兩支可以吃，吃完會放回兩支，永遠可以給（只要桌上有）。
     - 申請**第一支**，桌上還有兩支以上：給了之後桌上至少還有一支，還能讓某個拿著一支的人湊成兩支。
     - 申請**第一支**，桌上只剩一支：如果有人已經拿著兩支，他吃完會放回來，可以給；如果沒有人拿著兩支，把最後一支給出去，大家都只有一支、桌上沒了，就死結，所以不給。
+
+<div class="mcq" data-ans="2" data-qid="u3-more-phil" markdown="1">
+
+**觀念題 13.** 同一題的設定：5 位哲學家、5 支筷子放在中間。現在 P1、P2 各拿著 1 支，P3 拿著 2 支正在吃，桌上只剩 1 支。手上沒有筷子的 P4 申請第一支，照上面的規則能給嗎？
+
+1. 不能給，因為只剩最後一支
+2. 可以給，因為 P3 拿著兩支，吃完會放回來
+3. 不能給，因為 P4 手上沒有筷子
+4. 可以給，因為申請第一支永遠可以給
+
+??? quiz "看解析"
+    **B**。規則只在「最後一支，而且沒有人拿著兩支」時才拒絕。P3 吃完放回 2 支，P1、P2、P4 就能接著湊成兩支。反例：如果 P1～P4 各拿 1 支、桌上剩 1 支，P5 申請第一支就要拒絕，給了之後 5 個人各 1 支、桌上沒有，大家都等不到第二支。
+
+</div>
 
 #### wait-die 與 wound-wait：用 timestamp 避免死結
 
@@ -3593,25 +3832,9 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
     107 Q7(9) 的是非題「wait-die 是 preemptive 的死結預防方法」是**錯**的：wait-die 不搶別人的資源，搶的是 wound-wait。
 
-#### 觀念小考
+<div class="mcq" data-qid="u3-more-2" data-ans="1" markdown="1">
 
-<div class="mcq" data-ans="3" markdown="1">
-
-**C-1.** 10 份資源、n 個 process，每個最多需要 3 份。n 最大是多少時保證不會死結？
-
-1. 3
-2. 5
-3. 4
-4. 10
-
-??? quiz "看解析"
-    **C. 4**。條件 $n(k-1)+1\le m$：$2n+1\le10$，$n\le4.5$，所以 $n=4$。驗算：4 個 process 各拿 2 份，用掉 8 份，還剩 2 份，至少一個人能湊到 3 份做完。5 個 process 各拿 2 份就用光 10 份，死結。
-
-</div>
-
-<div class="mcq" data-ans="1" markdown="1">
-
-**C-2.** wait-die 中，年輕的 process 要老的手上的資源，會怎樣？
+**觀念題 14.** wait-die 中，年輕的 process 要老的手上的資源，會怎樣？
 
 1. 年輕的 rollback，之後用原本的 timestamp 重來
 2. 年輕的等
@@ -3623,27 +3846,73 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
 </div>
 
-<div class="mcq" data-ans="4" markdown="1">
+### 3.3 練習：簡單觀念題 {#u3-concept}
 
-**C-3.** deadlock avoidance 和 prevention 最大的不同是？
+一兩句話就能回答的題目，確認名詞和觀念有沒有記對。題目照主題分組；選擇題按下選項就會對答案，問答題先寫在手寫板或紙上，再打開參考答案。
 
-1. avoidance 允許死結發生再處理
-2. prevention 需要知道每個 process 最多要多少資源
-3. 兩個一樣
-4. avoidance 每次分配前檢查會不會進入 unsafe state，prevention 是事先破壞某個必要條件
+#### 四個條件與處理方法
+
+<div class="mcq" data-ans="2" data-qid="u3-bank-s1" markdown="1">
+
+**簡單 1.** 死結（deadlock）和 starvation 差在哪？
+
+1. 一樣，都是 process 在等
+2. 死結是一群 process 互相等、全部動不了；starvation 是某個 process 一直被別人搶先，可能永遠輪不到，但其他人還在做事
+3. starvation 一定會變成死結
+4. 死結只會發生在單核心的電腦
 
 ??? quiz "看解析"
-    **D**。A 說的是 detection and recovery；B 剛好相反，需要事先知道最大需求的是 avoidance（Banker's algorithm）。
+    **B**。死結裡的 process 誰都做不完；starvation 時系統還在動，只是某個 process 一直輪不到。例如 [2.0](#u2-0) 單純用 test_and_set 搶 lock，可能有人一直搶不到，那是 starvation，不是死結。
 
 </div>
 
-### 3.3 觀念小考 {#u3-concept}
+<div class="mcq" data-ans="2" data-qid="u3-bank-s2" markdown="1">
 
-選擇題按下選項就會對答案；問答題先寫在手寫板或紙上，再打開參考答案。
+**簡單 2.** deadlock prevention 想破壞 mutual exclusion。下面哪一種資源**做不到**「讓大家共享」？
 
-<div class="mcq" data-ans="1" markdown="1">
+1. 唯讀檔案
+2. mutex lock
+3. 唯讀的程式碼
+4. 很多 process 一起讀的設定檔
 
-**C-1.** 每種資源都只有 1 份時，資源分配圖有 cycle，表示？
+??? quiz "看解析"
+    **B**。mutex lock 存在的目的就是一次只給一個人，本質上不能共享。所以 prevention 通常從另外三個條件下手（[3.1](#u3-1)）。
+
+</div>
+
+<div class="mcq" data-ans="2" data-qid="u3-bank-s3" markdown="1">
+
+**簡單 3.** 規定「process 開始執行前，一次申請所有需要的資源」，主要的缺點是？
+
+1. 可能形成 circular wait
+2. 資源被拿了很久才用到，使用率低；要很多熱門資源的 process 可能一直湊不齊（starvation）
+3. 會違反 mutual exclusion
+4. 系統一定會進入 unsafe state
+
+??? quiz "看解析"
+    **B**。這招破壞 hold and wait，不會死結，代價是效率。例如先讀 DVD、最後才印出來的程式，印表機從頭被佔到尾（[3.1](#u3-1)）。
+
+</div>
+
+<div class="mcq" data-ans="1" data-qid="u3-bank-s8" markdown="1">
+
+**簡單 4.** Thread 1 先鎖 A 再鎖 B；Thread 2 先鎖 B 再鎖 A，可能死結。怎麼改最簡單？
+
+1. 兩個都改成先鎖 A、再鎖 B
+2. 讓 Thread 1 的優先權比較高
+3. 把兩把 lock 換成初始值 1 的 semaphore
+4. 在兩次上鎖中間加一個 sleep
+
+??? quiz "看解析"
+    **A**。大家照同一個順序拿 lock，等待的關係就繞不成圈（破壞 circular wait）。B 擋不住兩人各拿一把；C 的 semaphore 初始 1 就是 lock，問題一樣；D 反而讓死結更容易發生（我實際跑過：中間 sleep 1 ms，200 次全部卡住）。
+
+</div>
+
+#### 資源分配圖與 Banker's algorithm
+
+<div class="mcq" data-qid="u3-concept-1" data-ans="1" markdown="1">
+
+**簡單 5.** 每種資源都只有 1 份時，資源分配圖有 cycle，表示？
 
 1. 一定死結
 2. 可能死結，也可能沒有
@@ -3655,9 +3924,37 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
 </div>
 
-<div class="mcq" data-ans="3" markdown="1">
+<div class="mcq" data-ans="1" data-qid="u3-bank-s4" markdown="1">
 
-**C-2.** Banker's algorithm 收到一個 Request，但它比這個 process 的 Need 還大，會怎麼處理？
+**簡單 6.** 資源分配圖裡**沒有** cycle，表示？
+
+1. 一定沒有死結
+2. 可能死結，要看資源有幾份
+3. 一定死結
+4. 要跑 Banker's algorithm 才知道
+
+??? quiz "看解析"
+    **A**。cycle 是死結的必要條件：死結時，互相等的 process 一定繞成一圈。沒有 cycle 就不可能死結，不管資源有幾份。
+
+</div>
+
+<div class="mcq" data-ans="3" data-qid="u3-bank-s5" markdown="1">
+
+**簡單 7.** 要用 Banker's algorithm，每個 process 必須事先告訴系統什麼？
+
+1. 它要執行多久
+2. 它的優先權
+3. 每種資源最多會用到幾份（Max）
+4. 它會開哪些檔案
+
+??? quiz "看解析"
+    **C**。Need ＝ Max − Allocation，safety 演算法要用 Need 判斷「最壞情況下還做得完嗎」。一般程式很難事先知道 Max，這也是 Banker's algorithm 很少真的被使用的原因之一。
+
+</div>
+
+<div class="mcq" data-qid="u3-concept-2" data-ans="3" markdown="1">
+
+**簡單 8.** Banker's algorithm 收到一個 Request，但它比這個 process 的 Need 還大，會怎麼處理？
 
 1. 讓它等，直到資源夠
 2. 直接給，再跑 safety
@@ -3669,9 +3966,9 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
 </div>
 
-<div class="mcq" data-ans="2" markdown="1">
+<div class="mcq" data-qid="u3-concept-3" data-ans="2" markdown="1">
 
-**C-3.** unsafe state 的意思是？
+**簡單 9.** unsafe state 的意思是？
 
 1. 系統已經死結了
 2. 系統沒辦法保證避開死結，之後可能死結、也可能沒事
@@ -3683,9 +3980,25 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
 </div>
 
-<div class="mcq" data-ans="4" markdown="1">
+<div class="mcq" data-ans="2" data-qid="u3-bank-s6" markdown="1">
 
-**C-4.** 死結偵測演算法和 safety 演算法差在哪？
+**簡單 10.** 算出 safe sequence $\langle P_2,P_0,P_1\rangle$，意思是？
+
+1. 系統之後一定會照 P2、P0、P1 的順序執行
+2. 照這個順序，每個 process 還需要的，都能由「現在可用的」加上「排在它前面的 process 做完還回來的」滿足
+3. P2 的優先權最高
+4. 這三個 process 現在死結了
+
+??? quiz "看解析"
+    **B**。safe sequence 只是證明「存在一個做得完的順序」，系統實際怎麼排程不一定照它。順序也不唯一，考試寫出一個就好。
+
+</div>
+
+#### 偵測、復原與 timestamp
+
+<div class="mcq" data-qid="u3-concept-4" data-ans="4" markdown="1">
+
+**簡單 11.** 死結偵測演算法和 safety 演算法差在哪？
 
 1. 偵測演算法不需要 Available
 2. 偵測演算法只能用在單一資源
@@ -3697,9 +4010,9 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
 </div>
 
-<div class="mcq" data-ans="2" markdown="1">
+<div class="mcq" data-qid="u3-concept-5" data-ans="2" markdown="1">
 
-**C-5.** 用「搶資源」復原死結時，為什麼要把被選為 victim 的次數算進成本？
+**簡單 12.** 用「搶資源」復原死結時，為什麼要把被選為 victim 的次數算進成本？
 
 1. 讓死結更快被偵測到
 2. 避免同一個 process 一直被選中、永遠做不完（starvation）
@@ -3711,9 +4024,50 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
 </div>
 
+<div class="mcq" data-ans="2" data-qid="u3-bank-s7" markdown="1">
+
+**簡單 13.** wound-wait 中，年輕的 process 要老的 process 手上的資源，會怎樣？
+
+1. 年輕的 rollback
+2. 年輕的等
+3. 老的被 rollback
+4. 兩個都 rollback
+
+??? quiz "看解析"
+    **B**。wound-wait 是「老的搶（把年輕的 wound）、年輕的等」；wait-die 剛好相反，是「老的等、年輕的死」。兩種都只讓年輕的被 rollback（[3.2](#u3-more)）。
+
+</div>
+
+### 3.4 練習：基礎題 {#u3-drill}
+
+要動手算 Banker's algorithm、跑偵測演算法、看資源分配圖，但每題只用到一個觀念。先自己算，再打開對答案；答案都用程式驗算過。
+
+#### Banker's algorithm
+
+**做法**：算 Need 和 Available；反覆找 Need ≤ Work 的做完、Work 加上它的 Allocation；有人申請時先檢查、假裝給、再跑 safety（[3.0](#u3-0)）。
+
+<div data-qid="u3-bank-b2" markdown="1">
+
+**基礎 1.** [3.0](#u3-0) 的 T-2：一種資源共 12 份，P0 最多 10、持有 5；P1 最多 4、持有 2；P2 最多 9、持有 2，是 safe（順序 P1、P0、P2）。這時 P2 再申請 1 份，能不能給？
+
+??? quiz "看完整解答"
+    - **前兩關**：1 ≤ P2 的 Need 7，也 ≤ 可用 3。
+    - **假裝給它**：可用剩 2，P2 持有 3、還需要 6。
+    - **跑 safety**：
+        - P1 還需 2 ≤ 2 → 做完，可用 $2+2=4$。
+        - P0 還需 5 ＞ 4、P2 還需 6 ＞ 4，都做不完。
+    - **答案：unsafe，不給**，P2 先等。
+    - **重點**：給了 1 份，可用從 3 變 2，看起來只少一點，卻讓 P0 和 P2 都可能湊不齊。
+
+    我用程式跑過 safety 演算法，結果一樣。
+
+</div>
+
+<div data-qid="u3-concept-6" markdown="1">
+
 <div markdown="1">
 
-**W-1.** 三種資源 A、B、C，總數 (6, 4, 7)。(a) 是 safe 嗎？寫出順序。(b) P2 申請 (1, 0, 1)，能不能給？
+**基礎 2.** 三種資源 A、B、C，總數 (6, 4, 7)。(a) 是 safe 嗎？寫出順序。(b) P2 申請 (1, 0, 1)，能不能給？
 
 | 行程 | Allocation | Max |
 |---|---|---|
@@ -3740,35 +4094,13 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
     **(b) 可以給**：(1, 0, 1) ≤ Need (2, 1, 1)，也 ≤ Available (2, 1, 2)。假裝給它：Available 變 (1, 1, 1)、P2 的 Need 變 (1, 1, 0)。safety：P0 的 A 要 2 不行、P1 的 C 要 2 不行；P2 的 (1, 1, 0) ≤ (1, 1, 1) → Work (4, 2, 2)；接著 P0 → (5, 2, 4)、P1 → (5, 3, 5)、P3 → (6, 4, 7)。safe，所以給。我用程式跑過，結果一樣。
 
-<div markdown="1">
-
-**W-2.** 三種資源 A、B、C，總數 (3, 2, 1)，目前全部分配出去。(a) 有沒有死結？(b) 如果 P2 改成在等 1 份 C（Request 變 0 0 1）呢？
-
-| 行程 | Allocation | Request（現在在等） |
-|---|---|---|
-| P0 | 1 0 1 | 0 1 0 |
-| P1 | 1 1 0 | 0 0 1 |
-| P2 | 0 1 0 | 0 0 0 |
-| P3 | 1 0 0 | 0 0 0 |
-
 </div>
 
-??? quiz "看參考答案"
-    **(a) 沒有死結**：Available (0, 0, 0)。P2 不用再等 → 做完，Work (0, 1, 0)；P0 要 1 份 B → 可以，Work (1, 1, 1)；P1 要 1 份 C → 可以，Work (2, 2, 1)；P3 → Work (3, 2, 1)。全部做得完。
-
-    **(b) P0、P1、P2 死結**：Work (0, 0, 0)，只有 P3 不用等 → 做完，Work (1, 0, 0)。剩下 P0 要 B、P1 和 P2 要 C，Work 裡都沒有，誰都做不完。P0 拿著唯一的那份 C，P1、P2 在等它；P0 要的 B 在 P1、P2 手上：互相等，就是死結。
-
-### 3.4 換數字練習 {#u3-drill}
-
-同一種題型換數字多做幾次，直到不用看筆記也算得出來。每題都附完整解答，答案都用程式驗算過；先自己算，再打開對答案。
-
-#### 題型：Banker's algorithm
-
-**做法**：算 Need 和 Available；反覆找 Need ≤ Work 的做完、Work 加上它的 Allocation；申請時先檢查、假裝給、再跑 safety（[3.0](#u3-0)）。
+<div data-qid="u3-drill-1" markdown="1">
 
 <div markdown="1">
 
-**P-1.** 三種資源 A、B、C，總數 (10, 5, 7)。這個狀態是 safe 嗎？是的話寫出一個順序。
+**基礎 3.** 三種資源 A、B、C，總數 (10, 5, 7)。這個狀態是 safe 嗎？是的話寫出一個順序。
 
 | 行程 | Allocation | Max |
 |---|---|---|
@@ -3790,10 +4122,13 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
     我用程式跑過 safety 演算法，結果一樣。
 
+</div>
+
+<div data-qid="u3-drill-2" markdown="1">
 
 <div markdown="1">
 
-**P-2.** 三種資源 A、B、C，總數 (7, 6, 5)。這個狀態是 safe 嗎？是的話寫出一個順序。
+**基礎 4.** 三種資源 A、B、C，總數 (7, 6, 5)。這個狀態是 safe 嗎？是的話寫出一個順序。
 
 | 行程 | Allocation | Max |
 |---|---|---|
@@ -3815,10 +4150,13 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
     我用程式跑過 safety 演算法，結果一樣。
 
+</div>
+
+<div data-qid="u3-drill-3" markdown="1">
 
 <div markdown="1">
 
-**P-3.** 三種資源 A、B、C，總數 (6, 5, 6)。這個狀態是 safe 嗎？是的話寫出一個順序。
+**基礎 5.** 三種資源 A、B、C，總數 (6, 5, 6)。這個狀態是 safe 嗎？是的話寫出一個順序。
 
 | 行程 | Allocation | Max |
 |---|---|---|
@@ -3840,10 +4178,13 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
     我用程式跑過 safety 演算法，結果一樣。
 
+</div>
+
+<div data-qid="u3-drill-4" markdown="1">
 
 <div markdown="1">
 
-**P-4.** 三種資源 A、B、C，總數 (5, 5, 5)。這個狀態是 safe 嗎？是的話寫出一個順序。
+**基礎 6.** 三種資源 A、B、C，總數 (5, 5, 5)。這個狀態是 safe 嗎？是的話寫出一個順序。
 
 | 行程 | Allocation | Max |
 |---|---|---|
@@ -3862,10 +4203,13 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
     我用程式跑過 safety 演算法，結果一樣。
 
+</div>
+
+<div data-qid="u3-drill-5" markdown="1">
 
 <div markdown="1">
 
-**P-5.** 三種資源 A、B、C，總數 (8, 6, 6)。P1 申請 (1, 1, 1)，能不能馬上給？
+**基礎 7.** 三種資源 A、B、C，總數 (8, 6, 6)。P1 申請 (1, 1, 1)，能不能馬上給？
 
 | 行程 | Allocation | Max |
 |---|---|---|
@@ -3889,8 +4233,342 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
 
     我用程式跑過 safety 演算法，結果一樣。
 
+</div>
 
-### 3.5 英文作答範例 {#u3-en}
+#### 資源分配圖與偵測演算法
+
+**做法**：偵測演算法的步驟跟 safety 一樣，只是把 Need 換成現在的 Request，跑完做不完的就是死結的。資源分配圖可以先寫成 Allocation、Request 再算（[3.0](#u3-0)）。
+
+<div data-qid="u3-bank-b1" markdown="1">
+
+**基礎 8.** R1 有 1 份、R2 有 2 份、R3 有 1 份。P1 拿著 R1 和一份 R2，在等 R3；P2 拿著一份 R2，在等 R1；P3 拿著 R3，在等一份 R2。(a) 畫出資源分配圖，有沒有死結？(b) 如果 P2 沒有在等 R1 呢？
+
+??? quiz "看完整解答"
+    - **邊**：分配邊 R1 → P1、R2 → P1、R2 → P2、R3 → P3；申請邊 P1 → R3、P2 → R1、P3 → R2。
+    - **cycle**：P1 → R3 → P3 → R2 → P1；還有一個大的 P3 → R2 → P2 → R1 → P1 → R3 → P3。
+    - **(a) 死結，P1、P2、P3 全部卡住**：三種資源都分配完了，可用 (0, 0, 0)。P1 要的 R3 在 P3 手上；P3 要一份 R2，兩份分別在 P1、P2 手上，他們都在等；P2 要的 R1 在 P1 手上。沒有任何人能先做完。
+    - **(b) 沒有死結**：P2 不用等 → 做完、放出一份 R2 → P3 拿到、做完、放出 R3 和 R2 → P1 拿到 R3、做完。順序 P2、P3、P1。
+    - **重點**：兩小題都有 cycle P1 → R3 → P3 → R2 → P1，差別只在「有沒有人能先做完」。R2 有 2 份，cycle 不一定代表死結。
+
+    我把圖轉成矩陣跑偵測演算法：(a) 三個都做不完，(b) 順序 P2、P3、P1，結果一樣。
+
+</div>
+
+<div data-qid="u3-concept-7" markdown="1">
+
+<div markdown="1">
+
+**基礎 9.** 三種資源 A、B、C，總數 (3, 2, 1)，目前全部分配出去。(a) 有沒有死結？(b) 如果 P2 改成在等 1 份 C（Request 變 0 0 1）呢？
+
+| 行程 | Allocation | Request（現在在等） |
+|---|---|---|
+| P0 | 1 0 1 | 0 1 0 |
+| P1 | 1 1 0 | 0 0 1 |
+| P2 | 0 1 0 | 0 0 0 |
+| P3 | 1 0 0 | 0 0 0 |
+
+</div>
+
+??? quiz "看參考答案"
+    **(a) 沒有死結**：Available (0, 0, 0)。P2 不用再等 → 做完，Work (0, 1, 0)；P0 要 1 份 B → 可以，Work (1, 1, 1)；P1 要 1 份 C → 可以，Work (2, 2, 1)；P3 → Work (3, 2, 1)。全部做得完。
+
+    **(b) P0、P1、P2 死結**：Work (0, 0, 0)，只有 P3 不用等 → 做完，Work (1, 0, 0)。剩下 P0 要 B、P1 和 P2 要 C，Work 裡都沒有，誰都做不完。P0 拿著唯一的那份 C，P1、P2 在等它；P0 要的 B 在 P1、P2 手上：互相等，就是死結。
+
+</div>
+
+<div data-qid="u3-bank-b4" markdown="1">
+
+<div markdown="1">
+
+**基礎 10.** 三種資源 A、B、C，總數 (5, 3, 4)。用偵測演算法判斷：(a) 有沒有死結？哪些 process 死結了？(b) 要終止一個 process 讓其他人做完，終止誰有用？
+
+| 行程 | Allocation | Request（現在在等） |
+|---|---|---|
+| P0 | 1 0 1 | 0 1 0 |
+| P1 | 2 0 0 | 0 2 0 |
+| P2 | 0 1 1 | 0 0 3 |
+| P3 | 1 1 0 | 1 0 0 |
+| P4 | 0 1 1 | 0 2 0 |
+
+</div>
+
+??? quiz "看完整解答"
+    - **Available**：總數減掉 Allocation 的和 (4, 3, 3)，等於 (1, 0, 1)。
+    - **(a)**：
+        - Work (1, 0, 1)：P0 要 B 不行；P1 要 2 份 B 不行；P2 要 3 份 C 不行；P3 的 (1, 0, 0) 可以 → Work (2, 1, 1)。
+        - 再從頭找：P0 的 (0, 1, 0) 可以 → Work (3, 1, 2)。
+        - 剩下 P1、P4 都要 2 份 B（只有 1 份），P2 要 3 份 C（只有 2 份），誰都做不完 → **P1、P2、P4 死結**。
+    - **(b) 終止 P2 或 P4 有用**：
+        - 終止 P2：Work 加上它的 (0, 1, 1) → (3, 2, 3)；P1 → (5, 2, 3)；P4 → (5, 3, 4)，全部做完。
+        - 終止 P4：Work (3, 2, 3)；P1 → (5, 2, 3)；P2 → (5, 3, 4)，全部做完。
+        - 終止 P1 沒用：只放出 2 份 A，P2、P4 要的是 C 和 B。終止 P0 或 P3 也沒用，它們本來就做得完。
+    - **重點**：選 victim 不只看代價，還要看它放出來的資源能不能讓別人做完。
+
+    我用程式跑過偵測演算法，也試過終止每一個 process，結果一樣。
+
+</div>
+
+#### 保證不死結要幾份資源
+
+<div data-qid="u3-bank-b3" markdown="1">
+
+**基礎 11.** 一種資源，三個 process 最多分別需要 3、4、5 份。系統至少要有幾份，才保證不會死結？
+
+??? quiz "看完整解答"
+    - **最壞情況**：每個 process 都只差 1 份，也就是分別拿著 2、3、4 份，共 9 份。
+    - **只有 9 份**：剛好全部發完，三個人都在等最後 1 份，死結。
+    - **有 10 份**：最壞情況下還剩 1 份，給誰都能湊滿、做完、放出資源，其他人接著做完。
+    - **答案：10 份**。一般式是 $\sum_i(k_i-1)+1$；每個人都最多要 $k$ 份時，就是 [3.2](#u3-more) 的 $n(k-1)+1$。
+
+    我用程式把所有分配狀態都檢查過：9 份時有死結的狀態（2、3、4），10 份時沒有。
+
+</div>
+
+### 3.5 練習：考古題變化題 {#u3-exam}
+
+把考過的題目**換數字、改條件，或反過來問**。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。
+
+<div data-qid="u3-exam-1" markdown="1">
+
+**考古變化 1.**（改自 115 Q3a、112 Q8a・應用）下面四種做法，各自破壞了死結四個必要條件中的哪一個？(a) 所有資源編號，只能依遞增的順序申請 (b) process 開始執行前，一次申請所有需要的資源 (c) 申請不到新資源時，先放掉手上所有的資源 (d) 印表機改用 spooling（大家把要印的東西丟到佇列，由一個 daemon 負責印）
+
+??? quiz "看完整解答"
+    - **跟原題差在哪**：原題要你列出方法；這題反過來，給方法要對回條件。
+    - **(a) circular wait**：大家都照同一個順序申請，等待的關係不可能繞成一圈。
+    - **(b) hold and wait**：手上有資源的人不會再等別的資源（一次全拿到，或什麼都不拿）。
+    - **(c) no preemption**：等不到就放掉，等於資源可以被「搶回來」。
+    - **(d) mutual exclusion**：從 process 的角度，印表機變成可以共用（大家都只是寫進佇列）。
+
+</div>
+
+<div data-qid="u3-exam-2" markdown="1">
+
+**考古變化 2.**（改自 107 Q1(4)、105 Q1(2)・實際算）用 bankers algorithm。5 個 process、三種資源 A、B、C，Available ＝ (1, 1, 1)。Allocation：P0 (1,0,2)、P1 (0,1,1)、P2 (2,1,0)、P3 (1,1,1)、P4 (0,0,1)；Max：P0 (3,2,3)、P1 (1,3,2)、P2 (4,2,2)、P3 (2,2,2)、P4 (2,1,3)。(1) 現在是 safe state 嗎？(2) P1 申請 (1, 0, 0)，能不能馬上給？
+
+??? quiz "看完整解答"
+    - **跟原題差在哪**：原題只要說明 avoidance 怎麼運作；這題用 banker's algorithm 真的算一次。
+    - **Need ＝ Max − Allocation**：P0 (2,2,1)、P1 (1,2,1)、P2 (2,1,2)、P3 (1,1,1)、P4 (2,1,2)。
+    - **(1) safety 演算法**（每次找 Need ≤ Work 的，做完把它的 Allocation 加回 Work）：
+        - Work (1,1,1)：只有 P3 的 (1,1,1) 夠 → Work 變 (2,2,2)
+        - P0 (2,2,1) 夠 → (3,2,4)；P1 (1,2,1) 夠 → (3,3,5)；P2 (2,1,2) 夠 → (5,4,5)；P4 → (5,4,6)
+        - 找得到順序 **P3, P0, P1, P2, P4**，是 **safe state**。
+    - **(2) 先假裝給**：Available 變 (0,1,1)，P1 的 Allocation 變 (1,1,1)、Need 變 (0,2,1)。
+        - 再跑一次 safety：Work (0,1,1)，P0 要 (2,2,1)、P1 要 (0,2,1)（B 不夠）、P2 要 (2,1,2)、P3 要 (1,1,1)（A 不夠）、P4 要 (2,1,2)，**一個都做不完**。
+        - 會進入 unsafe state，所以**不能馬上給**，P1 要等。
+    - **注意**：(1, 0, 0) 沒有超過 P1 的 Need，也沒有超過 Available，「資源夠」不代表可以給，還要檢查給了之後是否 safe。
+
+    我用程式跑過 safety 演算法，兩小題的結論都一樣。
+
+</div>
+
+<div data-qid="u3-exam-3" markdown="1">
+
+**考古變化 3.**（改自 103 Q1・換數字・反過來問）(a) 電腦有 10 台磁帶機，每個 process 最多需要 3 台。最多幾個 process 同時搶，保證不會死結？(b) 如果固定 4 個 process，每個 process 最多可以需要幾台？
+
+??? quiz "看完整解答"
+    - **跟原題差在哪**：(a) 換數字；(b) 反過來，固定 process 數，問每個人最多能要多少。
+    - **公式**：m 份資源、n 個 process、每個最多需要 k 份，不會死結的條件是 $n(k-1)+1\le m$（最壞情況每個人都只差一份，還要剩一份給某個人）。
+    - **(a)**：$n\times2+1\le10$ → $n\le4.5$，最多 **4 個**。5 個時，每人先拿 2 台用掉 10 台，大家都在等第 3 台，就死結了。
+    - **(b)**：$4(k-1)+1\le10$ → $k\le3.25$，最多 **3 台**。如果每人最多要 4 台，可能分配成 3、3、2、2，10 台全用完，每個人都還差至少 1 台，就死結了。
+
+    我用程式把所有可能的分配狀態都檢查過，(a) 4 個不會死結、5 個會；(b) 每人最多 3 台不會死結、4 台會。
+
+</div>
+
+<div data-qid="u3-exam-4" markdown="1">
+
+**考古變化 4.**（改自 100 Q3・改條件）5 位哲學家，筷子放在桌子中間（任何兩支都可以用），每人吃飯要 2 支、一次拿一支。(a) 桌上放 6 支筷子時，還需要原題那個「不給最後一支」的規則嗎？(b) 一般來說，$p$ 位哲學家至少要幾支筷子，才完全不用規則？
+
+??? quiz "看完整解答"
+    - **跟原題差在哪**：原題 5 支筷子要靠規則避免死結；這題多放一支，看看規則還需不需要，並跟 103 Q1 的公式連起來。
+    - **(a) 不需要**：死結只會發生在「每個人都拿著一支、桌上沒筷子」。5 個人各拿一支只用掉 5 支，桌上一定還剩 1 支，總有人能湊成 2 支，吃完放回 2 支，大家輪流吃得完。
+    - **(b)**：套 103 Q1 的公式，每人最多需要 $k=2$ 份：$p(2-1)+1\le c$，所以 **$c\ge p+1$** 支。
+
+    我用程式把所有拿筷子的狀態檢查過，6 支時不會死結、5 支時會。
+
+</div>
+
+<div data-qid="u3-exam-5" markdown="1">
+
+**考古變化 5.**（改自 104 Q8(2)・換情境）P1、P2、P3、P4 的 timestamp 是 10、20、30、40（越小越老）。P3 持有資源 R，P1、P2、P4 依序來申請 R。用 wait-die 和 wound-wait 各會發生什麼事？
+
+??? quiz "看完整解答"
+    - **跟原題差在哪**：申請的人變多，而且 wound-wait 會換人持有資源，後面的人要跟**新的持有者**比。
+    - **wait-die**（老的等，年輕的死）：
+        - P1（10）比 P3（30）老 → **P1 等**。
+        - P2（20）比 P3 老 → **P2 等**。
+        - P4（40）比 P3 年輕 → **P4 rollback**（之後用原本的 timestamp 40 重新開始，越來越老，最後一定輪得到）。
+    - **wound-wait**（老的搶，年輕的等）：
+        - P1 比 P3 老 → **P3 被 rollback**，R 給 P1。
+        - P2（20）申請時，持有者是 P1（10），P2 比較年輕 → **P2 等**。
+        - P4（40）比 P1 年輕 → **P4 等**。
+    - **重點**：兩種方法都只讓「年輕的被 rollback」，不會有老的等年輕的又被年輕的等回來的循環，所以不會死結。
+
+</div>
+
+### 3.6 練習：猜題 {#u3-bank}
+
+考古題還沒考過、但恐龍書 Deadlocks 那一章的重點，我猜比較可能出現的題型，包含 115 年那種英文名詞填空，和 Pthreads 程式的死結。
+
+<div data-qid="u3-bank-g1" markdown="1">
+
+<div markdown="1">
+
+**猜題 1.** 填空（115 年那種英文名詞填空）：
+
+- (a) A state is ＿＿ if the system can allocate resources to each process, up to its maximum, in some order and still avoid a deadlock.
+- (b) In a ＿＿ graph, an edge from $P_i$ to $P_j$ means that $P_i$ is waiting for $P_j$ to release a resource.
+- (c) Requiring each process to request resources in an increasing order of enumeration prevents the ＿＿ condition.
+- (d) In the resource-allocation-graph algorithm, a ＿＿ edge $P_i\to R_j$ indicates that $P_i$ may request $R_j$ at some time in the future.
+
+</div>
+
+??? quiz "看答案"
+    - (a) **safe**（[3.0](#u3-0)）
+    - (b) **wait-for**（[3.0](#u3-0) 的偵測）
+    - (c) **circular wait**（[3.1](#u3-1)）
+    - (d) **claim**：用虛線畫，表示「之後可能會申請」，見下一題。
+
+</div>
+
+<div data-qid="u3-bank-g2" markdown="1">
+
+**猜題 2.** 每種資源都只有 1 份時，avoidance 可以直接用資源分配圖：每個 process 事先把之後可能申請的資源畫成 **claim edge**（虛線 P ⇢ R）。現在 R1 分給了 P1；P1 之後可能要 R2；P2 之後可能要 R1、R2。(a) P2 申請 R2（R2 現在沒人用），能給嗎？(b) 如果改成 P1 申請 R2 呢？
+
+??? quiz "看完整解答"
+    - **規則**：有人申請時，假裝把它改成分配邊 R → P，**連 claim edge 一起看**，沒有 cycle 才給；有 cycle 表示 unsafe，要等。
+    - **(a) 不能給**：給了之後有 R1 → P1、P1 ⇢ R2、R2 → P2、P2 ⇢ R1，形成 cycle P1 ⇢ R2 → P2 ⇢ R1 → P1。意思是：之後 P1 要 R2（在 P2 手上）、P2 要 R1（在 P1 手上），就死結了。所以 R2 雖然空著，也要讓 P2 等。
+    - **(b) 可以給**：R1 → P1、R2 → P1、P2 ⇢ R1、P2 ⇢ R2，P1 沒有往外的邊，沒有 cycle。P1 拿到兩個資源，做完就放掉，P2 再拿。
+    - **為什麼只能用在每種資源 1 份**：資源有好幾份時，cycle 不一定是死結（[3.0](#u3-0) 圖 (b)），這時要用 Banker's algorithm。
+
+</div>
+
+<div data-qid="u3-bank-g3" markdown="1">
+
+<div markdown="1">
+
+**猜題 3.** 兩個 thread 用 Pthreads 的 mutex。這段程式一定會死結嗎？怎麼改？
+
+```c
+/* thread_one */
+pthread_mutex_lock(&first);
+pthread_mutex_lock(&second);
+/* 做事 */
+pthread_mutex_unlock(&second);
+pthread_mutex_unlock(&first);
+
+/* thread_two */
+pthread_mutex_lock(&second);
+pthread_mutex_lock(&first);
+/* 做事 */
+pthread_mutex_unlock(&first);
+pthread_mutex_unlock(&second);
+```
+
+</div>
+
+??? quiz "看完整解答"
+    - **不一定**：只有在 thread_one 拿到 first、thread_two 拿到 second，兩個都還沒拿第二把時，才會互相等。要看排程，可能跑很多次都沒事，某一次才卡住，所以這種 bug 很難測出來。
+    - **我實際跑過**：照原樣跑 200 次，只卡住 1 次；在兩次上鎖之間加 1 ms 的 sleep，200 次全部卡住。
+    - **改法**：兩個 thread 都**先鎖 first、再鎖 second**（固定拿 lock 的順序，破壞 circular wait）。改完再加上 sleep 跑 200 次，一次都沒卡住。
+
+</div>
+
+<div data-qid="u3-bank-g4" markdown="1">
+
+<div markdown="1">
+
+**猜題 4.** 轉帳函式先鎖轉出的帳戶、再鎖轉入的帳戶。每次呼叫都照「先鎖第一個參數」的規則，為什麼還是會死結？怎麼改？
+
+```c
+void transaction(Account from, Account to, double amount) {
+    lock(from.lock);
+    lock(to.lock);
+    withdraw(from, amount);
+    deposit(to, amount);
+    unlock(to.lock);
+    unlock(from.lock);
+}
+```
+
+</div>
+
+??? quiz "看完整解答"
+    **為什麼會死結**：Thread 1 呼叫 `transaction(A, B, 25)`、Thread 2 呼叫 `transaction(B, A, 50)`。Thread 1 先鎖 A、Thread 2 先鎖 B，接著 Thread 1 等 B、Thread 2 等 A。誰是「第一個參數」由呼叫的人決定，所以拿 lock 的順序其實不固定。
+
+    **改法**：用跟參數順序無關的規則決定先鎖誰，例如**帳號小的先鎖**：
+
+    ```c
+    Account first  = (from.id < to.id) ? from : to;
+    Account second = (from.id < to.id) ? to : from;
+    lock(first.lock);
+    lock(second.lock);
+    ```
+
+    **我實際跑過**：兩次上鎖中間加 1 ms 的 sleep，原本的寫法 50 次全部卡住；改成帳號小的先鎖，50 次都沒卡住，餘額也對（兩個帳戶原本各 100，最後 A 125、B 75）。
+
+</div>
+
+<div class="mcq" data-ans="3" data-qid="u3-bank-g5" markdown="1">
+
+**猜題 5.** 兩個 thread 都改用 `pthread_mutex_trylock()`：拿到第一把後試著拿第二把，拿不到就把第一把放掉、從頭再試。如果兩個 thread 每次都剛好同時做同樣的事，會發生什麼？
+
+1. 死結：兩個 thread 都被 block 住
+2. 一定很快就有一個成功
+3. livelock：兩個都沒有被 block，一直在拿、放、重試，卻都沒有進展
+4. starvation：只有其中一個 thread 永遠拿不到
+
+??? quiz "看解析"
+    **C**。trylock 拿不到不會睡，所以不是死結；但兩個人一直同步地「拿一把、發現拿不到另一把、放掉」，像兩個人在走廊互相讓路，卻一直往同一邊閃。解法是失敗後**等一段隨機的時間**再重試，讓兩邊錯開。
+
+</div>
+
+<div data-qid="u3-bank-g6" markdown="1">
+
+**猜題 6.** (a) 死結偵測演算法多久跑一次比較好？「每次有申請不能馬上滿足就跑」的好處和壞處是什麼？(b) 用「終止 process」復原時，該考慮哪些因素來選要終止誰？
+
+??? quiz "看答案"
+    **(a)** 要看死結多常發生、發生時會牽連多少 process。
+
+    - **每次申請不能馬上滿足就跑**：死結一形成就抓到，還知道是哪一個申請造成的；但計算量很大。
+    - **定期跑**（例如每小時一次，或 CPU 使用率掉到 40% 以下時）：省計算，但死結可能卡一陣子才被發現，也分不出是誰造成的。
+
+    **(b)** 選代價最小的，例如：priority 低的；已經算了多久、還要算多久（快做完的別終止）；用了哪些、多少資源，還需要多少；要終止幾個 process 才能解開；是互動式還是批次的。另外要避免同一個 process 一直被選中（[3.0](#u3-0)）。
+
+</div>
+
+<div data-qid="u3-bank-g7" markdown="1">
+
+**猜題 7.** 經典的哲學家問題：5 位哲學家圍著圓桌，每兩人中間放一支筷子，每個人先拿左邊、再拿右邊。為什麼可能死結？列出三種避免死結的方法，說明為什麼有效。
+
+??? quiz "看答案"
+    **為什麼死結**：5 個人同時拿起左邊的筷子，每個人都在等右邊那支，而那支在旁邊的人手上，繞成一圈。
+
+    | 方法 | 為什麼不會死結 |
+    |---|---|
+    | 最多只讓 4 個人同時上桌 | 4 個人搶 5 支，每人要 2 支：$4\times(2-1)+1=5\le5$，一定有人湊得到兩支（[3.2](#u3-more) 的公式） |
+    | 左右兩支都空著才一起拿（拿的動作放在 critical section 裡） | 不會拿著一支又在等，破壞 hold and wait |
+    | 奇數號的先拿左邊、偶數號的先拿右邊 | 拿的順序不一致，等待繞不成一圈，破壞 circular wait |
+
+    注意：這三種都不會死結，但不保證不會 starvation，某個人還是可能一直搶不到。
+
+</div>
+
+<div class="mcq" data-ans="3" data-qid="u3-bank-g8" markdown="1">
+
+**猜題 8.** n 個 process、m 種資源，Banker's algorithm 的 safety 演算法最壞要做多少次運算？
+
+1. $O(n)$
+2. $O(m\times n)$
+3. $O(m\times n^2)$
+4. $O(2^n)$
+
+??? quiz "看解析"
+    **C**。最多跑 n 輪（每輪讓一個 process 做完），每輪最多從頭掃 n 個 process，每次比較 Need 和 Work 要看 m 種資源：$m\times n\times n$。每種資源只有 1 份時，在 wait-for graph 上找 cycle 是 $O(n^2)$。
+
+</div>
+
+### 3.7 英文作答範例 {#u3-en}
 
 考卷是英文，觀念題用英文答最直接。先自己寫（寫中文也可以），再打開參考答案對照，把**粗體的關鍵字**記起來。寫法見 [0. 中山 OS 怎麼考](#u0-en)。
 
@@ -3978,73 +4656,6 @@ Banker's algorithm 的想法：銀行只在「借出去之後，**仍然存在�
         - **Starvation**: make sure the same process is not always chosen as the victim, for example by including the number of rollbacks in the cost factor.
 
     寫法提示：resource preemption 的三個問題（victim、rollback、starvation）是課本條列，三個都要寫（[3.0](#u3-0)）。
-
-### 3.6 考古題變化題 {#u3-exam}
-
-把考過的題目**換數字、改條件，或反過來問**。每題都標出改自哪一題：建議先回去看原題怎麼解，再做這一題，想想「條件變了，做法哪裡要跟著變」。每題都附完整解答，答案都用程式驗算過。
-
-**考古變化 1.**（改自 115 Q3a、112 Q8a・應用）下面四種做法，各自破壞了死結四個必要條件中的哪一個？(a) 所有資源編號，只能依遞增的順序申請 (b) process 開始執行前，一次申請所有需要的資源 (c) 申請不到新資源時，先放掉手上所有的資源 (d) 印表機改用 spooling（大家把要印的東西丟到佇列，由一個 daemon 負責印）
-
-??? quiz "看完整解答"
-    - **跟原題差在哪**：原題要你列出方法；這題反過來，給方法要對回條件。
-    - **(a) circular wait**：大家都照同一個順序申請，等待的關係不可能繞成一圈。
-    - **(b) hold and wait**：手上有資源的人不會再等別的資源（一次全拿到，或什麼都不拿）。
-    - **(c) no preemption**：等不到就放掉，等於資源可以被「搶回來」。
-    - **(d) mutual exclusion**：從 process 的角度，印表機變成可以共用（大家都只是寫進佇列）。
-
-
-**考古變化 2.**（改自 107 Q1(4)、105 Q1(2)・實際算）用 bankers algorithm。5 個 process、三種資源 A、B、C，Available ＝ (1, 1, 1)。Allocation：P0 (1,0,2)、P1 (0,1,1)、P2 (2,1,0)、P3 (1,1,1)、P4 (0,0,1)；Max：P0 (3,2,3)、P1 (1,3,2)、P2 (4,2,2)、P3 (2,2,2)、P4 (2,1,3)。(1) 現在是 safe state 嗎？(2) P1 申請 (1, 0, 0)，能不能馬上給？
-
-??? quiz "看完整解答"
-    - **跟原題差在哪**：原題只要說明 avoidance 怎麼運作；這題用 banker's algorithm 真的算一次。
-    - **Need ＝ Max − Allocation**：P0 (2,2,1)、P1 (1,2,1)、P2 (2,1,2)、P3 (1,1,1)、P4 (2,1,2)。
-    - **(1) safety 演算法**（每次找 Need ≤ Work 的，做完把它的 Allocation 加回 Work）：
-        - Work (1,1,1)：只有 P3 的 (1,1,1) 夠 → Work 變 (2,2,2)
-        - P0 (2,2,1) 夠 → (3,2,4)；P1 (1,2,1) 夠 → (3,3,5)；P2 (2,1,2) 夠 → (5,4,5)；P4 → (5,4,6)
-        - 找得到順序 **P3, P0, P1, P2, P4**，是 **safe state**。
-    - **(2) 先假裝給**：Available 變 (0,1,1)，P1 的 Allocation 變 (1,1,1)、Need 變 (0,2,1)。
-        - 再跑一次 safety：Work (0,1,1)，P0 要 (2,2,1)、P1 要 (0,2,1)（B 不夠）、P2 要 (2,1,2)、P3 要 (1,1,1)（A 不夠）、P4 要 (2,1,2)，**一個都做不完**。
-        - 會進入 unsafe state，所以**不能馬上給**，P1 要等。
-    - **注意**：(1, 0, 0) 沒有超過 P1 的 Need，也沒有超過 Available，「資源夠」不代表可以給，還要檢查給了之後是否 safe。
-
-    我用程式跑過 safety 演算法，兩小題的結論都一樣。
-
-
-**考古變化 3.**（改自 103 Q1・換數字・反過來問）(a) 電腦有 10 台磁帶機，每個 process 最多需要 3 台。最多幾個 process 同時搶，保證不會死結？(b) 如果固定 4 個 process，每個 process 最多可以需要幾台？
-
-??? quiz "看完整解答"
-    - **跟原題差在哪**：(a) 換數字；(b) 反過來，固定 process 數，問每個人最多能要多少。
-    - **公式**：m 份資源、n 個 process、每個最多需要 k 份，不會死結的條件是 $n(k-1)+1\le m$（最壞情況每個人都只差一份，還要剩一份給某個人）。
-    - **(a)**：$n\times2+1\le10$ → $n\le4.5$，最多 **4 個**。5 個時，每人先拿 2 台用掉 10 台，大家都在等第 3 台，就死結了。
-    - **(b)**：$4(k-1)+1\le10$ → $k\le3.25$，最多 **3 台**。如果每人最多要 4 台，可能分配成 3、3、2、2，10 台全用完，每個人都還差至少 1 台，就死結了。
-
-    我用程式把所有可能的分配狀態都檢查過，(a) 4 個不會死結、5 個會；(b) 每人最多 3 台不會死結、4 台會。
-
-
-**考古變化 4.**（改自 100 Q3・改條件）5 位哲學家，筷子放在桌子中間（任何兩支都可以用），每人吃飯要 2 支、一次拿一支。(a) 桌上放 6 支筷子時，還需要原題那個「不給最後一支」的規則嗎？(b) 一般來說，$p$ 位哲學家至少要幾支筷子，才完全不用規則？
-
-??? quiz "看完整解答"
-    - **跟原題差在哪**：原題 5 支筷子要靠規則避免死結；這題多放一支，看看規則還需不需要，並跟 103 Q1 的公式連起來。
-    - **(a) 不需要**：死結只會發生在「每個人都拿著一支、桌上沒筷子」。5 個人各拿一支只用掉 5 支，桌上一定還剩 1 支，總有人能湊成 2 支，吃完放回 2 支，大家輪流吃得完。
-    - **(b)**：套 103 Q1 的公式，每人最多需要 $k=2$ 份：$p(2-1)+1\le c$，所以 **$c\ge p+1$** 支。
-
-    我用程式把所有拿筷子的狀態檢查過，6 支時不會死結、5 支時會。
-
-
-**考古變化 5.**（改自 104 Q8(2)・換情境）P1、P2、P3、P4 的 timestamp 是 10、20、30、40（越小越老）。P3 持有資源 R，P1、P2、P4 依序來申請 R。用 wait-die 和 wound-wait 各會發生什麼事？
-
-??? quiz "看完整解答"
-    - **跟原題差在哪**：申請的人變多，而且 wound-wait 會換人持有資源，後面的人要跟**新的持有者**比。
-    - **wait-die**（老的等，年輕的死）：
-        - P1（10）比 P3（30）老 → **P1 等**。
-        - P2（20）比 P3 老 → **P2 等**。
-        - P4（40）比 P3 年輕 → **P4 rollback**（之後用原本的 timestamp 40 重新開始，越來越老，最後一定輪得到）。
-    - **wound-wait**（老的搶，年輕的等）：
-        - P1 比 P3 老 → **P3 被 rollback**，R 給 P1。
-        - P2（20）申請時，持有者是 P1（10），P2 比較年輕 → **P2 等**。
-        - P4（40）比 P1 年輕 → **P4 等**。
-    - **重點**：兩種方法都只讓「年輕的被 rollback」，不會有老的等年輕的又被年輕的等回來的循環，所以不會死結。
-
 
 ### 單元 3 小考 {#u3-quiz}
 
