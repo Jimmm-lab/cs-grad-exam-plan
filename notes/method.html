@@ -148,18 +148,31 @@ mjx-container.mj-keep[jax] mjx-break { white-space: nowrap !important; }
 .ink-toggle svg { width: 16px; height: 16px; flex: none; }
 .ink-toggle.has { border-color: var(--ex); background: var(--ex-soft); }
 .ink-toggle[aria-expanded="true"] { border-color: var(--ex); }
-.ink-panel { margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow: hidden; }
-.ink-tools { display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 8px; background: var(--paper); border-bottom: 1px solid var(--line); }
-.ink-grp { display: flex; gap: 4px; align-items: center; }
-.ink-tools button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 36px; min-width: 36px; padding: 0 9px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: 500 13px/1 var(--font-body); cursor: pointer; }
-.ink-tools .ico { width: 18px; height: 18px; }
-.ink-tools .ink-zl { min-width: 52px; font: 600 12px/1 var(--font-mono); }
-.ink-tools button[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); font-weight: 700; }
-.ink-tools button:disabled { opacity: .4; cursor: default; }
-.ink-tools .ink-sw { padding: 0; display: inline-grid; place-items: center; }
-.ink-sw span { display: block; width: 18px; height: 18px; border-radius: 50%; }
-/* 筆的種類：圖示＋小字，一眼分得出來 */
-.ink-tools .ink-tool { flex-direction: column; gap: 2px; width: 48px; min-width: 48px; min-height: 50px; padding: 4px 0 3px; font: 500 11px/1.1 var(--font-body); }
+.ink-panel { margin-top: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); overflow: hidden; }
+/* 工具列：第一排是工具（筆、螢光筆、橡皮擦、選取｜插入、更多），第二排是這支筆的顏色、粗細和復原、重做。
+   按鈕是平的，選中的工具凸起來，打開的面板變成主題色 */
+.ink-tools { display: grid; gap: 4px; padding: 6px; background: var(--paper); border-bottom: 1px solid var(--line); }
+.ink-row { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.ink-tools button, .ink-foot button { display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-height: 40px; min-width: 40px; padding: 0 8px; border: 0; border-radius: 9px; background: none; color: var(--ink); font: 500 13px/1 var(--font-body); white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.ink-tools .ico, .ink-foot .ico { width: 20px; height: 20px; flex: none; }
+.ink-tools button:disabled, .ink-foot button:disabled { opacity: .35; cursor: default; }
+@media (hover: hover) { .ink-tools button:not(:disabled):hover, .ink-foot button:not(:disabled):hover { background: var(--line); } }
+.ink-tools .ink-tool { flex: 0 1 60px; min-width: 0; flex-direction: column; gap: 3px; min-height: 50px; padding: 5px 0 4px; font: 500 11px/1.15 var(--font-body); color: var(--muted); }
+.ink-tools .ink-tool .ico { width: 21px; height: 21px; color: var(--ink); }
+.ink-tools .ink-tool[aria-pressed="true"] { background: var(--card); color: var(--ink); font-weight: 700; box-shadow: 0 1px 3px rgba(10, 15, 30, .14), inset 0 0 0 1px var(--line); }
+.ink-tools .ink-tool[aria-expanded="true"] { background: var(--ex-soft); color: var(--ex); font-weight: 700; }
+.ink-tools .ink-tool[aria-expanded="true"] .ico { color: var(--ex); }
+.ink-div { flex: none; width: 1px; height: 30px; margin: 0 4px 0 auto; background: var(--line); }
+.ink-colors { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.ink-hist { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+.ink-tools .ink-sw { width: 36px; min-width: 36px; padding: 0; }
+.ink-sw span { display: block; width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .14); }
+.ink-sw[aria-pressed="true"] span { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--ink); }
+/* 「● 數字」：現在這支筆的顏色和粗細，按了打開筆的設定 */
+.ink-tools .ink-cur { gap: 6px; min-height: 32px; margin-left: 6px; padding: 0 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); }
+.ink-cur i { display: block; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
+.ink-cur b { font: 600 12px/1 var(--font-mono); }
+.ink-tools .ink-cur[aria-expanded="true"] { border-color: var(--ex); background: var(--ex-soft); }
 /* 選取後浮在選取範圍旁邊的操作列 */
 .ink-sheet { position: relative; }
 .ink-selbar { position: absolute; z-index: 3; left: 0; top: 0; display: flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); box-shadow: 0 6px 18px rgba(10, 15, 30, .18); transition: opacity .12s; }
@@ -170,45 +183,59 @@ mjx-container.mj-keep[jax] mjx-break { white-space: nowrap !important; }
 .ink-selbar button:hover { background: var(--paper); }
 .ink-selbar button[data-sel="del"] { color: var(--accent); }
 .ink-selbar .ico { width: 17px; height: 17px; }
-.ink-tools .ink-tool .ico { width: 20px; height: 20px; }
-/* 「● 數字」：現在這支筆的顏色和粗細，按了打開設定 */
-.ink-tools .ink-cur { gap: 6px; padding: 0 10px; min-width: 52px; }
-.ink-cur i { display: block; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
-.ink-cur b { font: 600 12px/1 var(--font-mono); }
-.ink-cur[aria-expanded="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
-/* 粗細和顏色的設定面板（在工具列下面展開） */
-.ink-cfg { display: grid; gap: 12px; padding: 12px; border-bottom: 1px solid var(--line); background: var(--card); }
-.ink-cfg[hidden] { display: none; }
-.ink-cfg-head { display: flex; align-items: center; gap: 8px; }
-.ink-cfg-head b { font: 700 14.5px/1.3 var(--font-body); }
-.ink-cfg-head span { font-size: 12.5px; color: var(--muted); }
-.ink-cfg-x { margin-left: auto; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; }
-.ink-cfg-x .ico { width: 16px; height: 16px; }
+/* 工具列下面展開的面板：筆的設定、插入、更多（一次只開一個），標題列的樣式都一樣 */
+.ink-pop { display: grid; gap: 12px; padding: 12px; border-bottom: 1px solid var(--line); background: var(--card); }
+.ink-pop[hidden] { display: none; }
+.ink-pop-head { display: flex; align-items: center; gap: 8px; min-height: 36px; }
+.ink-pop-head b { flex: none; font: 700 15px/1.3 var(--font-body); }
+.ink-pop-head span { font-size: 12.5px; line-height: 1.4; color: var(--muted); }
+.ink-pop-x { margin-left: auto; flex: none; width: 36px; height: 36px; padding: 0; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; }
+.ink-pop-x .ico { width: 16px; height: 16px; }
+.ink-pop p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+.ink-btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.ink-btns button { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: center; min-height: 54px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); font: 600 14px/1.3 var(--font-body); text-align: left; cursor: pointer; }
+.ink-btns .ico { grid-row: 1 / span 2; width: 22px; height: 22px; }
+.ink-btns small { font: 400 12px/1.35 var(--font-body); color: var(--muted); }
+.ink-btns [data-act="clear"] .ico { color: var(--accent); }
+/* 筆的設定：種類、粗細、顏色 */
+.ink-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.ink-types button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); font: 500 13.5px/1 var(--font-body); white-space: nowrap; cursor: pointer; }
+.ink-types button[aria-pressed="true"] { border-color: var(--ex); background: var(--ex-soft); color: var(--ex); font-weight: 700; }
+.ink-types .ico { width: 18px; height: 18px; flex: none; }
 .ink-w { display: grid; grid-template-columns: auto 1fr 2.6em; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
 .ink-w input { width: 100%; min-height: 32px; accent-color: var(--ink); }
 .ink-w output { font: 600 13px/1 var(--font-mono); color: var(--ink); text-align: right; }
 .ink-prev { display: block; width: 100%; height: 48px; border: 1px dashed var(--line); border-radius: 8px; background: var(--card); }
-.ink-pal { display: grid; grid-template-columns: 4em 1fr; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
-.ink-pal > div { display: flex; flex-wrap: wrap; gap: 4px; }
-.ink-pal button { width: 36px; height: 36px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; background: none; cursor: pointer; }
+.ink-pal { display: grid; grid-template-columns: 3.4em 1fr; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.ink-pal > div { display: flex; flex-wrap: wrap; gap: 3px; }
+.ink-pal button { width: 34px; height: 34px; border-radius: 50%; border: 0; padding: 0; display: grid; place-items: center; background: none; cursor: pointer; }
 .ink-pal button span { display: block; width: 24px; height: 24px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12); }
 .ink-pal button[aria-pressed="true"] span { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--ink); }
 .ink-custom { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; font-size: 13px; color: var(--muted); }
 .ink-custom label { display: inline-flex; align-items: center; gap: 8px; }
 .ink-custom input[type="color"] { width: 46px; height: 34px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: var(--card); cursor: pointer; }
 .ink-custom button { border: 0; padding: 6px 0; background: none; color: var(--muted); font: 400 12.5px/1.4 var(--font-body); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+/* 「更多」裡的兩個開關 */
+.ink-opts { display: grid; border: 1px solid var(--line); border-radius: 10px; }
+.ink-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; cursor: pointer; }
+.ink-opt + .ink-opt { border-top: 1px solid var(--line); }
+.ink-opt > span { display: grid; gap: 2px; }
+.ink-opt b { font: 600 14px/1.35 var(--font-body); color: var(--ink); }
+.ink-opt small { font-size: 12.5px; line-height: 1.45; color: var(--muted); }
+.ink-opt input { -webkit-appearance: none; appearance: none; position: relative; flex: none; width: 44px; height: 26px; margin: 0; border-radius: 999px; background: var(--line); cursor: pointer; transition: background .15s; }
+.ink-opt input::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); transition: transform .15s; }
+.ink-opt input:checked { background: var(--ex); }
+.ink-opt input:checked::after { transform: translateX(18px); }
+.ink-opt input:focus-visible { outline: 2px solid var(--ex); outline-offset: 2px; }
 .ink-canvas { display: block; width: 100%; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; background-color: var(--card); }
-.ink-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; color: var(--muted); }
-.ink-pen { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
-.ink-pen input { width: 18px; height: 18px; margin: 0; accent-color: var(--ex); }
-.ink-snap { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
-.ink-snap input { width: 18px; height: 18px; margin: 0; flex: none; accent-color: var(--ex); }
-.ink-ins { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; padding: 10px; border-bottom: 1px solid var(--line); background: var(--card); }
-.ink-ins[hidden] { display: none; }
-.ink-ins button { display: grid; grid-template-columns: auto 1fr; column-gap: 9px; align-items: center; min-height: 54px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); font: 600 14px/1.3 var(--font-body); text-align: left; cursor: pointer; }
-.ink-ins button .ico { grid-row: 1 / span 2; width: 22px; height: 22px; }
-.ink-ins small { font: 400 12px/1.3 var(--font-body); color: var(--muted); }
-.ink-ins p { grid-column: 1 / -1; margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--muted); }
+/* 紙的下面：縮放｜縮短、加長 */
+.ink-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 6px; border-top: 1px solid var(--line); background: var(--paper); }
+.ink-grp { display: flex; align-items: center; gap: 2px; }
+.ink-foot .ink-zl { min-width: 50px; padding: 0 4px; font: 600 12px/1 var(--font-mono); color: var(--muted); }
+/* 提示訊息：畫面下方短暫出現（右邊留給回到頂端那排圓鈕），不擋筆 */
+.ink-toast { position: fixed; z-index: 19; left: max(16px, env(safe-area-inset-left, 0px)); right: 76px; bottom: max(18px, env(safe-area-inset-bottom, 0px)); width: fit-content; max-width: 460px; margin: 0 auto; padding: 10px 14px; border-radius: 10px; background: var(--ink); color: var(--card); font: 500 13.5px/1.55 var(--font-body); box-shadow: 0 6px 20px rgba(5, 8, 15, .28); opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity .18s ease, transform .18s ease; }
+.ink-toast.on { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .ink-toast, .ink-opt input, .ink-opt input::after { transition: none; } }
 
 /* 資料結構動畫 */
 .viz { margin: 20px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow: hidden; }
@@ -728,29 +755,39 @@ window.MathJax = {
 <h2 id="tools">手寫作答板和動畫</h2>
 <h3 id="_2">每一題都可以直接手寫</h3>
 <p>每一題「看答案」上面都有一個 <strong>手寫作答</strong> 按鈕，打開是一張方格紙，可以用 S Pen 直接在題目下面寫計算過程，不用截圖到 Samsung Notes。</p>
+<p>按鈕放在四個地方：</p>
 <ul>
-<li><strong>觸控筆模式</strong>：第一次用觸控筆寫字時會自動打開。打開後只有筆會寫字，<strong>手指拖曳是捲動頁面</strong>，手掌靠在螢幕上也不會畫到。沒有觸控筆的話，關掉這個選項就能用手指寫。</li>
-<li><strong>四種筆</strong>：鋼筆（預設，壓力越大越粗）、原子筆（粗細穩定）、鉛筆（淡一點）、螢光筆（半透明，畫在字的下面，劃重點不會蓋住字）。</li>
-<li><strong>粗細和顏色</strong>：顏色旁邊的「● 數字」按鈕打開設定，有粗細滑桿、推薦色系（經典、螢光、低飽和）和自訂顏色。每種筆各自記住自己的粗細和顏色。</li>
-<li><strong>筆停住變標準圖形</strong>：畫完之後，筆尖在終點<strong>停住不動半秒</strong>（筆不要離開螢幕）：<ul>
-<li><strong>直線</strong>會拉成筆直的線。還沒放開前可以繼續拖動，調整方向和長度；接近水平、垂直或 45° 時會自動對齊，畫表格、坐標軸、樹的邊、底線都很方便。</li>
-<li><strong>圓、橢圓、三角形、長方形、正方形、五邊形、六邊形</strong>會變成標準的圖形。快要水平、垂直的邊會被拉正，畫狀態圖、Venn 圖、流程圖的方框都很方便。</li>
-<li>寫字、小的圈圈（例如字母 o）、波浪線、8 字形不會被換掉。換錯了就按「復原」。不想要這個功能，可以在紙下方關掉。</li>
+<li><strong>工具列第一排</strong>：筆、螢光筆、橡皮擦、選取｜插入、更多</li>
+<li><strong>工具列第二排</strong>：這支筆的快速選色和粗細（「● 數字」），右邊是復原、重做</li>
+<li><strong>紙的下面</strong>：縮放（按百分比回到 100%）｜縮短、加長</li>
+<li><strong>「更多」裡面</strong>：存成圖片、清除這一題，和兩個開關（觸控筆模式、筆停住變標準圖形）</li>
 </ul>
-</li>
-<li><strong>橡皮擦</strong>：碰到哪一筆就擦掉整筆。有些瀏覽器會把 S Pen 的側鍵當成橡皮擦，可以試試按住側鍵擦。橡皮擦不會擦到插入的圖片和筆記。</li>
-<li><strong>選取</strong>：選「選取」工具，用筆把要改的字圈起來（或直接點一下某一筆、某張圖）。一筆有一半以上在圈裡就算圈到；<strong>邊圈邊會在圈到的筆跡底下亮起淡紅色的光暈</strong>，紙下方也會顯示圈到幾筆，放開後光暈留著，一眼看出選到哪些字。拖框裡面可以<strong>移動</strong>，拖右下角的圓點可以<strong>放大縮小</strong>，浮出來的小工具列可以<strong>複製</strong>、<strong>刪除</strong>。</li>
-<li><strong>插入圖片</strong>：圖片放在筆跡下面，可以直接在上面圈重點、寫註解；用「選取」點一下就能移動、縮放、刪除。圖片會縮到最長邊 1600 像素再存，同一張圖只存一份，跟筆跡一樣會同步到別台裝置。按工具列的「插入」，有三種放法：<ul>
-<li><strong>圖片</strong>：從相簿或檔案選。</li>
-<li><strong>貼上圖片</strong>：在別的 App「複製圖片」之後按這個，瀏覽器會問要不要允許讀剪貼簿。</li>
-<li><strong>電腦上</strong>：直接按 Ctrl＋V，或把圖片拖進紙裡。</li>
+<p>操作提示會在畫面下方出現幾秒就收起來，同一種說明最多出現三次；筆跡會自動存，不會每一筆都跳訊息。</p>
+<p><strong>寫字</strong></p>
+<ul>
+<li><strong>筆</strong>：鋼筆（預設，壓力越大越粗）、原子筆（粗細穩定）、鉛筆（淡一點）共用一個按鈕，按鈕上寫的是現在用的那一種。<strong>選中的筆再點一次</strong>就打開設定：換筆的種類、調粗細、選顏色（推薦色系和自訂顏色），每一種筆各自記住自己的粗細和顏色。</li>
+<li><strong>螢光筆</strong>：半透明，畫在字的下面，劃重點不會蓋住字；一樣再點一次打開設定。</li>
+<li><strong>觸控筆模式</strong>：第一次用觸控筆寫字時會自動打開。打開後只有筆會寫字，<strong>手指拖曳是捲動頁面</strong>，手掌靠在螢幕上也不會畫到。沒有觸控筆的話，在「更多」裡關掉就能用手指寫。</li>
+<li><strong>筆停住變標準圖形</strong>：畫完之後，筆尖在終點<strong>停住不動半秒</strong>（筆不要離開螢幕）。<strong>直線</strong>會拉直，還沒放開前可以繼續拖動調整方向和長度，接近水平、垂直或 45° 時會自動對齊；<strong>圓、橢圓、三角形、長方形、正方形、五邊形、六邊形</strong>會變成標準的圖形。寫字、小的圈圈（例如字母 o）、波浪線、8 字形不會被換掉。換錯了就按「復原」；不想要這個功能，可以在「更多」裡關掉。</li>
+<li><strong>縮放</strong>：兩指捏合放大縮小，兩指拖曳移動紙張；也可以用紙下面的放大鏡。放大時寫的字，線條粗細看起來跟 100% 時一樣，適合在小格子裡寫細節。</li>
+<li><strong>紙不夠寫</strong>：按紙下面的「加長」，每次多一段；用不到就按「縮短」收回，不會切到筆跡。</li>
 </ul>
-</li>
-<li><strong>插入 .md 筆記</strong>：在「插入」裡選「.md 筆記」，檔案會排版成一張筆記卡片放在紙上：標題、清單、待辦、表格、程式碼、引用、數學式（用 <code>$…$</code>、<code>$$…$$</code> 寫的）都會排好，跟教材的公式一樣清楚，放大紙張時也會重新排得很清楚。卡片一樣可以直接在上面寫字、劃重點，用「選取」移動、縮放、刪除。筆記太長時紙會自動加長，最長 6000 單位（大約 7 個螢幕高），再長的話卡片會縮小；建議一份筆記只放一個主題。</li>
-<li><strong>復原／重做、清除、加長／縮短</strong>：寫不下就按「加長」，每次多一段；用不到就按「縮短」收回，但不會切到筆跡。這些動作都可以復原。</li>
-<li><strong>縮放紙張</strong>：兩指捏合可以放大縮小，兩指拖曳可以移動紙張；也可以按工具列的放大鏡，按中間的百分比回到 100%。放大時寫的字，線條粗細看起來跟 100% 時一樣，適合在小格子裡寫細節。</li>
-<li><strong>存成圖片</strong>：答錯的題目可以存成 PNG（插入的圖片和筆記也會一起存進去），印出來貼進錯題本，或匯入 Samsung Notes。</li>
+<p><strong>修改</strong></p>
+<ul>
+<li><strong>橡皮擦</strong>：碰到哪一筆就擦掉整筆，不會擦到插入的圖片和筆記。有些瀏覽器會把 S Pen 的側鍵當成橡皮擦，可以試試按住側鍵擦。</li>
+<li><strong>選取</strong>：用筆把要改的字圈起來，或直接點一下某一筆、某張圖。一筆有一半以上在圈裡就算圈到，<strong>圈到的筆跡底下會亮起淡紅色的光暈</strong>。拖框裡面可以<strong>移動</strong>，拖右下角的圓點可以<strong>放大縮小</strong>，浮出來的小工具列可以<strong>複製</strong>、<strong>刪除</strong>。點空白的地方就取消選取。</li>
+<li><strong>復原／重做</strong>：上面這些動作，連同清除、加長、縮短、插入，都可以復原。</li>
+</ul>
+<p><strong>插入圖片和 .md 筆記</strong>（工具列的「插入」）</p>
+<ul>
+<li><strong>圖片</strong>：從相簿或檔案選；在別的 App「複製圖片」之後，按「貼上圖片」（瀏覽器會問要不要允許讀剪貼簿）；電腦上可以直接按 Ctrl＋V，或把圖片拖進紙裡。圖片會縮到最長邊 1600 像素再存，同一張圖只存一份，跟筆跡一樣會同步到別台裝置。</li>
+<li><strong>.md 筆記</strong>：檔案會排版成一張筆記卡片：標題、清單、待辦、表格、程式碼、引用、數學式（用 <code>$…$</code>、<code>$$…$$</code> 寫的）都會排好，放大紙張時會重新排得很清楚。筆記太長時紙會自動加長，最長大約 7 個螢幕高，再長的話卡片會縮小；建議一份筆記只放一個主題。</li>
+<li>插入的東西都放在筆跡下面，可以直接在上面寫字、劃重點；用「選取」點一下就能移動、縮放、刪除。</li>
+</ul>
+<p><strong>存檔和備份</strong></p>
+<ul>
 <li><strong>儲存位置</strong>：筆跡自動存在這台裝置的瀏覽器裡，登入後也會同步到你的帳號，換手機或電腦登入一樣看得到（見下面的「帳號與雲端同步」）。</li>
+<li><strong>存成圖片</strong>：在「更多」裡。答錯的題目可以存成 PNG（插入的圖片和筆記也會一起存進去），印出來貼進錯題本，或匯入 Samsung Notes。</li>
 <li><strong>備份</strong>：打開目錄（手機右下角的目錄按鈕），最下面有「手寫筆跡備份」：<strong>匯出全部</strong>會下載一個備份檔（所有科目的筆跡），換手機或清除瀏覽器資料前先匯出，之後在新裝置按<strong>匯入</strong>。建議每週匯出一次，存到雲端硬碟。</li>
 </ul>
 <p><strong>用法建議</strong>：先在手寫板上寫完整的過程，再打開答案逐行對照，然後按「答對了／答錯了」。不要先看答案再抄，那樣沒有練到回想。</p>
@@ -846,7 +883,7 @@ window.MathJax = {
 </tbody>
 </table>
 <p><strong>什麼時候用 Notion</strong>：如果你本來就每天用 Notion，可以只建一張表當<strong>索引</strong>：題目來源、單元、下次重做日期、錯題本頁碼，用日期篩選「今天要重做的題目」。題目內容和重算還是寫在紙上。</p>
-<p>另外，教材網頁上每題小考的「答錯了」會自動記在網頁左側的錯題清單（只存在你這台裝置的瀏覽器），可以當作教材小考的錯題索引。在<a href="#tools">手寫作答板</a>寫錯的題目，可以按「存成圖片」把過程存下來貼進錯題本。</p>
+<p>另外，教材網頁上每題小考的「答錯了」會自動記在網頁左側的錯題清單（只存在你這台裝置的瀏覽器），可以當作教材小考的錯題索引。在<a href="#tools">手寫作答板</a>寫錯的題目，可以按「更多」裡的「存成圖片」把過程存下來貼進錯題本。</p>
 <h2 id="resources">輔助教材</h2>
 <table>
 <thead>
@@ -1034,10 +1071,10 @@ window.MathJax = {
   paint();
 })();
 </script>
-<script src="assets/icons.js?v=3dda2cfd"></script>
+<script src="assets/icons.js?v=86315811"></script>
 <script src="assets/inkdb.js?v=92b336ca"></script>
 <script src="assets/inkx.js?v=94e484db"></script>
-<script src="assets/ink.js?v=11f08978"></script>
+<script src="assets/ink.js?v=35d98aef"></script>
 <script src="assets/viz.js?v=1e5c289a"></script>
 <script src="assets/glide.js?v=93f8e086"></script>
 <script src="assets/nav.js?v=b9cd7533"></script>
