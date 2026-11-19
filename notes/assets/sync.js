@@ -451,8 +451,11 @@
         if (rr && (!ll || Number(rr.t) > ll.t)) pull.push(k);
         else if (ll && (!rr || ll.t > Number(rr.t))) push.push(k);
       });
+      // 插入的圖片（img: 開頭）比較大：每次少抓幾張、一次只傳一張，圖片排在前面（題目下載下來時圖片已經在了）
+      function isImg(k) { return k.indexOf("img:") === 0; }
+      function notImg(k) { return !isImg(k); }
       // 雲端比較新的：抓下來寫進這台裝置
-      return chunks(pull, 25).reduce(function (p, part) {
+      return chunks(pull.filter(isImg), 3).concat(chunks(pull.filter(notImg), 25)).reduce(function (p, part) {
         return p.then(function () {
           var list = "(" + part.map(function (k) { return '"' + k.replace(/"/g, '\\"') + '"'; }).join(",") + ")";
           return sb.from("ink_pads").select("key,t,deleted,data").filter("key", "in", list).then(function (r) {
@@ -465,7 +468,7 @@
         });
       }, Promise.resolve()).then(function () {
         // 這台裝置比較新的：傳上去
-        return chunks(push, 8).reduce(function (p, part) {
+        return chunks(push.filter(isImg), 1).concat(chunks(push.filter(notImg), 8)).reduce(function (p, part) {
           return p.then(function () {
             return Promise.all(part.map(function (k) {
               if (local[k].del) return { user_id: uid, key: k, t: local[k].t, deleted: true, data: null };

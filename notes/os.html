@@ -201,11 +201,14 @@ mjx-container.mj-keep[jax] mjx-break { white-space: nowrap !important; }
 .ink-foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; padding: 8px 10px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.5; color: var(--muted); }
 .ink-pen { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
 .ink-pen input { width: 18px; height: 18px; margin: 0; accent-color: var(--ex); }
-.ink-snap { display: inline-flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
-.ink-snap label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
-.ink-snap input { width: 18px; height: 18px; margin: 0; accent-color: var(--ex); }
-.ink-snap select { min-height: 32px; padding: 0 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; }
-.ink-snap select:disabled { opacity: .45; }
+.ink-snap { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+.ink-snap input { width: 18px; height: 18px; margin: 0; flex: none; accent-color: var(--ex); }
+.ink-ins { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; padding: 10px; border-bottom: 1px solid var(--line); background: var(--card); }
+.ink-ins[hidden] { display: none; }
+.ink-ins button { display: grid; grid-template-columns: auto 1fr; column-gap: 9px; align-items: center; min-height: 54px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); font: 600 14px/1.3 var(--font-body); text-align: left; cursor: pointer; }
+.ink-ins button .ico { grid-row: 1 / span 2; width: 22px; height: 22px; }
+.ink-ins small { font: 400 12px/1.3 var(--font-body); color: var(--muted); }
+.ink-ins p { grid-column: 1 / -1; margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--muted); }
 
 /* 資料結構動畫 */
 .viz { margin: 20px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--card); overflow: hidden; }
@@ -12585,14 +12588,15 @@ lock(second.lock);</code></pre>
   paint();
 })();
 </script>
-<script src="assets/icons.js?v=1a5c59ea"></script>
-<script src="assets/inkdb.js?v=b9600460"></script>
-<script src="assets/ink.js?v=3b8c85a7"></script>
+<script src="assets/icons.js?v=3dda2cfd"></script>
+<script src="assets/inkdb.js?v=92b336ca"></script>
+<script src="assets/inkx.js?v=94e484db"></script>
+<script src="assets/ink.js?v=11f08978"></script>
 <script src="assets/viz.js?v=1e5c289a"></script>
 <script src="assets/glide.js?v=93f8e086"></script>
 <script src="assets/nav.js?v=b9cd7533"></script>
 <script src="assets/avatars.js?v=9ec06a79"></script>
 <script src="assets/supabase-config.js?v=c59adce0"></script>
-<script src="assets/sync.js?v=bf6786cd"></script>
+<script src="assets/sync.js?v=ec20ed5f"></script>
 </body>
 </html>

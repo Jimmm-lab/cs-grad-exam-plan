@@ -1,6 +1,7 @@
 /* 手寫筆跡的本機資料庫（IndexedDB：cgep-ink），手寫板和雲端同步共用。
  *
- * - pads：key「頁面:題目 id」→ { v, H, s（筆畫）, t（最後修改時間，毫秒） }
+ * - pads：key「頁面:題目 id」→ { v, H, s（筆畫）, o（插入的圖片和 .md 筆記）, t（最後修改時間，毫秒） }；
+ *   插入的圖片本身存成 key「img:id」→ { v, img: dataURL, w, h, t }，同一張圖只存一份
  * - meta：key → { t, del }。每一題最後修改的時間，清除的題目留下 del: true（同步時才知道要刪雲端那份）。
  *   同步只要比對 meta，不用把每一題的筆畫都讀出來。
  */
@@ -85,7 +86,7 @@ window.CGEP_INKDB = (function () {
       return run(["pads", "meta"], "readwrite", function (t) {
         keys.forEach(function (k) {
           var v = obj[k];
-          if (!v || !v.s) return;
+          if (!v || (!v.s && !v.o && !v.img)) return;          // 筆跡、插入的東西，或圖片本身
           if (!v.t) v.t = Date.now();
           t.objectStore("pads").put(v, k);
           t.objectStore("meta").put({ t: v.t, del: false }, k);

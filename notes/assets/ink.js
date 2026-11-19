@@ -10,12 +10,17 @@
  *   每種筆各自記住粗細和顏色（工具列的「● 數字」按鈕打開設定，有推薦色系和自訂顏色）。
  * - 「加長」一次多一段紙；「縮短」一次收回一段，但不會切到筆跡、也不會比原本短；兩個都可以「復原」。
  * - 「選取」：用筆圈起來（或直接點一筆）選取筆跡，拖框裡面移動、拖右下角的圓點縮放，也可以複製、刪除；都可以「復原」。
- * - 拉直線：畫一條線，筆尖在終點停住一下（預設 0.6 秒，紙下方可以調整或關掉），這一筆就變成筆直的線；
- *   還沒放開前可以繼續拖動調整方向和長度，接近水平、垂直、45° 時自動對齊。彎來彎去的筆畫（寫字、畫圈）不會被拉直。
+ * - 筆停住：畫完筆尖停住半秒（HOLD_MS，紙下方可以關掉），直線會拉直；圓、橢圓、三角形、矩形、多邊形換成標準的圖形（inkx.js 辨識）。
+ *   拉直線還沒放開前可以繼續拖動調整方向和長度，接近水平、垂直、45° 時自動對齊。寫字、小的圈圈不會被換掉。
+ * - 插入：圖片（相簿、檔案、貼上、拖進來）和 .md 筆記（排版成卡片）。放在筆跡下面，可以直接在上面寫字；
+ *   用「選取」移動、縮放、複製、刪除，橡皮擦不會擦到它們。
  *
  * 一筆的資料：{ p: [x, y, 壓力, ...], c: 顏色, sw: 粗細, t: 筆的種類, pen: 是否觸控筆, k: 縮放倒數 }
  *   c 是數字 0–3 時是會跟著深色模式變的黑紅藍綠（舊資料都是這種），字串則是固定的色碼。
  *   舊資料用 w（0–2，細中粗）代替 sw、沒有 t（＝鋼筆），照樣能畫。
+ * 一題的資料：{ v, H: 紙長, s: 筆畫, o: 插入的東西, t }；插入的東西是 { kind: "img", id, x, y, w, h } 或
+ *   { kind: "md", md: 原文, name: 檔名, x, y, w, h }。圖片本身另外存一筆「img:id」（{ v, img: dataURL, w, h, t }），
+ *   同一張圖只存一份，跟筆跡一樣同步。
  */
 (function () {
   "use strict";
@@ -30,7 +35,10 @@
   var COLOR_VARS = ["--pen-ink", "--pen-red", "--pen-blue", "--pen-green"];
   var LIGHT = ["#1a2130", "#d0343f", "#2d5fd3", "#2f7d3b"];   // 存成圖片時用白底配色
   var PREF_KEY = "cgep:ink:pref";
-  var SNAP_MS = [400, 600, 1000, 1500];   // 筆停住多久拉成直線（毫秒），預設 600
+  var HOLD_MS = 500;                  // 筆停住多久變成直線或標準圖形（毫秒）
+  var X = window.CGEP_INKX;           // inkx.js：圖形辨識、.md 卡片、圖片處理
+  var IMG_KEY = "img:";               // 圖片在資料庫裡的 key 開頭
+  var MD_W = X.MD_W;                  // .md 卡片排版的寬度（紙上的單位）
   var SAVED_LATER = "已存在這台裝置，稍後同步到雲端";   // 同步完成時把這句收掉
   // 筆的種類。粗細範圍是紙寬 1000 時的單位
   var PENS = {
@@ -100,6 +108,7 @@
 
   /* ---------- 觸控筆偵測 ---------- */
   var openPads = [];
+  var activePad = null;               // 最後碰過的手寫板：Ctrl＋V 貼上的圖片放到這一塊
   var lastPen = 0;
   function notePen() {
     lastPen = Date.now();
@@ -197,6 +206,109 @@
     for (i = 0; i < strokes.length; i++) if (strokes[i].t === "hl") drawStroke(ctx, strokes[i], pal);
     for (i = 0; i < strokes.length; i++) if (strokes[i].t !== "hl") drawStroke(ctx, strokes[i], pal);
   }
+  /* ---------- 插入的圖片和 .md 筆記 ---------- */
+  function isObj(o) { return !!(o && o.kind); }
+  // 圖片：第一次用到時從資料庫讀出來。state：load（讀取中）、ok、none（這台裝置還沒有這張圖）
+  var imgs = {};
+  function onImg(id) {
+    openPads.forEach(function (p) { if (p.objs.some(function (o) { return o.id === id; })) p.requestDraw(); });
+  }
+  function useImg(id, url) {
+    var e = imgs[id] = { im: new Image(), state: "load" };
+    e.im.onload = function () { e.state = "ok"; onImg(id); };
+    e.im.onerror = function () { e.state = "none"; onImg(id); };
+    e.im.src = url;
+    return e;
+  }
+  function imgOf(id) {
+    var e = imgs[id];
+    if (e) return e;
+    e = imgs[id] = { im: null, state: "load" };
+    store.get(IMG_KEY + id).then(function (v) {
+      if (imgs[id] !== e) return;
+      if (v && v.img) useImg(id, v.img); else { e.state = "none"; onImg(id); }
+    }).catch(function () { e.state = "none"; onImg(id); });
+    return e;
+  }
+  // .md 卡片：排版成圖要一點時間，先畫「排版中」，好了再重畫。依螢幕上需要的清晰度重排，最多留 6 張
+  var cards = [], cardJobs = {}, cardFail = {};
+  function cardKey(o, dark) { return (dark ? "d" : "l") + "\u0001" + (o.name || "") + "\u0001" + o.md; }
+  function cardF(f, lh) {
+    var want = Math.min(4, Math.pow(2, Math.ceil(Math.log(Math.max(0.25, f)) / Math.LN2)));
+    var cap = Math.sqrt(8e6 / (MD_W * Math.max(200, lh)));
+    while (want > 0.25 && want > cap) want /= 2;
+    return want;
+  }
+  function cardOf(o, dark, f) {
+    var key = cardKey(o, dark), best = null;
+    cards.forEach(function (c) { if (c.key === key && (!best || c.f > best.f)) best = c; });
+    if (best) best.t = Date.now();
+    var want = cardF(f, best ? best.lh : o.h * MD_W / o.w), job = key + "\u0001" + want;
+    if ((!best || best.f < want) && !cardJobs[job] && !cardFail[key]) {
+      cardJobs[job] = 1;
+      X.renderCard(o.md, o.name, dark, want).then(function (r) {
+        delete cardJobs[job];
+        cards = cards.filter(function (c) { return c.key !== key || c.f > want; });
+        cards.push({ key: key, f: want, cv: r.cv, lh: r.lh, t: Date.now() });
+        if (cards.length > 6) { cards.sort(function (a, b) { return b.t - a.t; }); cards.length = 6; }
+        openPads.forEach(function (p) { p.cardReady(key, r.lh); });
+      }, function () {
+        delete cardJobs[job];
+        cardFail[key] = 1;
+        openPads.forEach(function (p) { p.requestDraw(); });
+      });
+    }
+    return best;
+  }
+  function placeholder(ctx, o, text, light) {
+    ctx.save();
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = !light && darkNow ? "#232a36" : "#f3f4f6";
+    ctx.fillRect(o.x, o.y, o.w, o.h);
+    ctx.strokeStyle = "#9aa3b2"; ctx.lineWidth = 2; ctx.setLineDash([8, 6]);
+    ctx.strokeRect(o.x + 1, o.y + 1, Math.max(0, o.w - 2), Math.max(0, o.h - 2));
+    ctx.setLineDash([]);
+    ctx.fillStyle = !light && darkNow ? "#aab2c0" : "#5f6878";
+    ctx.font = "26px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(text, o.x + o.w / 2, o.y + Math.min(o.h / 2, 60), Math.max(40, o.w - 20));
+    ctx.restore();
+  }
+  // 插入的東西畫在筆跡下面（螢光筆也畫在它們上面，才能劃重點）
+  function drawObjs(ctx, objs, f, light) {
+    objs.forEach(function (o) {
+      if (o.kind === "img") {
+        var e = imgOf(o.id);
+        if (e.state === "ok") ctx.drawImage(e.im, o.x, o.y, o.w, o.h);
+        else placeholder(ctx, o, e.state === "load" ? "圖片載入中…" : "這張圖片還沒同步到這台裝置", light);
+      } else if (o.kind === "md") {
+        var dark = !light && darkNow, c = cardOf(o, dark, f);
+        if (c) ctx.drawImage(c.cv, o.x, o.y, o.w, o.w * c.lh / MD_W);
+        else placeholder(ctx, o, cardFail[cardKey(o, dark)] ? "這份 .md 排版失敗" : "正在排版 " + (o.name || ".md") + "…", light);
+      }
+    });
+  }
+  function drawObjHalo(ctx, objs, color, u) {
+    if (!objs.length) return;
+    ctx.save();
+    ctx.globalAlpha = darkNow ? 0.45 : 0.32; ctx.strokeStyle = color; ctx.lineWidth = 12 * u; ctx.lineJoin = "round";
+    objs.forEach(function (o) { ctx.strokeRect(o.x - 6 * u, o.y - 6 * u, o.w + 12 * u, o.h + 12 * u); });
+    ctx.restore();
+  }
+  // 圈選：九個取樣點（四角、四邊中點、中心）有五個以上在圈裡就算圈到
+  function objHits(objs, L) {
+    return objs.filter(function (o) {
+      var k = 0;
+      for (var i = 0; i <= 2; i++) for (var j = 0; j <= 2; j++) if (inPoly(o.x + o.w * i / 2, o.y + o.h * j / 2, L)) k++;
+      return k >= 5;
+    });
+  }
+  function objAt(objs, x, y) {
+    for (var i = objs.length - 1; i >= 0; i--) { var o = objs[i]; if (x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h) return o; }
+    return null;
+  }
+  function rectOf(o) { return { x: o.x, y: o.y, w: o.w, h: o.h }; }
+  function setRect(o, r) { o.x = r.x; o.y = r.y; o.w = r.w; o.h = r.h; }
+
   function distSeg(px, py, ax, ay, bx, by) {
     var dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy, t = 0;
     if (L > 0) t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / L));
@@ -279,7 +391,7 @@
   /* ---------- 一塊手寫板 ---------- */
   function Pad(wrap, key, toggle) {
     this.key = key; this.toggle = toggle;
-    this.strokes = []; this.hist = []; this.fut = [];
+    this.strokes = []; this.objs = []; this.hist = []; this.fut = [];
     this.H = DEFAULT_H; this.tool = "pen"; this.scale = 1; this.ratio = 1; this.ctx = null;
     this.z = 1; this.ox = 0; this.oy = 0; this.raf = 0;
     this.saveTimer = 0; this.persist = true;
@@ -297,9 +409,17 @@
         '<div class="ink-grp"><button type="button" data-act="undo" aria-label="復原" title="復原">' + I("undo") + '</button><button type="button" data-act="redo" aria-label="重做" title="重做">' + I("redo") + "</button></div>" +
         '<div class="ink-grp"><button type="button" data-act="zout" aria-label="縮小紙張" title="縮小">' + I("zoomOut") + '</button><button type="button" data-act="zreset" class="ink-zl" aria-label="恢復 100%" title="恢復 100%">100%</button><button type="button" data-act="zin" aria-label="放大紙張" title="放大">' + I("zoomIn") + "</button></div>" +
         '<div class="ink-grp"><button type="button" data-act="more" title="紙張加長一段">' + I("extend") + '<span>加長</span></button><button type="button" data-act="less" title="收回一段（不會切到筆跡）">' + I("shrink") + '<span>縮短</span></button></div>' +
-        '<div class="ink-grp"><button type="button" data-act="clear">' + I("trash") + '<span>清除</span></button><button type="button" data-act="png">' + I("image") + "<span>存成圖片</span></button></div>" +
+        '<div class="ink-grp"><button type="button" data-act="ins" aria-expanded="false" title="插入圖片或 .md 筆記">' + I("plus") + "<span>插入</span></button></div>" +
+        '<div class="ink-grp"><button type="button" data-act="clear">' + I("trash") + '<span>清除</span></button><button type="button" data-act="png">' + I("download") + "<span>存成圖片</span></button></div>" +
       "</div>" +
       '<div class="ink-cfg" hidden></div>' +
+      '<div class="ink-ins" hidden>' +
+        '<button type="button" data-ins="img">' + I("image") + "<span>圖片</span><small>從相簿或檔案選</small></button>" +
+        '<button type="button" data-ins="paste">' + I("paste") + "<span>貼上圖片</span><small>剛剛複製的圖片</small></button>" +
+        '<button type="button" data-ins="md">' + I("file") + "<span>.md 筆記</span><small>排版好放在紙上</small></button>" +
+        "<p>插入的東西放在筆跡下面，可以直接在上面寫字、劃重點；用「選取」點一下就能移動、縮放、刪除，橡皮擦不會擦到它們。電腦上也可以按 Ctrl＋V 貼上，或把圖片、.md 檔拖進紙裡。</p>" +
+        '<input type="file" accept="image/*" data-file="img" hidden><input type="file" data-file="md" hidden>' +
+      "</div>" +
 
       '<div class="ink-sheet"><canvas class="ink-canvas" aria-label="手寫區"></canvas>' +
         // 選取後浮在選取範圍旁邊的操作列（不放在紙的上方，免得紙被往下推、筆點歪）
@@ -310,9 +430,7 @@
       "</div>" +
       '<div class="ink-foot">' +
         '<label class="ink-pen"><input type="checkbox"> 觸控筆模式（只有筆會寫，一指拖曳是捲動）</label>' +
-        '<span class="ink-snap"><label><input type="checkbox" aria-label="畫線時筆停住一下會拉成直線"> 畫線時筆停住</label>' +
-          '<select aria-label="筆要停多久才拉成直線">' + SNAP_MS.map(function (ms) { return '<option value="' + ms + '">' + ms / 1000 + " 秒</option>"; }).join("") + "</select>" +
-          "<span>會拉成直線</span></span>" +
+        '<label class="ink-snap"><input type="checkbox"> 畫完筆停住半秒：直線拉直，圓、橢圓、三角形、矩形變成標準圖形</label>' +
         '<span class="ink-status" aria-live="polite"></span>' +
       "</div>";
     wrap.appendChild(panel);
@@ -320,11 +438,11 @@
     this.canvas = panel.querySelector("canvas");
     this.penBox = panel.querySelector(".ink-pen input");
     this.snapBox = panel.querySelector(".ink-snap input");
-    this.snapSel = panel.querySelector(".ink-snap select");
     this.statusEl = panel.querySelector(".ink-status");
     this.zLabel = panel.querySelector(".ink-zl");
     this.swBox = panel.querySelector(".ink-colors");
     this.cfgBox = panel.querySelector(".ink-cfg");
+    this.insBox = panel.querySelector(".ink-ins");
     this.selBar = panel.querySelector(".ink-selbar");
     this.sel = []; this.lasso = null; this.xf = null;
     this.bindTools();
@@ -345,7 +463,8 @@
   Pad.prototype.load = function () {
     var self = this;
     return store.get(this.key).then(function (v) {
-      if (v && v.s) { self.strokes = v.s; self.H = v.H || DEFAULT_H; }
+      if (v && (v.s || v.o)) { self.strokes = v.s || []; self.objs = v.o || []; self.H = v.H || DEFAULT_H; }
+      self.loaded = true;
       self.status("筆跡會自動存在這台裝置");
     }).catch(function () {
       self.persist = false;
@@ -426,19 +545,21 @@
     ctx.lineWidth = 1 / (this.scale * this.z);
     ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim() || "#e9ecf2";
     ctx.stroke();
-    var pal = palette(false), sel = this.sel, xf = this.xf, u = 1 / (this.scale * this.z);
-    // 正在圈：預覽會圈到的筆畫；圈好了：標出選到的筆畫
+    var pal = palette(false), sel = this.sel, xf = this.xf, u = 1 / (this.scale * this.z), f = this.ratio * this.scale * this.z;
+    // 正在圈：預覽會圈到的筆畫和插入的東西；圈好了：標出選到的
     var hot = this.lasso ? this.lassoPreview() : sel;
     var glow = hot.length ? getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#c42f3d" : "";
+    var hotS = hot.filter(function (x) { return !isObj(x); }), hotO = hot.filter(isObj);
     if (sel.length && xf) {
+      var move = function () { ctx.translate(xf.ox + xf.dx, xf.oy + xf.dy); ctx.scale(xf.s, xf.s); ctx.translate(-xf.ox, -xf.oy); };
+      drawObjs(ctx, this.objs.filter(function (o) { return sel.indexOf(o) < 0; }), f);
+      ctx.save(); move(); drawObjs(ctx, hotO, f * xf.s); drawObjHalo(ctx, hotO, glow, u / xf.s); ctx.restore();
       drawAll(ctx, this.strokes.filter(function (st) { return sel.indexOf(st) < 0; }), pal);
-      ctx.save();
-      ctx.translate(xf.ox + xf.dx, xf.oy + xf.dy); ctx.scale(xf.s, xf.s); ctx.translate(-xf.ox, -xf.oy);
-      drawHalo(ctx, sel, glow, u / xf.s);
-      drawAll(ctx, sel, pal);
-      ctx.restore();
+      ctx.save(); move(); drawHalo(ctx, hotS, glow, u / xf.s); drawAll(ctx, hotS, pal); ctx.restore();
     } else {
-      if (hot.length) drawHalo(ctx, hot, glow, u);
+      drawObjs(ctx, this.objs, f);
+      drawObjHalo(ctx, hotO, glow, u);
+      if (hotS.length) drawHalo(ctx, hotS, glow, u);
       drawAll(ctx, this.strokes, pal);
     }
     this.drawOverlay(ctx);
@@ -450,6 +571,10 @@
   Pad.prototype.selBox = function (moved) {
     var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     this.sel.forEach(function (st) {
+      if (isObj(st)) {
+        x0 = Math.min(x0, st.x); y0 = Math.min(y0, st.y); x1 = Math.max(x1, st.x + st.w); y1 = Math.max(y1, st.y + st.h);
+        return;
+      }
       var r = baseW(st) / 2;
       for (var i = 0; i < st.p.length; i += 3) {
         x0 = Math.min(x0, st.p[i] - r); x1 = Math.max(x1, st.p[i] + r);
@@ -486,10 +611,19 @@
     }
     ctx.restore();
   };
+  // 「3 筆、1 張圖、1 份筆記」
+  function selText(list) {
+    var ns = 0, ni = 0, nm = 0, out = [];
+    list.forEach(function (x) { if (!isObj(x)) ns++; else if (x.kind === "img") ni++; else nm++; });
+    if (ns) out.push(ns + " 筆");
+    if (ni) out.push(ni + " 張圖");
+    if (nm) out.push(nm + " 份筆記");
+    return out.join("、");
+  }
   Pad.prototype.setSel = function (list) {
     this.sel = list; this.xf = null;
     this.selBar.hidden = !list.length;
-    if (list.length) this.selBar.querySelector(".ink-selinfo").textContent = list.length + " 筆";
+    if (list.length) this.selBar.querySelector(".ink-selinfo").textContent = selText(list);
     this.requestDraw();
   };
   // 操作列放在選取範圍下面；下面放不下就放上面；拖曳時先藏起來
@@ -512,11 +646,11 @@
     if (!L || L.length < 6) return [];
     if (this.hitLen !== L.length) {
       if (now - (this.hitAt || 0) >= gap) {
-        this.hits = lassoHits(this.strokes, L); this.hitLen = L.length;
+        this.hits = lassoHits(this.strokes, L).concat(objHits(this.objs, L)); this.hitLen = L.length;
         this.hitAt = Date.now(); this.hitGap = Math.max(40, (this.hitAt - now) * 4);
         if (this.hits.length !== this.hitShown) {
           this.hitShown = this.hits.length;
-          this.status(this.hits.length ? "圈到 " + this.hits.length + " 筆（有光暈的），放開就選取" : "把要選的字圈起來：一筆有一半以上在圈裡就算圈到");
+          this.status(this.hits.length ? "圈到 " + selText(this.hits) + "（有光暈的），放開就選取" : "把要選的字圈起來：一筆有一半以上在圈裡就算圈到");
         }
       } else if (!this.hitTimer) {
         this.hitTimer = setTimeout(function () { self.hitTimer = 0; self.requestDraw(); }, gap - (now - (this.hitAt || 0)) + 5);
@@ -536,29 +670,37 @@
     }
     var tiny = !L || L.length < 6 || (w < 12 / this.z && h < 12 / this.z);
     if (tiny && L) {
+      // 點一下：先找筆跡，沒有的話選手指下面最上層的圖片或筆記
       for (var i = this.strokes.length - 1; i >= 0; i--) if (near(this.strokes[i], L[0], L[1], 10 / this.z + baseW(this.strokes[i]) / 2)) { found = [this.strokes[i]]; break; }
+      if (!found.length) { var o = objAt(this.objs, L[0], L[1]); if (o) found = [o]; }
     } else if (L) {
-      found = lassoHits(this.strokes, L);
+      found = lassoHits(this.strokes, L).concat(objHits(this.objs, L));
     }
     this.setSel(found);
-    this.status(found.length ? "選到 " + found.length + " 筆（有光暈的就是）：拖框裡面可以移動，拖右下角的圓點可以縮放" : "沒有選到筆跡：用筆把要選的字圈起來，或直接點一下那一筆");
+    this.status(found.length ? "選到 " + selText(found) + "（有光暈的就是）：拖框裡面可以移動，拖右下角的圓點可以縮放" : "沒有選到東西：用筆把要選的字圈起來，或直接點一下那一筆、那張圖");
   };
   // 放開時把位移、縮放真的寫進筆畫（可以復原）
   Pad.prototype.commitXf = function () {
     var xf = this.xf;
     this.xf = null;
     if (!xf || (Math.abs(xf.dx) < 0.5 && Math.abs(xf.dy) < 0.5 && Math.abs(xf.s - 1) < 0.005)) { this.requestDraw(); return; }
-    var items = this.sel.map(function (st) {
+    function r10(v) { return Math.round(v * 10) / 10; }
+    var items = this.sel.filter(function (x) { return !isObj(x); }).map(function (st) {
       var it = { s: st, p0: st.p.slice(), sw0: st.sw };
       for (var i = 0; i < st.p.length; i += 3) {
-        st.p[i] = Math.round((xf.ox + (st.p[i] - xf.ox) * xf.s + xf.dx) * 10) / 10;
-        st.p[i + 1] = Math.round((xf.oy + (st.p[i + 1] - xf.oy) * xf.s + xf.dy) * 10) / 10;
+        st.p[i] = r10(xf.ox + (st.p[i] - xf.ox) * xf.s + xf.dx);
+        st.p[i + 1] = r10(xf.oy + (st.p[i + 1] - xf.oy) * xf.s + xf.dy);
       }
       if (xf.s !== 1) st.sw = Math.round((st.sw != null ? st.sw : SIZES[st.w] || SIZES[1]) * xf.s * 100) / 100;
       it.p1 = st.p.slice(); it.sw1 = st.sw;
       return it;
     });
-    this.push({ t: "xf", items: items });
+    var objs = this.sel.filter(isObj).map(function (o) {
+      var r0 = rectOf(o);
+      setRect(o, { x: r10(xf.ox + (o.x - xf.ox) * xf.s + xf.dx), y: r10(xf.oy + (o.y - xf.oy) * xf.s + xf.dy), w: r10(o.w * xf.s), h: r10(o.h * xf.s) });
+      return { o: o, r0: r0, r1: rectOf(o) };
+    });
+    this.push({ t: "xf", items: items, objs: objs });
     this.redraw();
   };
   Pad.prototype.dupSel = function () {
@@ -568,24 +710,140 @@
     if (b.y1 + off > this.H) off = -30;
     var copies = this.sel.map(function (st) {
       var c = JSON.parse(JSON.stringify(st));
+      if (isObj(c)) { c.x += 30; c.y += off; self.objs.push(c); return c; }
       for (var i = 0; i < c.p.length; i += 3) { c.p[i] += 30; c.p[i + 1] += off; }
       self.strokes.push(c);
       return c;
     });
-    this.push({ t: "dup", items: copies });
+    this.push({ t: "dup", items: copies.filter(function (x) { return !isObj(x); }), objs: copies.filter(isObj) });
     this.setSel(copies);
     this.status("已複製，可以拖到想放的位置");
   };
   Pad.prototype.delSel = function () {
     if (!this.sel.length) return;
-    var removed = [];
-    for (var i = this.strokes.length - 1; i >= 0; i--) {
+    var removed = [], gone = [], i;
+    for (i = this.strokes.length - 1; i >= 0; i--) {
       if (this.sel.indexOf(this.strokes[i]) >= 0) { removed.push([i, this.strokes[i]]); this.strokes.splice(i, 1); }
     }
+    for (i = this.objs.length - 1; i >= 0; i--) {
+      if (this.sel.indexOf(this.objs[i]) >= 0) { gone.push([i, this.objs[i]]); this.objs.splice(i, 1); }
+    }
     this.setSel([]);
-    this.push({ t: "del", items: removed });
+    this.push({ t: "del", items: removed, objs: gone });
     this.redraw();
-    this.status("已刪除選取的筆跡（可以按「復原」救回來）");
+    this.status("已刪除選取的東西（可以按「復原」救回來）");
+  };
+
+  /* ---------- 插入圖片和 .md 筆記 ---------- */
+  // 紙上「現在看得到的地方」的最上面（頁面頂端有固定的標題列，留 70px）
+  Pad.prototype.visibleTop = function () {
+    var r = this.canvas.getBoundingClientRect(), s = this.scale * this.z;
+    return clamp(this.oy + Math.max(0, 70 - r.top) / s, 0, this.H);
+  };
+  // 放到紙上：太長就縮小、紙不夠長就自動加長；插入後直接選取，馬上可以移動、縮放
+  // 會跟已經插入的圖片、筆記重疊的話，往下移到它們的下面
+  Pad.prototype.freeY = function (x, y, w, h) {
+    for (var moved = true, n = 0; moved && n < 60; n++) {
+      moved = false;
+      for (var i = 0; i < this.objs.length; i++) {
+        var o = this.objs[i];
+        if (x < o.x + o.w && x + w > o.x && y < o.y + o.h && y + h > o.y) { y = Math.round(o.y + o.h + 20); moved = true; }
+      }
+    }
+    return y;
+  };
+  Pad.prototype.addObj = function (o, note) {
+    var H0 = this.H;
+    if (o.h > MAX_H - 40) { var s = (MAX_H - 40) / o.h; o.w = Math.round(o.w * s); o.h = Math.round(o.h * s); o.x = Math.round((W - o.w) / 2); }
+    o.y = this.freeY(o.x, o.y, o.w, o.h);
+    if (o.y + o.h > MAX_H - 20) o.y = Math.max(20, MAX_H - 20 - o.h);
+    var need = Math.ceil((o.y + o.h + 40) / GRID) * GRID;
+    if (need > this.H) this.setH(Math.min(MAX_H, need));
+    this.objs.push(o);
+    this.push({ t: "addO", o: o, from: H0, to: this.H });
+    this.tool = "select";
+    this.openIns(false);
+    this.setSel([o]);
+    this.syncTools();
+    this.status(note);
+    // 放在畫面下方看不到的地方時，把頁面捲過去
+    var r = this.canvas.getBoundingClientRect(), top = r.top + (o.y - this.oy) * this.scale * this.z;
+    if (top > window.innerHeight - 120 || top < 60) window.scrollBy({ top: top - 120, behavior: "smooth" });
+  };
+  // .md 排好之後才知道真正的高度：更新卡片的高度，超出紙的話把紙加長（太長就縮小卡片）
+  Pad.prototype.cardReady = function (key, lh) {
+    var self = this, grew = false;
+    this.objs.forEach(function (o) {
+      if (o.kind !== "md" || (cardKey(o, false) !== key && cardKey(o, true) !== key)) return;
+      var h = Math.round(o.w * lh / MD_W * 10) / 10;
+      if (o.y + h > MAX_H - 10) {
+        var s = Math.max(0.3, (MAX_H - 10 - o.y) / h);
+        o.w = Math.round(o.w * s); h = Math.round(h * s * 10) / 10;
+      }
+      if (Math.abs(h - o.h) > 0.5) { o.h = h; grew = true; }
+    });
+    var need = 0;
+    this.objs.forEach(function (o) { need = Math.max(need, o.y + o.h + 40); });
+    need = Math.min(MAX_H, Math.ceil(need / GRID) * GRID);
+    if (need > this.H) { this.setH(need); grew = true; }
+    if (grew && this.loaded) this.changed();
+    this.requestDraw();
+    if (this.sel.length) this.placeSelBar();
+  };
+  Pad.prototype.insertImage = function (blob) {
+    var self = this;
+    if (!blob || !/^image\//.test(blob.type || "")) { this.status("這不是圖片檔"); return Promise.resolve(); }
+    this.status("正在處理圖片…");
+    return X.prepImage(blob).then(function (r) {
+      useImg(r.id, r.url);
+      return store.get(IMG_KEY + r.id).catch(function () { return null; }).then(function (v) {
+        if (v && v.img) return r;
+        return store.put(IMG_KEY + r.id, { v: 1, img: r.url, w: r.w, h: r.h, t: Date.now() }).then(function () { return r; });
+      });
+    }).then(function (r) {
+      var w = clamp(r.w, 200, 900), h = w * r.h / r.w;
+      if (h > 1100) { h = 1100; w = h * r.w / r.h; }
+      self.addObj({ kind: "img", id: r.id, x: Math.round((W - w) / 2), y: Math.round(self.visibleTop() + 20), w: Math.round(w), h: Math.round(h) },
+        "已插入圖片：拖框裡面可以移動，拖右下角的圓點可以縮放；不要的話按「刪除」");
+    }).catch(function () { self.status("這張圖片讀不出來，或這個瀏覽器不能存圖片（例如無痕模式）"); });
+  };
+  Pad.prototype.insertMd = function (file) {
+    var self = this;
+    if (file.size > 300000) { this.status("這個檔案太大（超過 300 KB），請分成幾個小一點的 .md"); return Promise.resolve(); }
+    return file.text().then(function (txt) {
+      if (/\u0000/.test(txt)) throw new Error("binary");
+      var name = file.name || "筆記.md", h = Math.min(MAX_H - 60, X.guessCardH(txt));
+      self.addObj({ kind: "md", md: txt, name: name, x: Math.round((W - MD_W) / 2), y: Math.round(self.visibleTop() + 20), w: MD_W, h: h },
+        "已插入 " + name + "：可以直接在上面寫字、劃重點；用「選取」點一下就能移動、縮放、刪除");
+    }).catch(function () { self.status("讀不出這個檔案：請選 .md 或 .txt 的文字檔"); });
+  };
+  Pad.prototype.insertFiles = function (files) {
+    var self = this;
+    Array.prototype.forEach.call(files || [], function (f) {
+      if (/^image\//.test(f.type)) self.insertImage(f);
+      else if (/\.(md|markdown|txt)$/i.test(f.name || "") || /^text\//.test(f.type)) self.insertMd(f);
+      else self.status("只能插入圖片，或 .md、.txt 的文字檔");
+    });
+  };
+  // 手機上沒有 Ctrl＋V：按鈕直接讀剪貼簿（瀏覽器會問要不要允許）
+  Pad.prototype.pasteClipboard = function () {
+    var self = this;
+    if (!navigator.clipboard || !navigator.clipboard.read) {
+      this.status("這個瀏覽器不讓網頁讀剪貼簿：請改按「圖片」從相簿選；電腦上可以直接按 Ctrl＋V");
+      return Promise.resolve();
+    }
+    return navigator.clipboard.read().then(function (items) {
+      for (var i = 0; i < items.length; i++) {
+        var t = items[i].types.filter(function (x) { return /^image\//.test(x); })[0];
+        if (t) return items[i].getType(t).then(function (b) { return self.insertImage(b.type ? b : new Blob([b], { type: t })); });
+      }
+      self.status("剪貼簿裡沒有圖片：先在別的地方「複製圖片」，再按一次「貼上圖片」");
+    }).catch(function () { self.status("沒辦法讀剪貼簿（可能沒有允許）：請改按「圖片」從相簿選"); });
+  };
+  Pad.prototype.openIns = function (open) {
+    this.insBox.hidden = !open;
+    if (open && !this.cfgBox.hidden) this.cfgBox.hidden = true;
+    this.syncTools();
   };
 
   Pad.prototype.status = function (t) { this.statusEl.textContent = t; };
@@ -603,6 +861,7 @@
     }).join("") +
       '<button type="button" class="ink-cur" data-act="cfg" aria-expanded="' + !this.cfgBox.hidden + '" aria-label="' + PENS[tp].name + "的粗細和顏色" + '" title="粗細和顏色">' +
       '<i style="width:' + dot + "px;height:" + dot + "px;background:" + swatchCss(cfg.c) + (tp === "hl" ? ";opacity:.6" : "") + '"></i><b>' + cfg.sw + "</b></button>";
+    this.panel.querySelector('[data-act="ins"]').setAttribute("aria-expanded", String(!this.insBox.hidden));
     this.panel.querySelector('[data-act="undo"]').disabled = !this.hist.length;
     this.panel.querySelector('[data-act="redo"]').disabled = !this.fut.length;
     this.panel.querySelector('[data-act="more"]').disabled = this.H >= MAX_H;
@@ -613,6 +872,7 @@
   // 粗細和顏色的設定（套用在現在選的那種筆）
   Pad.prototype.openCfg = function (open) {
     this.cfgBox.hidden = !open;
+    if (open && !this.insBox.hidden) this.insBox.hidden = true;
     if (open) this.renderCfg();
     this.syncTools();
   };
@@ -662,13 +922,8 @@
     drawStroke(x, s, palette(false));
   };
   Pad.prototype.syncPenOnly = function () { this.penBox.checked = pref.penOnly === true; };
-  // 拉直線的設定：pref.snapOff＝關掉，pref.snapMs＝筆要停多久
-  function snapMs() { return SNAP_MS.indexOf(pref.snapMs) >= 0 ? pref.snapMs : 600; }
-  Pad.prototype.syncSnap = function () {
-    this.snapBox.checked = pref.snapOff !== true;
-    this.snapSel.value = String(snapMs());
-    this.snapSel.disabled = pref.snapOff === true;
-  };
+  // 筆停住變直線、標準圖形的開關：pref.snapOff＝關掉（停多久是固定的 HOLD_MS）
+  Pad.prototype.syncSnap = function () { this.snapBox.checked = pref.snapOff !== true; };
 
   Pad.prototype.bindTools = function () {
     var self = this;
@@ -683,6 +938,7 @@
       }
       else if (b.dataset.color != null) { setPenCfg({ c: parseColor(b.dataset.color) }); self.tool = "pen"; syncAll(); }
       else if (a === "cfg") { self.tool = "pen"; self.openCfg(self.cfgBox.hidden); return; }
+      else if (a === "ins") { activePad = self; self.openIns(self.insBox.hidden); return; }
       else if (a === "undo") self.undo();
       else if (a === "redo") self.redo();
       else if (a === "zin") self.zoomBy(1.5);
@@ -732,9 +988,21 @@
       pref.snapOff = !self.snapBox.checked; savePref();
       openPads.forEach(function (p) { p.syncSnap(); });
     });
-    this.snapSel.addEventListener("change", function () {
-      pref.snapMs = +self.snapSel.value; savePref();
-      openPads.forEach(function (p) { p.syncSnap(); });
+    // 插入：三個按鈕（圖片、貼上、.md）；選好檔案就放到紙上
+    this.insBox.addEventListener("click", function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      activePad = self;
+      if (b.dataset.ins === "img") self.insBox.querySelector('[data-file="img"]').click();
+      else if (b.dataset.ins === "md") self.insBox.querySelector('[data-file="md"]').click();
+      else if (b.dataset.ins === "paste") self.pasteClipboard();
+    });
+    this.insBox.querySelectorAll("input[type=file]").forEach(function (inp) {
+      inp.addEventListener("change", function () {
+        var files = Array.prototype.slice.call(inp.files || []);
+        inp.value = "";
+        files.forEach(function (f) { if (inp.dataset.file === "img") self.insertImage(f); else self.insertMd(f); });
+      });
     });
   };
 
@@ -763,39 +1031,43 @@
       self.syncZoom();
     }
 
-    /* 拉直線：畫線時筆尖停住 snapMs() 毫秒，這一筆就變成從起點到筆尖的直線 */
+    /* 筆停住：筆尖停住 HOLD_MS 毫秒，直線拉成筆直的線（還可以拖動終點）；
+       圓、橢圓、三角形、矩形、多邊形換成標準的圖形（inkx.js 的 fitShape 判斷，寫字和小圈圈不會被換掉） */
     function r1(v) { return Math.round(v * 10) / 10; }
     // 筆尖移動超過 4 個螢幕像素才算「還在畫」，重新計時（停住時的手抖不算移動）
     function holdFrom(a, e) {
       a.hx = e.clientX; a.hy = e.clientY; a.hi = a.s.p.length / 3;
       clearTimeout(a.timer);
-      if (pref.snapOff !== true) a.timer = setTimeout(function () { straighten(a); }, snapMs());
+      if (pref.snapOff !== true) a.timer = setTimeout(function () { snapShape(a); }, HOLD_MS);
     }
-    function straighten(a) {
-      if (act !== a || a.straight) return;
+    function snapShape(a) {
+      if (act !== a || a.straight || a.shaped) return;
       var p = a.s.p, n = p.length / 3, k = self.scale * self.z;   // 紙上 1 單位在螢幕上是 k 像素
       if (n < 2) return;
       var m = Math.max(2, Math.min(a.hi, n));                      // 只看停住以前畫的點
-      var x0 = p[0], y0 = p[1], xe = p[3 * m - 3], ye = p[3 * m - 2];
-      var C = Math.hypot(xe - x0, ye - y0);
-      if (C * k < 16) return;                                     // 太短：一個點或短短一撇
-      var len = 0, dev = 0, prs = [];
-      for (var i = 0; i < m; i++) {
-        prs.push(p[3 * i + 2]);
-        if (i) len += Math.hypot(p[3 * i] - p[3 * i - 3], p[3 * i + 1] - p[3 * i - 2]);
-        dev = Math.max(dev, distSeg(p[3 * i], p[3 * i + 1], x0, y0, xe, ye));
-      }
-      // 寫字、畫圈、波浪線：路徑比起點到終點的距離長很多，或離那條直線太遠，就不拉直
-      if (len > C * 1.2 || dev > C * 0.15 + 4 / k) return;
+      var f = X.fitShape(p, m, k);
+      if (!f) return;
+      var prs = [];
+      for (var i = 0; i < m; i++) prs.push(p[3 * i + 2]);
       prs.sort(function (u, v) { return u - v; });
-      a.straight = { x: x0, y: y0, pr: prs[prs.length >> 1] };    // 粗細用這一筆壓力的中位數
-      lineTo(a, p[3 * n - 3], p[3 * n - 2]);
-      self.requestDraw();
-      var seen = pref.snapTip || 0;
-      if (seen < 3) {
-        pref.snapTip = seen + 1; savePref();
-        self.status("拉成直線了：還沒放開前可以拖動調整方向和長度，接近水平、垂直、45° 會自動對齊");
+      var pr = prs[prs.length >> 1];                               // 粗細用這一筆壓力的中位數
+      if (f.kind === "line") {
+        a.straight = { x: p[0], y: p[1], pr: pr };
+        lineTo(a, p[3 * n - 3], p[3 * n - 2]);
+        var seen = pref.snapTip || 0;
+        if (seen < 3) {
+          pref.snapTip = seen + 1; savePref();
+          self.status("拉成直線了：還沒放開前可以拖動調整方向和長度，接近水平、垂直、45° 會自動對齊");
+        }
+      } else {
+        // 圖形定下來之後，放開前筆再怎麼動都不會改變它
+        a.shaped = true;
+        var pts = X.shapePoints(f, 6), out = [];
+        for (i = 0; i < pts.length; i += 2) out.push(r1(pts[i]), r1(pts[i + 1]), pr);
+        a.s.p = out;
+        self.status("變成" + (X.SHAPE_NAME[f.name] || "標準圖形") + "了（不要的話按「復原」）");
       }
+      self.requestDraw();
     }
     // 直線的終點跟著筆尖；接近水平、垂直（5° 以內）或 45°（3° 以內）就對齊
     function lineTo(a, x1, y1) {
@@ -814,6 +1086,7 @@
 
     c.addEventListener("pointerdown", function (e) {
       if (!self.ctx) return;
+      activePad = self;
       var isPen = e.pointerType === "pen";
       if (isPen) notePen();
       if (e.pointerType === "touch") {
@@ -908,6 +1181,7 @@
         self.requestDraw();
         return;
       }
+      if (act.mode === "draw" && act.shaped) return;
       if (act.mode === "draw" && act.straight) {
         // 已經拉成直線：終點跟著筆尖，整張重畫（之前一段一段畫上去的彎線要清掉）
         var qe = pos(e);
@@ -945,7 +1219,7 @@
       self.busy = false;
       if (a.mode === "draw") {
         clearTimeout(a.timer);
-        if (a.straight || a.s.t === "hl") self.requestDraw();
+        if (a.straight || a.shaped || a.s.t === "hl") self.requestDraw();
         else if (a.s.p.length === 3) drawStroke(self.ctx, a.s, a.pal);
         else { setColor(self.ctx, a.s, a.pal); tail(self.ctx, a.s); self.ctx.globalAlpha = 1; }
         self.push({ t: "add", s: a.s });
@@ -960,6 +1234,16 @@
     c.addEventListener("pointerup", end);
     c.addEventListener("pointercancel", end);
     c.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    // 電腦上把圖片、.md 檔拖進紙裡
+    c.addEventListener("dragover", function (e) {
+      if (e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0) { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }
+    });
+    c.addEventListener("drop", function (e) {
+      if (!e.dataTransfer || !e.dataTransfer.files || !e.dataTransfer.files.length) return;
+      e.preventDefault();
+      activePad = self;
+      self.insertFiles(e.dataTransfer.files);
+    });
     c.addEventListener("wheel", function (e) {
       if (e.ctrlKey) {
         e.preventDefault();
@@ -988,32 +1272,49 @@
     var h = this.hist.pop();
     if (!h) return;
     if (this.sel.length) this.setSel([]);
-    if (h.t === "add") this.strokes.splice(this.strokes.lastIndexOf(h.s), 1);
-    else if (h.t === "del") for (var i = h.items.length - 1; i >= 0; i--) this.strokes.splice(h.items[i][0], 0, h.items[i][1]);
-    else if (h.t === "clear") this.strokes = h.items.slice();
+    var st = this.strokes, ob = this.objs, i;
+    function drop(list, x) { var at = list.indexOf(x); if (at >= 0) list.splice(at, 1); }
+    if (h.t === "add") st.splice(st.lastIndexOf(h.s), 1);
+    else if (h.t === "addO") { drop(ob, h.o); if (h.from !== h.to) this.setH(h.from); }
+    else if (h.t === "del") {
+      for (i = h.items.length - 1; i >= 0; i--) st.splice(h.items[i][0], 0, h.items[i][1]);
+      for (i = (h.objs || []).length - 1; i >= 0; i--) ob.splice(h.objs[i][0], 0, h.objs[i][1]);
+    }
+    else if (h.t === "clear") { this.strokes = h.items.slice(); this.objs = (h.objs || []).slice(); }
     else if (h.t === "h") this.setH(h.from);
-    else if (h.t === "xf") h.items.forEach(function (it) { it.s.p = it.p0.slice(); if (it.sw0 == null) delete it.s.sw; else it.s.sw = it.sw0; });
-    else if (h.t === "dup") { var st = this.strokes; h.items.forEach(function (c) { var at = st.indexOf(c); if (at >= 0) st.splice(at, 1); }); }
+    else if (h.t === "xf") {
+      h.items.forEach(function (it) { it.s.p = it.p0.slice(); if (it.sw0 == null) delete it.s.sw; else it.s.sw = it.sw0; });
+      (h.objs || []).forEach(function (it) { setRect(it.o, it.r0); });
+    }
+    else if (h.t === "dup") { h.items.forEach(function (c) { drop(st, c); }); (h.objs || []).forEach(function (c) { drop(ob, c); }); }
     this.fut.push(h); this.redraw(); this.changed();
   };
   Pad.prototype.redo = function () {
     var h = this.fut.pop();
     if (!h) return;
     if (this.sel.length) this.setSel([]);
-    if (h.t === "add") this.strokes.push(h.s);
-    else if (h.t === "del") for (var i = 0; i < h.items.length; i++) this.strokes.splice(h.items[i][0], 1);
-    else if (h.t === "clear") this.strokes = [];
+    var st = this.strokes, ob = this.objs, i;
+    if (h.t === "add") st.push(h.s);
+    else if (h.t === "addO") { ob.push(h.o); if (h.from !== h.to) this.setH(h.to); }
+    else if (h.t === "del") {
+      for (i = 0; i < h.items.length; i++) st.splice(h.items[i][0], 1);
+      for (i = 0; i < (h.objs || []).length; i++) ob.splice(h.objs[i][0], 1);
+    }
+    else if (h.t === "clear") { this.strokes = []; this.objs = []; }
     else if (h.t === "h") this.setH(h.to);
-    else if (h.t === "xf") h.items.forEach(function (it) { it.s.p = it.p1.slice(); if (it.sw1 == null) delete it.s.sw; else it.s.sw = it.sw1; });
-    else if (h.t === "dup") { var st = this.strokes; h.items.forEach(function (c) { st.push(c); }); }
+    else if (h.t === "xf") {
+      h.items.forEach(function (it) { it.s.p = it.p1.slice(); if (it.sw1 == null) delete it.s.sw; else it.s.sw = it.sw1; });
+      (h.objs || []).forEach(function (it) { setRect(it.o, it.r1); });
+    }
+    else if (h.t === "dup") { h.items.forEach(function (c) { st.push(c); }); (h.objs || []).forEach(function (c) { ob.push(c); }); }
     this.hist.push(h); this.redraw(); this.changed();
   };
   Pad.prototype.clear = function () {
-    if (!this.strokes.length) return;
-    if (!window.confirm("清除這一題的所有筆跡？（清除後還可以按「復原」救回來）")) return;
+    if (!this.strokes.length && !this.objs.length) return;
+    if (!window.confirm(this.objs.length ? "清除這一題的所有筆跡、圖片和筆記？（清除後還可以按「復原」救回來）" : "清除這一題的所有筆跡？（清除後還可以按「復原」救回來）")) return;
     if (this.sel.length) this.setSel([]);
-    this.hist.push({ t: "clear", items: this.strokes.slice() });
-    this.fut = []; this.strokes = []; this.redraw(); this.changed();
+    this.hist.push({ t: "clear", items: this.strokes.slice(), objs: this.objs.slice() });
+    this.fut = []; this.strokes = []; this.objs = []; this.redraw(); this.changed();
   };
   /* 紙張長度：加長一次多 600；縮短一次收回 600，但停在最後一筆的下面、不會比原本的 900 短。都可以復原 */
   Pad.prototype.setH = function (h) { this.H = h; this.clampView(); this.layout(); };
@@ -1023,6 +1324,7 @@
       var r = baseW(s) / 2;
       for (var i = 1; i < s.p.length; i += 3) if (s.p[i] + r > maxY) maxY = s.p[i] + r;
     });
+    this.objs.forEach(function (o) { maxY = Math.max(maxY, o.y + o.h); });
     return Math.max(DEFAULT_H, Math.ceil((maxY + 40) / GRID) * GRID);
   };
   Pad.prototype.extend = function () {
@@ -1035,7 +1337,7 @@
   Pad.prototype.shrink = function () {
     var from = this.H, to = Math.max(from - STEP_H, this.minH());
     if (to >= from) {
-      this.status(from <= DEFAULT_H ? "已經是原本的長度了" : "下面還有筆跡，先把最下面的字擦掉才能再縮短");
+      this.status(from <= DEFAULT_H ? "已經是原本的長度了" : "下面還有筆跡或插入的東西，先擦掉或移上來才能再縮短");
       return;
     }
     this.setH(to);
@@ -1043,34 +1345,51 @@
     this.status(to > from - STEP_H ? "縮短到最後一筆的下面（再往上會切到筆跡）" : to <= DEFAULT_H ? "回到原本的長度了" : "收回了一段");
   };
 
+  Pad.prototype.hasInk = function () { return this.strokes.length > 0 || this.objs.length > 0; };
   Pad.prototype.changed = function () {
     var self = this;
     this.syncTools();
-    markToggle(this.toggle, this.strokes.length > 0);
+    markToggle(this.toggle, this.hasInk());
     if (!this.persist) return;
     clearTimeout(this.saveTimer);
     this.saveTimer = setTimeout(function () {
-      var job = self.strokes.length
-        ? store.put(self.key, { v: 1, H: self.H, s: self.strokes, t: Date.now() })
-        : store.del(self.key);
+      var data = { v: 1, H: self.H, s: self.strokes, t: Date.now() };
+      if (self.objs.length) data.o = self.objs;
+      var job = self.hasInk() ? store.put(self.key, data) : store.del(self.key);
       job.then(function () { self.status(window.CGEP_SYNC && CGEP_SYNC.signedIn() ? SAVED_LATER : "已存在這台裝置"); askPersist(); })
          .catch(function () { self.status("儲存失敗：瀏覽器的儲存空間可能滿了"); });
     }, 400);
   };
 
+  // 存成圖片：白底、淺色的墨水；.md 卡片用淺色重新排一次
   Pad.prototype.png = function () {
-    if (!this.strokes.length) { this.status("還沒有筆跡"); return; }
-    var maxY = 0;
+    var self = this;
+    if (!this.hasInk()) { this.status("還沒有筆跡"); return; }
+    var maxY = 0, k = 1.4;
     this.strokes.forEach(function (s) { for (var i = 1; i < s.p.length; i += 3) maxY = Math.max(maxY, s.p[i]); });
-    var h = Math.min(this.H, Math.ceil(maxY + 60)), k = 1.4;
-    var cv = document.createElement("canvas");
-    cv.width = Math.round(W * k); cv.height = Math.round(h * k);
-    var x = cv.getContext("2d");
-    x.fillStyle = "#ffffff"; x.fillRect(0, 0, cv.width, cv.height);
-    x.setTransform(k, 0, 0, k, 0, 0);
-    drawAll(x, this.strokes, palette(true));
-    var name = this.key.replace(/[^\w-]+/g, "_") + ".png";
-    cv.toBlob(function (b) { if (b) download(name, b); }, "image/png");
+    this.objs.forEach(function (o) { maxY = Math.max(maxY, o.y + o.h); });
+    var h = Math.min(this.H, Math.ceil(maxY + 60));
+    var jobs = this.objs.filter(function (o) { return o.kind === "md"; }).map(function (o) {
+      return X.renderCard(o.md, o.name, false, k * o.w / MD_W).then(function (r) { return [o, r]; }, function () { return [o, null]; });
+    });
+    if (jobs.length) this.status("正在產生圖片…");
+    Promise.all(jobs).then(function (done) {
+      var cv = document.createElement("canvas");
+      cv.width = Math.round(W * k); cv.height = Math.round(h * k);
+      var x = cv.getContext("2d");
+      x.fillStyle = "#ffffff"; x.fillRect(0, 0, cv.width, cv.height);
+      x.setTransform(k, 0, 0, k, 0, 0);
+      self.objs.forEach(function (o) {
+        if (o.kind === "img") { var e = imgOf(o.id); if (e.state === "ok") x.drawImage(e.im, o.x, o.y, o.w, o.h); return; }
+        var d = done.filter(function (q) { return q[0] === o; })[0];
+        if (d && d[1]) x.drawImage(d[1].cv, o.x, o.y, o.w, o.w * d[1].lh / MD_W);
+      });
+      drawAll(x, self.strokes, palette(true));
+      var name = self.key.replace(/[^\w-]+/g, "_") + ".png";
+      try {
+        cv.toBlob(function (b) { if (b) { download(name, b); if (jobs.length) self.status("已存成圖片"); } }, "image/png");
+      } catch (e) { self.status("這個瀏覽器不能把 .md 筆記一起存成圖片"); }
+    });
   };
 
   function syncAll() { openPads.forEach(function (p) { p.syncTools(); }); }
@@ -1097,6 +1416,7 @@
       if (first) { pad = new Pad(wrap, key, toggle); openPads.push(pad); padsByKey[key] = pad; }
       var open = pad.panel.hidden;
       pad.panel.hidden = !open;
+      if (open) activePad = pad;
       toggle.setAttribute("aria-expanded", String(open));
       if (open && first) pad.load();
       else if (open) pad.layout();
@@ -1113,7 +1433,7 @@
   };
   var remapKeys = {};
   if (REMAP[SLUG]) REMAP[SLUG].moves.forEach(function (m) { remapKeys[SLUG + ":" + m[0]] = remapKeys[SLUG + ":" + m[1]] = 1; });
-  function inked(v) { return !!(v && v.s && v.s.length); }
+  function inked(v) { return !!(v && ((v.s && v.s.length) || (v.o && v.o.length))); }
   // 兩塊筆跡疊成一塊：top 原本的在上面，add 接在它下面
   function stackPads(top, add) {
     var dy = top.H || DEFAULT_H;
@@ -1164,7 +1484,8 @@
         var pad = padsByKey[k];
         if (!pad || pad.busy) return;
         if (pad.sel.length) pad.setSel([]);
-        pad.strokes = has ? v.s : [];
+        pad.strokes = has ? v.s || [] : [];
+        pad.objs = has ? v.o || [] : [];
         pad.H = (v && v.H) || DEFAULT_H;
         pad.hist = []; pad.fut = [];
         pad.layout(); pad.syncTools();
@@ -1180,6 +1501,13 @@
   // 雲端同步拉下比較新的筆跡（別台裝置還沒搬過的舊筆跡，拉下來之後也在這裡搬）
   document.addEventListener("cgep:ink-remote", function (e) {
     var keys = e.detail.keys || [];
+    // 剛下載的圖片：之前顯示「還沒同步」的重新讀一次
+    keys.forEach(function (k) {
+      if (k.indexOf(IMG_KEY) !== 0) return;
+      var id = k.slice(IMG_KEY.length);
+      if (imgs[id] && imgs[id].state !== "ok") { delete imgs[id]; onImg(id); }
+    });
+    keys = keys.filter(function (k) { return k.indexOf(IMG_KEY) !== 0; });
     refresh(keys, "已載入雲端上比較新的筆跡");
     if (keys.some(function (k) { return remapKeys[k]; })) {
       remap().then(function (moved) { if (moved.length) refresh(moved, "筆跡已搬回正確的題目"); });
@@ -1191,6 +1519,46 @@
       var p = padsByKey[k];
       if (p && p.statusEl.textContent === SAVED_LATER) p.status("");
     });
+    gcImages();
+  });
+  setTimeout(function () { if (!(window.CGEP_SYNC && CGEP_SYNC.signedIn && CGEP_SYNC.signedIn())) gcImages(); }, 10000);
+
+  // 沒有任何一題用到、而且放了一週以上的圖片，從這台裝置（和雲端）刪掉。
+  // 同步完才檢查（別台裝置新加的題目已經下載了），每次開頁面最多一次；還能「復原」回來的也算用到
+  var gcDone = false;
+  function gcImages() {
+    if (gcDone) return;
+    gcDone = true;
+    store.dump().then(function (all) {
+      var used = {}, now = Date.now();
+      function mark(o) { if (o && o.kind === "img") used[o.id] = 1; }
+      Object.keys(all).forEach(function (k) { var v = all[k]; if (v && v.o) v.o.forEach(mark); });
+      openPads.forEach(function (p) {
+        p.objs.forEach(mark);
+        p.hist.concat(p.fut).forEach(function (h) {
+          mark(h.o);
+          (h.objs || []).forEach(function (it) { mark(Array.isArray(it) ? it[1] : it.o || it); });
+        });
+      });
+      Object.keys(all).forEach(function (k) {
+        if (k.indexOf(IMG_KEY) !== 0 || used[k.slice(IMG_KEY.length)]) return;
+        if (now - ((all[k] && all[k].t) || now) > 7 * 864e5) DB.remove(k, now);
+      });
+    }).catch(function () {});
+  }
+
+  // 電腦上按 Ctrl＋V：剪貼簿裡的圖片放到最後碰過的那一塊手寫板（正在輸入文字時不攔）
+  document.addEventListener("paste", function (e) {
+    var p = activePad, t = e.target;
+    if (!p || p.panel.hidden || !e.clipboardData) return;
+    if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+    var files = [];
+    Array.prototype.forEach.call(e.clipboardData.items || [], function (it) {
+      if (it.kind === "file" && /^image\//.test(it.type)) { var f = it.getAsFile(); if (f) files.push(f); }
+    });
+    if (!files.length) return;
+    e.preventDefault();
+    files.forEach(function (f) { p.insertImage(f); });
   });
 
   if (window.matchMedia) {
