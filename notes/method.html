@@ -178,6 +178,11 @@ mjx-container.mj-keep[jax] mjx-break { white-space: nowrap !important; }
 .ink-selbar { position: absolute; z-index: 3; left: 0; top: 0; display: flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); box-shadow: 0 6px 18px rgba(10, 15, 30, .18); transition: opacity .12s; }
 .ink-selbar[hidden] { display: none; }
 .ink-selbar.dragging { opacity: 0; pointer-events: none; }
+.ink-selbar.away { visibility: hidden; }
+/* 紙比一個畫面長時，右邊的細條表示捲到哪裡（捲動時比較明顯） */
+.ink-thumb { position: absolute; z-index: 2; top: 0; right: 2px; width: 5px; border-radius: 3px; background: var(--muted); opacity: .3; pointer-events: none; transition: opacity .25s; }
+.ink-thumb.on { opacity: .65; }
+.ink-thumb[hidden] { display: none; }
 .ink-selinfo { padding: 0 6px; font: 700 12.5px/1 var(--font-body); color: var(--muted); white-space: nowrap; }
 .ink-selbar button { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; min-width: 36px; justify-content: center; padding: 0 9px; border-radius: 7px; border: 0; background: none; color: var(--ink); font: 500 13px/1 var(--font-body); white-space: nowrap; cursor: pointer; }
 .ink-selbar button:hover { background: var(--paper); }
@@ -771,6 +776,7 @@ window.MathJax = {
 <li><strong>筆停住變標準圖形</strong>：畫完之後，筆尖在終點<strong>停住不動半秒</strong>（筆不要離開螢幕）。<strong>直線</strong>會拉直，還沒放開前可以繼續拖動調整方向和長度，接近水平、垂直或 45° 時會自動對齊；<strong>圓、橢圓、三角形、長方形、正方形、五邊形、六邊形</strong>會變成標準的圖形。寫字、小的圈圈（例如字母 o）、波浪線、8 字形不會被換掉。換錯了就按「復原」；不想要這個功能，可以在「更多」裡關掉。</li>
 <li><strong>縮放</strong>：兩指捏合放大縮小，兩指拖曳移動紙張；也可以用紙下面的放大鏡。放大時寫的字，線條粗細看起來跟 100% 時一樣，適合在小格子裡寫細節。</li>
 <li><strong>紙不夠寫</strong>：按紙下面的「加長」，每次多一段；用不到就按「縮短」收回，不會切到筆跡。</li>
+<li><strong>長的紙在裡面捲動</strong>：紙在畫面上最多一個畫面高，工具列和紙下面那排一直看得到；比較長的紙（或很長的筆記）在紙裡面上下捲動：觸控筆模式用一根手指拖（放開後會再滑一段，捲到底就接著捲頁面），沒有觸控筆的話用兩根手指拖，電腦用滾輪。紙右邊的細條表示現在捲到哪裡。</li>
 </ul>
 <p><strong>修改</strong></p>
 <ul>
@@ -781,7 +787,7 @@ window.MathJax = {
 <p><strong>插入圖片和 .md 筆記</strong>（工具列的「插入」）</p>
 <ul>
 <li><strong>圖片</strong>：從相簿或檔案選；在別的 App「複製圖片」之後，按「貼上圖片」（瀏覽器會問要不要允許讀剪貼簿）；電腦上可以直接按 Ctrl＋V，或把圖片拖進紙裡。圖片會縮到最長邊 1600 像素再存，同一張圖只存一份，跟筆跡一樣會同步到別台裝置。</li>
-<li><strong>.md 筆記</strong>：檔案會排版成一張筆記卡片：標題、清單、待辦、表格、程式碼、引用、數學式（用 <code>$…$</code>、<code>$$…$$</code> 寫的）都會排好，放大紙張時會重新排得很清楚。筆記太長時紙會自動加長，最長大約 7 個螢幕高，再長的話卡片會縮小；建議一份筆記只放一個主題。</li>
+<li><strong>.md 筆記</strong>：檔案會排版成一張筆記卡片：標題、清單、待辦、表格、程式碼、引用、數學式（用 <code>$…$</code>、<code>$$…$$</code> 寫的）都會排好，放大紙張時會重新排得很清楚。筆記再長也會完整放上去、字不會縮小：紙會加長到剛好放得下，在紙裡面捲動閱讀（頁面不會被撐長）。只有超過大約 25 個手機畫面的筆記才會整張縮小，這時建議拆成幾個檔案。</li>
 <li>插入的東西都放在筆跡下面，可以直接在上面寫字、劃重點；用「選取」點一下就能移動、縮放、刪除。</li>
 </ul>
 <p><strong>存檔和備份</strong></p>
@@ -1073,8 +1079,8 @@ window.MathJax = {
 </script>
 <script src="assets/icons.js?v=86315811"></script>
 <script src="assets/inkdb.js?v=92b336ca"></script>
-<script src="assets/inkx.js?v=94e484db"></script>
-<script src="assets/ink.js?v=35d98aef"></script>
+<script src="assets/inkx.js?v=8a570941"></script>
+<script src="assets/ink.js?v=918f689b"></script>
 <script src="assets/viz.js?v=1e5c289a"></script>
 <script src="assets/glide.js?v=93f8e086"></script>
 <script src="assets/nav.js?v=b9cd7533"></script>

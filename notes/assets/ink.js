@@ -6,7 +6,10 @@
  *   快速選色、粗細（打開筆的設定），和復原、重做。「插入」「更多」「筆的設定」是工具列下面展開的面板，一次只開一個。
  *   「更多」裡面是存成圖片、清除，和觸控筆模式、筆停住的開關。紙的下面一排是縮放和加長、縮短。
  * - 提示訊息在畫面下方短暫出現（不佔紙的位置）；操作說明同一種最多出現 TIP_MAX 次，錯誤每次都會出現。
+ * - 紙在畫面上最多一個視窗高（capH），更長的紙在裡面捲動：畫布只有看得到的那一塊大，捲動是改 oy；
+ *   觸控筆模式一指拖（會慣性滑行、捲到底接著捲頁面）、兩指拖、滾輪。右邊細條表示捲到哪裡。
  * - 紙可以縮放：兩指捏合／拖曳、紙下面的放大縮小鈕、電腦上 Ctrl＋滾輪。
+ * - .md 卡片分段畫（每段 TILE_PX 像素高），只畫看得到的段，很長的筆記也不會縮小或切掉（最長 MAX_H）。
  * - 存在這台裝置瀏覽器的 IndexedDB（notes/assets/inkdb.js），key 是「頁面:題目 id」。
  *   側欄可以把全部筆跡匯出成一個 JSON 檔，換裝置時再匯入；登入 Supabase 後會自動同步（sync.js）。
  * - 觸控筆模式：只有筆會寫字，一指拖曳是捲動頁面（第一次偵測到觸控筆時自動開啟）。
@@ -34,7 +37,7 @@
   var I = window.CGEP_ICON || function () { return ""; };
   var SLUG = document.body.getAttribute("data-slug") || location.pathname;
   var W = 1000;                       // 紙的邏輯寬度
-  var DEFAULT_H = 900, STEP_H = 600, MAX_H = 6000;
+  var DEFAULT_H = 900, STEP_H = 600, MAX_H = 60000;   // 紙在畫面上最多一個視窗高，更長的在裡面捲動
   var GRID = 50, ZMAX = 4;
   var SIZES = [3.5, 6, 10];           // 舊資料的細、中、粗（邏輯單位，縮放 100% 時）
   var COLOR_VARS = ["--pen-ink", "--pen-red", "--pen-blue", "--pen-green"];
@@ -246,35 +249,101 @@
     }).catch(function () { e.state = "none"; onImg(id); });
     return e;
   }
-  // .md 卡片：排版成圖要一點時間，先畫「排版中」，好了再重畫。依螢幕上需要的清晰度重排，最多留 6 張
-  var cards = [], cardJobs = {}, cardFail = {};
+  /* .md 卡片：先排版（X.layoutCard：量好高度、轉成 XHTML，最多留 4 份），再一段一段畫成小圖
+     （每段 TILE_PX 像素高，X.drawCard）。只畫紙上看得到的那幾段，很長的筆記也不用一次產生超大的圖；
+     放大時換成更清楚的一級。小圖總共最多 TILE_BUDGET 像素，最久沒用的先丟 */
+  var TILE_PX = 1024, TILE_BUDGET = 16e6;
+  var lays = {}, layKeys = [], tiles = [], tileJobs = {}, tileQueue = [], tileBusy = 0;
   function cardKey(o, dark) { return (dark ? "d" : "l") + "\u0001" + (o.name || "") + "\u0001" + o.md; }
-  function cardF(f, lh) {
-    var want = Math.min(4, Math.pow(2, Math.ceil(Math.log(Math.max(0.25, f)) / Math.LN2)));
-    var cap = Math.sqrt(8e6 / (MD_W * Math.max(200, lh)));
-    while (want > 0.25 && want > cap) want /= 2;
-    return want;
-  }
-  function cardOf(o, dark, f) {
-    var key = cardKey(o, dark), best = null;
-    cards.forEach(function (c) { if (c.key === key && (!best || c.f > best.f)) best = c; });
-    if (best) best.t = Date.now();
-    var want = cardF(f, best ? best.lh : o.h * MD_W / o.w), job = key + "\u0001" + want;
-    if ((!best || best.f < want) && !cardJobs[job] && !cardFail[key]) {
-      cardJobs[job] = 1;
-      X.renderCard(o.md, o.name, dark, want).then(function (r) {
-        delete cardJobs[job];
-        cards = cards.filter(function (c) { return c.key !== key || c.f > want; });
-        cards.push({ key: key, f: want, cv: r.cv, lh: r.lh, t: Date.now() });
-        if (cards.length > 6) { cards.sort(function (a, b) { return b.t - a.t; }); cards.length = 6; }
-        openPads.forEach(function (p) { p.cardReady(key, r.lh); });
-      }, function () {
-        delete cardJobs[job];
-        cardFail[key] = 1;
-        openPads.forEach(function (p) { p.requestDraw(); });
-      });
+  // 清晰度：每個卡片單位幾個像素，取 2 的次方（0.25–4），縮放時才不會一直重畫
+  function cardF(x) { return Math.min(4, Math.max(0.25, Math.pow(2, Math.ceil(Math.log(Math.max(0.25, x)) / Math.LN2)))); }
+  function layOf(o, dark) {
+    var key = cardKey(o, dark), e = lays[key];
+    if (e) { e.t = Date.now(); return e; }
+    e = lays[key] = { t: Date.now(), lay: null, fail: false };
+    layKeys.push(key);
+    while (layKeys.length > 4) {
+      layKeys.sort(function (a, b) { return lays[a].t - lays[b].t; });
+      delete lays[layKeys.shift()];
     }
-    return best;
+    X.layoutCard(o.md, o.name, dark).then(function (lay) {
+      e.lay = lay;
+      openPads.forEach(function (p) { p.cardReady(key, lay.lh); });
+    }, function () {
+      e.fail = true;
+      openPads.forEach(function (p) { p.requestDraw(); });
+    });
+    return e;
+  }
+  X.debugTiles = function (i) { return tiles.filter(function (t) { return i == null || t.i === i; }).map(function (t) { return i == null ? [t.f, t.i, t.cv.width, t.cv.height] : t.cv; }); };   // 測試用
+  function tileFind(key, f, i) {
+    for (var k = 0; k < tiles.length; k++) { var t = tiles[k]; if (t.key === key && t.f === f && t.i === i) return t; }
+    return null;
+  }
+  // 要畫的段排隊（最新要的先畫，最多同時兩張）；捲很快時，太舊的排隊直接丟掉
+  function tileWant(key, lay, f, i) {
+    var id = key + "\u0001" + f + "\u0001" + i;
+    if (tileJobs[id]) return;
+    tileJobs[id] = 1;
+    tileQueue.push({ id: id, key: key, lay: lay, f: f, i: i });
+    while (tileQueue.length > 10) delete tileJobs[tileQueue.shift().id];
+    tilePump();
+  }
+  function tilePump() {
+    while (tileBusy < 2 && tileQueue.length) {
+      var j = tileQueue.pop();
+      tileBusy++;
+      (function (j) {
+        var th = TILE_PX / j.f, y0 = j.i * th, h = Math.min(th, j.lay.lh - y0);
+        X.drawCard(j.lay, j.f, y0, h).then(function (cv) {
+          tiles.push({ key: j.key, f: j.f, i: j.i, cv: cv, px: cv.width * cv.height, t: Date.now() });
+          trimTiles();
+        }, function () {}).then(function () {
+          delete tileJobs[j.id];
+          tileBusy--;
+          tilePump();
+          openPads.forEach(function (p) { p.requestDraw(); });
+        });
+      })(j);
+    }
+  }
+  function trimTiles() {
+    var sum = 0;
+    tiles.forEach(function (t) { sum += t.px; });
+    if (sum <= TILE_BUDGET) return;
+    tiles.sort(function (a, b) { return b.t - a.t; });
+    var keep = [], used = 0;
+    tiles.forEach(function (t) { if (used + t.px <= TILE_BUDGET || keep.length < 3) { keep.push(t); used += t.px; } });
+    tiles = keep;
+  }
+  // 畫一張 .md 卡片看得到的部分；f＝每個紙單位幾個螢幕像素，vis＝要畫的紙上範圍（沒給就整張）
+  function drawMd(ctx, o, f, light, vis) {
+    var dark = !light && darkNow, e = layOf(o, dark), key = cardKey(o, dark);
+    if (!e.lay) { placeholder(ctx, o, e.fail ? "這份 .md 排版失敗" : "正在排版 " + (o.name || ".md") + "…", light); return; }
+    var lay = e.lay, u = o.w / MD_W, hh = lay.lh * u;
+    var y0 = vis ? Math.max(o.y, vis.y0) : o.y, y1 = vis ? Math.min(o.y + hh, vis.y1) : o.y + hh;
+    if (y1 <= y0) return;
+    var ff = cardF(f * u), th = TILE_PX / ff, now = Date.now();
+    var a = Math.max(0, Math.floor((y0 - o.y) / u / th)), b = Math.floor(((y1 - o.y) / u - 1e-6) / th);
+    for (var i = a; i <= b; i++) {
+      var c0 = i * th, c1 = Math.min(lay.lh, c0 + th), t = tileFind(key, ff, i);
+      if (t) { t.t = now; ctx.drawImage(t.cv, o.x, o.y + c0 * u, o.w, (c1 - c0) * u); continue; }
+      tileWant(key, lay, ff, i);
+      // 這一段還沒畫好：先用別的清晰度畫好的頂著，都沒有就先塗卡片的底色
+      ctx.save();
+      ctx.beginPath(); ctx.rect(o.x, o.y + c0 * u, o.w, (c1 - c0) * u); ctx.clip();
+      var alt = tiles.filter(function (q) { var q0 = q.i * TILE_PX / q.f; return q.key === key && q.f !== ff && q0 < c1 && q0 + TILE_PX / q.f > c0; });
+      if (alt.length) {
+        alt.sort(function (p, q) { return p.f - q.f; }).forEach(function (q) {
+          var q0 = q.i * TILE_PX / q.f, q1 = Math.min(lay.lh, q0 + TILE_PX / q.f);
+          ctx.drawImage(q.cv, o.x, o.y + q0 * u, o.w, (q1 - q0) * u);
+        });
+      } else {
+        ctx.fillStyle = dark ? "#1c2330" : "#fffdf7";
+        ctx.fillRect(o.x, o.y + c0 * u, o.w, (c1 - c0) * u);
+      }
+      ctx.restore();
+    }
   }
   function placeholder(ctx, o, text, light) {
     ctx.save();
@@ -289,17 +358,16 @@
     ctx.fillText(text, o.x + o.w / 2, o.y + Math.min(o.h / 2, 60), Math.max(40, o.w - 20));
     ctx.restore();
   }
-  // 插入的東西畫在筆跡下面（螢光筆也畫在它們上面，才能劃重點）
-  function drawObjs(ctx, objs, f, light) {
+  // 插入的東西畫在筆跡下面（螢光筆也畫在它們上面，才能劃重點）；vis＝看得到的紙上範圍，外面的不畫
+  function drawObjs(ctx, objs, f, light, vis) {
     objs.forEach(function (o) {
+      if (vis && (o.y > vis.y1 || o.y + o.h < vis.y0) && o.kind === "img") return;
       if (o.kind === "img") {
         var e = imgOf(o.id);
         if (e.state === "ok") ctx.drawImage(e.im, o.x, o.y, o.w, o.h);
         else placeholder(ctx, o, e.state === "load" ? "圖片載入中…" : "這張圖片還沒同步到這台裝置", light);
       } else if (o.kind === "md") {
-        var dark = !light && darkNow, c = cardOf(o, dark, f);
-        if (c) ctx.drawImage(c.cv, o.x, o.y, o.w, o.w * c.lh / MD_W);
-        else placeholder(ctx, o, cardFail[cardKey(o, dark)] ? "這份 .md 排版失敗" : "正在排版 " + (o.name || ".md") + "…", light);
+        drawMd(ctx, o, f, light, vis);
       }
     });
   }
@@ -492,7 +560,8 @@
         "</div>" +
       "</div>" +
 
-      '<div class="ink-sheet"><canvas class="ink-canvas" aria-label="手寫區"></canvas>' +
+      // 畫布只有看得到的那一塊大；紙比較長時用 oy 在裡面捲動，右邊的細條是捲到哪裡
+      '<div class="ink-sheet"><canvas class="ink-canvas" aria-label="手寫區"></canvas><div class="ink-thumb" hidden></div>' +
         // 選取後浮在選取範圍旁邊的操作列（不放在紙的上方，免得紙被往下推、筆點歪）
         '<div class="ink-selbar" role="toolbar" aria-label="選取的筆跡" hidden><span class="ink-selinfo"></span>' +
           '<button type="button" data-sel="dup">' + I("copy") + "<span>複製</span></button>" +
@@ -516,6 +585,8 @@
     this.insBox = panel.querySelector(".ink-ins");
     this.menuBox = panel.querySelector(".ink-menu");
     this.selBar = panel.querySelector(".ink-selbar");
+    this.thumb = panel.querySelector(".ink-thumb");
+    panel.inkPad = this;                 // 測試和除錯用
     this.sel = []; this.lasso = null; this.xf = null;
     this.bindTools();
     this.bindPointer();
@@ -543,13 +614,15 @@
     }).then(function () { self.layout(); });
   };
 
+  /* 畫布只有「看得到的那一塊」大：寬是紙寬，高是 min(整張紙, capH())。
+     紙比較長時在裡面捲動（改 oy），頁面不會被撐長，工具列和紙下面那排也一直在畫面上 */
   Pad.prototype.layout = function () {
     var cssW = this.sheet.clientWidth;
     if (!cssW) return;
     this.scale = cssW / W;
-    var cssH = Math.round(this.H * this.scale);
-    var r = Math.min(window.devicePixelRatio || 1, 2.5);
-    while (cssW * cssH * r * r > 16e6 && r > 1) r -= 0.25;
+    var cssH = this.viewH = Math.max(1, Math.min(Math.round(this.H * this.scale), this.capH()));
+    var r = Math.min(window.devicePixelRatio || 1, 3);
+    while (cssW * cssH * r * r > 12e6 && r > 1) r -= 0.25;
     this.ratio = r;
     var c = this.canvas;
     c.style.height = cssH + "px";
@@ -560,12 +633,74 @@
     this.redraw();
     this.syncZoom();
   };
+  // 紙的可視高度上限：畫面高度扣掉網站標題列、工具列、紙下面那排，三個加起來剛好一個畫面。
+  // 手機網址列收合時畫面高度會變，所以只在寬度變了（轉橫、換裝置）才重算，免得紙一直跳
+  Pad.prototype.capH = function () {
+    if (!this.cap || this.capW !== window.innerWidth) {
+      this.capW = window.innerWidth;
+      var hdr = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--hdr")) || 56;
+      var tools = this.panel.querySelector(".ink-tools").offsetHeight || 107, foot = this.panel.querySelector(".ink-foot").offsetHeight || 47;
+      this.cap = Math.max(240, Math.round(window.innerHeight - hdr - tools - foot - 24));
+    }
+    return this.cap;
+  };
 
-  /* 縮放：畫面顯示紙上 (ox, oy) 開始、寬 W/z、高 H/z 的範圍 */
+  /* 檢視範圍：畫布顯示紙上 (ox, oy) 開始、寬 W/z、高 viewH/(scale·z) 的範圍（縮放和捲動都是改這個） */
   Pad.prototype.clampView = function () {
     this.z = clamp(this.z, 1, ZMAX);
+    var s = this.scale * this.z, vh = this.viewH || this.H * this.scale;
     this.ox = clamp(this.ox, 0, W - W / this.z);
-    this.oy = clamp(this.oy, 0, this.H - this.H / this.z);
+    this.oy = clamp(this.oy, 0, Math.max(0, this.H - vh / s));
+  };
+  Pad.prototype.visRange = function () {
+    var s = this.scale * this.z;
+    return { y0: this.oy, y1: this.oy + (this.viewH || 0) / s };
+  };
+  // 捲動紙張 dy 個螢幕像素（往下為正）；chain＝紙捲到底了，剩下的交給頁面捲
+  Pad.prototype.scrollPaper = function (dy, chain) {
+    var s = this.scale * this.z, before = this.oy;
+    this.oy += dy / s;
+    this.clampView();
+    var used = (this.oy - before) * s;
+    if (this.oy !== before) { this.requestDraw(); this.syncThumb(true); }
+    if (chain && Math.abs(dy - used) > 0.5) window.scrollBy(0, dy - used);
+    return used;
+  };
+  // 手指放開後繼續滑一段（越來越慢）；v 是每毫秒幾個像素
+  Pad.prototype.fling = function (v) {
+    var self = this, last = 0;
+    cancelAnimationFrame(this.flingRaf);
+    if (!(Math.abs(v) > 0.08)) return;
+    v = clamp(v, -6, 6);
+    function step(t) {
+      var dt = last ? Math.min(32, t - last) : 16;
+      last = t;
+      self.scrollPaper(v * dt, true);
+      v *= Math.pow(0.996, dt);
+      if (Math.abs(v) > 0.03) self.flingRaf = requestAnimationFrame(step);
+    }
+    this.flingRaf = requestAnimationFrame(step);
+  };
+  // 右邊的細條：紙比較長時才出現，捲動時比較明顯
+  Pad.prototype.syncThumb = function (active) {
+    var t = this.thumb, s = this.scale * this.z, total = this.H * s, vh = this.viewH || 0;
+    if (!vh || total <= vh + 1) { t.hidden = true; return; }
+    t.hidden = false;
+    var h = Math.max(32, vh * vh / total), top = this.oy * s / (total - vh) * (vh - h);
+    t.style.height = Math.round(h) + "px";
+    t.style.transform = "translateY(" + Math.round(top) + "px)";
+    if (active) {
+      t.classList.add("on");
+      clearTimeout(this.thumbT);
+      this.thumbT = setTimeout(function () { t.classList.remove("on"); }, 900);
+    }
+  };
+  // 讓紙上的 y 出現在看得到的地方（紙裡面捲過去；整塊紙不在畫面上的話，頁面也捲過去）
+  Pad.prototype.reveal = function (y) {
+    var s = this.scale * this.z, vis = this.viewH / s;
+    if (y < this.oy || y > this.oy + vis * 0.75) { this.oy = y - vis * 0.1; this.clampView(); this.requestDraw(); }
+    var r = this.canvas.getBoundingClientRect(), top = r.top + (y - this.oy) * s;
+    if (top > window.innerHeight - 120 || top < 60) window.scrollBy({ top: top - 120, behavior: "smooth" });
   };
   Pad.prototype.toLogical = function (cx, cy) {
     var r = this.canvas.getBoundingClientRect(), s = this.scale * this.z;
@@ -608,8 +743,8 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.setView();
-    // 方格線畫在紙上，縮放時跟著放大
-    var x1 = this.ox + W / this.z, y1 = this.oy + this.H / this.z, x, y;
+    // 方格線畫在紙上，縮放時跟著放大（只畫看得到的範圍）
+    var vr = this.visRange(), x1 = this.ox + W / this.z, y1 = vr.y1, x, y;
     ctx.beginPath();
     for (x = Math.ceil(this.ox / GRID) * GRID; x <= x1; x += GRID) { ctx.moveTo(x, this.oy); ctx.lineTo(x, y1); }
     for (y = Math.ceil(this.oy / GRID) * GRID; y <= y1; y += GRID) { ctx.moveTo(this.ox, y); ctx.lineTo(x1, y); }
@@ -621,20 +756,25 @@
     var hot = this.lasso ? this.lassoPreview() : sel;
     var glow = hot.length ? getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#c42f3d" : "";
     var hotS = hot.filter(function (x) { return !isObj(x); }), hotO = hot.filter(isObj);
+    // .md 卡片只畫看得到的那幾段（上下多畫半個畫面，捲動時比較快出現）
+    var pre = (vr.y1 - vr.y0) / 2, vis = { y0: vr.y0 - pre, y1: vr.y1 + pre };
     if (sel.length && xf) {
       var move = function () { ctx.translate(xf.ox + xf.dx, xf.oy + xf.dy); ctx.scale(xf.s, xf.s); ctx.translate(-xf.ox, -xf.oy); };
-      drawObjs(ctx, this.objs.filter(function (o) { return sel.indexOf(o) < 0; }), f);
-      ctx.save(); move(); drawObjs(ctx, hotO, f * xf.s); drawObjHalo(ctx, hotO, glow, u / xf.s); ctx.restore();
+      // 拖曳中的東西：把看得到的範圍換回移動前的座標
+      var visT = { y0: xf.oy + (vis.y0 - xf.oy - xf.dy) / xf.s, y1: xf.oy + (vis.y1 - xf.oy - xf.dy) / xf.s };
+      drawObjs(ctx, this.objs.filter(function (o) { return sel.indexOf(o) < 0; }), f, false, vis);
+      ctx.save(); move(); drawObjs(ctx, hotO, f * xf.s, false, visT); drawObjHalo(ctx, hotO, glow, u / xf.s); ctx.restore();
       drawAll(ctx, this.strokes.filter(function (st) { return sel.indexOf(st) < 0; }), pal);
       ctx.save(); move(); drawHalo(ctx, hotS, glow, u / xf.s); drawAll(ctx, hotS, pal); ctx.restore();
     } else {
-      drawObjs(ctx, this.objs, f);
+      drawObjs(ctx, this.objs, f, false, vis);
       drawObjHalo(ctx, hotO, glow, u);
       if (hotS.length) drawHalo(ctx, hotS, glow, u);
       drawAll(ctx, this.strokes, pal);
     }
     this.drawOverlay(ctx);
     if (this.sel.length) this.placeSelBar();
+    this.syncThumb();
   };
 
   /* ---------- 選取：圈選、移動、縮放、複製、刪除 ---------- */
@@ -704,6 +844,8 @@
     bar.classList.toggle("dragging", !!this.xf);
     var b = this.selBox(true), k = this.scale * this.z;
     var bw = bar.offsetWidth, bh = bar.offsetHeight, sw = this.sheet.clientWidth, sh = this.canvas.clientHeight;
+    // 選取的東西捲出看得到的範圍時，操作列先藏起來
+    bar.classList.toggle("away", (b.y1 - this.oy) * k < 0 || (b.y0 - this.oy) * k > sh);
     var left = (b.x0 - this.ox) * k, top = (b.y1 - this.oy) * k + 10;
     if (top + bh > sh - 4) top = (b.y0 - this.oy) * k - bh - 10;
     bar.style.left = clamp(left, 4, Math.max(4, sw - bw - 4)) + "px";
@@ -837,32 +979,46 @@
     var need = Math.ceil((o.y + o.h + 40) / GRID) * GRID;
     if (need > this.H) this.setH(Math.min(MAX_H, need));
     this.objs.push(o);
-    this.push({ t: "addO", o: o, from: H0, to: this.H });
+    var h = { t: "addO", o: o, from: H0, to: this.H };
+    this.push(h);
+    // .md 的高度是先估的（通常估太高）：排版好之後，cardReady 把多加長的紙收回來
+    if (o.kind === "md" && this.H > H0) this.insGuess = { o: o, h: h, from: H0 };
     this.tool = "select";
     this.openPop(null);
     this.setSel([o]);
     this.syncTools();
     this.hint(tip, note, short);
-    // 放在畫面下方看不到的地方時，把頁面捲過去
-    var r = this.canvas.getBoundingClientRect(), top = r.top + (o.y - this.oy) * this.scale * this.z;
-    if (top > window.innerHeight - 120 || top < 60) window.scrollBy({ top: top - 120, behavior: "smooth" });
+    this.reveal(o.y);                    // 放在看不到的地方時，紙（和頁面）捲過去
   };
-  // .md 排好之後才知道真正的高度：更新卡片的高度，超出紙的話把紙加長（太長就縮小卡片）
+  // .md 排好之後才知道真正的高度：更新卡片的高度，超出紙的話把紙加長。
+  // 紙最長 MAX_H（大約 25 個手機畫面）；連這樣都放不下才把整張卡片縮小放進去，絕不切掉
   Pad.prototype.cardReady = function (key, lh) {
-    var self = this, grew = false;
+    var self = this, grew = false, shrunk = false;
     this.objs.forEach(function (o) {
       if (o.kind !== "md" || (cardKey(o, false) !== key && cardKey(o, true) !== key)) return;
       var h = Math.round(o.w * lh / MD_W * 10) / 10;
       if (o.y + h > MAX_H - 10) {
-        var s = Math.max(0.3, (MAX_H - 10 - o.y) / h);
-        o.w = Math.round(o.w * s); h = Math.round(h * s * 10) / 10;
+        if (h > MAX_H - 30) o.y = 20;
+        else o.y = Math.min(o.y, MAX_H - 10 - h);
+        if (o.y + h > MAX_H - 10) {
+          var s = (MAX_H - 10 - o.y) / h;
+          o.w = Math.round(o.w * s); o.x = Math.round((W - o.w) / 2); h = Math.round(h * s * 10) / 10; shrunk = true;
+        }
       }
       if (Math.abs(h - o.h) > 0.5) { o.h = h; grew = true; }
     });
+    if (shrunk) this.status("這份筆記太長，放不下整張紙，已經把卡片縮小；建議拆成幾個 .md 檔", 7000);
     var need = 0;
     this.objs.forEach(function (o) { need = Math.max(need, o.y + o.h + 40); });
     need = Math.min(MAX_H, Math.ceil(need / GRID) * GRID);
+    var g = this.insGuess;
     if (need > this.H) { this.setH(need); grew = true; }
+    else if (g && this.objs.indexOf(g.o) >= 0 && (cardKey(g.o, false) === key || cardKey(g.o, true) === key)) {
+      // 插入時估的高度太高、紙加長太多：收回到剛好放得下（不比插入前短，也不切到筆跡）
+      var fit = Math.max(need, g.from, this.minH());
+      if (fit < this.H) { this.setH(fit); g.h.to = fit; grew = true; }
+    }
+    if (g && (cardKey(g.o, false) === key || cardKey(g.o, true) === key)) this.insGuess = null;
     if (grew && this.loaded) this.changed();
     this.requestDraw();
     if (this.sel.length) this.placeSelBar();
@@ -1048,7 +1204,11 @@
       else if (a === "redo") self.redo();
       else if (a === "zin") self.zoomBy(1.5);
       else if (a === "zout") self.zoomBy(1 / 1.5);
-      else if (a === "zreset") { self.z = 1; self.ox = self.oy = 0; self.requestDraw(); self.syncZoom(); }
+      else if (a === "zreset") {
+        // 回到 100%，畫面中間那一點留在原處（長紙不會跳回最上面）
+        var zr = self.canvas.getBoundingClientRect();
+        self.zoomAt(1, zr.left + zr.width / 2, zr.top + zr.height / 2);
+      }
       else if (a === "grow") self.extend();
       else if (a === "shrink") self.shrink();
       else if (a === "clear") { self.openPop(null); self.clear(); }
@@ -1189,6 +1349,7 @@
     c.addEventListener("pointerdown", function (e) {
       if (!self.ctx) return;
       activePad = self;
+      cancelAnimationFrame(self.flingRaf);   // 碰到紙就停下還在滑的捲動
       var isPen = e.pointerType === "pen";
       if (isPen) notePen();
       if (e.pointerType === "touch") {
@@ -1210,8 +1371,8 @@
         }
         if (touches.size > 2 || act) return;
         if (pref.penOnly === true) {
-          // 觸控筆模式：一根手指只用來捲動頁面
-          act = { id: e.pointerId, mode: "scroll", y: e.clientY };
+          // 觸控筆模式：一根手指只用來捲動（先捲紙，紙捲到底再捲頁面）
+          act = { id: e.pointerId, mode: "scroll", y: e.clientY, v: [[e.timeStamp, e.clientY]] };
           return;
         }
       } else if (act) {
@@ -1264,7 +1425,14 @@
         return;
       }
       if (e.pointerId !== act.id) return;
-      if (act.mode === "scroll") { window.scrollBy(0, act.y - e.clientY); act.y = e.clientY; return; }
+      if (act.mode === "scroll") {
+        var dy = act.y - e.clientY;
+        act.y = e.clientY;
+        act.v.push([e.timeStamp, e.clientY]);
+        while (act.v.length > 2 && e.timeStamp - act.v[0][0] > 100) act.v.shift();
+        self.scrollPaper(dy, true);
+        return;
+      }
       e.preventDefault();
       if (act.mode === "lasso" || act.mode === "move" || act.mode === "scale") {
         var q0 = pos(e), b0 = act.bb;
@@ -1332,6 +1500,10 @@
         self.finishLasso();
       } else if (a.mode === "move" || a.mode === "scale") {
         self.commitXf();
+      } else if (a.mode === "scroll" && e.type === "pointerup" && a.v.length > 1) {
+        // 放開時手指還在動：繼續滑一段
+        var v0 = a.v[0], v1 = a.v[a.v.length - 1], dt = v1[0] - v0[0];
+        if (dt > 0 && e.timeStamp - v1[0] < 60) self.fling((v0[1] - v1[1]) / dt);
       }
     }
     c.addEventListener("pointerup", end);
@@ -1348,16 +1520,19 @@
       self.insertFiles(e.dataTransfer.files);
     });
     c.addEventListener("wheel", function (e) {
+      cancelAnimationFrame(self.flingRaf);
       if (e.ctrlKey) {
         e.preventDefault();
         self.zoomAt(self.z * Math.exp(-e.deltaY * 0.01), e.clientX, e.clientY);
         return;
       }
-      if (self.z <= 1.001) return;
+      // 滾輪先捲紙（放大時也可以左右移）；紙捲到底了，就讓頁面照常捲
+      var unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? self.viewH : 1;
       var s = self.scale * self.z, ox = self.ox, oy = self.oy;
-      self.ox += e.deltaX / s; self.oy += e.deltaY / s;
+      if (self.z > 1.001) self.ox += e.deltaX * unit / s;
+      self.oy += e.deltaY * unit / s;
       self.clampView();
-      if (ox !== self.ox || oy !== self.oy) { e.preventDefault(); self.requestDraw(); }
+      if (ox !== self.ox || oy !== self.oy) { e.preventDefault(); self.requestDraw(); self.syncThumb(true); }
     }, { passive: false });
   };
 
@@ -1434,8 +1609,11 @@
     if (this.H >= MAX_H) { this.status("已經是最長了"); return; }
     var from = this.H, to = Math.min(MAX_H, from + STEP_H);
     this.setH(to);
+    this.oy = this.H;                    // 捲到最下面，看得到新加的那一段
+    this.clampView();
+    this.requestDraw();
     this.push({ t: "h", from: from, to: to });
-    this.hint("grow", "紙張加長了一段；用不到的話按「縮短」收回");
+    this.hint("grow", "紙張加長了一段；用不到的話按「縮短」收回。紙比一個畫面長時，用手指上下拖可以在紙裡面捲動");
   };
   Pad.prototype.shrink = function () {
     var from = this.H, to = Math.max(from - STEP_H, this.minH());
@@ -1469,12 +1647,26 @@
   Pad.prototype.png = function () {
     var self = this;
     if (!this.hasInk()) { this.status("還沒有筆跡"); return; }
-    var maxY = 0, k = 1.4;
+    var maxY = 0;
     this.strokes.forEach(function (s) { for (var i = 1; i < s.p.length; i += 3) maxY = Math.max(maxY, s.p[i]); });
     this.objs.forEach(function (o) { maxY = Math.max(maxY, o.y + o.h); });
     var h = Math.min(this.H, Math.ceil(maxY + 60));
+    // 一般 1.4 倍；很長的紙縮小一點，圖片才不會大到手機存不了（最高 30000 像素、2400 萬像素）
+    var k = Math.min(1.4, 30000 / h, Math.sqrt(24e6 / (W * h)));
+    // .md 卡片用淺色重新排版，一段一段畫好再拼起來
     var jobs = this.objs.filter(function (o) { return o.kind === "md"; }).map(function (o) {
-      return X.renderCard(o.md, o.name, false, k * o.w / MD_W).then(function (r) { return [o, r]; }, function () { return [o, null]; });
+      var f = k * o.w / MD_W;
+      return X.layoutCard(o.md, o.name, false).then(function (lay) {
+        var th = TILE_PX / f, parts = [], chain = Promise.resolve();
+        for (var y0 = 0; y0 < lay.lh; y0 += th) {
+          (function (y0) {
+            chain = chain.then(function () {
+              return X.drawCard(lay, f, y0, Math.min(th, lay.lh - y0)).then(function (cv) { parts.push({ y0: y0, cv: cv }); });
+            });
+          })(y0);
+        }
+        return chain.then(function () { return [o, lay, parts]; });
+      }).catch(function () { return [o, null, []]; });
     });
     if (jobs.length) this.status("正在產生圖片…");
     Promise.all(jobs).then(function (done) {
@@ -1486,7 +1678,9 @@
       self.objs.forEach(function (o) {
         if (o.kind === "img") { var e = imgOf(o.id); if (e.state === "ok") x.drawImage(e.im, o.x, o.y, o.w, o.h); return; }
         var d = done.filter(function (q) { return q[0] === o; })[0];
-        if (d && d[1]) x.drawImage(d[1].cv, o.x, o.y, o.w, o.w * d[1].lh / MD_W);
+        if (!d || !d[1]) return;
+        var u = o.w / MD_W;
+        d[2].forEach(function (pt) { x.drawImage(pt.cv, o.x, o.y + pt.y0 * u, o.w, pt.cv.height / (k * o.w / MD_W) * u); });
       });
       drawAll(x, self.strokes, palette(true));
       var name = self.key.replace(/[^\w-]+/g, "_") + ".png";

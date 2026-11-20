@@ -281,16 +281,18 @@ window.CGEP_INKX = (function () {
         continue;
       }
       if (/^ *(\$\$|\\\[)/.test(l)) {
+        // 獨立一行的公式；結尾 $$ 後面同一行還有字的話，那些字照常排成下一段（不能丟掉）
         var open = /^ *\$\$/.test(l) ? "$$" : "\\[", close = open === "$$" ? "$$" : "\\]";
-        var rest = l.trim().slice(2), tex = [];
-        if (rest.indexOf(close) >= 0) { tex.push(rest.slice(0, rest.indexOf(close))); i++; }
+        var rest = l.trim().slice(2), tex = [], after = "", at = rest.indexOf(close);
+        if (at >= 0) { tex.push(rest.slice(0, at)); after = rest.slice(at + 2); }
         else {
           tex.push(rest);
           for (i++; i < lines.length && lines[i].indexOf(close) < 0; i++) tex.push(lines[i]);
-          if (i < lines.length) tex.push(lines[i].slice(0, lines[i].indexOf(close)));
-          i++;
+          if (i < lines.length) { at = lines[i].indexOf(close); tex.push(lines[i].slice(0, at)); after = lines[i].slice(at + 2); }
         }
         out.push(mathSpan(tex.join("\n").trim(), true));
+        if (after.trim()) lines[i] = after.trim();
+        else i++;
         continue;
       }
       if ((m = /^ {0,3}(#{1,6})\s+(.*?)(?:\s+#+)?\s*$/.exec(l))) { var hn = m[1].length; out.push("<h" + hn + ">" + inline(m[2]) + "</h" + hn + ">"); i++; continue; }
@@ -350,9 +352,18 @@ window.CGEP_INKX = (function () {
     return i;
   }
   function mdToHtml(src) {
-    var lines = String(src).replace(/\r\n?/g, "\n").replace(/\t/g, "    ").split("\n");
-    if (/^---\s*$/.test(lines[0])) {                                                           // 開頭的 YAML 設定不顯示
-      for (var e = 1; e < lines.length; e++) if (/^(---|\.\.\.)\s*$/.test(lines[e])) { lines = lines.slice(e + 1); break; }
+    var lines = String(src).replace(/^﻿/, "").replace(/\r\n?/g, "\n").replace(/\t/g, "    ").split("\n");
+    // 開頭的 YAML 設定（--- 包起來、裡面都是「名稱: 值」）不顯示。
+    // 只是拿 --- 當分隔線的話（裡面有一般文字），照常顯示，不能把第一節吃掉
+    if (/^---\s*$/.test(lines[0])) {
+      for (var e = 1; e < lines.length && e < 80; e++) {
+        if (/^(---|\.\.\.)\s*$/.test(lines[e])) {
+          var meta = lines.slice(1, e), keys = meta.filter(function (x) { return /^[\wÀ-￿-]+\s*:/.test(x); });
+          var yaml = keys.length && meta.every(function (x) { return /^\s*$/.test(x) || /^\s*#/.test(x) || /^[\wÀ-￿-]+\s*:/.test(x) || /^\s+\S/.test(x) || /^\s*-\s/.test(x); });
+          if (yaml) lines = lines.slice(e + 1);
+          break;
+        }
+      }
     }
     return blocks(lines);
   }
@@ -393,8 +404,34 @@ window.CGEP_INKX = (function () {
     if (MJ && MJ.typesetPromise && MJ.startup && MJ.startup.promise) return MJ.startup.promise;
     return Promise.reject(new Error("MathJax 還沒載入"));
   }
-  // 排版好之後量高度；數學式的字形放在網頁共用的定義裡，複製一份進卡片，圖片裡才看得到
-  function renderCard(md, name, dark, f) {
+  // 量高度用的獨立小頁面：網站自己的樣式（例如程式碼區塊比較小的字）不會套進去，
+  // 跟卡片畫成圖時的環境一樣，量出來的高度才不會比圖短（以前就是這樣把卡片下面切掉的）
+  var isoReady = null;
+  function isoDoc() {
+    if (isoReady) return isoReady;
+    var fr = document.createElement("iframe");
+    fr.setAttribute("aria-hidden", "true");
+    fr.tabIndex = -1;
+    fr.style.cssText = "position:absolute;left:-30000px;top:0;width:" + (MD_W + 60) + "px;height:200px;border:0;visibility:hidden;pointer-events:none";
+    isoReady = new Promise(function (res, rej) {
+      fr.onload = function () { res(fr.contentDocument); };
+      fr.onerror = rej;
+    });
+    fr.srcdoc = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">' +
+      "<style>html,body{margin:0;padding:0;-webkit-text-size-adjust:none;text-size-adjust:none}</style></head><body></body></html>";
+    document.body.appendChild(fr);
+    return isoReady;
+  }
+  // MathJax 自己的樣式（換行、顯示公式的排法）也放進卡片，圖裡的公式才會跟網頁上排得一樣
+  function mathCss() {
+    return ["MJX-SVG-styles", "MJX-lb-styles", "MJX-hb-styles", "MJX-ab-styles"].map(function (id) {
+      var s = document.getElementById(id);
+      return s ? s.textContent : "";
+    }).join("\n");
+  }
+  // 排版：數學式先在網頁裡排好（MathJax 在這裡），整張卡片複製一份（連同用到的公式字形），
+  // 在獨立小頁面量高度，再轉成 XHTML 字串。之後要畫哪一段都用這份（drawCard）
+  function layoutCard(md, name, dark) {
     var box = document.createElement("div");
     box.className = "mdc";
     box.innerHTML = '<style>' + cardCss(dark) + "</style>" + (name ? '<div class="mdc-name">' + esc(name) + "</div>" : "") + mdToHtml(md);
@@ -403,7 +440,6 @@ window.CGEP_INKX = (function () {
     var hasMath = !!box.querySelector(".arithmatex");
     var job = hasMath ? mathJaxReady().then(function () { return window.MathJax.typesetPromise([box]); }) : Promise.resolve();
     return job.then(function () {
-      var lh = Math.ceil(box.getBoundingClientRect().height) + 2;
       var copy = box.cloneNode(true);
       copy.removeAttribute("style");
       var ids = {}, defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
@@ -418,19 +454,55 @@ window.CGEP_INKX = (function () {
         holder.appendChild(defs);
         copy.insertBefore(holder, copy.firstChild);
       }
-      var xhtml = new XMLSerializer().serializeToString(copy);
-      var W2 = Math.max(1, Math.round(MD_W * f)), H2 = Math.max(1, Math.round(lh * f));
-      var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W2 + '" height="' + H2 + '" viewBox="0 0 ' + MD_W + " " + lh + '">' +
-        '<foreignObject x="0" y="0" width="' + MD_W + '" height="' + lh + '">' + xhtml + "</foreignObject></svg>";
-      var img = new Image();
-      img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-      return img.decode().then(function () {
-        var cv = document.createElement("canvas");
-        cv.width = W2; cv.height = H2;
-        cv.getContext("2d").drawImage(img, 0, 0, W2, H2);
-        return { cv: cv, lh: lh };
+      if (hasMath) { var st = copy.querySelector("style"); st.textContent = mathCss() + "\n" + st.textContent; }
+      return isoDoc().then(function (d) {
+        var el = d.importNode(copy, true);
+        d.body.appendChild(el);
+        var lh = Math.ceil(el.getBoundingClientRect().height) + 2;
+        el.remove();
+        var xhtml = new XMLSerializer().serializeToString(copy);
+        return { lh: lh, enc: encodeURIComponent(xhtml) };
       });
     }).then(function (r) { box.remove(); return r; }, function (e) { box.remove(); throw e; });
+  }
+  // 畫出卡片的一段：卡片座標 y0 開始、高 h（單位跟 MD_W 一樣），每單位 f 個像素。
+  // 整份照常排版，再用 transform 把內容往上推到這一段，外框只有這一段高。
+  // （不用 SVG viewBox 往下移：卡片裡有數學式時，Chrome 會把位置算歪幾十個像素，段與段接不起來）
+  // 暖身：Chrome 閒置一下（幾十毫秒）之後畫的第一批圖，字型還沒備好，會用別的字型排（換行不同），
+  // 段與段就接不起來；剛畫完一張接著畫就正常。所以閒置後要畫之前，先畫一張很小的圖丟掉，馬上再畫真的
+  var lastDone = 0, drawing = 0, warming = null;
+  function drawCard(lay, f, y0, h) {
+    function go() {
+      drawing++;
+      return rawDraw(lay, f, y0, h).then(function (cv) { drawing--; lastDone = Date.now(); return cv; },
+        function (e) { drawing--; lastDone = Date.now(); throw e; });
+    }
+    if (warming) return warming.then(go);
+    if (!drawing && Date.now() - lastDone > 15) {
+      warming = rawDraw(lay, 0.05, 0, Math.min(lay.lh, 2000)).then(function () {}, function () {})
+        .then(function () { warming = null; lastDone = Date.now(); });
+      return warming.then(go);
+    }
+    return go();
+  }
+  function rawDraw(lay, f, y0, h) {
+    var W2 = Math.max(1, Math.round(MD_W * f)), H2 = Math.max(1, Math.round(h * f));
+    var head = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W2 + '" height="' + H2 + '" viewBox="0 0 ' + MD_W + " " + h + '">' +
+      '<foreignObject x="0" y="0" width="' + MD_W + '" height="' + h + '"><div xmlns="http://www.w3.org/1999/xhtml" style="transform:translateY(-' + y0 + 'px)">';
+    var img = new Image();
+    img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(head) + lay.enc + encodeURIComponent("</div></foreignObject></svg>");
+    return img.decode().then(function () {
+      var cv = document.createElement("canvas");
+      cv.width = W2; cv.height = H2;
+      cv.getContext("2d").drawImage(img, 0, 0, W2, H2);
+      return cv;
+    });
+  }
+  // 整張卡片畫成一張圖（存成圖片、測試用）
+  function renderCard(md, name, dark, f) {
+    return layoutCard(md, name, dark).then(function (lay) {
+      return drawCard(lay, f, 0, lay.lh).then(function (cv) { return { cv: cv, lh: lay.lh }; });
+    });
   }
   // 還沒排版前，用字數粗估卡片的高度（插入時先佔好位置）
   function guessCardH(md) {
@@ -478,5 +550,5 @@ window.CGEP_INKX = (function () {
   }
 
   return { fitShape: fitShape, shapePoints: shapePoints, SHAPE_NAME: SHAPE_NAME, mdToHtml: mdToHtml, renderCard: renderCard,
-    guessCardH: guessCardH, MD_W: MD_W, prepImage: prepImage };
+    layoutCard: layoutCard, drawCard: drawCard, guessCardH: guessCardH, MD_W: MD_W, prepImage: prepImage };
 })();
