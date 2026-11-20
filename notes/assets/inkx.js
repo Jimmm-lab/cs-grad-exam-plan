@@ -376,7 +376,7 @@ window.CGEP_INKX = (function () {
     var c = dark ? { bg: "#1c2330", fg: "#e7eaf0", mute: "#9aa4b5", line: "#3a4558", soft: "#262f3f", acc: "#ff8f95", mark: "rgba(255,212,59,.35)" }
                  : { bg: "#fffdf7", fg: "#1a2130", mute: "#5f6878", line: "#dcd4bf", soft: "#f2eee2", acc: "#c42f3d", mark: "rgba(255,212,59,.55)" };
     return ".mdc{box-sizing:border-box;width:" + MD_W + "px;margin:0;padding:34px 42px 30px;background:" + c.bg + ";color:" + c.fg + ";border:3px solid " + c.line +
-      ";border-radius:20px;font:" + MD_FONT + "px/1.62 " + FONT + ";overflow-wrap:anywhere;word-break:normal;text-align:left}" +
+      ";border-radius:20px;font:" + MD_FONT + "px/1.62 " + FONT + ";overflow-wrap:anywhere;word-break:normal;text-align:left;-webkit-text-size-adjust:none;text-size-adjust:none}" +
       ".mdc *{box-sizing:border-box}" +
       ".mdc .mdc-name{margin:-8px 0 16px;padding-bottom:8px;border-bottom:2px solid " + c.line + ";font-size:22px;line-height:1.4;color:" + c.mute + "}" +
       ".mdc h1,.mdc h2,.mdc h3,.mdc h4,.mdc h5,.mdc h6{margin:.9em 0 .4em;line-height:1.3;font-weight:700}" +
@@ -461,7 +461,7 @@ window.CGEP_INKX = (function () {
         var lh = Math.ceil(el.getBoundingClientRect().height) + 2;
         el.remove();
         var xhtml = new XMLSerializer().serializeToString(copy);
-        return { lh: lh, enc: encodeURIComponent(xhtml) };
+        return imgHeight({ lh: lh, enc: encodeURIComponent(xhtml) });
       });
     }).then(function (r) { box.remove(); return r; }, function (e) { box.remove(); throw e; });
   }
@@ -497,6 +497,21 @@ window.CGEP_INKX = (function () {
       cv.getContext("2d").drawImage(img, 0, 0, W2, H2);
       return cv;
     });
+  }
+  // 卡片真正的高度用畫出來的圖量：先畫一張比預估高一些的小圖（每 8 個單位 1 像素），
+  // 從下往上找卡片底色出現的那一列。網頁和圖片的排版在某些手機上會有差（字型、文字放大設定），
+  // 只用網頁量的高度的話，圖比較高時卡片最下面（邊框和圓角）會被切掉
+  function imgHeight(lay, tries) {
+    var f = 0.125, H = Math.ceil(lay.lh * 1.3) + 400;
+    return drawCard(lay, f, 0, H).then(function (cv) {
+      var d = cv.getContext("2d").getImageData(Math.floor(cv.width / 2), 0, 1, cv.height).data, last = -1;
+      for (var y = cv.height - 1; y >= 0; y--) if (d[y * 4 + 3] > 0) { last = y; break; }
+      if (last < 0) return lay;
+      lay.lh = Math.ceil((last + 2) / f);
+      // 量的範圍最底下還是卡片：圖比預估高很多，放大範圍再量一次
+      if (last >= cv.height - 2 && (tries || 0) < 3) return imgHeight(lay, (tries || 0) + 1);
+      return lay;
+    }, function () { return lay; });
   }
   // 整張卡片畫成一張圖（存成圖片、測試用）
   function renderCard(md, name, dark, f) {

@@ -202,6 +202,7 @@ mjx-container.mj-keep[jax] mjx-break { white-space: nowrap !important; }
 .ink-btns .ico { grid-row: 1 / span 2; width: 22px; height: 22px; }
 .ink-btns small { font: 400 12px/1.35 var(--font-body); color: var(--muted); }
 .ink-btns [data-act="clear"] .ico { color: var(--accent); }
+.ink-btns button:disabled { opacity: .4; cursor: default; }
 /* 筆的設定：種類、粗細、顏色 */
 .ink-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .ink-types button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); font: 500 13.5px/1 var(--font-body); white-space: nowrap; cursor: pointer; }
@@ -775,7 +776,7 @@ window.MathJax = {
 <li><strong>觸控筆模式</strong>：第一次用觸控筆寫字時會自動打開。打開後只有筆會寫字，<strong>手指拖曳是捲動頁面</strong>，手掌靠在螢幕上也不會畫到。沒有觸控筆的話，在「更多」裡關掉就能用手指寫。</li>
 <li><strong>筆停住變標準圖形</strong>：畫完之後，筆尖在終點<strong>停住不動半秒</strong>（筆不要離開螢幕）。<strong>直線</strong>會拉直，還沒放開前可以繼續拖動調整方向和長度，接近水平、垂直或 45° 時會自動對齊；<strong>圓、橢圓、三角形、長方形、正方形、五邊形、六邊形</strong>會變成標準的圖形。寫字、小的圈圈（例如字母 o）、波浪線、8 字形不會被換掉。換錯了就按「復原」；不想要這個功能，可以在「更多」裡關掉。</li>
 <li><strong>縮放</strong>：兩指捏合放大縮小，兩指拖曳移動紙張；也可以用紙下面的放大鏡。放大時寫的字，線條粗細看起來跟 100% 時一樣，適合在小格子裡寫細節。</li>
-<li><strong>紙不夠寫</strong>：按紙下面的「加長」，每次多一段；用不到就按「縮短」收回，不會切到筆跡。</li>
+<li><strong>紙不夠寫</strong>：按紙下面的「加長」，每次多一段；用不到就按「縮短」收回，不會切到筆跡。已經縮不了（回到原本長度，或下面還有筆跡）時，「縮短」會變灰不能按；還沒寫東西時，「更多」裡的「存成圖片」和「清除這一題」也一樣。</li>
 <li><strong>長的紙在裡面捲動</strong>：紙在畫面上最多一個畫面高，工具列和紙下面那排一直看得到；比較長的紙（或很長的筆記）在紙裡面上下捲動：觸控筆模式用一根手指拖（放開後會再滑一段，捲到底就接著捲頁面），沒有觸控筆的話用兩根手指拖，電腦用滾輪。紙右邊的細條表示現在捲到哪裡。</li>
 </ul>
 <p><strong>修改</strong></p>
@@ -1079,8 +1080,8 @@ window.MathJax = {
 </script>
 <script src="assets/icons.js?v=86315811"></script>
 <script src="assets/inkdb.js?v=92b336ca"></script>
-<script src="assets/inkx.js?v=8a570941"></script>
-<script src="assets/ink.js?v=918f689b"></script>
+<script src="assets/inkx.js?v=ed8b97a0"></script>
+<script src="assets/ink.js?v=196d115a"></script>
 <script src="assets/viz.js?v=1e5c289a"></script>
 <script src="assets/glide.js?v=93f8e086"></script>
 <script src="assets/nav.js?v=b9cd7533"></script>

@@ -6,6 +6,7 @@
  *   快速選色、粗細（打開筆的設定），和復原、重做。「插入」「更多」「筆的設定」是工具列下面展開的面板，一次只開一個。
  *   「更多」裡面是存成圖片、清除，和觸控筆模式、筆停住的開關。紙的下面一排是縮放和加長、縮短。
  * - 提示訊息在畫面下方短暫出現（不佔紙的位置）；操作說明同一種最多出現 TIP_MAX 次，錯誤每次都會出現。
+ *   看得到結果的動作（加長、縮短、複製、存成圖片）不跳訊息；不能做的時候按鈕直接變灰（縮短、存成圖片、清除）。
  * - 紙在畫面上最多一個視窗高（capH），更長的紙在裡面捲動：畫布只有看得到的那一塊大，捲動是改 oy；
  *   觸控筆模式一指拖（會慣性滑行、捲到底接著捲頁面）、兩指拖、滾輪。右邊細條表示捲到哪裡。
  * - 紙可以縮放：兩指捏合／拖曳、紙下面的放大縮小鈕、電腦上 Ctrl＋滾輪。
@@ -339,11 +340,21 @@
           ctx.drawImage(q.cv, o.x, o.y + q0 * u, o.w, (q1 - q0) * u);
         });
       } else {
+        // 先塗卡片的底色（圓角跟卡片一樣，第一段、最後一段還沒畫好時角才不會是方的）
         ctx.fillStyle = dark ? "#1c2330" : "#fffdf7";
-        ctx.fillRect(o.x, o.y + c0 * u, o.w, (c1 - c0) * u);
+        rrect(ctx, o.x, o.y, o.w, hh, 20 * u);
+        ctx.fill();
       }
       ctx.restore();
     }
+  }
+  function rrect(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
   }
   function placeholder(ctx, o, text, light) {
     ctx.save();
@@ -540,13 +551,12 @@
       "</div>" +
       // 工具列下面展開的面板（一次只開一個）
       '<div class="ink-pop ink-cfg" hidden></div>' +
-      '<div class="ink-pop ink-ins" hidden>' + popHead("插入", "放在筆跡下面，可以直接在上面寫") +
+      '<div class="ink-pop ink-ins" hidden>' + popHead("插入") +
         '<div class="ink-btns">' +
           big('data-ins="img"', "image", "圖片", "從相簿或檔案選") +
           big('data-ins="paste"', "paste", "貼上圖片", "剛剛複製的圖片") +
           big('data-ins="md"', "file", ".md 筆記", "排版好放在紙上") +
         "</div>" +
-        "<p>要移動、縮放或刪除，用「選取」點一下；橡皮擦不會擦到。電腦上也可以按 Ctrl＋V，或把檔案拖進紙裡。</p>" +
         '<input type="file" accept="image/*" data-file="img" hidden><input type="file" data-file="md" hidden>' +
       "</div>" +
       '<div class="ink-pop ink-menu" hidden>' + popHead("更多") +
@@ -935,7 +945,6 @@
     });
     this.push({ t: "dup", items: copies.filter(function (x) { return !isObj(x); }), objs: copies.filter(isObj) });
     this.setSel(copies);
-    this.status("已複製，可以拖到想放的位置");
   };
   Pad.prototype.delSel = function () {
     if (!this.sel.length) return;
@@ -1037,7 +1046,7 @@
       var w = clamp(r.w, 200, 900), h = w * r.h / r.w;
       if (h > 1100) { h = 1100; w = h * r.w / r.h; }
       self.addObj({ kind: "img", id: r.id, x: Math.round((W - w) / 2), y: Math.round(self.visibleTop() + 20), w: Math.round(w), h: Math.round(h) },
-        "insImg", "已插入圖片：拖框裡面可以移動，拖右下角的圓點可以縮放；不要的話按「刪除」", "已插入圖片");
+        "insImg", "已插入圖片：拖框裡面可以移動，拖右下角的圓點可以縮放；不要的話按「刪除」");
     }).catch(function () { self.status("這張圖片讀不出來，或這個瀏覽器不能存圖片（例如無痕模式）"); });
   };
   Pad.prototype.insertMd = function (file) {
@@ -1047,7 +1056,7 @@
       if (/\u0000/.test(txt)) throw new Error("binary");
       var name = file.name || "筆記.md", h = Math.min(MAX_H - 60, X.guessCardH(txt));
       self.addObj({ kind: "md", md: txt, name: name, x: Math.round((W - MD_W) / 2), y: Math.round(self.visibleTop() + 20), w: MD_W, h: h },
-        "insMd", "已插入 " + name + "：可以直接在上面寫字、劃重點；用「選取」點一下就能移動、縮放、刪除", "已插入 " + name);
+        "insMd", "已插入 " + name + "：可以直接在上面寫字、劃重點；用「選取」點一下就能移動、縮放、刪除");
     }).catch(function () { self.status("讀不出這個檔案：請選 .md 或 .txt 的文字檔"); });
   };
   Pad.prototype.insertFiles = function (files) {
@@ -1118,7 +1127,10 @@
     this.panel.querySelector('[data-act="undo"]').disabled = !this.hist.length;
     this.panel.querySelector('[data-act="redo"]').disabled = !this.fut.length;
     this.panel.querySelector('[data-act="grow"]').disabled = this.H >= MAX_H;
-    this.panel.querySelector('[data-act="shrink"]').disabled = this.H <= DEFAULT_H;
+    this.panel.querySelector('[data-act="shrink"]').disabled = this.shrinkTo() >= this.H;
+    // 還沒有任何東西時，「存成圖片」和「清除」也不能按
+    this.panel.querySelector('[data-act="png"]').disabled = !this.hasInk();
+    this.panel.querySelector('[data-act="clear"]').disabled = !this.hasInk();
     this.canvas.style.cursor = this.tool === "eraser" ? "cell" : this.tool === "select" ? "default" : "crosshair";
     if (!this.cfgBox.hidden) this.syncCfg();
   };
@@ -1131,7 +1143,7 @@
         return '<button type="button" data-type="' + t + '" aria-pressed="' + (t === tp) + '">' + I(PENS[t].icon) + "<span>" + PENS[t].name + "</span></button>";
       }).join("") + "</div>";
     this.cfgBox.innerHTML =
-      popHead(tp === "hl" ? "螢光筆" : "筆", tp === "hl" ? "粗細和顏色" : "每一種筆各自記住粗細和顏色") + types +
+      popHead(tp === "hl" ? "螢光筆" : "筆") + types +
       '<label class="ink-w"><span>粗細</span><input type="range" min="' + P.min + '" max="' + P.max + '" step="' + P.step + '" value="' + cfg.sw + '"><output>' + cfg.sw + "</output></label>" +
       '<canvas class="ink-prev" aria-hidden="true"></canvas>' +
       PALETTES.map(function (g) {
@@ -1605,25 +1617,23 @@
     this.objs.forEach(function (o) { maxY = Math.max(maxY, o.y + o.h); });
     return Math.max(DEFAULT_H, Math.ceil((maxY + 40) / GRID) * GRID);
   };
+  // 加長、縮短：紙的長度看得到，所以不另外跳訊息；不能加長或縮短時按鈕直接變成不能按（syncTools）
   Pad.prototype.extend = function () {
-    if (this.H >= MAX_H) { this.status("已經是最長了"); return; }
+    if (this.H >= MAX_H) return;
     var from = this.H, to = Math.min(MAX_H, from + STEP_H);
     this.setH(to);
     this.oy = this.H;                    // 捲到最下面，看得到新加的那一段
     this.clampView();
     this.requestDraw();
     this.push({ t: "h", from: from, to: to });
-    this.hint("grow", "紙張加長了一段；用不到的話按「縮短」收回。紙比一個畫面長時，用手指上下拖可以在紙裡面捲動");
   };
+  // 縮短到哪裡：收回一段，但停在最後一筆（或插入的東西）下面、不比原本短；跟現在一樣長就是不能縮短
+  Pad.prototype.shrinkTo = function () { return Math.max(this.H - STEP_H, this.minH()); };
   Pad.prototype.shrink = function () {
-    var from = this.H, to = Math.max(from - STEP_H, this.minH());
-    if (to >= from) {
-      this.status(from <= DEFAULT_H ? "已經是原本的長度了" : "下面還有筆跡或插入的東西，先擦掉或移上來才能再縮短");
-      return;
-    }
+    var from = this.H, to = this.shrinkTo();
+    if (to >= from) return;
     this.setH(to);
     this.push({ t: "h", from: from, to: to });
-    this.status(to > from - STEP_H ? "縮短到最後一筆的下面（再往上會切到筆跡）" : to <= DEFAULT_H ? "回到原本的長度了" : "收回了一段");
   };
 
   Pad.prototype.hasInk = function () { return this.strokes.length > 0 || this.objs.length > 0; };
@@ -1646,7 +1656,7 @@
   // 存成圖片：白底、淺色的墨水；.md 卡片用淺色重新排一次
   Pad.prototype.png = function () {
     var self = this;
-    if (!this.hasInk()) { this.status("還沒有筆跡"); return; }
+    if (!this.hasInk()) return;
     var maxY = 0;
     this.strokes.forEach(function (s) { for (var i = 1; i < s.p.length; i += 3) maxY = Math.max(maxY, s.p[i]); });
     this.objs.forEach(function (o) { maxY = Math.max(maxY, o.y + o.h); });
@@ -1685,7 +1695,7 @@
       drawAll(x, self.strokes, palette(true));
       var name = self.key.replace(/[^\w-]+/g, "_") + ".png";
       try {
-        cv.toBlob(function (b) { if (b) { download(name, b); if (jobs.length) self.status("已存成圖片"); } }, "image/png");
+        cv.toBlob(function (b) { if (b) { download(name, b); if (jobs.length) self.status(""); } }, "image/png");
       } catch (e) { self.status("這個瀏覽器不能把 .md 筆記一起存成圖片"); }
     });
   };
