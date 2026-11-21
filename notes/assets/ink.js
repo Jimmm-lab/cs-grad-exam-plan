@@ -391,8 +391,8 @@
   function drawObjSel(ctx, objs, color, u, alpha) {
     if (!objs.length) return;
     ctx.save();
-    ctx.globalAlpha = alpha == null ? 1 : alpha; ctx.strokeStyle = color; ctx.lineWidth = 2 * u;
-    objs.forEach(function (o) { inObj(ctx, o, function (x, y) { ctx.strokeRect(x - 2 * u, y - 2 * u, o.w + 4 * u, o.h + 4 * u); }); });
+    ctx.globalAlpha = alpha == null ? 1 : alpha; ctx.strokeStyle = color; ctx.lineWidth = 1.2 * u;
+    objs.forEach(function (o) { inObj(ctx, o, function (x, y) { ctx.strokeRect(x - 1.5 * u, y - 1.5 * u, o.w + 3 * u, o.h + 3 * u); }); });
     ctx.restore();
   }
   // 圈選：九個取樣點（四角、四邊中點、中心）有五個以上在圈裡就算圈到
@@ -494,12 +494,12 @@
     });
     return out;
   }
-  // 選到的筆跡：先用藍色畫一條比筆畫寬一點點的線，筆畫再畫在上面，看起來就是描了一圈細邊。
-  // 同樣粗細的筆畫合成一條路徑一次畫
+  // 選到的筆跡：先用藍色畫一條比筆畫寬一點點的線（每邊大約 1 個螢幕像素），筆畫再畫在上面，
+  // 看起來就是描了一圈細邊。同樣粗細的筆畫合成一條路徑一次畫
   function drawOutline(ctx, strokes, color, u, alpha) {
     var groups = {}, keys = [];
     strokes.forEach(function (s) {
-      var w = Math.round((baseW(s) + 4.5 * u) * 4) / 4;
+      var w = Math.round((baseW(s) + 2.2 * u) * 8) / 8;
       if (!groups[w]) { groups[w] = []; keys.push(w); }
       groups[w].push(s);
     });
@@ -517,6 +517,22 @@
       ctx.lineWidth = w;
       ctx.stroke();
     });
+    ctx.restore();
+  }
+  // 旋轉圖示（不跟著框轉，永遠是正的）：上面留一個缺口的圓弧，順時針方向的實心箭頭
+  function rotIcon(ctx, x, y, u, color) {
+    var r = 4.3 * u, a0 = -0.28 * Math.PI, a1 = 1.22 * Math.PI;
+    ctx.save();
+    ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 1.5 * u; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(x, y, r, a0, a1); ctx.stroke();
+    // 箭頭在弧的尾端（左上），沿著順時針的方向指出去
+    var ex = x + r * Math.cos(a1), ey = y + r * Math.sin(a1), tx = -Math.sin(a1), ty = Math.cos(a1), nx = Math.cos(a1), ny = Math.sin(a1);
+    var len = 3.4 * u, half = 2.5 * u;
+    ctx.beginPath();
+    ctx.moveTo(ex + tx * len * 0.75, ey + ty * len * 0.75);
+    ctx.lineTo(ex - tx * len * 0.35 + nx * half, ey - ty * len * 0.35 + ny * half);
+    ctx.lineTo(ex - tx * len * 0.35 - nx * half, ey - ty * len * 0.35 - ny * half);
+    ctx.closePath(); ctx.fill();
     ctx.restore();
   }
   function el(tag, cls, html) {
@@ -978,20 +994,17 @@
     ctx.setLineDash([]);
     if (this.sel.length && this.frame && !this.cropping) {
       var fr = frameAfter(this.frame, this.xf), c = CORNERS.map(function (k) { return framePt(fr, k[0] * fr.w / 2, k[1] * fr.h / 2); });
-      ctx.lineWidth = 1.5 * u;
+      ctx.lineWidth = 1.2 * u;
       ctx.beginPath(); ctx.moveTo(c[0][0], c[0][1]); for (i = 1; i < 4; i++) ctx.lineTo(c[i][0], c[i][1]); ctx.closePath(); ctx.stroke();
-      var dot = function (x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = card; ctx.fill(); ctx.lineWidth = 2.2 * u; ctx.stroke(); };
+      var dot = function (x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = card; ctx.fill(); ctx.lineWidth = 1.6 * u; ctx.stroke(); };
       if (this.canRotate()) {
         // 旋轉圓點：一條短線接到框邊，圓裡面畫一個轉圈的箭頭（拖曳中跟著框一起轉）
         var rh = this.xf && this.rotAt ? [xfPt(this.xf, this.rotAt[0][0], this.rotAt[0][1]), xfPt(this.xf, this.rotAt[1][0], this.rotAt[1][1])] : this.rotHandle(fr);
         if (!this.xf) this.rotAt = rh;
         var top = rh[1], hp = rh[0];
-        ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.moveTo(top[0], top[1]); ctx.lineTo(hp[0], hp[1]); ctx.stroke();
-        dot(hp[0], hp[1], 10 * u);
-        ctx.lineWidth = 1.6 * u; ctx.beginPath(); ctx.arc(hp[0], hp[1], 4.6 * u, fr.a - 0.3 * Math.PI, fr.a + 1.2 * Math.PI); ctx.stroke();
-        var ea = fr.a - 0.3 * Math.PI, ex = hp[0] + 4.6 * u * Math.cos(ea), ey = hp[1] + 4.6 * u * Math.sin(ea);
-        ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - 3.2 * u * Math.cos(ea - 0.9), ey - 3.2 * u * Math.sin(ea - 0.9));
-        ctx.moveTo(ex, ey); ctx.lineTo(ex + 3.2 * u * Math.cos(ea + 0.6 + Math.PI / 2), ey + 3.2 * u * Math.sin(ea + 0.6 + Math.PI / 2)); ctx.stroke();
+        ctx.lineWidth = 1.2 * u; ctx.beginPath(); ctx.moveTo(top[0], top[1]); ctx.lineTo(hp[0], hp[1]); ctx.stroke();
+        dot(hp[0], hp[1], 9.5 * u);
+        rotIcon(ctx, hp[0], hp[1], u, color);
         if (this.xf && this.xfMode === "rotate") {
           // 轉的時候在圓點旁邊顯示角度
           var deg = Math.round(((fr.a * 180 / Math.PI) % 360 + 360) % 360);
@@ -1002,7 +1015,7 @@
           ctx.globalAlpha = 1; ctx.fillStyle = card; ctx.fillText(deg + "°", hp[0] + 22 * u, hp[1]);
         }
       }
-      c.forEach(function (q) { dot(q[0], q[1], 8 * u); });
+      c.forEach(function (q) { dot(q[0], q[1], 7 * u); });
     }
     ctx.restore();
   };
