@@ -27,6 +27,7 @@ window.CGEP_ICON = (function () {
     trash: '<path d="M4.5 7h15"/><path d="M9.5 7V4.8h5V7"/><path d="M6.5 7l1 12.5h9l1-12.5"/><path d="M10 11v5M14 11v5"/>',
     image: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="15.5" cy="9.5" r="1.5"/><path d="M3.5 16.5l5-5 4 4 2.5-2.5 5.5 5.5"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
+    crop: '<path d="M6.5 2.5v13a2 2 0 0 0 2 2h13"/><path d="M2.5 6.5h13a2 2 0 0 1 2 2v13"/>',
     more: '<circle cx="5.5" cy="12" r="1.7"' + F + '/><circle cx="12" cy="12" r="1.7"' + F + '/><circle cx="18.5" cy="12" r="1.7"' + F + "/>",
     paste: '<rect x="5.5" y="5" width="13" height="15.5" rx="2"/><path d="M9.5 5V3.5h5V5"/><path d="M9 11h6M9 14.5h6M9 18h3.5"/>',
     file: '<path d="M6.5 3.5h7.5l4 4v13h-11.5z"/><path d="M14 3.5v4h4"/><path d="M9 12.5h6M9 16h6"/>',

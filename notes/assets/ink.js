@@ -18,7 +18,9 @@
  *   鋼筆、原子筆、鉛筆共用工具列的「筆」按鈕（在筆的設定裡換種類），螢光筆自己一顆；選中的筆再點一次打開設定。
  *   每種筆各自記住粗細和顏色（設定裡有推薦色系和自訂顏色）。
  * - 「加長」一次多一段紙；「縮短」一次收回一段，但不會切到筆跡、也不會比原本短；兩個都可以「復原」。
- * - 「選取」：用筆圈起來（或直接點一筆）選取筆跡，拖框裡面移動、拖右下角的圓點縮放，也可以複製、刪除；都可以「復原」。
+ * - 「選取」：用筆圈起來（或直接點一筆）選取，選到的筆跡描藍色細邊。選取框拖裡面移動、拉四個角等比例縮放
+ *   （對角不動）、拉上面的圓點旋轉（接近 90° 的倍數自動對齊；.md 卡片不轉）；也可以複製、刪除；都可以「復原」。
+ *   只選一張圖時可以「裁剪」：調整留下的範圍，按「完成」才套用。
  * - 筆停住：畫完筆尖停住半秒（HOLD_MS，「更多」裡可以關掉），直線會拉直；圓、橢圓、三角形、矩形、多邊形換成標準的圖形（inkx.js 辨識）。
  *   拉直線還沒放開前可以繼續拖動調整方向和長度，接近水平、垂直、45° 時自動對齊。寫字、小的圈圈不會被換掉。
  * - 插入：圖片（相簿、檔案、貼上、拖進來）和 .md 筆記（排版成卡片）。放在筆跡下面，可以直接在上面寫字；
@@ -27,9 +29,9 @@
  * 一筆的資料：{ p: [x, y, 壓力, ...], c: 顏色, sw: 粗細, t: 筆的種類, pen: 是否觸控筆, k: 縮放倒數 }
  *   c 是數字 0–3 時是會跟著深色模式變的黑紅藍綠（舊資料都是這種），字串則是固定的色碼。
  *   舊資料用 w（0–2，細中粗）代替 sw、沒有 t（＝鋼筆），照樣能畫。
- * 一題的資料：{ v, H: 紙長, s: 筆畫, o: 插入的東西, t }；插入的東西是 { kind: "img", id, x, y, w, h } 或
+ * 一題的資料：{ v, H: 紙長, s: 筆畫, o: 插入的東西, t }；插入的東西是 { kind: "img", id, x, y, w, h, rot?, crop? } 或
  *   { kind: "md", md: 原文, name: 檔名, x, y, w, h }。圖片本身另外存一筆「img:id」（{ v, img: dataURL, w, h, t }），
- *   同一張圖只存一份，跟筆跡一樣同步。
+ *   同一張圖只存一份，跟筆跡一樣同步。rot＝繞中心轉的角度（弧度）；crop＝顯示原圖的哪一塊 {x, y, w, h}（0–1）。
  */
 (function () {
   "use strict";
@@ -372,37 +374,84 @@
   // 插入的東西畫在筆跡下面（螢光筆也畫在它們上面，才能劃重點）；vis＝看得到的紙上範圍，外面的不畫
   function drawObjs(ctx, objs, f, light, vis) {
     objs.forEach(function (o) {
-      if (vis && (o.y > vis.y1 || o.y + o.h < vis.y0) && o.kind === "img") return;
       if (o.kind === "img") {
+        var bx = objBox(o);
+        if (vis && (bx.y0 > vis.y1 || bx.y1 < vis.y0)) return;
         var e = imgOf(o.id);
-        if (e.state === "ok") ctx.drawImage(e.im, o.x, o.y, o.w, o.h);
-        else placeholder(ctx, o, e.state === "load" ? "圖片載入中…" : "這張圖片還沒同步到這台裝置", light);
+        if (e.state === "ok") drawImg(ctx, o, e.im);
+        else inObj(ctx, o, function (x, y) { placeholder(ctx, { x: x, y: y, w: o.w, h: o.h }, e.state === "load" ? "圖片載入中…" : "這張圖片還沒同步到這台裝置", light); });
       } else if (o.kind === "md") {
         drawMd(ctx, o, f, light, vis);
       }
     });
   }
-  function drawObjHalo(ctx, objs, color, u) {
+  // 選取用的顏色（跟著網站的主題色，深色模式自動變亮）
+  function selColor() { return getComputedStyle(document.documentElement).getPropertyValue("--ex").trim() || "#4450b5"; }
+  // 選到的插入物：外面一圈細框（跟著物件轉）
+  function drawObjSel(ctx, objs, color, u, alpha) {
     if (!objs.length) return;
     ctx.save();
-    ctx.globalAlpha = darkNow ? 0.45 : 0.32; ctx.strokeStyle = color; ctx.lineWidth = 12 * u; ctx.lineJoin = "round";
-    objs.forEach(function (o) { ctx.strokeRect(o.x - 6 * u, o.y - 6 * u, o.w + 12 * u, o.h + 12 * u); });
+    ctx.globalAlpha = alpha == null ? 1 : alpha; ctx.strokeStyle = color; ctx.lineWidth = 2 * u;
+    objs.forEach(function (o) { inObj(ctx, o, function (x, y) { ctx.strokeRect(x - 2 * u, y - 2 * u, o.w + 4 * u, o.h + 4 * u); }); });
     ctx.restore();
   }
   // 圈選：九個取樣點（四角、四邊中點、中心）有五個以上在圈裡就算圈到
   function objHits(objs, L) {
     return objs.filter(function (o) {
       var k = 0;
-      for (var i = 0; i <= 2; i++) for (var j = 0; j <= 2; j++) if (inPoly(o.x + o.w * i / 2, o.y + o.h * j / 2, L)) k++;
+      for (var i = 0; i <= 2; i++) for (var j = 0; j <= 2; j++) {
+        var q = objPt(o, -o.w / 2 + o.w * i / 2, -o.h / 2 + o.h * j / 2);
+        if (inPoly(q[0], q[1], L)) k++;
+      }
       return k >= 5;
     });
   }
   function objAt(objs, x, y) {
-    for (var i = objs.length - 1; i >= 0; i--) { var o = objs[i]; if (x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h) return o; }
+    for (var i = objs.length - 1; i >= 0; i--) {
+      var o = objs[i], l = objLocal(o, x, y);
+      if (Math.abs(l[0]) <= o.w / 2 && Math.abs(l[1]) <= o.h / 2) return o;
+    }
     return null;
   }
-  function rectOf(o) { return { x: o.x, y: o.y, w: o.w, h: o.h }; }
-  function setRect(o, r) { o.x = r.x; o.y = r.y; o.w = r.w; o.h = r.h; }
+  /* 插入的東西可以旋轉（o.rot，弧度，繞中心轉）；圖片可以裁剪（o.crop＝顯示原圖的哪一塊，0–1）。
+     「物件座標」：原點在物件中心、跟著物件轉的座標 */
+  function objPt(o, lx, ly) {              // 物件座標 → 紙上座標
+    var a = o.rot || 0, c = Math.cos(a), s = Math.sin(a);
+    return [o.x + o.w / 2 + lx * c - ly * s, o.y + o.h / 2 + lx * s + ly * c];
+  }
+  function objLocal(o, x, y) {             // 紙上座標 → 物件座標
+    var a = -(o.rot || 0), c = Math.cos(a), s = Math.sin(a), dx = x - o.x - o.w / 2, dy = y - o.y - o.h / 2;
+    return [dx * c - dy * s, dx * s + dy * c];
+  }
+  function objBox(o) {                     // 轉過之後佔的範圍（不轉的外框）
+    if (!o.rot) return { x0: o.x, y0: o.y, x1: o.x + o.w, y1: o.y + o.h };
+    var b = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+    [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(function (k) {
+      var q = objPt(o, k[0] * o.w / 2, k[1] * o.h / 2);
+      b.x0 = Math.min(b.x0, q[0]); b.x1 = Math.max(b.x1, q[0]); b.y0 = Math.min(b.y0, q[1]); b.y1 = Math.max(b.y1, q[1]);
+    });
+    return b;
+  }
+  function rectOf(o) { return { x: o.x, y: o.y, w: o.w, h: o.h, rot: o.rot || 0 }; }
+  function setRect(o, r) {
+    o.x = r.x; o.y = r.y; o.w = r.w; o.h = r.h;
+    if (r.rot) o.rot = r.rot; else delete o.rot;
+  }
+  // 在物件自己的座標裡畫（有旋轉就先轉）；fn 拿到的是左上角
+  function inObj(ctx, o, fn) {
+    if (!o.rot) { fn(o.x, o.y); return; }
+    ctx.save();
+    ctx.translate(o.x + o.w / 2, o.y + o.h / 2); ctx.rotate(o.rot);
+    fn(-o.w / 2, -o.h / 2);
+    ctx.restore();
+  }
+  function drawImg(ctx, o, im) {
+    var c = o.crop, nw = im.naturalWidth || im.width, nh = im.naturalHeight || im.height;
+    inObj(ctx, o, function (x, y) {
+      if (c) ctx.drawImage(im, c.x * nw, c.y * nh, c.w * nw, c.h * nh, x, y, o.w, o.h);
+      else ctx.drawImage(im, x, y, o.w, o.h);
+    });
+  }
 
   function distSeg(px, py, ax, ay, bx, by) {
     var dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy, t = 0;
@@ -445,17 +494,17 @@
     });
     return out;
   }
-  // 圈到的筆跡底下墊一層半透明的強調色光暈，看得出選到哪些字。
-  // 同樣粗細的筆畫合成一條路徑一次畫，交叉的地方才不會疊得比較深
-  function drawHalo(ctx, strokes, color, u) {
+  // 選到的筆跡：先用藍色畫一條比筆畫寬一點點的線，筆畫再畫在上面，看起來就是描了一圈細邊。
+  // 同樣粗細的筆畫合成一條路徑一次畫
+  function drawOutline(ctx, strokes, color, u, alpha) {
     var groups = {}, keys = [];
     strokes.forEach(function (s) {
-      var w = Math.round((baseW(s) + 12 * u) * 2) / 2;
+      var w = Math.round((baseW(s) + 4.5 * u) * 4) / 4;
       if (!groups[w]) { groups[w] = []; keys.push(w); }
       groups[w].push(s);
     });
     ctx.save();
-    ctx.globalAlpha = darkNow ? 0.45 : 0.32;
+    ctx.globalAlpha = alpha == null ? 1 : alpha;
     ctx.strokeStyle = color; ctx.lineCap = "round"; ctx.lineJoin = "round";
     keys.forEach(function (w) {
       ctx.beginPath();
@@ -574,9 +623,13 @@
       '<div class="ink-sheet"><canvas class="ink-canvas" aria-label="手寫區"></canvas><div class="ink-thumb" hidden></div>' +
         // 選取後浮在選取範圍旁邊的操作列（不放在紙的上方，免得紙被往下推、筆點歪）
         '<div class="ink-selbar" role="toolbar" aria-label="選取的筆跡" hidden><span class="ink-selinfo"></span>' +
+          '<button type="button" data-sel="crop" hidden>' + I("crop") + "<span>裁剪</span></button>" +
           '<button type="button" data-sel="dup">' + I("copy") + "<span>複製</span></button>" +
           '<button type="button" data-sel="del">' + I("trash") + "<span>刪除</span></button>" +
-          '<button type="button" data-sel="none" aria-label="取消選取">' + I("close") + "</button></div>" +
+          '<button type="button" data-sel="none" aria-label="取消選取">' + I("close") + "</button>" +
+          '<button type="button" data-sel="cropall" hidden><span>全部</span></button>' +
+          '<button type="button" data-sel="cropno" hidden><span>取消</span></button>' +
+          '<button type="button" data-sel="cropok" class="ink-sel-ok" hidden>' + I("check") + "<span>完成</span></button></div>" +
       "</div>" +
       // 紙的下面：縮放｜加長、縮短
       '<div class="ink-foot">' +
@@ -762,24 +815,27 @@
     ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim() || "#e9ecf2";
     ctx.stroke();
     var pal = palette(false), sel = this.sel, xf = this.xf, u = 1 / (this.scale * this.z), f = this.ratio * this.scale * this.z;
-    // 正在圈：預覽會圈到的筆畫和插入的東西；圈好了：標出選到的
-    var hot = this.lasso ? this.lassoPreview() : sel;
-    var glow = hot.length ? getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#c42f3d" : "";
-    var hotS = hot.filter(function (x) { return !isObj(x); }), hotO = hot.filter(isObj);
+    // 正在圈：預覽會圈到的筆畫和插入的東西（淡一點）；圈好了：標出選到的。
+    // 選到的筆跡描一圈細細的藍邊（不用粗的光暈，字才看得清楚），插入的東西畫細框
+    var hot = this.lasso ? this.lassoPreview() : sel, color = hot.length || sel.length ? selColor() : "";
+    var hotS = hot.filter(function (x) { return !isObj(x); }), hotO = hot.filter(isObj), edge = this.lasso ? 0.55 : 1;
     // .md 卡片只畫看得到的那幾段（上下多畫半個畫面，捲動時比較快出現）
     var pre = (vr.y1 - vr.y0) / 2, vis = { y0: vr.y0 - pre, y1: vr.y1 + pre };
+    var crO = this.cropping ? this.cropping.o : null;
     if (sel.length && xf) {
-      var move = function () { ctx.translate(xf.ox + xf.dx, xf.oy + xf.dy); ctx.scale(xf.s, xf.s); ctx.translate(-xf.ox, -xf.oy); };
-      // 拖曳中的東西：把看得到的範圍換回移動前的座標
-      var visT = { y0: xf.oy + (vis.y0 - xf.oy - xf.dy) / xf.s, y1: xf.oy + (vis.y1 - xf.oy - xf.dy) / xf.s };
+      var move = function () { ctx.translate(xf.tx, xf.ty); ctx.rotate(xf.th); ctx.scale(xf.s, xf.s); ctx.translate(-xf.px, -xf.py); };
+      // 拖曳中的東西：把看得到的範圍換回變換前的座標（四個角的外框）
+      var ys = [[0, vis.y0], [W, vis.y0], [0, vis.y1], [W, vis.y1]].map(function (q) { return xfInv(xf, q[0], q[1])[1]; });
+      var visT = { y0: Math.min.apply(null, ys), y1: Math.max.apply(null, ys) };
       drawObjs(ctx, this.objs.filter(function (o) { return sel.indexOf(o) < 0; }), f, false, vis);
-      ctx.save(); move(); drawObjs(ctx, hotO, f * xf.s, false, visT); drawObjHalo(ctx, hotO, glow, u / xf.s); ctx.restore();
+      ctx.save(); move(); drawObjs(ctx, hotO, f * xf.s, false, visT); drawObjSel(ctx, hotO, color, u / xf.s); ctx.restore();
       drawAll(ctx, this.strokes.filter(function (st) { return sel.indexOf(st) < 0; }), pal);
-      ctx.save(); move(); drawHalo(ctx, hotS, glow, u / xf.s); drawAll(ctx, hotS, pal); ctx.restore();
+      ctx.save(); move(); drawOutline(ctx, hotS, color, u / xf.s, 1); drawAll(ctx, hotS, pal); ctx.restore();
     } else {
-      drawObjs(ctx, this.objs, f, false, vis);
-      drawObjHalo(ctx, hotO, glow, u);
-      if (hotS.length) drawHalo(ctx, hotS, glow, u);
+      drawObjs(ctx, crO ? this.objs.filter(function (o) { return o !== crO; }) : this.objs, f, false, vis);
+      if (crO) this.drawCrop(ctx, color);
+      else drawObjSel(ctx, hotO, color, u, edge);
+      if (hotS.length) drawOutline(ctx, hotS, color, u, edge);
       drawAll(ctx, this.strokes, pal);
     }
     this.drawOverlay(ctx);
@@ -787,13 +843,55 @@
     this.syncThumb();
   };
 
-  /* ---------- 選取：圈選、移動、縮放、複製、刪除 ---------- */
-  // 選取範圍（含線條粗細）；moved＝true 時算上正在拖曳的位移和縮放
-  Pad.prototype.selBox = function (moved) {
+  /* ---------- 選取：圈選、移動、縮放（四個角）、旋轉、複製、刪除、裁剪圖片 ---------- */
+  // 選取框 frame：中心 (cx, cy)、寬高 (w, h)、角度 a。剛選好時是包住選取範圍的方框；只選一個插入的東西時
+  // 跟著它的角度。轉過、縮放過之後框也跟著轉（不會變回不轉的大框）。
+  // 拖曳中的變換 xf：p' = T + s·R(th)·(p − P)，P＝(px, py)、T＝(tx, ty)
+  var CORNERS = [[-1, -1], [1, -1], [1, 1], [-1, 1]];   // 左上起順時針
+  var ROT_D = 34;                                         // 旋轉圓點離框上緣幾個螢幕像素
+  function xfPt(xf, x, y) {
+    if (!xf) return [x, y];
+    var c = Math.cos(xf.th), s = Math.sin(xf.th), dx = x - xf.px, dy = y - xf.py;
+    return [xf.tx + xf.s * (dx * c - dy * s), xf.ty + xf.s * (dx * s + dy * c)];
+  }
+  function xfInv(xf, x, y) {
+    var c = Math.cos(-xf.th), s = Math.sin(-xf.th), dx = (x - xf.tx) / xf.s, dy = (y - xf.ty) / xf.s;
+    return [xf.px + dx * c - dy * s, xf.py + dx * s + dy * c];
+  }
+  function frameAfter(fr, xf) {
+    if (!xf || !fr) return fr;
+    var c = xfPt(xf, fr.cx, fr.cy);
+    return { cx: c[0], cy: c[1], w: fr.w * xf.s, h: fr.h * xf.s, a: fr.a + xf.th };
+  }
+  function framePt(fr, lx, ly) {
+    var c = Math.cos(fr.a), s = Math.sin(fr.a);
+    return [fr.cx + lx * c - ly * s, fr.cy + lx * s + ly * c];
+  }
+  function frameLocal(fr, x, y) {
+    var c = Math.cos(-fr.a), s = Math.sin(-fr.a), dx = x - fr.cx, dy = y - fr.cy;
+    return [dx * c - dy * s, dx * s + dy * c];
+  }
+  function frameBox(fr) {
+    var b = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+    CORNERS.forEach(function (k) {
+      var q = framePt(fr, k[0] * fr.w / 2, k[1] * fr.h / 2);
+      b.x0 = Math.min(b.x0, q[0]); b.x1 = Math.max(b.x1, q[0]); b.y0 = Math.min(b.y0, q[1]); b.y1 = Math.max(b.y1, q[1]);
+    });
+    return b;
+  }
+  function normAngle(a) { a = a % (2 * Math.PI); if (a > Math.PI) a -= 2 * Math.PI; if (a <= -Math.PI) a += 2 * Math.PI; return a; }
+  Pad.prototype.makeFrame = function () {
+    var sel = this.sel, pad = 6 / (this.scale * this.z);
+    if (!sel.length) return null;
+    if (sel.length === 1 && isObj(sel[0])) {
+      var o = sel[0];
+      return { cx: o.x + o.w / 2, cy: o.y + o.h / 2, w: o.w + 2 * pad, h: o.h + 2 * pad, a: o.rot || 0 };
+    }
     var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-    this.sel.forEach(function (st) {
+    sel.forEach(function (st) {
       if (isObj(st)) {
-        x0 = Math.min(x0, st.x); y0 = Math.min(y0, st.y); x1 = Math.max(x1, st.x + st.w); y1 = Math.max(y1, st.y + st.h);
+        var b = objBox(st);
+        x0 = Math.min(x0, b.x0); y0 = Math.min(y0, b.y0); x1 = Math.max(x1, b.x1); y1 = Math.max(y1, b.y1);
         return;
       }
       var r = baseW(st) / 2;
@@ -802,33 +900,109 @@
         y0 = Math.min(y0, st.p[i + 1] - r); y1 = Math.max(y1, st.p[i + 1] + r);
       }
     });
-    var pad = 6 / (this.scale * this.z);
-    var b = { x0: x0 - pad, y0: y0 - pad, x1: x1 + pad, y1: y1 + pad };
-    var xf = this.xf;
-    if (moved && xf) {
-      b = { x0: xf.ox + (b.x0 - xf.ox) * xf.s + xf.dx, y0: xf.oy + (b.y0 - xf.oy) * xf.s + xf.dy,
-            x1: xf.ox + (b.x1 - xf.ox) * xf.s + xf.dx, y1: xf.oy + (b.y1 - xf.oy) * xf.s + xf.dy };
+    return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, w: x1 - x0 + 2 * pad, h: y1 - y0 + 2 * pad, a: 0 };
+  };
+  // 選取範圍的外框（不轉）；moved＝true 時算上正在拖曳的變換
+  Pad.prototype.selBox = function (moved) {
+    var fr = this.frame || this.makeFrame();
+    return frameBox(moved ? frameAfter(fr, this.xf) : fr);
+  };
+  // .md 筆記卡片不旋轉（選到的東西裡有卡片時，不顯示旋轉的圓點）
+  Pad.prototype.canRotate = function () { return !this.sel.some(function (x) { return isObj(x) && x.kind === "md"; }); };
+  // 旋轉圓點的位置：平常在框的上面；上面超出看得到的範圍（例如選到紙最上面的字）就改放在框的下面。
+  // 回傳 [圓點, 框邊上連接的那一點]
+  Pad.prototype.rotHandle = function (fr) {
+    var u = 1 / (this.scale * this.z), vr = this.visRange(), d = ROT_D * u;
+    var top = framePt(fr, 0, -fr.h / 2 - d);
+    if (top[1] >= vr.y0 + 14 * u && top[1] <= vr.y1 - 14 * u) return [top, framePt(fr, 0, -fr.h / 2)];
+    var bot = framePt(fr, 0, fr.h / 2 + d);
+    if (bot[1] >= vr.y0 + 14 * u && bot[1] <= vr.y1 - 14 * u) return [bot, framePt(fr, 0, fr.h / 2)];
+    return [top, framePt(fr, 0, -fr.h / 2)];
+  };
+  // 點到選取框的哪裡：旋轉圓點、四個角（縮放）、框裡面（移動）
+  Pad.prototype.hitFrame = function (q) {
+    var fr = this.frame;
+    if (!fr) return null;
+    var u = 1 / (this.scale * this.z), tol = 22 * u, k;
+    if (this.canRotate()) {
+      var r = this.rotHandle(fr)[0];
+      if (Math.hypot(q[0] - r[0], q[1] - r[1]) <= tol) return { mode: "rotate", h0: r };
     }
-    return b;
+    for (k = 0; k < 4; k++) {
+      var c = framePt(fr, CORNERS[k][0] * fr.w / 2, CORNERS[k][1] * fr.h / 2);
+      if (Math.hypot(q[0] - c[0], q[1] - c[1]) <= tol) return { mode: "scale", k: k };
+    }
+    var l = frameLocal(fr, q[0], q[1]);
+    if (Math.abs(l[0]) <= fr.w / 2 && Math.abs(l[1]) <= fr.h / 2) return { mode: "move" };
+    return null;
+  };
+  // 拖曳中：算出變換（移動、拉角縮放、繞中心旋轉），再整個推回紙裡面
+  Pad.prototype.dragXf = function (act, q) {
+    var fr = act.fr, u = 1 / (this.scale * this.z), xf;
+    if (act.mode === "move") {
+      xf = { px: 0, py: 0, tx: q[0] - act.start[0], ty: q[1] - act.start[1], s: 1, th: 0 };
+    } else if (act.mode === "scale") {
+      // 拉一個角：對面那個角固定不動，等比例放大縮小
+      var o = CORNERS[(act.k + 2) % 4], k = CORNERS[act.k];
+      var A = framePt(fr, o[0] * fr.w / 2, o[1] * fr.h / 2), C = framePt(fr, k[0] * fr.w / 2, k[1] * fr.h / 2);
+      var vx = C[0] - A[0], vy = C[1] - A[1];
+      var sc = ((q[0] - A[0]) * vx + (q[1] - A[1]) * vy) / Math.max(1e-6, vx * vx + vy * vy);
+      xf = { px: A[0], py: A[1], tx: A[0], ty: A[1], s: clamp(sc, Math.max(0.05, 24 * u / Math.max(1, Math.min(fr.w, fr.h))), 8), th: 0 };
+    } else {
+      // 旋轉：拉框上面（或下面）的圓點繞中心轉；接近 0°、90°、180°、270° 時自動對齊
+      var h0 = act.h0;
+      var th = Math.atan2(q[1] - fr.cy, q[0] - fr.cx) - Math.atan2(h0[1] - fr.cy, h0[0] - fr.cx);
+      var tot = fr.a + th, q90 = Math.round(tot / (Math.PI / 2)) * (Math.PI / 2);
+      if (Math.abs(tot - q90) < 4 * Math.PI / 180) th = q90 - fr.a;
+      xf = { px: fr.cx, py: fr.cy, tx: fr.cx, ty: fr.cy, s: 1, th: th };
+    }
+    // 不能跑出紙外：整個框推回紙裡面（比紙還大就置中）
+    var b = frameBox(frameAfter(fr, xf)), dx = 0, dy = 0;
+    if (b.x1 - b.x0 > W) dx = W / 2 - (b.x0 + b.x1) / 2; else if (b.x0 < 0) dx = -b.x0; else if (b.x1 > W) dx = W - b.x1;
+    if (b.y1 - b.y0 > this.H) dy = this.H / 2 - (b.y0 + b.y1) / 2; else if (b.y0 < 0) dy = -b.y0; else if (b.y1 > this.H) dy = this.H - b.y1;
+    xf.tx += dx; xf.ty += dy;
+    return xf;
   };
   Pad.prototype.drawOverlay = function (ctx) {
     if (!this.lasso && !this.sel.length) return;
     var u = 1 / (this.scale * this.z), cs = getComputedStyle(document.documentElement);
-    var accent = cs.getPropertyValue("--accent").trim() || "#c42f3d", card = cs.getPropertyValue("--card").trim() || "#fff";
+    var color = selColor(), card = cs.getPropertyValue("--card").trim() || "#fff";
     ctx.save();
-    ctx.globalAlpha = 1; ctx.lineWidth = 1.6 * u; ctx.strokeStyle = accent; ctx.setLineDash([6 * u, 5 * u]);
+    ctx.globalAlpha = 1; ctx.lineWidth = 1.6 * u; ctx.strokeStyle = color; ctx.setLineDash([6 * u, 5 * u]);
     var L = this.lasso;
     if (L && L.length >= 4) {
       ctx.beginPath(); ctx.moveTo(L[0], L[1]);
       for (var i = 2; i < L.length; i += 2) ctx.lineTo(L[i], L[i + 1]);
       ctx.stroke();
     }
-    if (this.sel.length) {
-      var b = this.selBox(true);
-      ctx.strokeRect(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0);
-      ctx.setLineDash([]);
-      ctx.beginPath(); ctx.arc(b.x1, b.y1, 9 * u, 0, Math.PI * 2);
-      ctx.fillStyle = card; ctx.fill(); ctx.lineWidth = 2.4 * u; ctx.stroke();
+    ctx.setLineDash([]);
+    if (this.sel.length && this.frame && !this.cropping) {
+      var fr = frameAfter(this.frame, this.xf), c = CORNERS.map(function (k) { return framePt(fr, k[0] * fr.w / 2, k[1] * fr.h / 2); });
+      ctx.lineWidth = 1.5 * u;
+      ctx.beginPath(); ctx.moveTo(c[0][0], c[0][1]); for (i = 1; i < 4; i++) ctx.lineTo(c[i][0], c[i][1]); ctx.closePath(); ctx.stroke();
+      var dot = function (x, y, r) { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fillStyle = card; ctx.fill(); ctx.lineWidth = 2.2 * u; ctx.stroke(); };
+      if (this.canRotate()) {
+        // 旋轉圓點：一條短線接到框邊，圓裡面畫一個轉圈的箭頭（拖曳中跟著框一起轉）
+        var rh = this.xf && this.rotAt ? [xfPt(this.xf, this.rotAt[0][0], this.rotAt[0][1]), xfPt(this.xf, this.rotAt[1][0], this.rotAt[1][1])] : this.rotHandle(fr);
+        if (!this.xf) this.rotAt = rh;
+        var top = rh[1], hp = rh[0];
+        ctx.lineWidth = 1.5 * u; ctx.beginPath(); ctx.moveTo(top[0], top[1]); ctx.lineTo(hp[0], hp[1]); ctx.stroke();
+        dot(hp[0], hp[1], 10 * u);
+        ctx.lineWidth = 1.6 * u; ctx.beginPath(); ctx.arc(hp[0], hp[1], 4.6 * u, fr.a - 0.3 * Math.PI, fr.a + 1.2 * Math.PI); ctx.stroke();
+        var ea = fr.a - 0.3 * Math.PI, ex = hp[0] + 4.6 * u * Math.cos(ea), ey = hp[1] + 4.6 * u * Math.sin(ea);
+        ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - 3.2 * u * Math.cos(ea - 0.9), ey - 3.2 * u * Math.sin(ea - 0.9));
+        ctx.moveTo(ex, ey); ctx.lineTo(ex + 3.2 * u * Math.cos(ea + 0.6 + Math.PI / 2), ey + 3.2 * u * Math.sin(ea + 0.6 + Math.PI / 2)); ctx.stroke();
+        if (this.xf && this.xfMode === "rotate") {
+          // 轉的時候在圓點旁邊顯示角度
+          var deg = Math.round(((fr.a * 180 / Math.PI) % 360 + 360) % 360);
+          ctx.font = "600 " + (13 * u) + "px system-ui, sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+          var tw = ctx.measureText(deg + "°").width;
+          ctx.fillStyle = color; ctx.globalAlpha = 0.92;
+          ctx.fillRect(hp[0] + 16 * u, hp[1] - 11 * u, tw + 12 * u, 22 * u);
+          ctx.globalAlpha = 1; ctx.fillStyle = card; ctx.fillText(deg + "°", hp[0] + 22 * u, hp[1]);
+        }
+      }
+      c.forEach(function (q) { dot(q[0], q[1], 8 * u); });
     }
     ctx.restore();
   };
@@ -842,17 +1016,35 @@
     return out.join("、");
   }
   Pad.prototype.setSel = function (list) {
-    this.sel = list; this.xf = null;
-    this.selBar.hidden = !list.length;
-    if (list.length) this.selBar.querySelector(".ink-selinfo").textContent = selText(list);
+    this.sel = list; this.xf = null; this.cropping = null;
+    this.frame = this.makeFrame();
+    this.syncSelBar();
     this.requestDraw();
+  };
+  // 操作列：平常是「複製、刪除」（只選一張圖時多一個「裁剪」）；裁剪中換成「全部、取消、完成」
+  Pad.prototype.syncSelBar = function () {
+    var bar = this.selBar, n = this.sel.length, crop = !!this.cropping;
+    var oneImg = n === 1 && isObj(this.sel[0]) && this.sel[0].kind === "img";
+    bar.hidden = !n;
+    if (!n) return;
+    bar.querySelector(".ink-selinfo").textContent = crop ? "裁剪圖片" : selText(this.sel);
+    bar.querySelectorAll("[data-sel]").forEach(function (b) {
+      var k = b.dataset.sel, inCrop = /^crop./.test(k);
+      b.hidden = k === "crop" ? !oneImg || crop : inCrop ? !crop : crop;
+    });
+    this.placeSelBar();
   };
   // 操作列放在選取範圍下面；下面放不下就放上面；拖曳時先藏起來
   Pad.prototype.placeSelBar = function () {
     var bar = this.selBar;
     if (!this.sel.length) return;
     bar.classList.toggle("dragging", !!this.xf);
-    var b = this.selBox(true), k = this.scale * this.z;
+    var b = this.cropping ? this.cropBox() : this.selBox(true), k = this.scale * this.z;
+    if (!this.cropping && this.frame && this.canRotate()) {
+      // 旋轉圓點也算進去，操作列才不會蓋住它
+      var rh = this.rotHandle(frameAfter(this.frame, this.xf))[0], r = 16 / k;
+      b = { x0: Math.min(b.x0, rh[0] - r), y0: Math.min(b.y0, rh[1] - r), x1: Math.max(b.x1, rh[0] + r), y1: Math.max(b.y1, rh[1] + r) };
+    }
     var bw = bar.offsetWidth, bh = bar.offsetHeight, sw = this.sheet.clientWidth, sh = this.canvas.clientHeight;
     // 選取的東西捲出看得到的範圍時，操作列先藏起來
     bar.classList.toggle("away", (b.y1 - this.oy) * k < 0 || (b.y0 - this.oy) * k > sh);
@@ -871,9 +1063,9 @@
       if (now - (this.hitAt || 0) >= gap) {
         this.hits = lassoHits(this.strokes, L).concat(objHits(this.objs, L)); this.hitLen = L.length;
         this.hitAt = Date.now(); this.hitGap = Math.max(40, (this.hitAt - now) * 4);
-        if (this.hits.length !== this.hitShown && tipLeft("lasso")) {
+        if (this.hits.length !== this.hitShown && tipLeft("lasso2")) {
           this.hitShown = this.hits.length;
-          this.status(this.hits.length ? "圈到 " + selText(this.hits) + "（有光暈的），放開就選取" : "把要選的東西圈起來：一筆有一半以上在圈裡就算圈到");
+          this.status(this.hits.length ? "圈到 " + selText(this.hits) + "（描藍邊的），放開就選取" : "把要選的東西圈起來：一筆有一半以上在圈裡就算圈到");
         }
       } else if (!this.hitTimer) {
         this.hitTimer = setTimeout(function () { self.hitTimer = 0; self.requestDraw(); }, gap - (now - (this.hitAt || 0)) + 5);
@@ -901,35 +1093,155 @@
     }
     this.setSel(found);
     // 點空白的地方只是取消選取，不用提示；真的圈了卻沒圈到才說明
-    if (found.length) this.hint("lasso", "選到 " + selText(found) + "（有光暈的就是）：拖框裡面可以移動，拖右下角的圓點可以縮放");
+    if (found.length) this.hint("lasso2", "選到 " + selText(found) + "（描藍邊的就是）：拖框裡面移動，拉四個角縮放，拉上面的圓點旋轉");
     else if (!tiny) this.status("沒有圈到東西：一筆要有一半以上在圈裡才算");
     else if (!this.lassoHad) this.hint("tap", "這裡沒有東西：用筆把要選的東西圈起來，或直接點一下那一筆、那張圖");
     else this.status("");
     this.lassoHad = false;
   };
-  // 放開時把位移、縮放真的寫進筆畫（可以復原）
+  // 放開時把移動、縮放、旋轉真的寫進筆畫和插入的東西（可以復原）；選取框也跟著變
   Pad.prototype.commitXf = function () {
-    var xf = this.xf;
-    this.xf = null;
-    if (!xf || (Math.abs(xf.dx) < 0.5 && Math.abs(xf.dy) < 0.5 && Math.abs(xf.s - 1) < 0.005)) { this.requestDraw(); return; }
+    var xf = this.xf, fr = this.frame;
+    this.xf = null; this.xfMode = null;
+    if (!xf || !fr) { this.requestDraw(); return; }
+    var f1 = frameAfter(fr, xf);
+    var moved = CORNERS.some(function (k) {
+      var a = framePt(fr, k[0] * fr.w / 2, k[1] * fr.h / 2), b = framePt(f1, k[0] * f1.w / 2, k[1] * f1.h / 2);
+      return Math.hypot(a[0] - b[0], a[1] - b[1]) > 0.5;
+    });
+    if (!moved) { this.requestDraw(); return; }
     function r10(v) { return Math.round(v * 10) / 10; }
     var items = this.sel.filter(function (x) { return !isObj(x); }).map(function (st) {
       var it = { s: st, p0: st.p.slice(), sw0: st.sw };
       for (var i = 0; i < st.p.length; i += 3) {
-        st.p[i] = r10(xf.ox + (st.p[i] - xf.ox) * xf.s + xf.dx);
-        st.p[i + 1] = r10(xf.oy + (st.p[i + 1] - xf.oy) * xf.s + xf.dy);
+        var q = xfPt(xf, st.p[i], st.p[i + 1]);
+        st.p[i] = r10(q[0]); st.p[i + 1] = r10(q[1]);
       }
       if (xf.s !== 1) st.sw = Math.round((st.sw != null ? st.sw : SIZES[st.w] || SIZES[1]) * xf.s * 100) / 100;
       it.p1 = st.p.slice(); it.sw1 = st.sw;
       return it;
     });
     var objs = this.sel.filter(isObj).map(function (o) {
-      var r0 = rectOf(o);
-      setRect(o, { x: r10(xf.ox + (o.x - xf.ox) * xf.s + xf.dx), y: r10(xf.oy + (o.y - xf.oy) * xf.s + xf.dy), w: r10(o.w * xf.s), h: r10(o.h * xf.s) });
+      var r0 = rectOf(o), c = xfPt(xf, o.x + o.w / 2, o.y + o.h / 2), w = o.w * xf.s, h = o.h * xf.s;
+      var rot = normAngle((o.rot || 0) + xf.th);
+      setRect(o, { x: r10(c[0] - w / 2), y: r10(c[1] - h / 2), w: r10(w), h: r10(h), rot: Math.abs(rot) < 1e-4 ? 0 : Math.round(rot * 1e4) / 1e4 });
       return { o: o, r0: r0, r1: rectOf(o) };
     });
+    this.frame = f1;
     this.push({ t: "xf", items: items, objs: objs });
     this.redraw();
+  };
+
+  /* ---------- 裁剪圖片 ---------- */
+  // 只選一張圖時，操作列有「裁剪」：整張原圖淡淡地顯示，亮的那一塊是留下來的範圍；
+  // 拉四個角、四邊調整，拖中間移動；「完成」才真的改（可以復原），「全部」回到整張圖
+  function imgSnap(o) { return { x: o.x, y: o.y, w: o.w, h: o.h, rot: o.rot || 0, crop: o.crop ? { x: o.crop.x, y: o.crop.y, w: o.crop.w, h: o.crop.h } : null }; }
+  function imgApply(o, v) { setRect(o, v); if (v.crop) o.crop = { x: v.crop.x, y: v.crop.y, w: v.crop.w, h: v.crop.h }; else delete o.crop; }
+  Pad.prototype.startCrop = function () {
+    var o = this.sel[0];
+    if (this.sel.length !== 1 || !isObj(o) || o.kind !== "img") return;
+    var c = o.crop || { x: 0, y: 0, w: 1, h: 1 };
+    this.cropping = { o: o, c0: { x: c.x, y: c.y, w: c.w, h: c.h }, cr: { x: c.x, y: c.y, w: c.w, h: c.h } };
+    this.xf = null;
+    this.syncSelBar();
+    this.requestDraw();
+  };
+  // 裁剪時的座標（圖片自己的座標）：整張原圖 (fx0, fy0) 起、寬 Wf 高 Hf；留下的範圍 x0–x1、y0–y1
+  Pad.prototype.cropGeom = function () {
+    var C = this.cropping, o = C.o, c0 = C.c0, cr = C.cr, Wf = o.w / c0.w, Hf = o.h / c0.h;
+    var fx0 = -o.w / 2 - c0.x * Wf, fy0 = -o.h / 2 - c0.y * Hf;
+    return { o: o, Wf: Wf, Hf: Hf, fx0: fx0, fy0: fy0,
+      x0: fx0 + cr.x * Wf, y0: fy0 + cr.y * Hf, x1: fx0 + (cr.x + cr.w) * Wf, y1: fy0 + (cr.y + cr.h) * Hf };
+  };
+  // 整張原圖在紙上佔的範圍（放操作列用）
+  Pad.prototype.cropBox = function () {
+    var g = this.cropGeom(), b = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+    [[g.fx0, g.fy0], [g.fx0 + g.Wf, g.fy0], [g.fx0 + g.Wf, g.fy0 + g.Hf], [g.fx0, g.fy0 + g.Hf]].forEach(function (l) {
+      var q = objPt(g.o, l[0], l[1]);
+      b.x0 = Math.min(b.x0, q[0]); b.x1 = Math.max(b.x1, q[0]); b.y0 = Math.min(b.y0, q[1]); b.y1 = Math.max(b.y1, q[1]);
+    });
+    return b;
+  };
+  // 點到裁剪框的哪裡：0–3 四個角（左上起順時針）、4–7 四邊（上右下左）、8 框裡面；-1＝外面
+  Pad.prototype.cropHit = function (q) {
+    var g = this.cropGeom(), l = objLocal(g.o, q[0], q[1]), tol = 22 / (this.scale * this.z);
+    var mx = (g.x0 + g.x1) / 2, my = (g.y0 + g.y1) / 2;
+    var pts = [[g.x0, g.y0], [g.x1, g.y0], [g.x1, g.y1], [g.x0, g.y1], [mx, g.y0], [g.x1, my], [mx, g.y1], [g.x0, my]];
+    for (var i = 0; i < pts.length; i++) if (Math.hypot(l[0] - pts[i][0], l[1] - pts[i][1]) <= tol) return i;
+    if (l[0] >= g.x0 && l[0] <= g.x1 && l[1] >= g.y0 && l[1] <= g.y1) return 8;
+    return -1;
+  };
+  Pad.prototype.cropNorm = function (q) {
+    var g = this.cropGeom(), l = objLocal(g.o, q[0], q[1]);
+    return [(l[0] - g.fx0) / g.Wf, (l[1] - g.fy0) / g.Hf];
+  };
+  Pad.prototype.cropDrag = function (act, q) {
+    var g = this.cropGeom(), n = this.cropNorm(q), s0 = act.cr0, k = act.k;
+    var mw = Math.min(1, Math.max(0.03, 24 / g.Wf)), mh = Math.min(1, Math.max(0.03, 24 / g.Hf));
+    var x0 = s0.x, y0 = s0.y, x1 = s0.x + s0.w, y1 = s0.y + s0.h;
+    if (k === 8) {
+      var dx = clamp(n[0] - act.n0[0], -x0, 1 - x1), dy = clamp(n[1] - act.n0[1], -y0, 1 - y1);
+      x0 += dx; x1 += dx; y0 += dy; y1 += dy;
+    } else {
+      if (k === 0 || k === 3 || k === 7) x0 = clamp(n[0], 0, x1 - mw);
+      if (k === 1 || k === 2 || k === 5) x1 = clamp(n[0], x0 + mw, 1);
+      if (k === 0 || k === 1 || k === 4) y0 = clamp(n[1], 0, y1 - mh);
+      if (k === 2 || k === 3 || k === 6) y1 = clamp(n[1], y0 + mh, 1);
+    }
+    this.cropping.cr = { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  };
+  Pad.prototype.endCrop = function (apply) {
+    var C = this.cropping;
+    if (!C) return;
+    if (apply) {
+      var g = this.cropGeom(), o = C.o, cr = C.cr;
+      var same = Math.abs(cr.x - C.c0.x) < 1e-4 && Math.abs(cr.y - C.c0.y) < 1e-4 && Math.abs(cr.w - C.c0.w) < 1e-4 && Math.abs(cr.h - C.c0.h) < 1e-4;
+      if (!same) {
+        var r5 = function (v) { return Math.round(v * 1e5) / 1e5; }, r10 = function (v) { return Math.round(v * 10) / 10; };
+        var full = cr.x < 1e-4 && cr.y < 1e-4 && cr.w > 1 - 1e-4 && cr.h > 1 - 1e-4;
+        var c = objPt(o, (g.x0 + g.x1) / 2, (g.y0 + g.y1) / 2), w = g.x1 - g.x0, h = g.y1 - g.y0;
+        var before = imgSnap(o), H0 = this.H;
+        imgApply(o, { x: r10(c[0] - w / 2), y: r10(c[1] - h / 2), w: r10(w), h: r10(h), rot: o.rot || 0,
+          crop: full ? null : { x: r5(cr.x), y: r5(cr.y), w: r5(cr.w), h: r5(cr.h) } });
+        var need = Math.min(MAX_H, Math.ceil((objBox(o).y1 + 40) / GRID) * GRID);
+        if (need > this.H) this.setH(need);
+        this.push({ t: "crop", o: o, a: before, b: imgSnap(o), h0: H0, h1: this.H });
+      }
+    }
+    this.cropping = null;
+    this.frame = this.makeFrame();
+    this.syncSelBar();
+    this.requestDraw();
+  };
+  // 裁剪中的畫法：整張原圖淡淡的，留下的範圍正常亮度，框的四角和四邊有可以拉的把手
+  Pad.prototype.drawCrop = function (ctx, color) {
+    var g = this.cropGeom(), o = g.o, e = imgOf(o.id), u = 1 / (this.scale * this.z);
+    var w = g.x1 - g.x0, h = g.y1 - g.y0;
+    ctx.save();
+    ctx.translate(o.x + o.w / 2, o.y + o.h / 2); ctx.rotate(o.rot || 0);
+    if (e.state === "ok") {
+      ctx.globalAlpha = 0.28; ctx.drawImage(e.im, g.fx0, g.fy0, g.Wf, g.Hf);
+      ctx.globalAlpha = 1;
+      ctx.save(); ctx.beginPath(); ctx.rect(g.x0, g.y0, w, h); ctx.clip();
+      ctx.drawImage(e.im, g.fx0, g.fy0, g.Wf, g.Hf); ctx.restore();
+    }
+    ctx.globalAlpha = 1; ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5 * u; ctx.strokeRect(g.x0, g.y0, w, h);
+    // 三等分線，比較好對齊
+    ctx.globalAlpha = 0.45; ctx.lineWidth = 1 * u; ctx.beginPath();
+    for (var i = 1; i < 3; i++) { ctx.moveTo(g.x0 + w * i / 3, g.y0); ctx.lineTo(g.x0 + w * i / 3, g.y1); ctx.moveTo(g.x0, g.y0 + h * i / 3); ctx.lineTo(g.x1, g.y0 + h * i / 3); }
+    ctx.stroke();
+    // 四個角是 L 形、四邊中間是短槓
+    ctx.globalAlpha = 1; ctx.lineWidth = 4.5 * u; ctx.lineCap = "round"; ctx.beginPath();
+    var L = Math.min(18 * u, w / 3, h / 3), E = Math.min(12 * u, w / 4, h / 4);
+    [[g.x0, g.y0, 1, 1], [g.x1, g.y0, -1, 1], [g.x1, g.y1, -1, -1], [g.x0, g.y1, 1, -1]].forEach(function (c) {
+      ctx.moveTo(c[0] + c[2] * L, c[1]); ctx.lineTo(c[0], c[1]); ctx.lineTo(c[0], c[1] + c[3] * L);
+    });
+    var mx = (g.x0 + g.x1) / 2, my = (g.y0 + g.y1) / 2;
+    ctx.moveTo(mx - E, g.y0); ctx.lineTo(mx + E, g.y0); ctx.moveTo(mx - E, g.y1); ctx.lineTo(mx + E, g.y1);
+    ctx.moveTo(g.x0, my - E); ctx.lineTo(g.x0, my + E); ctx.moveTo(g.x1, my - E); ctx.lineTo(g.x1, my + E);
+    ctx.stroke();
+    ctx.restore();
   };
   Pad.prototype.dupSel = function () {
     if (!this.sel.length) return;
@@ -974,7 +1286,8 @@
       moved = false;
       for (var i = 0; i < this.objs.length; i++) {
         var o = this.objs[i];
-        if (x < o.x + o.w && x + w > o.x && y < o.y + o.h && y + h > o.y) { y = Math.round(o.y + o.h + 20); moved = true; }
+        var b = objBox(o);
+        if (x < b.x1 && x + w > b.x0 && y < b.y1 && y + h > b.y0) { y = Math.round(b.y1 + 20); moved = true; }
       }
     }
     return y;
@@ -1046,7 +1359,7 @@
       var w = clamp(r.w, 200, 900), h = w * r.h / r.w;
       if (h > 1100) { h = 1100; w = h * r.w / r.h; }
       self.addObj({ kind: "img", id: r.id, x: Math.round((W - w) / 2), y: Math.round(self.visibleTop() + 20), w: Math.round(w), h: Math.round(h) },
-        "insImg", "已插入圖片：拖框裡面可以移動，拖右下角的圓點可以縮放；不要的話按「刪除」");
+        "insImg2", "已插入圖片：拖框裡面移動，拉四個角縮放，拉上面的圓點旋轉；下面的操作列可以裁剪");
     }).catch(function () { self.status("這張圖片讀不出來，或這個瀏覽器不能存圖片（例如無痕模式）"); });
   };
   Pad.prototype.insertMd = function (file) {
@@ -1232,9 +1545,14 @@
     this.selBar.addEventListener("click", function (e) {
       var b = e.target.closest("button");
       if (!b) return;
-      if (b.dataset.sel === "dup") self.dupSel();
-      else if (b.dataset.sel === "del") self.delSel();
-      else if (b.dataset.sel === "none") { self.setSel([]); self.status(""); }
+      var k = b.dataset.sel;
+      if (k === "dup") self.dupSel();
+      else if (k === "del") self.delSel();
+      else if (k === "none") { self.setSel([]); self.status(""); }
+      else if (k === "crop") self.startCrop();
+      else if (k === "cropall" && self.cropping) { self.cropping.cr = { x: 0, y: 0, w: 1, h: 1 }; self.requestDraw(); self.placeSelBar(); }
+      else if (k === "cropno") self.endCrop(false);
+      else if (k === "cropok") self.endCrop(true);
       self.syncTools();
     });
     // 設定面板：拖粗細的滑桿時即時預覽，放開才存；點顏色、自訂顏色、恢復預設
@@ -1397,20 +1715,25 @@
       var sideButton = (e.buttons & 32) || (isPen && (e.buttons & 2));
       if (self.tool === "select" && !sideButton) {
         self.busy = true;
-        var bb = self.sel.length ? self.selBox(false) : null, tol = 22 / (self.scale * self.z);
-        if (bb && Math.hypot(q[0] - bb.x1, q[1] - bb.y1) <= tol) {
-          act = { id: e.pointerId, mode: "scale", bb: bb };
-        } else if (bb && q[0] >= bb.x0 && q[0] <= bb.x1 && q[1] >= bb.y0 && q[1] <= bb.y1) {
-          act = { id: e.pointerId, mode: "move", start: q, bb: bb };
-        } else {
-          self.lassoHad = self.sel.length > 0;   // 原本有選東西的話，點空白只是取消選取
-          self.setSel([]);
-          self.lasso = [q[0], q[1]];
-          self.hits = null; self.hitLen = 0; self.hitAt = 0; self.hitShown = -1;
-          act = { id: e.pointerId, mode: "lasso" };
+        if (self.cropping) {
+          // 裁剪中：拉框的角、邊或移動框；點框外面不做事（按「完成」或「取消」結束）
+          var ck = self.cropHit(q);
+          act = ck >= 0 ? { id: e.pointerId, mode: "crop", k: ck, n0: self.cropNorm(q), cr0: self.cropping.cr } : { id: e.pointerId, mode: "none" };
           return;
         }
-        self.xf = { dx: 0, dy: 0, s: 1, ox: bb.x0, oy: bb.y0 };
+        var hit = self.sel.length ? self.hitFrame(q) : null;
+        if (hit) {
+          act = { id: e.pointerId, mode: hit.mode, k: hit.k, h0: hit.h0, start: q, fr: self.frame };
+          self.xfMode = hit.mode;
+          self.rotAt = self.rotHandle(self.frame);   // 拖曳中旋轉圓點跟著框走
+          self.xf = { px: 0, py: 0, tx: 0, ty: 0, s: 1, th: 0 };
+          return;
+        }
+        self.lassoHad = self.sel.length > 0;   // 原本有選東西的話，點空白只是取消選取
+        self.setSel([]);
+        self.lasso = [q[0], q[1]];
+        self.hits = null; self.hitLen = 0; self.hitAt = 0; self.hitShown = -1;
+        act = { id: e.pointerId, mode: "lasso" };
         return;
       }
       if (self.tool === "eraser" || sideButton) {
@@ -1446,20 +1769,17 @@
         return;
       }
       e.preventDefault();
-      if (act.mode === "lasso" || act.mode === "move" || act.mode === "scale") {
-        var q0 = pos(e), b0 = act.bb;
+      if (act.mode === "none") return;
+      if (act.mode === "lasso" || act.mode === "move" || act.mode === "scale" || act.mode === "rotate" || act.mode === "crop") {
+        var q0 = pos(e);
         if (act.mode === "lasso") {
           var Ln = self.lasso, m = Ln.length;
           if (Math.hypot(q0[0] - Ln[m - 2], q0[1] - Ln[m - 1]) > 2 / self.z) Ln.push(q0[0], q0[1]);
-        } else if (act.mode === "move") {
-          // 拖曳：選取框不能拖出紙外
-          self.xf.dx = clamp(q0[0] - act.start[0], -b0.x0, W - b0.x1);
-          self.xf.dy = clamp(q0[1] - act.start[1], -b0.y0, self.H - b0.y1);
+        } else if (act.mode === "crop") {
+          self.cropDrag(act, q0);
+          self.placeSelBar();
         } else {
-          // 縮放：以左上角為基準，等比例；最小 0.2 倍，最大不超出紙
-          var w0 = Math.max(1, b0.x1 - b0.x0), h0 = Math.max(1, b0.y1 - b0.y0);
-          var sc = Math.max((q0[0] - b0.x0) / w0, (q0[1] - b0.y0) / h0);
-          self.xf.s = clamp(sc, 0.2, Math.min(5, (W - b0.x0) / w0, (self.H - b0.y0) / h0));
+          self.xf = self.dragXf(act, q0);
         }
         self.requestDraw();
         return;
@@ -1510,7 +1830,7 @@
         self.push({ t: "del", items: a.removed });
       } else if (a.mode === "lasso") {
         self.finishLasso();
-      } else if (a.mode === "move" || a.mode === "scale") {
+      } else if (a.mode === "move" || a.mode === "scale" || a.mode === "rotate") {
         self.commitXf();
       } else if (a.mode === "scroll" && e.type === "pointerup" && a.v.length > 1) {
         // 放開時手指還在動：繼續滑一段
@@ -1576,6 +1896,7 @@
       h.items.forEach(function (it) { it.s.p = it.p0.slice(); if (it.sw0 == null) delete it.s.sw; else it.s.sw = it.sw0; });
       (h.objs || []).forEach(function (it) { setRect(it.o, it.r0); });
     }
+    else if (h.t === "crop") { imgApply(h.o, h.a); if (h.h0 !== h.h1) this.setH(h.h0); }
     else if (h.t === "dup") { h.items.forEach(function (c) { drop(st, c); }); (h.objs || []).forEach(function (c) { drop(ob, c); }); }
     this.fut.push(h); this.redraw(); this.changed();
   };
@@ -1596,6 +1917,7 @@
       h.items.forEach(function (it) { it.s.p = it.p1.slice(); if (it.sw1 == null) delete it.s.sw; else it.s.sw = it.sw1; });
       (h.objs || []).forEach(function (it) { setRect(it.o, it.r1); });
     }
+    else if (h.t === "crop") { imgApply(h.o, h.b); if (h.h0 !== h.h1) this.setH(h.h1); }
     else if (h.t === "dup") { h.items.forEach(function (c) { st.push(c); }); (h.objs || []).forEach(function (c) { ob.push(c); }); }
     this.hist.push(h); this.redraw(); this.changed();
   };
@@ -1614,7 +1936,7 @@
       var r = baseW(s) / 2;
       for (var i = 1; i < s.p.length; i += 3) if (s.p[i] + r > maxY) maxY = s.p[i] + r;
     });
-    this.objs.forEach(function (o) { maxY = Math.max(maxY, o.y + o.h); });
+    this.objs.forEach(function (o) { maxY = Math.max(maxY, objBox(o).y1); });
     return Math.max(DEFAULT_H, Math.ceil((maxY + 40) / GRID) * GRID);
   };
   // 加長、縮短：紙的長度看得到，所以不另外跳訊息；不能加長或縮短時按鈕直接變成不能按（syncTools）
@@ -1659,7 +1981,7 @@
     if (!this.hasInk()) return;
     var maxY = 0;
     this.strokes.forEach(function (s) { for (var i = 1; i < s.p.length; i += 3) maxY = Math.max(maxY, s.p[i]); });
-    this.objs.forEach(function (o) { maxY = Math.max(maxY, o.y + o.h); });
+    this.objs.forEach(function (o) { maxY = Math.max(maxY, objBox(o).y1); });
     var h = Math.min(this.H, Math.ceil(maxY + 60));
     // 一般 1.4 倍；很長的紙縮小一點，圖片才不會大到手機存不了（最高 30000 像素、2400 萬像素）
     var k = Math.min(1.4, 30000 / h, Math.sqrt(24e6 / (W * h)));
@@ -1686,7 +2008,7 @@
       x.fillStyle = "#ffffff"; x.fillRect(0, 0, cv.width, cv.height);
       x.setTransform(k, 0, 0, k, 0, 0);
       self.objs.forEach(function (o) {
-        if (o.kind === "img") { var e = imgOf(o.id); if (e.state === "ok") x.drawImage(e.im, o.x, o.y, o.w, o.h); return; }
+        if (o.kind === "img") { var e = imgOf(o.id); if (e.state === "ok") drawImg(x, o, e.im); return; }
         var d = done.filter(function (q) { return q[0] === o; })[0];
         if (!d || !d[1]) return;
         var u = o.w / MD_W;

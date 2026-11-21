@@ -187,6 +187,9 @@ mjx-container.mj-keep[jax] mjx-break { white-space: nowrap !important; }
 .ink-selbar button { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; min-width: 36px; justify-content: center; padding: 0 9px; border-radius: 7px; border: 0; background: none; color: var(--ink); font: 500 13px/1 var(--font-body); white-space: nowrap; cursor: pointer; }
 .ink-selbar button:hover { background: var(--paper); }
 .ink-selbar button[data-sel="del"] { color: var(--accent); }
+.ink-selbar button[hidden] { display: none; }
+.ink-selbar .ink-sel-ok { background: var(--ex); color: var(--card); font-weight: 700; }
+.ink-selbar .ink-sel-ok:hover { background: var(--ex); }
 .ink-selbar .ico { width: 17px; height: 17px; }
 /* 工具列下面展開的面板：筆的設定、插入、更多（一次只開一個），標題列的樣式都一樣 */
 .ink-pop { display: grid; gap: 12px; padding: 12px; border-bottom: 1px solid var(--line); background: var(--card); }
@@ -9696,10 +9699,10 @@ Exit:</code></pre></li>
   paint();
 })();
 </script>
-<script src="assets/icons.js?v=86315811"></script>
+<script src="assets/icons.js?v=7fa507fa"></script>
 <script src="assets/inkdb.js?v=92b336ca"></script>
 <script src="assets/inkx.js?v=ed8b97a0"></script>
-<script src="assets/ink.js?v=196d115a"></script>
+<script src="assets/ink.js?v=214ca77a"></script>
 <script src="assets/viz.js?v=1e5c289a"></script>
 <script src="assets/glide.js?v=93f8e086"></script>
 <script src="assets/nav.js?v=b9cd7533"></script>
